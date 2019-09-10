@@ -4,9 +4,7 @@ This is the Flattiverse reference connector for the binary protocol. You can use
 
 # The current status
 
-This is the implementation of the protocol. It sends 10 packets to the server which echoes those packets.
-
-Additionally the server alters those packets: Session will be the current second.
+This is the implementation of the protocol. It sends 10 packets per second to the server which echoes those packets. Additionally the server alters those packets: Session will be the current second.
 
 The Server runs on `gaglxy.flattiverse.com` port `80`. You need to use username `Anonymous` and the password `Password`.
 

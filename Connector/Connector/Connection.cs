@@ -78,8 +78,7 @@ namespace Flattiverse
                     }
                 }
 
-                using (Rfc2898DeriveBytes rfc2898 = new Rfc2898DeriveBytes(Encoding.UTF8.GetBytes(password), userHash, 213349))
-                    passwordHash = rfc2898.GetBytes(16);
+                passwordHash = Crypto.HashPassword(user, password);
 
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
