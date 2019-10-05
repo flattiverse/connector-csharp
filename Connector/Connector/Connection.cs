@@ -303,7 +303,7 @@ namespace Flattiverse
                     throw new System.IO.InvalidDataException("Couldn't sent auth challenge.");
                 }
 
-                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive);
+                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 16, SocketFlags.None, out socketError, null, null), socket.EndReceive);
 
                 if (socketError != SocketError.Success && socketError != SocketError.IOPending || amount != 16)
                 {
