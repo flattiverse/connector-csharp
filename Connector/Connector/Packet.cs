@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Flattiverse.Utils;
+using System;
 
 namespace Flattiverse
 {
-    public class Packet
+    class Packet
     {
         // Header-Byte: 0b0000 0000
 
@@ -28,147 +29,156 @@ namespace Flattiverse
         public ushort BaseAddress; // ConnectionID, Universe
         public byte SubAddress;    // Controllable, Map
 
-        public byte[] Payload;     // Chat-Message
-        public int Offset;
-        public int Length;
+        internal BinaryMemoryReader reader;
+        private ManagedBinaryMemoryWriter writer;
 
-        public bool OutOfBand;
+        /// <summary>
+        /// OutOfBand is 0, if the packet is a regular Packet. When OutOfband is > 0, then the values represents
+        /// the about of OOB Bytes.
+        /// </summary>
+        public byte OutOfBand;
 
         /// <summary>
         /// Parses a packet. Returns false, if the packet can't be received.
         /// </summary>
-        /// <param name="data">byte[] of datas where the packet shall be parsed from.</param>
-        /// <param name="position">Offset in the byte[] where we start to parse.</param>
-        /// <param name="length">The used length of data.</param>
+        /// <param name="reader">Offset in the byte[] where we start to parse.</param>
         /// <returns>true, if the Packet could be parsed. false otherwise.</returns>
-        public unsafe bool Parse(byte[] data, ref int position, int length)
+        public bool Parse(ref BinaryMemoryReader reader)
         {
-            if (position >= length)
+            if (reader.Size <= 0)
                 return false;
 
-            byte header = data[position];
-            OutOfBand = (header & 0b0011_0000) == 0b0011_0000;
+            BinaryMemoryReader start = reader;
+
+            byte header = reader.ReadByte();
+            int length;
 
             int packetLength;
 
-            fixed (byte* bData = data)
+            if ((header & 0b0011_0000) == 0b0011_0000)
             {
-                byte* pData = bData + position + 1;
+                OutOfBand = (byte)(header & 0b0000_1111);
 
-                if (OutOfBand)
+                if (reader.Size < OutOfBand)
                 {
-                    Length = header & 0b0000_1111;
-                    packetLength = 1 + Length;
-                }
-                else
-                {
-                    packetLength = 1
-                                 + (((header & 0b1000_0000) == 0b1000_0000) ? 1 : 0)
-                                 + (((header & 0b0100_0000) == 0b0100_0000) ? 1 : 0)
-                                 + (((header & 0b0000_1000) == 0b0000_1000) ? 2 : 0)
-                                 + (((header & 0b0000_0100) == 0b0000_0100) ? 1 : 0)
-                                 + (((header & 0b0000_0010) == 0b0000_0010) ? 4 : 0)
-                                 + (((header & 0b0000_0001) == 0b0000_0001) ? 1 : 0);
-
-                    switch ((header & 0b0011_0000) >> 4)
-                    {
-                        case 0b00: // Keine Längen-Angabe: Kein Pay-Load.
-                            Length = 0;
-                            break;
-                        case 0b01: // 1 weiteres Byte Längen-Information.
-                            if (length - position < 2)
-                                return false;
-
-                            Length = data[position + 1] + 1;
-
-                            pData++;
-
-                            packetLength += 1 + Length;
-                            break;
-                        case 0b10: // 2 weitere Bytes Längen-Information.
-                            if (length - position < 3)
-                                return false;
-
-                            Length = *(ushort*)pData + 1;
-                            pData += 2;
-
-                            packetLength += 2 + Length;
-                            break;
-                        // case 0b11: // Keine Längen-Angabe: OutOfBand-Packet.
-                        //     break;
-                    }
-                }
-
-                // Paket noch nicht ganz empfangen.
-                if (length - position < packetLength)
+                    reader = start;
                     return false;
-
-                // Command
-                if ((header & 0b1000_0000) == 0b1000_0000)
-                    Command = *pData++;
-                else
-                    Command = 0;
-
-                // Session
-                if ((header & 0b0100_0000) == 0b0100_0000)
-                    Session = *pData++;
-                else
-                    Session = 0;
-
-                // BaseAddress
-                if ((header & 0b0000_1000) == 0b0000_1000)
-                {
-                    BaseAddress = *(ushort*)pData;
-                    pData += 2;
                 }
-                else
-                    BaseAddress = 0;
 
-                // SubAddress
-                if ((header & 0b0000_0100) == 0b0000_0100)
-                    SubAddress = *pData++;
-                else
-                    SubAddress = 0;
+                if (OutOfBand > 0)
+                    reader.Jump(OutOfBand);
 
-                // ID
-                if ((header & 0b0000_0010) == 0b0000_0010)
-                {
-                    ID = *(uint*)pData;
-                    pData += 4;
-                }
-                else
-                    ID = 0;
+                OutOfBand++;
 
-                // Helper
-                if ((header & 0b0000_0001) == 0b0000_0001)
-                    Helper = *pData++;
-                else
-                    Helper = 0;
-
-                if (Length == 0)
-                {
-                    Offset = 0;
-                    Payload = null;
-                }
-                else
-                {
-                    Offset = (int)(pData - bData);
-                    Payload = data;
-                }
+                return true;
             }
 
-            position += packetLength;
+            // Theoretically we need to set this here, if packet classes will be re-used.
+            // OutOfBand = 0;
+
+            packetLength = (((header & 0b1000_0000) == 0b1000_0000) ? 1 : 0)
+                            + (((header & 0b0100_0000) == 0b0100_0000) ? 1 : 0)
+                            + (((header & 0b0000_1000) == 0b0000_1000) ? 2 : 0)
+                            + (((header & 0b0000_0100) == 0b0000_0100) ? 1 : 0)
+                            + (((header & 0b0000_0010) == 0b0000_0010) ? 4 : 0)
+                            + (((header & 0b0000_0001) == 0b0000_0001) ? 1 : 0);
+
+            switch ((header & 0b0011_0000) >> 4)
+            {
+                default: // 0b00: Keine Längen-Angabe: Kein Pay-Load.
+                    length = 0;
+                    break;
+                case 0b01: // 1 weiteres Byte Längen-Information.
+                    if (reader.Size <= 0)
+                        return false;
+
+                    length = reader.ReadByte() + 1;
+
+                    packetLength += length;
+                    break;
+                case 0b10: // 2 weitere Bytes Längen-Information.
+                    if (reader.Size <= 1)
+                        return false;
+
+                    length = reader.ReadUInt16() + 1;
+
+                    packetLength += length;
+                    break;
+            }
+
+            // Paket noch nicht ganz empfangen.
+            if (reader.Size < packetLength)
+            {
+                reader = start;
+                return false;
+            }
+
+            // Command
+            if ((header & 0b1000_0000) == 0b1000_0000)
+                Command = reader.ReadByte();
+            // else
+            //     Command = 0;
+
+            // Session
+            if ((header & 0b0100_0000) == 0b0100_0000)
+                Session = reader.ReadByte();
+            // else
+            //     Session = 0;
+
+            // BaseAddress
+            if ((header & 0b0000_1000) == 0b0000_1000)
+                BaseAddress = reader.ReadUInt16();
+            // else
+            //     BaseAddress = 0;
+
+            // SubAddress
+            if ((header & 0b0000_0100) == 0b0000_0100)
+                SubAddress = reader.ReadByte();
+            // else
+            //     SubAddress = 0;
+
+            // ID
+            if ((header & 0b0000_0010) == 0b0000_0010)
+                ID = reader.ReadUInt32();
+            // else
+            //     ID = 0;
+
+            // Helper
+            if ((header & 0b0000_0001) == 0b0000_0001)
+                Helper = reader.ReadByte();
+            // else
+            //     Helper = 0;
+
+            if (length == 0)
+                this.reader = reader.Cut(0);
+            else
+                this.reader = reader.Cut(length);
 
             return true;
         }
 
-        public unsafe bool Write(byte[] data, ref int position)
+        public ManagedBinaryMemoryWriter Write()
+        {
+            writer = new ManagedBinaryMemoryWriter();
+            return writer;
+        }
+
+        public BinaryMemoryReader Read()
+        {
+            return reader;
+        }
+
+        internal unsafe bool write(byte[] data, ref int position)
         {
             int packetLength = 1;
             byte header = 0b0000_0000;
+            long length;
 
-            if (OutOfBand)
-                packetLength += Length;
+            if (OutOfBand > 0)
+            {
+                packetLength = OutOfBand;
+                length = 0;
+            }
             else
             {
                 if (Command > 0)
@@ -207,17 +217,19 @@ namespace Flattiverse
                     packetLength++;
                 }
 
-                if (Length > 65536)
+                length = writer == null ? 0 : writer.Size;
+
+                if (length > 65536)
                     throw new ArgumentException("Payload can't exceed 64 KiB.", "Payload");
-                else if (Length > 256)
+                else if (length > 256)
                 {
                     header |= 0b0010_0000;
-                    packetLength += 2 + Length;
+                    packetLength += 2 + (int)length;
                 }
-                else if (Length > 0)
+                else if (length > 0)
                 {
                     header |= 0b0001_0000;
-                    packetLength += 1 + Length;
+                    packetLength += 1 + (int)length;
                 }
             }
 
@@ -228,25 +240,27 @@ namespace Flattiverse
             {
                 byte* pData = bData + position;
 
-                if (OutOfBand)
+                if (OutOfBand > 0)
                 {
-                    *pData++ = (byte)(0b0011_0000 | Length);
+                    *pData++ = (byte)(0b0011_0000 | (OutOfBand - 1));
 
-                    for (; Length > 0; Length--)
+                    OutOfBand--;
+
+                    for (; OutOfBand > 0; OutOfBand--)
                         *pData++ = 0x55;
                 }
                 else
                 {
                     *pData++ = header;
 
-                    if (Length > 256)
+                    if (length > 256)
                     {
-                        *(ushort*)pData = (ushort)(Length - 1);
+                        *(ushort*)pData = (ushort)(length - 1);
                         pData += 2;
                     }
-                    else if (Length > 0)
+                    else if (length > 0)
                     {
-                        *pData = (byte)(Length - 1);
+                        *pData = (byte)(length - 1);
                         pData++;
                     }
 
@@ -274,9 +288,8 @@ namespace Flattiverse
                     if (Helper > 0)
                         *pData++ = Helper;
 
-                    else if (Length > 0)
-                        fixed (byte* bPayload = Payload)
-                            Buffer.MemoryCopy(bPayload + Offset, pData, data.Length - (pData - bData), Length);
+                    if (length > 0)
+                        writer.ToPointer(pData);
                 }
             }
 
@@ -287,7 +300,7 @@ namespace Flattiverse
 
         public override string ToString()
         {
-            return $"CMD=0x{Command.ToString("X02")} SESSION=0x{Session.ToString("X02")} PLL={Length} Bytes.";
+            return $"CMD=0x{Command.ToString("X02")} SESSION=0x{Session.ToString("X02")} PLL={(writer == null ? reader.Size : writer.Size)} Bytes.";
         }
     }
 }

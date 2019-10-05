@@ -11,31 +11,34 @@ namespace DevelopmentArea
     {
         static async Task Main(string[] args)
         {
-            Connection connection = new Connection();
-
-            connection.Received += received;
-            connection.Disconnected += disconnected;
-
-            await connection.Connect("Anonymous", "Password");
-
-            while (true)
+            using (Server server = new Server())
             {
-                connection.Send(new Packet());
-                connection.Flush();
+                byte[] hash = Crypto.HashPassword("Anonymous", "Password");
 
-                Thread.Sleep(100);
+                Stopwatch sw = Stopwatch.StartNew();
+
+                await server.Login("Anonymous", hash);
+
+                Console.WriteLine($" * {sw.Elapsed}.");
+
+                foreach (Universe universe in server.Universes)
+                {
+                    Console.WriteLine($" * {universe.Name} @{universe.ID} Type={universe.Mode}");
+
+                    foreach (Team team in universe.Teams)
+                    {
+                        Console.Write("   * [");
+
+                        Console.ForegroundColor = team.ConsoleColor;
+
+                        Console.Write("█████");
+
+                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                        Console.WriteLine($"] {team.Name}");
+                    }
+                }
             }
-        }
-
-        private static void disconnected()
-        {
-            Console.WriteLine("Client disconnected.");
-        }
-
-        private static void received(List<Packet> packets)
-        {
-            foreach (Packet p in packets)
-                Console.WriteLine(" * Packet Received: " + p.ToString());
         }
     }
 }

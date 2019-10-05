@@ -4,14 +4,19 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>FlattiverseConnector</AssemblyName>
     <RootNamespace>Flattiverse</RootNamespace>
+    <AssemblyVersion>0.99.0.0</AssemblyVersion>
+    <FileVersion>1.99.0.0</FileVersion>
+    <Version>0.99.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\FlattiverseConnector.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\FlattiverseConnector.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>
