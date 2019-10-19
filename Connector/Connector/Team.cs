@@ -40,9 +40,9 @@ namespace Flattiverse
 
             name = reader.ReadString();
 
-            r = reader.ReadSingle();
-            g = reader.ReadSingle();
-            b = reader.ReadSingle();
+            r = reader.ReadByte() / 255f;
+            g = reader.ReadByte() / 255f;
+            b = reader.ReadByte() / 255f;
         }
 
         /// <summary>
