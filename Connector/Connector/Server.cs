@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Flattiverse
@@ -131,9 +132,9 @@ namespace Flattiverse
                         break;
                     case 0x0F: // Login Completed or Denied
                         if (packet.Helper == 0x00)
-                            waiter?.SetResult(null);
+                            ThreadPool.QueueUserWorkItem(delegate { waiter?.SetResult(null); });
                         else
-                            waiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper));
+                            ThreadPool.QueueUserWorkItem(delegate { waiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper)); });
                         break;
                     case 0x10: // Universe Metainfo Updated
                         if (packet.BaseAddress > universes.Length)
