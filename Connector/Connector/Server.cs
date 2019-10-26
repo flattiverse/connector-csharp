@@ -14,10 +14,14 @@ namespace Flattiverse
 
         private Universe[] universes;
 
+        private Player[] players;
+
         /// <summary>
         /// All the universes available.
         /// </summary>
         public readonly UniversalHolder<Universe> Universes;
+
+        public readonly UniversalHolder<Player> Players;
 
         private TaskCompletionSource<object> waiter;
 
@@ -29,6 +33,10 @@ namespace Flattiverse
             universes = new Universe[16];
 
             Universes = new UniversalHolder<Universe>(universes);
+
+            players = new Player[65536];
+
+            Players = new UniversalHolder<Player>(players);
         }
 
         /// <summary>
@@ -100,10 +108,32 @@ namespace Flattiverse
         {
             foreach (Packet packet in packets)
             {
+                Console.WriteLine($" * Got command 0x{packet.Command.ToString("X02")} with BaseAddr={packet.BaseAddress}");
+
                 switch (packet.Command)
                 {
-                    case 0x0F: // Login Completed
-                        waiter?.SetResult(null);
+                    case 0x0A: // Player Removed.
+                        players[packet.BaseAddress] = null;
+                        break;
+                    case 0x0B: // Player Created.
+                        players[packet.BaseAddress] = new Player(this, packet);
+                        break;
+                    case 0x0C: // Player Defragmented.
+                        {
+                            int oldAddress = packet.Read().ReadUInt16();
+
+                            players[packet.BaseAddress] = players[oldAddress];
+                            players[oldAddress] = null;
+                        }
+                        break;
+                    case 0x0D: // Player Ping Update
+                        players[packet.BaseAddress].UpdatePing(packet);
+                        break;
+                    case 0x0F: // Login Completed or Denied
+                        if (packet.Helper == 0x00)
+                            waiter?.SetResult(null);
+                        else
+                            waiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper));
                         break;
                     case 0x10: // Universe Metainfo Updated
                         if (packet.BaseAddress > universes.Length)

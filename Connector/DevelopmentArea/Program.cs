@@ -13,11 +13,19 @@ namespace DevelopmentArea
         {
             using (Server server = new Server())
             {
-                byte[] hash = Crypto.HashPassword("Anonymous", "Password");
+#if DEBUG
+                byte[] hash = Crypto.HashPassword("Player1", "Password");
+#else
+                byte[] hash = Crypto.HashPassword("Player0", "Password");
+#endif
 
                 Stopwatch sw = Stopwatch.StartNew();
 
-                await server.Login("Anonymous", hash);
+#if DEBUG
+                await server.Login("Player1", hash);
+#else
+                await server.Login("Player0", hash);
+#endif
 
                 Console.WriteLine($" * {sw.Elapsed}.");
 
@@ -38,6 +46,20 @@ namespace DevelopmentArea
                         Console.WriteLine($"] {team.Name}");
                     }
                 }
+
+                Console.WriteLine("\nPlayers online:");
+
+                foreach (Player player in server.Players)
+                    Console.WriteLine($" * {player.Name} with a ping of {player.Ping}.");
+
+                Console.WriteLine("\nKey?");
+
+                Console.ReadKey();
+
+                Console.WriteLine("\nPlayers online:");
+
+                foreach (Player player in server.Players)
+                    Console.WriteLine($" * {player.Name} with a ping of {player.Ping}.");
             }
         }
     }
