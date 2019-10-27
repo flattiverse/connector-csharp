@@ -52,6 +52,16 @@ namespace Flattiverse.Utils
         }
 
         /// <summary>
+        /// Writes a boolean.
+        /// </summary>
+        /// <param name="data">The byte to write.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Write(bool data)
+        {
+            currentSegment.Write(data);
+        }
+
+        /// <summary>
         /// Writes a byte.
         /// </summary>
         /// <param name="data">The byte to write.</param>
@@ -224,6 +234,26 @@ namespace Flattiverse.Utils
         }
 
         /// <summary>
+        /// Fills length bytes memory with random data.
+        /// </summary>
+        /// <param name="rng">The random number generator to use.</param>
+        /// <param name="length">The amount of bytes to fill.</param>
+        public void Fill(Random rng, int length)
+        {
+            currentSegment.Fill(rng, length);
+        }
+
+        /// <summary>
+        /// Fills length bytes memory with random data.
+        /// </summary>
+        /// <param name="rng">The random number generator to use.</param>
+        /// <param name="length">The amount of bytes to fill.</param>
+        public void Fill(RNGCryptoServiceProvider rng, int length)
+        {
+            currentSegment.Fill(rng, length);
+        }
+
+        /// <summary>
         /// Generates a new array with the contents of this writer. Beware, the content shouldn't exceed .NET memory array limit of nearly 2 GiB.
         /// </summary>
         /// <returns>The array.</returns>
@@ -315,7 +345,6 @@ namespace Flattiverse.Utils
 
             return (int)size;
         }
-
 
         /// <summary>
         /// Saves writer content to the given pointer.

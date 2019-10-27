@@ -11,9 +11,9 @@ namespace Flattiverse
     /// </summary>
     public class Server : IDisposable
     {
-        private Connection connection;
+        internal Connection connection;
 
-        private Universe[] universes;
+        internal Universe[] universes;
 
         private Player[] players;
 
@@ -22,9 +22,59 @@ namespace Flattiverse
         /// </summary>
         public readonly UniversalHolder<Universe> Universes;
 
+        /// <summary>
+        /// All the players registered to flattiverse.
+        /// </summary>
         public readonly UniversalHolder<Player> Players;
 
         private TaskCompletionSource<object> waiter;
+
+        /// <summary>
+        /// Specifies the function signature of an flattiverse event event handler.
+        /// </summary>
+        /// <param name="event">The event which occurred.</param>
+        public delegate void FlattiverseEventHandler(FlattiverseEvent @event);
+
+        /// <summary>
+        /// This eventhandler will be called whenever a meta event occurs.
+        /// 
+        /// Meta events are usually no direct game events. Meta events are used to inform you about
+        /// players joinning our universe or about newly registered ships of your teammates, etc.
+        /// Meta events also gives you the heartbeat of the universe (when internal ticks have been
+        /// finished.)
+        /// </summary>
+        public event FlattiverseEventHandler MetaEvent;
+
+        /// <summary>
+        /// This eventhandler will be called whenever a status event occurs.
+        /// 
+        /// Status updates are updates which inform you about a status change of one of your units.
+        /// This includes hull, shield, energy or configuration changes.
+        /// </summary>
+        public event FlattiverseEventHandler StatusEvent;
+
+        /// <summary>
+        /// This eventhandler will be called whenever a scan event occurs.
+        /// 
+        /// Scan events are updates to scanned units: Units appreaing in your event horizon, units
+        /// which change something within your eventhorizon or units which leave your eventhorizon.
+        /// </summary>
+        public event FlattiverseEventHandler ScanEvent;
+
+        /// <summary>
+        /// This eventhandler will be called whenever a chat event occurs.
+        /// 
+        /// Chat events contain chat messages from other players sent to you or the universe group
+        /// you are in or the team you are in. This also includes map pings or binary messages.
+        /// </summary>
+        public event FlattiverseEventHandler ChatEvent;
+
+        private object syncEvents;
+        private bool eventInExecution;
+        private Queue<(FlattiverseEventHandler, FlattiverseEvent)> events;
+        private Queue<FlattiverseEvent> pollingEvents;
+
+        private bool connectionCycleCompleted;
 
         /// <summary>
         /// Creates a new instance of a server connection without connecting (use login for this).
@@ -38,6 +88,10 @@ namespace Flattiverse
             players = new Player[65536];
 
             Players = new UniversalHolder<Player>(players);
+
+            syncEvents = new object();
+            events = new Queue<(FlattiverseEventHandler, FlattiverseEvent)>();
+            pollingEvents = new Queue<FlattiverseEvent>();
         }
 
         /// <summary>
@@ -69,6 +123,7 @@ namespace Flattiverse
             await waiter.Task;
 
             waiter = null;
+            connectionCycleCompleted = true;
         }
 
         /// <summary>
@@ -130,6 +185,20 @@ namespace Flattiverse
                     case 0x0D: // Player Ping Update
                         players[packet.BaseAddress].UpdatePing(packet);
                         break;
+                    case 0x0E: // Player Assignment
+                        if (packet.Read().Size == 0)
+                        {
+                            EnqueueMetaEvent(new PlayerPartedEvent(players[packet.BaseAddress]));
+
+                            players[packet.BaseAddress].UpdatePlayerAssignment(packet);
+                        }
+                        else
+                        {
+                            players[packet.BaseAddress].UpdatePlayerAssignment(packet);
+
+                            EnqueueMetaEvent(new PlayerJoinnedEvent(players[packet.BaseAddress]));
+                        }
+                        break;
                     case 0x0F: // Login Completed or Denied
                         if (packet.Helper == 0x00)
                             ThreadPool.QueueUserWorkItem(delegate { waiter?.SetResult(null); });
@@ -150,7 +219,7 @@ namespace Flattiverse
                         if (packet.Read().Size == 0)
                             universes[packet.BaseAddress] = null;
                         else if (universes[packet.BaseAddress] == null)
-                            universes[packet.BaseAddress] = new Universe(packet);
+                            universes[packet.BaseAddress] = new Universe(this, packet);
                         else
                             universes[packet.BaseAddress].updateFromPacket(packet);
                         break;
@@ -165,8 +234,133 @@ namespace Flattiverse
                         else
                             universes[packet.BaseAddress].teams[packet.SubAddress].updateFromPacket(packet);
                         break;
+                    case 0x12: // Universe\Galaxy Metainfo Updated
+                        if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
+                            break;
+
+                        if (packet.Read().Size == 0)
+                            universes[packet.BaseAddress].galaxies[packet.SubAddress] = null;
+                        else if (universes[packet.BaseAddress].galaxies[packet.SubAddress] == null)
+                            universes[packet.BaseAddress].galaxies[packet.SubAddress] = new Galaxy(universes[packet.BaseAddress], packet);
+                        else
+                            universes[packet.BaseAddress].galaxies[packet.SubAddress].updateFromPacket(packet);
+                        break;
                 }
             }
+        }
+
+        internal void EnqueueMetaEvent(FlattiverseEvent @event)
+        {
+            FlattiverseEventHandler handler;
+
+            switch (@event.Kind)
+            {
+                case FlattiverseEventKind.Meta:
+                    handler = MetaEvent;
+                    break;
+                case FlattiverseEventKind.Status:
+                    handler = StatusEvent;
+                    break;
+                case FlattiverseEventKind.Scan:
+                    handler = ScanEvent;
+                    break;
+                case FlattiverseEventKind.Chat:
+                    handler = ChatEvent;
+                    break;
+                default:
+                    handler = null;
+                    break;
+            }
+
+            if (handler == null)
+            {
+                pollingEvents.Enqueue(@event);
+
+                lock (syncEvents)
+                    if (waiter != null)
+                        ThreadPool.QueueUserWorkItem(delegate { waiter.SetResult(null); });
+
+                return;
+            }
+
+            lock (syncEvents)
+                if (eventInExecution)
+                    events.Enqueue((handler, @event));
+                else
+                {
+                    eventInExecution = true;
+                    events.Enqueue((handler, @event));
+                    ThreadPool.QueueUserWorkItem(delegate { executeEvents(); });
+                }
+        }
+
+        private void executeEvents()
+        {
+            FlattiverseEventHandler handler;
+            FlattiverseEvent @event;
+
+            while (true)
+            {
+                lock (syncEvents)
+                {
+                    if (events.Count == 0)
+                    {
+                        eventInExecution = false;
+                        return;
+                    }
+
+                    (handler, @event) = events.Dequeue();
+                }
+
+                try
+                {
+                    handler(@event);
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>
+        /// Gathers events. It waits blockingly for new events if there are no events.
+        /// </summary>
+        /// <remarks>Don't execute this in parallel with itself or PollEvents().</remarks>
+        /// <returns>A queue of events.</returns>
+        public async Task<Queue<FlattiverseEvent>> GatherEvents()
+        {
+            if (!connectionCycleCompleted)
+                return new Queue<FlattiverseEvent>();
+
+            Queue<FlattiverseEvent> foundEvents;
+
+            lock (syncEvents)
+                if (pollingEvents.Count > 0)
+                {
+                    foundEvents = pollingEvents;
+                    pollingEvents = new Queue<FlattiverseEvent>();
+                    return foundEvents;
+                }
+                else
+                    waiter = new TaskCompletionSource<object>();
+
+            await waiter.Task;
+
+            waiter = null;
+
+            foundEvents = pollingEvents;
+            pollingEvents = new Queue<FlattiverseEvent>();
+            return foundEvents;
+        }
+
+        /// <summary>
+        /// Polls for events. This method will return immediately, even if there are no events.
+        /// </summary>
+        /// <remarks>Don't execute this in parallel with itself or GatherEvents().</remarks>
+        /// <returns>A queue of events.</returns>
+        public Queue<FlattiverseEvent> PollEvents()
+        {
+            Queue<FlattiverseEvent> foundEvents = pollingEvents;
+            pollingEvents = new Queue<FlattiverseEvent>();
+            return foundEvents;
         }
 
         private void disconnected()

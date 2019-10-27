@@ -36,6 +36,8 @@ namespace Flattiverse
         private object sync;
         private bool closed;
 
+        private IndexList<Session> sessions;
+
         public async Task Connect(string user, string password)
         {
             byte[] packetData = new byte[64];
@@ -181,6 +183,8 @@ namespace Flattiverse
                 eventArgs.SetBuffer(recvBuffer, 0, 262144);
 
                 sync = new object();
+
+                sessions = new IndexList<Session>(256);
 
                 if (!socket.ReceiveAsync(eventArgs))
                     ThreadPool.QueueUserWorkItem(delegate { received(socket, eventArgs); });
@@ -333,6 +337,20 @@ namespace Flattiverse
                 if (!socket.ReceiveAsync(eventArgs))
                     ThreadPool.QueueUserWorkItem(delegate { received(socket, eventArgs); });
             }
+        }
+
+        internal Session NewSession()
+        {
+            Session session = new Session(this);
+
+            session.Setup((byte)sessions.Insert(session));
+
+            return session;
+        }
+
+        internal void DeleteSession(Session session)
+        {
+            sessions.Wipe(session.ID);
         }
 
         private unsafe void received(object socketObject, SocketAsyncEventArgs eventArgs)

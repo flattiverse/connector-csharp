@@ -35,7 +35,7 @@ namespace DevelopmentArea
 
                     foreach (Team team in universe.Teams)
                     {
-                        Console.Write("   * [");
+                        Console.Write("   * (Team) [");
 
                         Console.ForegroundColor = team.ConsoleColor;
 
@@ -45,6 +45,9 @@ namespace DevelopmentArea
 
                         Console.WriteLine($"] {team.Name}");
                     }
+
+                    foreach (Galaxy galaxy in universe.Galaxies)
+                        Console.WriteLine($"   * (Galaxy) {galaxy.Name}");
                 }
 
                 Console.WriteLine("\nPlayers online:");

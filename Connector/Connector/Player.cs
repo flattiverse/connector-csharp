@@ -22,6 +22,9 @@ namespace Flattiverse
 
         private uint account;
 
+        private Universe universe;
+        private Team team;
+
         internal Player(Server server, Packet packet)
         {
             Server = server;
@@ -32,7 +35,7 @@ namespace Flattiverse
             BinaryMemoryReader reader = packet.Read();
 
             name = reader.ReadString();
-            online = reader.ReadByte() != 0x00;
+            online = reader.ReadBoolean();
             ping = reader.ReadSingle();
         }
 
@@ -51,9 +54,39 @@ namespace Flattiverse
         /// </summary>
         public float Ping => ping;
 
+        /// <summary>
+        /// The universe the player did join. null, if the player isn't in an universe.
+        /// </summary>
+        public Universe Universe => universe;
+
+        /// <summary>
+        /// The team the player is on. null, if the player isn't in an universe.
+        /// </summary>
+        public Team Team => team;
+
         internal void UpdatePing(Packet packet)
         {
             ping = packet.Read().PeekSingle();
+        }
+
+        internal void UpdatePlayerAssignment(Packet packet)
+        {
+            BinaryMemoryReader reader = packet.Read();
+
+            if (reader.Size == 0)
+            {
+                universe = null;
+                team = null;
+
+                return;
+            }
+
+            universe = Server.universes[reader.ReadUInt16()];
+
+            if (universe == null)
+                return;
+
+            team = universe.teams[reader.ReadByte()];
         }
     }
 }

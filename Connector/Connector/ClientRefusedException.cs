@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flattiverse
 {
-    class ClientRefusedException : Exception
+    class ClientRefusedException : InvalidOperationException
     {
         public ClientRefusedException(RefuseReason reason) : base (refuseReason(reason))
         {

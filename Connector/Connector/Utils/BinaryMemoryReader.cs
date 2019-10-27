@@ -37,30 +37,6 @@ namespace Flattiverse.Utils
         public byte* Position => position;
 
         /// <summary>
-        /// Returns a reader from the current position with the remaining size and jumps to the end of the cut.
-        /// </summary>
-        /// <param name="remainingSize">Size in bytes still availabe on this reader.</param>
-        /// <returns>The new reader.</returns>
-        public BinaryMemoryReader Cut(int remainingSize)
-        {
-            if (size < remainingSize)
-                throw new OutOfMemoryException(spaceError);
-
-            try
-            {
-                return new BinaryMemoryReader(position, remainingSize);
-            }
-            finally
-            {
-                if (remainingSize > 0)
-                {
-                    position += remainingSize;
-                    size -= remainingSize;
-                }
-            }
-        }
-
-        /// <summary>
         /// Reads a string encoded in UTF-8 with 7 bit encoded length prefix.
         /// </summary>
         /// <returns>The string.</returns>
@@ -229,6 +205,19 @@ namespace Flattiverse.Utils
         }
 
         /// <summary>
+        /// Reads a boolean.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ReadBoolean()
+        {
+            if (size < 1)
+                throw new OutOfMemoryException(spaceError);
+
+            size--;
+            return *position++ != 0x00;
+        }
+
+        /// <summary>
         /// Reads a byte.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -252,6 +241,22 @@ namespace Flattiverse.Utils
 
             size--;
             return *(sbyte*)position++;
+        }
+
+        /// <summary>
+        /// Cuts a sub reader at the current position with the specified length.
+        /// </summary>
+        /// <param name="size">The size of the new reader.</param>
+        /// <returns>The new reader.</returns>
+        public BinaryMemoryReader Cut(int size)
+        {
+            if (this.size < size)
+                throw new OutOfMemoryException(spaceError);
+
+            position += size;
+            this.size -= size;
+
+            return new BinaryMemoryReader(position - size, size);
         }
 
         /// <summary>
@@ -646,6 +651,18 @@ namespace Flattiverse.Utils
         }
 
         /// <summary>
+        /// Peeks a boolean.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool PeekBoolean()
+        {
+            if (size < 1)
+                throw new OutOfMemoryException(spaceError);
+
+            return *position != 0x00;
+        }
+
+        /// <summary>
         /// Peeks a byte.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -841,7 +858,7 @@ namespace Flattiverse.Utils
             if (size < 16)
                 throw new OutOfMemoryException(spaceError);
 
-            return new decimal(new int[] { *(int*)(position), *(int*)(position + 4), *(int*)(position + 8), *(int*)(position + 12) });
+            return new decimal(new int[] { *(int*)position, *(int*)(position + 4), *(int*)(position + 8), *(int*)(position + 12) });
         }
 
         /// <summary>
