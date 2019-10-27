@@ -28,6 +28,7 @@ namespace Flattiverse
         private Privileges defaultPrivileges;
 
         private ushort maxPlayers;
+        private ushort maxPlayersPerTeam;
         private byte maxShipsPerPlayer;
         private ushort maxShipsPerTeam;
 
@@ -77,6 +78,7 @@ namespace Flattiverse
             ownerID = reader.ReadUInt32();
 
             maxPlayers = reader.ReadUInt16();
+            maxPlayersPerTeam = reader.ReadUInt16();
             maxShipsPerPlayer = reader.ReadByte();
             maxShipsPerTeam = reader.ReadUInt16();
 
@@ -98,6 +100,7 @@ namespace Flattiverse
                 packet.Command = 0x1A;
 
                 // TODO: Autoselection.
+                packet.BaseAddress = ID;
                 packet.SubAddress = 0x00;
 
                 Server.connection.Send(packet);
@@ -134,6 +137,7 @@ namespace Flattiverse
                 Packet packet = session.Request;
 
                 packet.Command = 0x1A;
+                packet.BaseAddress = ID;
                 packet.SubAddress = team.ID;
 
                 Server.connection.Send(packet);
@@ -153,7 +157,8 @@ namespace Flattiverse
             {
                 Packet packet = session.Request;
 
-                packet.Command = 0x1A;
+                packet.Command = 0x1B;
+                packet.BaseAddress = ID;
                 packet.SubAddress = 0xFF;
 
                 Server.connection.Send(packet);
@@ -197,6 +202,11 @@ namespace Flattiverse
         /// The maximum amount of players for this universe.
         /// </summary>
         public int MaxPlayers => maxPlayers;
+
+        /// <summary>
+        /// The maximum amount of players for a team in this universe.
+        /// </summary>
+        public int MaxPlayersPerTeam => maxPlayersPerTeam;
 
         /// <summary>
         /// The maximum amount of ships per player of this universe.

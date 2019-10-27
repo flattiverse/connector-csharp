@@ -11,7 +11,7 @@ namespace Flattiverse
     /// <typeparam name="T">The type the list shall contain.</typeparam>
     class IndexList<T> : IEnumerable<T> where T : class
     {
-        private int max = 0;
+        private int max = 1;
         private int air = 0;
 
         private T[] values;
@@ -65,7 +65,7 @@ namespace Flattiverse
 
         public int Air => air;
 
-        public int Count => max - air;
+        public int Count => max - air - 1;
 
         private IEnumerator<T> enumerate()
         {

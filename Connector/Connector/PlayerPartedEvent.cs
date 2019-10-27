@@ -24,5 +24,14 @@ namespace Flattiverse
             Universe = player.Universe;
             Team = player.Team;
         }
+
+        /// <summary>
+        /// This event as string.
+        /// </summary>
+        /// <returns>The string.</returns>
+        public override string ToString()
+        {
+            return $"{Player.Name} parted {Universe.Name}. He was on team {Team.Name}.";
+        }
     }
 }

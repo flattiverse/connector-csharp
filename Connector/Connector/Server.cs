@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,7 +75,9 @@ namespace Flattiverse
         private Queue<(FlattiverseEventHandler, FlattiverseEvent)> events;
         private Queue<FlattiverseEvent> pollingEvents;
 
-        private bool connectionCycleCompleted;
+        private bool online;
+
+        private Player player;
 
         /// <summary>
         /// Creates a new instance of a server connection without connecting (use login for this).
@@ -123,7 +126,7 @@ namespace Flattiverse
             await waiter.Task;
 
             waiter = null;
-            connectionCycleCompleted = true;
+            online = true;
         }
 
         /// <summary>
@@ -164,7 +167,11 @@ namespace Flattiverse
         {
             foreach (Packet packet in packets)
             {
-                Console.WriteLine($" * Got command 0x{packet.Command.ToString("X02")} with BaseAddr={packet.BaseAddress}");
+                if (packet.Session != 0)
+                {
+                    connection.ProcessSessionPacket(packet);
+                    continue;
+                }
 
                 switch (packet.Command)
                 {
@@ -186,22 +193,37 @@ namespace Flattiverse
                         players[packet.BaseAddress].UpdatePing(packet);
                         break;
                     case 0x0E: // Player Assignment
-                        if (packet.Read().Size == 0)
                         {
-                            EnqueueMetaEvent(new PlayerPartedEvent(players[packet.BaseAddress]));
+                            Player requestPlayer = players[packet.BaseAddress];
 
-                            players[packet.BaseAddress].UpdatePlayerAssignment(packet);
-                        }
-                        else
-                        {
-                            players[packet.BaseAddress].UpdatePlayerAssignment(packet);
+                            Debug.Assert(requestPlayer != null, "Player doesn't exist in local database.");
 
-                            EnqueueMetaEvent(new PlayerJoinnedEvent(players[packet.BaseAddress]));
+                            if (requestPlayer == null)
+                                break;
+
+                            if (packet.Read().Size == 0)
+                            {
+                                if (requestPlayer.Universe == player.Universe)
+                                    EnqueueMetaEvent(new PlayerPartedEvent(requestPlayer));
+
+                                requestPlayer.UpdatePlayerAssignment(packet);
+                            }
+                            else
+                            {
+                                requestPlayer.UpdatePlayerAssignment(packet);
+
+                                if (requestPlayer.Universe == player.Universe)
+                                    EnqueueMetaEvent(new PlayerJoinnedEvent(requestPlayer));
+                            }
                         }
                         break;
                     case 0x0F: // Login Completed or Denied
                         if (packet.Helper == 0x00)
+                        {
+                            player = players[packet.BaseAddress];
+
                             ThreadPool.QueueUserWorkItem(delegate { waiter?.SetResult(null); });
+                        }
                         else
                             ThreadPool.QueueUserWorkItem(delegate { waiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper)); });
                         break;
@@ -327,7 +349,7 @@ namespace Flattiverse
         /// <returns>A queue of events.</returns>
         public async Task<Queue<FlattiverseEvent>> GatherEvents()
         {
-            if (!connectionCycleCompleted)
+            if (!online)
                 return new Queue<FlattiverseEvent>();
 
             Queue<FlattiverseEvent> foundEvents;
@@ -363,9 +385,19 @@ namespace Flattiverse
             return foundEvents;
         }
 
+        /// <summary>
+        /// Your player instance.
+        /// </summary>
+        public Player Player => player;
+
+        /// <summary>
+        /// Specifies if this server is still connected with us.
+        /// </summary>
+        public bool Online => online;
+
         private void disconnected()
         {
-            throw new NotImplementedException();
+            online = false;
         }
 
         /// <summary>

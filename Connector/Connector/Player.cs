@@ -11,7 +11,7 @@ namespace Flattiverse
     public class Player : UniversalEnumerable
     {
         /// <summary>
-        /// The symphony server over which you have received this player infos.
+        /// The server over which you have received this player infos.
         /// </summary>
         public readonly Server Server;
 
