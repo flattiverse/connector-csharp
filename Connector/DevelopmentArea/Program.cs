@@ -23,7 +23,7 @@ namespace DevelopmentArea
 
                 foreach (Universe universe in server.Universes)
                 {
-                    Console.WriteLine($" * {universe.Name} @{universe.ID} Type={universe.Mode}");
+                    Console.WriteLine($" * {universe.Name} @{universe.ID} Type={universe.Mode} Status={universe.Status}");
 
                     foreach (Team team in universe.Teams)
                     {
