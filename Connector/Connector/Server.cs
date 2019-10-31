@@ -213,7 +213,7 @@ namespace Flattiverse
                                 requestPlayer.UpdatePlayerAssignment(packet);
 
                                 if (requestPlayer.Universe == player.Universe)
-                                    EnqueueMetaEvent(new PlayerJoinnedEvent(requestPlayer));
+                                    EnqueueMetaEvent(new PlayerJoinedEvent(requestPlayer));
                             }
                         }
                         break;
