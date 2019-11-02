@@ -1,5 +1,6 @@
 ﻿using Flattiverse.Utils;
 using System;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,6 +51,8 @@ namespace Flattiverse
         /// The galaxies in this universe.
         /// </summary>
         public readonly UniversalHolder<Galaxy> Galaxies;
+
+        private List<UniverseSystem> systems;
 
         internal Universe(Server server, Packet packet)
         {
@@ -217,5 +220,27 @@ namespace Flattiverse
         /// The maximum amount of ships per team of this universe.
         /// </summary>
         public int MaxShipsPerTeam => maxShipsPerTeam;
+
+        /// <summary>
+        /// The system configuration in the universe.
+        /// </summary>
+        public ReadOnlyCollection<UniverseSystem> Systems => new ReadOnlyCollection<UniverseSystem>(systems);
+
+        internal void updateSystems(Packet packet)
+        {
+            List<UniverseSystem> systems = new List<UniverseSystem>();
+
+            BinaryMemoryReader reader = packet.Read();
+
+            while (reader.Size > 0)
+            {
+                UniverseSystem universeSystem = new UniverseSystem(ref reader);
+
+                if (universeSystem.InUse)
+                    systems.Add(universeSystem);
+            }
+
+            this.systems = systems;
+        }
     }
 }

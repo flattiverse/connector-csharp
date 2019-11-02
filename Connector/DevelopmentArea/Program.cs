@@ -40,6 +40,9 @@ namespace DevelopmentArea
 
                     foreach (Galaxy galaxy in universe.Galaxies)
                         Console.WriteLine($"   * (Galaxy) {galaxy.Name}");
+
+                    foreach (UniverseSystem system in universe.Systems)
+                        Console.WriteLine($"   * (Component) {system}");
                 }
 
                 Console.WriteLine("\nPlayers online:");

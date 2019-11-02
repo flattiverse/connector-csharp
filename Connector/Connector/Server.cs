@@ -14,19 +14,19 @@ namespace Flattiverse
     {
         internal Connection connection;
 
-        internal Universe[] universes;
+        internal Universe?[] universes;
 
-        private Player[] players;
+        private Player?[] players;
 
         /// <summary>
         /// All the universes available.
         /// </summary>
-        public readonly UniversalHolder<Universe> Universes;
+        public readonly UniversalHolder<Universe?> Universes;
 
         /// <summary>
         /// All the players registered to flattiverse.
         /// </summary>
-        public readonly UniversalHolder<Player> Players;
+        public readonly UniversalHolder<Player?> Players;
 
         private TaskCompletionSource<object> waiter;
 
@@ -86,11 +86,11 @@ namespace Flattiverse
         {
             universes = new Universe[16];
 
-            Universes = new UniversalHolder<Universe>(universes);
+            Universes = new UniversalHolder<Universe?>(universes);
 
             players = new Player[65536];
 
-            Players = new UniversalHolder<Player>(players);
+            Players = new UniversalHolder<Player?>(players);
 
             syncEvents = new object();
             events = new Queue<(FlattiverseEventHandler, FlattiverseEvent)>();
@@ -266,6 +266,12 @@ namespace Flattiverse
                             universes[packet.BaseAddress].galaxies[packet.SubAddress] = new Galaxy(universes[packet.BaseAddress], packet);
                         else
                             universes[packet.BaseAddress].galaxies[packet.SubAddress].updateFromPacket(packet);
+                        break;
+                    case 0x13: // Universe\Systems Metainfo Updated
+                        if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
+                            break;
+
+                        universes[packet.BaseAddress].updateSystems(packet);
                         break;
                 }
             }

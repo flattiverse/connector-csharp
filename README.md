@@ -14,6 +14,6 @@ The Server runs on `galaxy.flattiverse.com` port `80`. You need to use one of th
 * `Player2`
 * `Player3`
 
-Join command works for universe `Haraldmania` but not for the universe `For The Noobs`. (Just so you can test the server replys.)
+Join command works for universe `Haraldmania` but not for the universe `For The Noobs`. (Just so you can test the server replys.) Currently `Universe`s, `Team`s, `Galaxy`(ie)s and `UniverseSystem`s are transferred to the connector.
 
 *Please see the most updated information about the server [here](https://documentation.flattiverse.com/display/FLAT/Connector+development). If the development of this connector progresses we will also update the server on `galaxy.flattiverse.com:80`.*
