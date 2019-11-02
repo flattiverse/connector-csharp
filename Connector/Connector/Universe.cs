@@ -33,9 +33,9 @@ namespace Flattiverse
         private byte maxShipsPerPlayer;
         private ushort maxShipsPerTeam;
 
-        internal Team[] teams;
+        internal Team?[] teams;
 
-        internal Galaxy[] galaxies;
+        internal Galaxy?[] galaxies;
 
         /// <summary>
         /// The server where this universe is hosted.
@@ -45,12 +45,12 @@ namespace Flattiverse
         /// <summary>
         /// The teams residing in this universe.
         /// </summary>
-        public readonly UniversalHolder<Team> Teams;
+        public readonly UniversalHolder<Team?> Teams;
 
         /// <summary>
         /// The galaxies in this universe.
         /// </summary>
-        public readonly UniversalHolder<Galaxy> Galaxies;
+        public readonly UniversalHolder<Galaxy?> Galaxies;
 
         private List<UniverseSystem> systems;
 
@@ -60,20 +60,38 @@ namespace Flattiverse
             ID = packet.BaseAddress;
 
             teams = new Team[16];
-            Teams = new UniversalHolder<Team>(teams);
+            Teams = new UniversalHolder<Team?>(teams);
 
             galaxies = new Galaxy[32];
-            Galaxies = new UniversalHolder<Galaxy>(galaxies);
+            Galaxies = new UniversalHolder<Galaxy?>(galaxies);
 
-            updateFromPacket(packet);
+            systems = new List<UniverseSystem>();
+
+            BinaryMemoryReader reader = packet.Read();
+
+            name = reader.ReadStringNonNull();
+            description = reader.ReadStringNonNull();
+
+            difficulty = (Difficulty)reader.ReadByte();
+            mode = (UniverseMode)reader.ReadByte();
+
+            ownerID = reader.ReadUInt32();
+
+            maxPlayers = reader.ReadUInt16();
+            maxPlayersPerTeam = reader.ReadUInt16();
+            maxShipsPerPlayer = reader.ReadByte();
+            maxShipsPerTeam = reader.ReadUInt16();
+
+            status = (UniverseStatus)reader.ReadByte();
+            defaultPrivileges = (Privileges)reader.ReadByte();
         }
 
         internal void updateFromPacket(Packet packet)
         {
             BinaryMemoryReader reader = packet.Read();
 
-            name = reader.ReadString();
-            description = reader.ReadString();
+            name = reader.ReadStringNonNull();
+            description = reader.ReadStringNonNull();
 
             difficulty = (Difficulty)reader.ReadByte();
             mode = (UniverseMode)reader.ReadByte();
@@ -96,7 +114,7 @@ namespace Flattiverse
         /// <exception cref="Flattiverse.JoinRefusedException">Thrown, when the universe is full, or you don't have access because of another reason.</exception>
         public async Task Join()
         {
-            using (Session session = Server.connection.NewSession())
+            using (Session session = Server.connection!.NewSession())
             {
                 Packet packet = session.Request;
 
@@ -125,7 +143,7 @@ namespace Flattiverse
 
             bool teamAvailable = false;
 
-            foreach (Team t in teams)
+            foreach (Team? t in teams)
                 if (t == team)
                 {
                     teamAvailable = true;
@@ -135,7 +153,7 @@ namespace Flattiverse
             if (!teamAvailable)
                 throw new ArgumentException("The given team must be part of the universe you want to join.", "team");
 
-            using (Session session = Server.connection.NewSession())
+            using (Session session = Server.connection!.NewSession())
             {
                 Packet packet = session.Request;
 
@@ -156,7 +174,7 @@ namespace Flattiverse
         /// <exception cref="System.InvalidOperationException">Thrown, you are not in the universe or when you still have active controllables.</exception>
         public async Task Part()
         {
-            using (Session session = Server.connection.NewSession())
+            using (Session session = Server.connection!.NewSession())
             {
                 Packet packet = session.Request;
 

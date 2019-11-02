@@ -34,7 +34,7 @@ namespace Flattiverse
 
             BinaryMemoryReader reader = packet.Read();
 
-            name = reader.ReadString();
+            name = reader.ReadStringNonNull();
             online = reader.ReadBoolean();
             ping = reader.ReadSingle();
         }

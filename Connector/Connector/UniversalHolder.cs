@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Flattiverse
@@ -7,8 +8,8 @@ namespace Flattiverse
     /// <summary>
     /// A universal holder.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class UniversalHolder<T> : IEnumerable<T> where T : UniversalEnumerable
+    /// <typeparam name="T">The type to hold.</typeparam>
+    public class UniversalHolder<T> : IEnumerable<T> where T : class?, UniversalEnumerable?
     {
         private T[] values;
 
@@ -58,6 +59,7 @@ namespace Flattiverse
         /// <returns>The element specified by the index.</returns>
         public T this[string name]
         {
+            [return: MaybeNull]
             get
             {
                 foreach (T value in values)
@@ -70,18 +72,31 @@ namespace Flattiverse
             }
         }
 
+        private IEnumerator<T> enumerate()
+        {
+            T value;
+
+            for (int position = 0; position < values.Length; position++)
+            {
+                value = values[position];
+
+                if (value != null)
+                    yield return value;
+            }
+        }
+
         /// <summary>
         /// Returns the enumerator of the holder.
         /// </summary>
         /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return new UniversalEnumerator<T>(values);
+            return enumerate();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return new UniversalEnumerator<T>(values);
+            return enumerate();
         }
 
         internal void updateDatabasis(T[] values)

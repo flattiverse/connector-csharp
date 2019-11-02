@@ -20,7 +20,7 @@ namespace Flattiverse
         /// </summary>
         public readonly byte ID;
 
-        private string name;
+        private string? name;
 
         private float r;
         private float g;
@@ -48,7 +48,7 @@ namespace Flattiverse
         /// <summary>
         /// The name of the team.
         /// </summary>
-        public string Name => name;
+        public string Name => name!;
 
         /// <summary>
         /// The red color component from 0f to 1f.

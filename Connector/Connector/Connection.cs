@@ -12,31 +12,31 @@ namespace Flattiverse
 {
     class Connection
     {
-        private Socket socket;
-        private SocketAsyncEventArgs eventArgs;
+        private Socket? socket;
+        private SocketAsyncEventArgs? eventArgs;
 
-        private byte[] recvBuffer;
+        private byte[] recvBuffer = new byte[262144];
         private int recvBufferPosition;
 
-        private byte[] recvPlain;
+        private byte[] recvPlain = new byte[262144];
         private int recvPlainPosition;
 
-        private byte[] sendBuffer;
+        private byte[] sendBuffer = new byte[262144];
         private int sendBufferPosition;
 
-        private ICryptoTransform sendAES;
-        private ICryptoTransform recvAES;
+        private ICryptoTransform? sendAES;
+        private ICryptoTransform? recvAES;
 
         public delegate void DisconnectedHandler();
-        public event DisconnectedHandler Disconnected;
+        public event DisconnectedHandler? Disconnected;
 
         public delegate void ReceivedHandler(List<Packet> packets);
-        public event ReceivedHandler Received;
+        public event ReceivedHandler? Received;
 
-        private object sync;
+        private object sync = new object();
         private bool closed;
 
-        private IndexList<Session> sessions;
+        private IndexList<Session> sessions = new IndexList<Session>(256);
 
         public async Task Connect(string user, string password)
         {
@@ -173,18 +173,10 @@ namespace Flattiverse
                     throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 1. Please update your connector.");
                 }
 
-                recvBuffer = new byte[262144];
-                recvPlain = new byte[262144];
-                sendBuffer = new byte[262144];
-
                 eventArgs = new SocketAsyncEventArgs();
 
                 eventArgs.Completed += received;
                 eventArgs.SetBuffer(recvBuffer, 0, 262144);
-
-                sync = new object();
-
-                sessions = new IndexList<Session>(256);
 
                 if (!socket.ReceiveAsync(eventArgs))
                     ThreadPool.QueueUserWorkItem(delegate { received(socket, eventArgs); });
@@ -328,16 +320,10 @@ namespace Flattiverse
                     throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 1. Please update your connector.");
                 }
 
-                recvBuffer = new byte[262144];
-                recvPlain = new byte[262144];
-                sendBuffer = new byte[262144];
-
                 eventArgs = new SocketAsyncEventArgs();
 
                 eventArgs.Completed += received;
                 eventArgs.SetBuffer(recvBuffer, 0, 262144);
-
-                sync = new object();
 
                 if (!socket.ReceiveAsync(eventArgs))
                     ThreadPool.QueueUserWorkItem(delegate { received(socket, eventArgs); });
@@ -392,7 +378,7 @@ namespace Flattiverse
                         if (recvPlainPosition + useableData > 262144)
                             useableData = (262144 - recvPlainPosition) - ((262144 - recvPlainPosition) % 16);
 
-                        recvAES.TransformBlock(recvBuffer, 0, useableData, recvPlain, recvPlainPosition);
+                        recvAES!.TransformBlock(recvBuffer, 0, useableData, recvPlain, recvPlainPosition);
 
                         recvPlainPosition += useableData;
 
@@ -459,7 +445,7 @@ namespace Flattiverse
         public void Close()
         {
             if (!closed)
-                socket.Close();
+                socket?.Close();
         }
 
         public void Flush()
@@ -473,11 +459,11 @@ namespace Flattiverse
 
                 if (sendBufferPosition % 16 == 0)
                 {
-                    if (socket.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                    if (socket!.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
                     {
                         closed = true;
 
-                        socket.Close();
+                        socket!.Close();
 
                         return;
                     }
@@ -490,9 +476,9 @@ namespace Flattiverse
 
                     p.write(sendBuffer, ref sendBufferPosition);
 
-                    sendAES.TransformBlock(sendBuffer, sendBufferPosition - 16, 16, sendBuffer, sendBufferPosition - 16);
+                    sendAES!.TransformBlock(sendBuffer, sendBufferPosition - 16, 16, sendBuffer, sendBufferPosition - 16);
 
-                    if (socket.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                    if (socket!.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
                     {
                         closed = true;
 
@@ -523,11 +509,11 @@ namespace Flattiverse
 
                         SocketError socketError;
 
-                        if (socket.Send(sendBuffer, 0, currentBlock, SocketFlags.None, out socketError) != currentBlock || socketError != SocketError.Success)
+                        if (socket!.Send(sendBuffer, 0, currentBlock, SocketFlags.None, out socketError) != currentBlock || socketError != SocketError.Success)
                         {
                             closed = true;
 
-                            socket.Close();
+                            socket!.Close();
 
                             return;
                         }
@@ -548,7 +534,7 @@ namespace Flattiverse
                     int newBlock = sendBufferPosition - (sendBufferPosition % 16);
 
                     if (currentBlock != newBlock)
-                        sendAES.TransformBlock(sendBuffer, currentBlock, newBlock - currentBlock, sendBuffer, currentBlock);
+                        sendAES!.TransformBlock(sendBuffer, currentBlock, newBlock - currentBlock, sendBuffer, currentBlock);
                 }
             }
         }

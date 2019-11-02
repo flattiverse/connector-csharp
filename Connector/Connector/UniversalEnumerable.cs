@@ -5,7 +5,7 @@ using System.Text;
 namespace Flattiverse
 {
     /// <summary>
-    /// An enumerable universal.
+    /// An universal enumerable.
     /// </summary>
     public interface UniversalEnumerable
     {

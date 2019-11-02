@@ -12,7 +12,7 @@ namespace Flattiverse
     /// </summary>
     public class Server : IDisposable
     {
-        internal Connection connection;
+        internal Connection? connection;
 
         internal Universe?[] universes;
 
@@ -28,7 +28,7 @@ namespace Flattiverse
         /// </summary>
         public readonly UniversalHolder<Player?> Players;
 
-        private TaskCompletionSource<object> waiter;
+        private TaskCompletionSource<object?>? waiter;
 
         /// <summary>
         /// Specifies the function signature of an flattiverse event event handler.
@@ -44,7 +44,7 @@ namespace Flattiverse
         /// Meta events also gives you the heartbeat of the universe (when internal ticks have been
         /// finished.)
         /// </summary>
-        public event FlattiverseEventHandler MetaEvent;
+        public event FlattiverseEventHandler? MetaEvent;
 
         /// <summary>
         /// This eventhandler will be called whenever a status event occurs.
@@ -52,7 +52,7 @@ namespace Flattiverse
         /// Status updates are updates which inform you about a status change of one of your units.
         /// This includes hull, shield, energy or configuration changes.
         /// </summary>
-        public event FlattiverseEventHandler StatusEvent;
+        public event FlattiverseEventHandler? StatusEvent;
 
         /// <summary>
         /// This eventhandler will be called whenever a scan event occurs.
@@ -60,7 +60,7 @@ namespace Flattiverse
         /// Scan events are updates to scanned units: Units appreaing in your event horizon, units
         /// which change something within your eventhorizon or units which leave your eventhorizon.
         /// </summary>
-        public event FlattiverseEventHandler ScanEvent;
+        public event FlattiverseEventHandler? ScanEvent;
 
         /// <summary>
         /// This eventhandler will be called whenever a chat event occurs.
@@ -68,7 +68,7 @@ namespace Flattiverse
         /// Chat events contain chat messages from other players sent to you or the universe group
         /// you are in or the team you are in. This also includes map pings or binary messages.
         /// </summary>
-        public event FlattiverseEventHandler ChatEvent;
+        public event FlattiverseEventHandler? ChatEvent;
 
         private object syncEvents;
         private bool eventInExecution;
@@ -77,7 +77,7 @@ namespace Flattiverse
 
         private bool online;
 
-        private Player player;
+        private Player? player;
 
         /// <summary>
         /// Creates a new instance of a server connection without connecting (use login for this).
@@ -119,7 +119,7 @@ namespace Flattiverse
             connection.Disconnected += disconnected;
             connection.Received += received;
 
-            waiter = new TaskCompletionSource<object>();
+            waiter = new TaskCompletionSource<object?>();
 
             await connection.Connect(username, password);
 
@@ -154,7 +154,7 @@ namespace Flattiverse
             connection.Disconnected += disconnected;
             connection.Received += received;
 
-            waiter = new TaskCompletionSource<object>();
+            waiter = new TaskCompletionSource<object?>();
 
             await connection.Connect(username, hash);
 
@@ -169,7 +169,7 @@ namespace Flattiverse
             {
                 if (packet.SessionUsed)
                 {
-                    connection.ProcessSessionPacket(packet);
+                    connection?.ProcessSessionPacket(packet);
                     continue;
                 }
 
@@ -190,11 +190,11 @@ namespace Flattiverse
                         }
                         break;
                     case 0x0D: // Player Ping Update
-                        players[packet.BaseAddress].UpdatePing(packet);
+                        players[packet.BaseAddress]?.UpdatePing(packet);
                         break;
                     case 0x0E: // Player Assignment
                         {
-                            Player requestPlayer = players[packet.BaseAddress];
+                            Player? requestPlayer = players[packet.BaseAddress];
 
                             Debug.Assert(requestPlayer != null, "Player doesn't exist in local database.");
 
@@ -203,7 +203,7 @@ namespace Flattiverse
 
                             if (packet.Read().Size == 0)
                             {
-                                if (requestPlayer.Universe == player.Universe)
+                                if (requestPlayer.Universe == player!.Universe)
                                     EnqueueMetaEvent(new PlayerPartedEvent(requestPlayer));
 
                                 requestPlayer.UpdatePlayerAssignment(packet);
@@ -212,7 +212,7 @@ namespace Flattiverse
                             {
                                 requestPlayer.UpdatePlayerAssignment(packet);
 
-                                if (requestPlayer.Universe == player.Universe)
+                                if (requestPlayer.Universe == player!.Universe)
                                     EnqueueMetaEvent(new PlayerJoinedEvent(requestPlayer));
                             }
                         }
@@ -243,35 +243,35 @@ namespace Flattiverse
                         else if (universes[packet.BaseAddress] == null)
                             universes[packet.BaseAddress] = new Universe(this, packet);
                         else
-                            universes[packet.BaseAddress].updateFromPacket(packet);
+                            universes[packet.BaseAddress]!.updateFromPacket(packet);
                         break;
                     case 0x11: // Universe\Team Metainfo Updated
                         if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
                             break;
 
                         if (packet.Read().Size == 0)
-                            universes[packet.BaseAddress].teams[packet.SubAddress] = null;
-                        else if (universes[packet.BaseAddress].teams[packet.SubAddress] == null)
-                            universes[packet.BaseAddress].teams[packet.SubAddress] = new Team(universes[packet.BaseAddress], packet);
+                            universes[packet.BaseAddress]!.teams[packet.SubAddress] = null;
+                        else if (universes[packet.BaseAddress]!.teams[packet.SubAddress] == null)
+                            universes[packet.BaseAddress]!.teams[packet.SubAddress] = new Team(universes[packet.BaseAddress]!, packet);
                         else
-                            universes[packet.BaseAddress].teams[packet.SubAddress].updateFromPacket(packet);
+                            universes[packet.BaseAddress]!.teams[packet.SubAddress]?.updateFromPacket(packet);
                         break;
                     case 0x12: // Universe\Galaxy Metainfo Updated
                         if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
                             break;
 
                         if (packet.Read().Size == 0)
-                            universes[packet.BaseAddress].galaxies[packet.SubAddress] = null;
-                        else if (universes[packet.BaseAddress].galaxies[packet.SubAddress] == null)
-                            universes[packet.BaseAddress].galaxies[packet.SubAddress] = new Galaxy(universes[packet.BaseAddress], packet);
+                            universes[packet.BaseAddress]!.galaxies[packet.SubAddress] = null;
+                        else if (universes[packet.BaseAddress]!.galaxies[packet.SubAddress] == null)
+                            universes[packet.BaseAddress]!.galaxies[packet.SubAddress] = new Galaxy(universes[packet.BaseAddress]!, packet);
                         else
-                            universes[packet.BaseAddress].galaxies[packet.SubAddress].updateFromPacket(packet);
+                            universes[packet.BaseAddress]!.galaxies[packet.SubAddress]?.updateFromPacket(packet);
                         break;
                     case 0x13: // Universe\Systems Metainfo Updated
                         if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
                             break;
 
-                        universes[packet.BaseAddress].updateSystems(packet);
+                        universes[packet.BaseAddress]!.updateSystems(packet);
                         break;
                 }
             }
@@ -279,7 +279,7 @@ namespace Flattiverse
 
         internal void EnqueueMetaEvent(FlattiverseEvent @event)
         {
-            FlattiverseEventHandler handler;
+            FlattiverseEventHandler? handler;
 
             switch (@event.Kind)
             {
@@ -368,7 +368,7 @@ namespace Flattiverse
                     return foundEvents;
                 }
                 else
-                    waiter = new TaskCompletionSource<object>();
+                    waiter = new TaskCompletionSource<object?>();
 
             await waiter.Task;
 
@@ -394,7 +394,7 @@ namespace Flattiverse
         /// <summary>
         /// Your player instance.
         /// </summary>
-        public Player Player => player;
+        public Player? Player => player;
 
         /// <summary>
         /// Specifies if this server is still connected with us.
@@ -411,7 +411,7 @@ namespace Flattiverse
         /// </summary>
         public void Dispose()
         {
-            connection.Close();
+            connection?.Close();
         }
     }
 }
