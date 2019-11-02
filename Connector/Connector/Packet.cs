@@ -21,6 +21,8 @@ namespace Flattiverse
         // 0b0000 0001: Helper
 
         public byte Command;
+
+        public bool SessionUsed;
         public byte Session;
 
         public uint ID;            // Identifikation (z.B. Offline-Account)
@@ -121,7 +123,10 @@ namespace Flattiverse
 
             // Session
             if ((header & 0b0100_0000) == 0b0100_0000)
+            {
+                SessionUsed = true;
                 Session = reader.ReadByte();
+            }
             // else
             //     Session = 0;
 
@@ -187,7 +192,7 @@ namespace Flattiverse
                     packetLength++;
                 }
 
-                if (Session > 0)
+                if (SessionUsed)
                 {
                     header |= 0b0100_0000;
                     packetLength++;
@@ -267,7 +272,7 @@ namespace Flattiverse
                     if (Command > 0)
                         *pData++ = Command;
 
-                    if (Session > 0)
+                    if (SessionUsed)
                         *pData++ = Session;
 
                     if (BaseAddress > 0)

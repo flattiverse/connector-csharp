@@ -167,7 +167,7 @@ namespace Flattiverse
         {
             foreach (Packet packet in packets)
             {
-                if (packet.Session != 0)
+                if (packet.SessionUsed)
                 {
                     connection.ProcessSessionPacket(packet);
                     continue;

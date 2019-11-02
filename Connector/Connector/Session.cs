@@ -29,7 +29,7 @@ namespace Flattiverse
 
         public int ID => id;
 
-        public Packet Request => new Packet() { Session = id };
+        public Packet Request => new Packet() { Session = id, SessionUsed = true };
 
         internal void Answer(Packet packet)
         {

@@ -11,10 +11,10 @@ namespace Flattiverse
     /// <typeparam name="T">The type the list shall contain.</typeparam>
     class IndexList<T> : IEnumerable<T> where T : class
     {
-        private int max = 1;
+        private int max = 0;
         private int air = 0;
 
-        private T[] values;
+        private T?[] values;
 
         private object sync = new object();
 
@@ -31,7 +31,7 @@ namespace Flattiverse
             lock (sync)
             {
                 if (air != 0)
-                    for (int position = 1; position < max; position++)
+                    for (int position = 0; position < max; position++)
                         if (values[position] == null)
                         {
                             values[position] = value;
@@ -48,7 +48,7 @@ namespace Flattiverse
             }
         }
 
-        public T this[int index] => values[index];
+        public T? this[int index] => values[index];
 
         public void Wipe(int index)
         {
@@ -65,13 +65,19 @@ namespace Flattiverse
 
         public int Air => air;
 
-        public int Count => max - air - 1;
+        public int Count => max - air;
 
         private IEnumerator<T> enumerate()
         {
-            for (int position = 1; position < max; position++)
-                if (values[position] != null)
-                    yield return values[position];
+            T? value;
+
+            for (int position = 0; position < max; position++)
+            {
+                value = values[position];
+
+                if (value != null)
+                    yield return value;
+            }
         }
 
         public IEnumerator<T> GetEnumerator()
