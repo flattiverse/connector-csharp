@@ -11,6 +11,43 @@ namespace DevelopmentArea
     {
         static async Task Main(string[] args)
         {
+            //for (int p = 0; p < 4; p++)
+            //{
+            //    int sp = p;
+
+            //    ThreadPool.QueueUserWorkItem(async delegate
+            //    {
+            //        while (true)
+            //            try
+            //            {
+            //                using (Server server = new Server())
+            //                {
+            //                    await server.Login("Player" + sp.ToString(), "Password");
+
+            //                    for (int i = 0; i < 8; i++)
+            //                    {
+            //                        Console.Write(sp.ToString());
+
+            //                        await server.Universes["Haraldmania"].Join(server.Universes["Haraldmania"].Teams["Dark Blue"]);
+            //                        await server.Universes["Haraldmania"].Part();
+            //                    }
+
+            //                    Console.Write("L");
+
+            //                    await server.Universes["Haraldmania"].Join(server.Universes["Haraldmania"].Teams["Dark Blue"]);
+            //                }
+            //            }
+            //            catch
+            //            {
+            //                Console.Write("D");
+            //            }
+            //});
+            //}
+
+            //Console.ReadKey(false);
+
+            //return;
+
             using (Server server = new Server())
             {
 #if DEBUG

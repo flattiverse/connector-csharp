@@ -37,6 +37,8 @@ namespace Flattiverse
                     return "Access denied. (Your join configuration doesn't match the tournament configuration.)";
                 case 0x07:
                     return "Universe not ready. (E.g. offline.)";
+                case 0x08:
+                    return "Your connection is in the wrong status. (Already joinning, while parting?)";
                 default:
                     return "Denied, but I don't know why. :(";
             }

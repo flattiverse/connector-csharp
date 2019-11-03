@@ -154,13 +154,13 @@ namespace Flattiverse
             connection.Disconnected += disconnected;
             connection.Received += received;
 
-            waiter = new TaskCompletionSource<object?>();
+            TaskCompletionSource<object?> lWaiter = new TaskCompletionSource<object?>();
+
+            waiter = lWaiter;
 
             await connection.Connect(username, hash);
 
-            await waiter.Task;
-
-            waiter = null;
+            await lWaiter.Task;
         }
 
         private void received(List<Packet> packets)
@@ -196,13 +196,15 @@ namespace Flattiverse
                         {
                             Player? requestPlayer = players[packet.BaseAddress];
 
-                            Debug.Assert(requestPlayer != null, "Player doesn't exist in local database.");
+                            // Debug.Assert(requestPlayer != null, "Player doesn't exist in local database.");
 
                             if (requestPlayer == null)
                                 break;
 
                             if (packet.Read().Size == 0)
                             {
+                                // TODO: Wenn wir selbst betroffen sind: Alle Controllables zerstören.
+
                                 if (requestPlayer.Universe == player!.Universe)
                                     EnqueueMetaEvent(new PlayerPartedEvent(requestPlayer));
 
@@ -218,14 +220,20 @@ namespace Flattiverse
                         }
                         break;
                     case 0x0F: // Login Completed or Denied
-                        if (packet.Helper == 0x00)
                         {
-                            player = players[packet.BaseAddress];
+                            TaskCompletionSource<object?>? lWaiter = waiter;
 
-                            ThreadPool.QueueUserWorkItem(delegate { waiter?.SetResult(null); });
+                            waiter = null;
+
+                            if (packet.Helper == 0x00)
+                            {
+                                player = players[packet.BaseAddress];
+
+                                ThreadPool.QueueUserWorkItem(delegate { lWaiter?.SetResult(null); });
+                            }
+                            else
+                                ThreadPool.QueueUserWorkItem(delegate { lWaiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper)); });
                         }
-                        else
-                            ThreadPool.QueueUserWorkItem(delegate { waiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper)); });
                         break;
                     case 0x10: // Universe Metainfo Updated
                         if (packet.BaseAddress > universes.Length)
@@ -305,8 +313,16 @@ namespace Flattiverse
                 pollingEvents.Enqueue(@event);
 
                 lock (syncEvents)
-                    if (waiter != null)
-                        ThreadPool.QueueUserWorkItem(delegate { waiter.SetResult(null); });
+                {
+                    TaskCompletionSource<object?>? tWaiter = waiter;
+
+                    if (tWaiter != null)
+                    {
+                        waiter = null;
+
+                        ThreadPool.QueueUserWorkItem(delegate { tWaiter.SetResult(null); });
+                    }
+                }
 
                 return;
             }
@@ -360,6 +376,8 @@ namespace Flattiverse
 
             Queue<FlattiverseEvent> foundEvents;
 
+            TaskCompletionSource<object?> lWaiter = null;
+
             lock (syncEvents)
                 if (pollingEvents.Count > 0)
                 {
@@ -368,11 +386,14 @@ namespace Flattiverse
                     return foundEvents;
                 }
                 else
-                    waiter = new TaskCompletionSource<object?>();
+                {
+                    lWaiter = new TaskCompletionSource<object?>();
 
-            await waiter.Task;
+                    waiter = lWaiter;
+                }
 
-            waiter = null;
+            if (lWaiter != null)
+                await lWaiter.Task;
 
             foundEvents = pollingEvents;
             pollingEvents = new Queue<FlattiverseEvent>();

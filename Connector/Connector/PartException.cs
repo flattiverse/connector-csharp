@@ -27,6 +27,8 @@ namespace Flattiverse
                     return "You are on no universe.";
                 case 0x02:
                     return "You are on another universe.";
+                case 0x03:
+                    return "Your connection is in the wrong state. (Is this a second, parallel call to Part?)";
                 default:
                     return "Denied, but I don't know why. :(";
             }
