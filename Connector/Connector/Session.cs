@@ -31,6 +31,11 @@ namespace Flattiverse
 
         public Packet Request => new Packet() { Session = id, SessionUsed = true };
 
+        internal void Disconnected()
+        {
+            ThreadPool.QueueUserWorkItem(delegate { tcs.SetException(new FlattiverseDisconnectedException()); });
+        }
+
         internal void Answer(Packet packet)
         {
             if (packet.Command == 0xFF)
@@ -44,6 +49,9 @@ namespace Flattiverse
                         break;
                     case 0x11:
                         exception = new PartException(packet.SubAddress);
+                        break;
+                    case 0x20:
+                        exception = new UniverseDoesntExistException();
                         break;
                     case 0xFF:
                         BinaryMemoryReader reader = packet.Read();

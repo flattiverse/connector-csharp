@@ -7,7 +7,7 @@ namespace Flattiverse
     /// <summary>
     /// Specifies the reason why your connection request has been refused.
     /// </summary>
-    enum RefuseReason
+    public enum RefuseReason
     {
         /// <summary>
         /// You have not been refused and the connection has been successfully established.

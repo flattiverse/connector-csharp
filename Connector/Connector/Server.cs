@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flattiverse.Utils;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -58,7 +59,7 @@ namespace Flattiverse
         /// This eventhandler will be called whenever a scan event occurs.
         /// 
         /// Scan events are updates to scanned units: Units appreaing in your event horizon, units
-        /// which change something within your eventhorizon or units which leave your eventhorizon.
+        /// which change something within your event horizon or units which leave your event horizon.
         /// </summary>
         public event FlattiverseEventHandler? ScanEvent;
 
@@ -105,6 +106,12 @@ namespace Flattiverse
         /// <returns>Nothing. (Just a task fpr async/await-pattern.)</returns>
         public async Task Login(string username, string password)
         {
+            if (connection != null && online)
+                throw new AlreadyConnectedException();
+            
+            if (connection != null)
+                throw new InstanceWasBurnedException("This server instance was used once and has then been disconnected. Create a new instance.");
+
             if (username == null)
                 throw new ArgumentNullException("username", "username can't be null.");
 
@@ -119,7 +126,9 @@ namespace Flattiverse
             connection.Disconnected += disconnected;
             connection.Received += received;
 
-            waiter = new TaskCompletionSource<object?>();
+            TaskCompletionSource<object?> lWaiter = new TaskCompletionSource<object?>();
+
+            waiter = lWaiter;
 
             await connection.Connect(username, password);
 
@@ -137,6 +146,12 @@ namespace Flattiverse
         /// <returns>Nothing. (Just a task fpr async/await-pattern.)</returns>
         public async Task Login(string username, byte[] hash)
         {
+            if (connection != null && online)
+                throw new AlreadyConnectedException();
+
+            if (connection != null)
+                throw new InstanceWasBurnedException("This server instance was used once and has then been disconnected. Create a new instance.");
+
             if (username == null)
                 throw new ArgumentNullException("username", "username can't be null.");
 
@@ -161,6 +176,9 @@ namespace Flattiverse
             await connection.Connect(username, hash);
 
             await lWaiter.Task;
+
+            waiter = null;
+            online = true;
         }
 
         private void received(List<Packet> packets)
@@ -205,7 +223,7 @@ namespace Flattiverse
                             {
                                 // TODO: Wenn wir selbst betroffen sind: Alle Controllables zerstören.
 
-                                if (requestPlayer.Universe == player!.Universe)
+                                if (player != null && requestPlayer.Universe == player.Universe)
                                     EnqueueMetaEvent(new PlayerPartedEvent(requestPlayer));
 
                                 requestPlayer.UpdatePlayerAssignment(packet);
@@ -214,7 +232,7 @@ namespace Flattiverse
                             {
                                 requestPlayer.UpdatePlayerAssignment(packet);
 
-                                if (requestPlayer.Universe == player!.Universe)
+                                if (player != null && requestPlayer.Universe == player.Universe)
                                     EnqueueMetaEvent(new PlayerJoinedEvent(requestPlayer));
                             }
                         }
@@ -364,6 +382,64 @@ namespace Flattiverse
             }
         }
 
+        internal async Task<Account?> QueryAccount(uint id)
+        {
+            using (Session session = connection!.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x40;
+
+                // TODO: Autoselection.
+                packet.ID = id;
+
+                connection.Send(packet);
+                connection.Flush();
+
+                packet = await session.Wait();
+
+                BinaryMemoryReader reader = packet.Read();
+
+                if (reader.Size == 0)
+                    return null;
+
+                return new Account(packet);
+            }
+        }
+
+        /// <summary>
+        /// Querys the account with the given name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public async Task<Account> QueryAccount(string name)
+        {
+            if (!Account.CheckName(name))
+                throw new ArgumentException("The given name doesn't match the name criteria.", "name");
+
+            using (Session session = connection!.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x40;
+
+                ManagedBinaryMemoryWriter writer = packet.Write();
+                writer.Write(name);
+
+                connection.Send(packet);
+                connection.Flush();
+
+                packet = await session.Wait();
+
+                BinaryMemoryReader reader = packet.Read();
+
+                if (reader.Size == 0)
+                    throw new AccountDoesntExistException(name);
+
+                return new Account(packet);
+            }
+        }
+
         /// <summary>
         /// Gathers events. It waits blockingly for new events if there are no events.
         /// </summary>
@@ -376,7 +452,7 @@ namespace Flattiverse
 
             Queue<FlattiverseEvent> foundEvents;
 
-            TaskCompletionSource<object?> lWaiter = null;
+            TaskCompletionSource<object?>? lWaiter = null;
 
             lock (syncEvents)
                 if (pollingEvents.Count > 0)
@@ -398,6 +474,49 @@ namespace Flattiverse
             foundEvents = pollingEvents;
             pollingEvents = new Queue<FlattiverseEvent>();
             return foundEvents;
+        }
+
+        /// <summary>
+        /// Queries all accounts registered on flattiverse matching the given pattern. However, this will only return the first 256 matches.
+        /// </summary>
+        /// <param name="name">The name of the account to query. This supports wildcards like the % or ? sign. Use null or "%" here, if you wanna search for all accounts.</param>
+        /// <param name="onlyConfirmed">Use true here, if you only wanna get accounts which have been confirmed (opped in). false will also return admin, banned and accounts in optin-status.</param>
+        /// <returns>An async foreachable enumerator.</returns>
+        public async IAsyncEnumerable<Account> QueryAccounts(string? name, bool onlyConfirmed)
+        {
+            List<uint> ids = new List<uint>();
+
+            using (Session session = connection!.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x41;
+
+                ManagedBinaryMemoryWriter writer = packet.Write();
+
+                writer.Write(name);
+                writer.Write(onlyConfirmed);
+
+                connection.Send(packet);
+                connection.Flush();
+
+                packet = await session.Wait();
+
+                BinaryMemoryReader reader = packet.Read();
+
+                while (reader.Size > 0)
+                    ids.Add(reader.ReadUInt32());
+            }
+
+            Account? account;
+
+            foreach (uint id in ids)
+            {
+                account = await QueryAccount(id);
+
+                if (account != null)
+                    yield return account;
+            }
         }
 
         /// <summary>

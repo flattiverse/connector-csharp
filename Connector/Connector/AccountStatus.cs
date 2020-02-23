@@ -28,6 +28,10 @@ namespace Flattiverse
         /// <summary>
         /// The player is an admin.
         /// </summary>
-        Admin
+        Admin,
+        /// <summary>
+        /// The account has been deleted.
+        /// </summary>
+        Vanished
     }
 }

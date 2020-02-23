@@ -92,7 +92,10 @@ namespace Flattiverse
                     break;
                 case 0b01: // 1 weiteres Byte Längen-Information.
                     if (reader.Size <= 0)
+                    {
+                        reader = start;
                         return false;
+                    }
 
                     length = reader.ReadByte() + 1;
 
@@ -100,7 +103,10 @@ namespace Flattiverse
                     break;
                 case 0b10: // 2 weitere Bytes Längen-Information.
                     if (reader.Size <= 1)
+                    {
+                        reader = start;
                         return false;
+                    }
 
                     length = reader.ReadUInt16() + 1;
 
@@ -154,10 +160,7 @@ namespace Flattiverse
             // else
             //     Helper = 0;
 
-            if (length == 0)
-                this.reader = reader.Cut(0);
-            else
-                this.reader = reader.Cut(length);
+            this.reader = reader.Cut(length);
 
             return true;
         }
@@ -305,7 +308,7 @@ namespace Flattiverse
 
         public override string ToString()
         {
-            return $"CMD=0x{Command.ToString("X02")} SESSION=0x{Session.ToString("X02")} PLL={(writer == null ? reader.Size : writer.Size)} Bytes.";
+            return $"CMD=0x{Command.ToString("X02")} {(SessionUsed ? $"SESSION=0x{Session.ToString("X02")}" : "[NO SESSION]")} ADDR=0x{BaseAddress.ToString("X04")}:0x{SubAddress.ToString("X02")} HELPER=0x{Helper.ToString("X02")} PLL={(writer == null ? reader.Size : writer.Size)} Bytes.";
         }
     }
 }

@@ -11,43 +11,6 @@ namespace DevelopmentArea
     {
         static async Task Main(string[] args)
         {
-            //for (int p = 0; p < 4; p++)
-            //{
-            //    int sp = p;
-
-            //    ThreadPool.QueueUserWorkItem(async delegate
-            //    {
-            //        while (true)
-            //            try
-            //            {
-            //                using (Server server = new Server())
-            //                {
-            //                    await server.Login("Player" + sp.ToString(), "Password");
-
-            //                    for (int i = 0; i < 8; i++)
-            //                    {
-            //                        Console.Write(sp.ToString());
-
-            //                        await server.Universes["Haraldmania"].Join(server.Universes["Haraldmania"].Teams["Dark Blue"]);
-            //                        await server.Universes["Haraldmania"].Part();
-            //                    }
-
-            //                    Console.Write("L");
-
-            //                    await server.Universes["Haraldmania"].Join(server.Universes["Haraldmania"].Teams["Dark Blue"]);
-            //                }
-            //            }
-            //            catch
-            //            {
-            //                Console.Write("D");
-            //            }
-            //});
-            //}
-
-            //Console.ReadKey(false);
-
-            //return;
-
             using (Server server = new Server())
             {
 #if DEBUG
@@ -60,7 +23,7 @@ namespace DevelopmentArea
 
                 foreach (Universe universe in server.Universes)
                 {
-                    Console.WriteLine($" * {universe.Name} @{universe.ID} Type={universe.Mode} Status={universe.Status}");
+                    Console.WriteLine($" * {universe.Name} @{universe.ID} Type={universe.Mode} Status={universe.Status} BasePriv={universe.DefaultPrivileges}");
 
                     foreach (Team team in universe.Teams)
                     {
@@ -80,7 +43,31 @@ namespace DevelopmentArea
 
                     foreach (UniverseSystem system in universe.Systems)
                         Console.WriteLine($"   * (Component) {system}");
+
+                    await foreach (KeyValuePair<Account?, Privileges> privs in universe.QueryPrivileges())
+                        Console.WriteLine($"   * (Privilege) {privs.Key.Name}: {privs.Value.ToString()}");
                 }
+
+                Console.WriteLine("\nQuery of 3 Players:");
+
+                Console.WriteLine($" * " + (await server.QueryAccount("Player1").ConfigureAwait(false)).Name);
+                Console.WriteLine($" * " + (await server.QueryAccount("Player2").ConfigureAwait(false)).Name);
+
+                try
+                {
+                    Account acc = await server.QueryAccount("asdf");
+
+                    Thread.Sleep(1);
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine($" * Query \"asdf\": {exception.Message}");
+                }
+
+                Console.WriteLine("\nQuery of all Players:");
+
+                await foreach (Account acc in server.QueryAccounts(null, false))
+                    Console.WriteLine($" * {acc.Name}");
 
                 Console.WriteLine("\nPlayers online:");
 
@@ -89,7 +76,7 @@ namespace DevelopmentArea
 
                 server.MetaEvent += metaEvent;
 
-                await server.Universes["Haraldmania"].Join(server.Universes["Haraldmania"].Teams["Dark Blue"]);
+                await server.Universes["Development"].Join(server.Universes["Development"].Teams["Dark Blue"]);
 
                 Console.WriteLine("\nKey?");
 
@@ -100,7 +87,7 @@ namespace DevelopmentArea
                 foreach (Player player in server.Players)
                     Console.WriteLine($" * {player.Name} with a ping of {player.Ping}.");
 
-                await server.Universes["Haraldmania"].Part();
+                await server.Universes["Development"].Part();
 
                 Console.WriteLine("Done.");
             }
@@ -108,7 +95,7 @@ namespace DevelopmentArea
 
         private static void metaEvent(FlattiverseEvent @event)
         {
-            Console.WriteLine($" * {@event}");
+            Console.WriteLine($" * [META-EVENT] {@event}");
         }
     }
 }

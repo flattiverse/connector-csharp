@@ -4,9 +4,12 @@ using System.Text;
 
 namespace Flattiverse
 {
-    class ClientRefusedException : InvalidOperationException
+    /// <summary>
+    /// Thrown, when your connection attempt has been denied.
+    /// </summary>
+    public class ClientRefusedException : InvalidOperationException
     {
-        public ClientRefusedException(RefuseReason reason) : base (refuseReason(reason))
+        internal ClientRefusedException(RefuseReason reason) : base (refuseReason(reason))
         {
         }
 

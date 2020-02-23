@@ -12,8 +12,8 @@ namespace Flattiverse
 {
     class Connection
     {
-        private Socket? socket;
-        private SocketAsyncEventArgs? eventArgs;
+        private Socket socket;
+        private SocketAsyncEventArgs eventArgs;
 
         private byte[] recvBuffer = new byte[262144];
         private int recvBufferPosition;
@@ -89,8 +89,8 @@ namespace Flattiverse
                 socket.ReceiveTimeout = 60000;
                 socket.Blocking = false;
 
-                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 80, null);
-                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 80, null);
+                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 80, null);
+                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 80, null);
 
                 int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend);
 
@@ -236,8 +236,8 @@ namespace Flattiverse
                 socket.ReceiveTimeout = 60000;
                 socket.Blocking = false;
 
-                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 80, null);
-                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 80, null);
+                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 80, null);
+                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 80, null);
 
                 int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend);
 
@@ -332,6 +332,9 @@ namespace Flattiverse
 
         internal Session NewSession()
         {
+            if (closed)
+                throw new FlattiverseNotConnectedException();
+
             Session session = new Session(this);
 
             session.Setup((byte)sessions.Insert(session));
@@ -353,21 +356,25 @@ namespace Flattiverse
                 do
                 {
                     if (eventArgs.SocketError != SocketError.Success || eventArgs.BytesTransferred == 0)
-                    {
-                        closed = true;
-
-                        try
+                        lock (sync)
                         {
-                            Disconnected?.Invoke();
+                            closed = true;
+
+                            try
+                            {
+                                Disconnected?.Invoke();
+                            }
+                            catch { }
+
+                            eventArgs.Dispose();
+
+                            socket.Close();
+
+                            foreach (Session session in sessions)
+                                session.Disconnected();
+
+                            return;
                         }
-                        catch { }
-
-                        eventArgs.Dispose();
-
-                        socket.Close();
-
-                        return;
-                    }
 
                     recvBufferPosition += eventArgs.BytesTransferred;
 
@@ -399,12 +406,12 @@ namespace Flattiverse
                             BinaryMemoryReader reader = new BinaryMemoryReader(bRecvPlain, recvPlainPosition);
 
                             while (packet.Parse(ref reader))
+                            {
                                 if (packet.OutOfBand == 0)
-                                {
                                     packets.Add(packet);
 
-                                    packet = new Packet();
-                                }
+                                packet = new Packet();
+                            }
 
                             if (Received != null && packets.Count > 0)
                                 Received(packets);
@@ -425,27 +432,32 @@ namespace Flattiverse
             }
             catch
             {
-                if (!closed)
-                {
-                    closed = true;
-
-                    try
+                lock (sync)
+                    if (!closed)
                     {
-                        Disconnected?.Invoke();
+                        closed = true;
+
+                        try
+                        {
+                            Disconnected?.Invoke();
+                        }
+                        catch { }
+
+                        eventArgs.Dispose();
+
+                        socket.Close();
+
+                        foreach (Session session in sessions)
+                            session.Disconnected();
                     }
-                    catch { }
-
-                    eventArgs.Dispose();
-
-                    socket.Close();
-                }
             }
         }
 
         public void Close()
         {
-            if (!closed)
-                socket?.Close();
+            lock (sync)
+                if (!closed)
+                    socket.Close();
         }
 
         public void Flush()
@@ -459,13 +471,14 @@ namespace Flattiverse
 
                 if (sendBufferPosition % 16 == 0)
                 {
-                    if (socket!.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                    try
                     {
-                        closed = true;
-
-                        socket!.Close();
-
-                        return;
+                        if (socket.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                            socket.Close();
+                    }
+                    catch
+                    {
+                        socket.Close();
                     }
 
                     sendBufferPosition = 0;
@@ -478,13 +491,14 @@ namespace Flattiverse
 
                     sendAES!.TransformBlock(sendBuffer, sendBufferPosition - 16, 16, sendBuffer, sendBufferPosition - 16);
 
-                    if (socket!.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                    try
                     {
-                        closed = true;
-
+                        if (socket!.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                            socket.Close();
+                    }
+                    catch
+                    {
                         socket.Close();
-
-                        return;
                     }
 
                     sendBufferPosition = 0;
@@ -509,10 +523,17 @@ namespace Flattiverse
 
                         SocketError socketError;
 
-                        if (socket!.Send(sendBuffer, 0, currentBlock, SocketFlags.None, out socketError) != currentBlock || socketError != SocketError.Success)
+                        try
                         {
-                            closed = true;
+                            if (socket!.Send(sendBuffer, 0, currentBlock, SocketFlags.None, out socketError) != currentBlock || socketError != SocketError.Success)
+                            {
+                                socket!.Close();
 
+                                return;
+                            }
+                        }
+                        catch
+                        {
                             socket!.Close();
 
                             return;

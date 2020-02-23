@@ -108,6 +108,36 @@ namespace Flattiverse
         }
 
         /// <summary>
+        /// Queries all privileges assigned to this universe.
+        /// </summary>
+        /// <returns>An async foreachable enumerator returning KeyValuePairs of Account? and Privileges. When the corresponding Account is null.</returns>
+        public async IAsyncEnumerable<KeyValuePair<Account?, Privileges>> QueryPrivileges()
+        {
+            List<KeyValuePair<uint, Privileges>> ids = new List<KeyValuePair<uint, Privileges>>();
+
+            using (Session session = Server.connection!.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x44;
+                packet.BaseAddress = ID;
+
+                Server.connection.Send(packet);
+                Server.connection.Flush();
+
+                packet = await session.Wait();
+
+                BinaryMemoryReader reader = packet.Read();
+
+                while (reader.Size > 0)
+                    ids.Add(new KeyValuePair<uint, Privileges>(reader.ReadUInt32(), (Privileges)reader.ReadByte()));
+            }
+
+            foreach (KeyValuePair<uint, Privileges> kvp in ids)
+                yield return new KeyValuePair<Account?, Privileges>(await Server.QueryAccount(kvp.Key), kvp.Value);
+        }
+
+        /// <summary>
         /// Joins the universe and selects the team where fewer players are in. If a tournament is
         /// active it will join you the team of the tournament you are on or deny the access.
         /// </summary>

@@ -14,7 +14,7 @@ namespace Flattiverse
         /// </summary>
         Nothing = 0,
         /// <summary>
-        /// Can join and use the universe.
+        /// Can join and use the universe as a player. If you want to create a pure administrator don't select this but other roles.
         /// </summary>
         Join = 1,
         /// <summary>
@@ -26,9 +26,9 @@ namespace Flattiverse
         /// </summary>
         ManageRegions = 4,
         /// <summary>
-        /// Can manage maps. You also need this privilege to make inter map wormholes.
+        /// Can manage systems. You also need this privilege to make inter system wormholes when editing units.
         /// </summary>
-        ManageMaps = 8,
+        ManageSystems = 8,
         /// <summary>
         /// Can manage the universe itself. e.g. change name, decription, game type, etc.
         /// </summary>
