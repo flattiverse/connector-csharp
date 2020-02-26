@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>FlattiverseConnector</AssemblyName>
     <RootNamespace>Flattiverse</RootNamespace>
     <AssemblyVersion>0.99.0.0</AssemblyVersion>
@@ -19,8 +19,9 @@
     <DocumentationFile>bin\FlattiverseConnector.xml</DocumentationFile>
   </PropertyGroup>
 
+  <!-- It's a shame! Sadly we can't use .NET Core 3.X because we FUCKING DON'T HAVE A WINDOWS FORMS DESIGNER. THANKS, MICROSOFT!
   <PropertyGroup>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
+  </PropertyGroup> -->
 
 </Project>

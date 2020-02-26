@@ -14,7 +14,7 @@ namespace Flattiverse
         private int max = 0;
         private int air = 0;
 
-        private T?[] values;
+        private T[] values;
 
         private object sync = new object();
 
@@ -48,7 +48,7 @@ namespace Flattiverse
             }
         }
 
-        public T? this[int index] => values[index];
+        public T this[int index] => values[index];
 
         public void Wipe(int index)
         {
@@ -69,7 +69,7 @@ namespace Flattiverse
 
         private IEnumerator<T> enumerate()
         {
-            T? value;
+            T value;
 
             for (int position = 0; position < max; position++)
             {

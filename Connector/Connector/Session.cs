@@ -44,6 +44,18 @@ namespace Flattiverse
 
                 switch (packet.Helper)
                 {
+                    case 0x01:
+                        exception = new UniverseServerUnhandledException();
+                        break;
+                    case 0x05:
+                        exception = new PermissionDeniedException(packet.SubAddress);
+                        break;
+                    case 0x06:
+                        exception = new IllegalNameException();
+                        break;
+                    case 0x07:
+                        exception = new UnitDoesntExistException();
+                        break;
                     case 0x10:
                         exception = new JoinRefusedException(packet.SubAddress);
                         break;
@@ -52,6 +64,21 @@ namespace Flattiverse
                         break;
                     case 0x20:
                         exception = new UniverseDoesntExistException();
+                        break;
+                    case 0x21:
+                        exception = new UniverseOfflineException();
+                        break;
+                    case 0x22:
+                        exception = new UniverseGoneWhileExecutingRequestException();
+                        break;
+                    case 0x24:
+                        exception = new GalaxyDoesntExistException();
+                        break;
+                    case 0x60:
+                        exception = new NonEditableUnitException();
+                        break;
+                    case 0x61:
+                        exception = new AmbiguousXmlDataException();
                         break;
                     case 0xFF:
                         BinaryMemoryReader reader = packet.Read();

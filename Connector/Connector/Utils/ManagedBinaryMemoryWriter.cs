@@ -35,7 +35,7 @@ namespace Flattiverse.Utils
         /// </summary>
         /// <param name="text">The string to write.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(string? text)
+        public void Write(string text)
         {
             currentSegment.Write(text);
         }

@@ -9,7 +9,7 @@ namespace Flattiverse.Utils
     class ManagedBinaryMemoryWriterSegment
     {
         public readonly ManagedBinaryMemoryWriter writer;
-        public ManagedBinaryMemoryWriterSegment? Next;
+        public ManagedBinaryMemoryWriterSegment Next;
 
         private readonly byte[] data;
         private int position;
@@ -29,7 +29,7 @@ namespace Flattiverse.Utils
         /// Writes a string in UTF-8 encoding with 7 bit encoded length prefix.
         /// </summary>
         /// <param name="text">The string to write.</param>
-        public unsafe void Write(string? text)
+        public unsafe void Write(string text)
         {
             if (text == null)
             {

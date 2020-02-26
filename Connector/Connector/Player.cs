@@ -22,8 +22,8 @@ namespace Flattiverse
 
         private uint account;
 
-        private Universe? universe;
-        private Team? team;
+        private Universe universe;
+        private Team team;
 
         internal Player(Server server, Packet packet)
         {
@@ -57,12 +57,12 @@ namespace Flattiverse
         /// <summary>
         /// The universe the player did join. null, if the player isn't in an universe.
         /// </summary>
-        public Universe? Universe => universe;
+        public Universe Universe => universe;
 
         /// <summary>
         /// The team the player is on. null, if the player isn't in an universe.
         /// </summary>
-        public Team? Team => team;
+        public Team Team => team;
 
         internal void UpdatePing(Packet packet)
         {

@@ -41,7 +41,7 @@ namespace Flattiverse.Utils
         /// </summary>
         /// <returns>The string.</returns>
         /// <remarks>Returns null if the string is empty.</remarks>
-        public string? ReadString()
+        public string ReadString()
         {
             int length;
             string result;
@@ -180,7 +180,7 @@ namespace Flattiverse.Utils
         /// </summary>
         /// <returns>The string.</returns>
         /// <remarks>Returns null if the string is empty.</remarks>
-        public string? ReadVanillaString(int bytes)
+        public string ReadVanillaString(int bytes)
         {
             if (bytes <= 0)
                 return null;
@@ -536,7 +536,7 @@ namespace Flattiverse.Utils
         /// </summary>
         /// <returns>The string.</returns>
         /// <remarks>Returns null if the string is empty.</remarks>
-        public string? PeekString()
+        public string PeekString()
         {
             int length;
 
@@ -629,7 +629,7 @@ namespace Flattiverse.Utils
         /// </summary>
         /// <returns>The string.</returns>
         /// <remarks>Returns null if the string is empty.</remarks>
-        public string? PeekVanillaString(int bytes)
+        public string PeekVanillaString(int bytes)
         {
             if (bytes <= 0)
                 return null;

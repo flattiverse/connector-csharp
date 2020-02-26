@@ -13,23 +13,23 @@ namespace Flattiverse
     /// </summary>
     public class Server : IDisposable
     {
-        internal Connection? connection;
+        internal Connection connection;
 
-        internal Universe?[] universes;
+        internal Universe[] universes;
 
-        private Player?[] players;
+        private Player[] players;
 
         /// <summary>
         /// All the universes available.
         /// </summary>
-        public readonly UniversalHolder<Universe?> Universes;
+        public readonly UniversalHolder<Universe> Universes;
 
         /// <summary>
         /// All the players registered to flattiverse.
         /// </summary>
-        public readonly UniversalHolder<Player?> Players;
+        public readonly UniversalHolder<Player> Players;
 
-        private TaskCompletionSource<object?>? waiter;
+        private TaskCompletionSource<object> waiter;
 
         /// <summary>
         /// Specifies the function signature of an flattiverse event event handler.
@@ -45,7 +45,7 @@ namespace Flattiverse
         /// Meta events also gives you the heartbeat of the universe (when internal ticks have been
         /// finished.)
         /// </summary>
-        public event FlattiverseEventHandler? MetaEvent;
+        public event FlattiverseEventHandler MetaEvent;
 
         /// <summary>
         /// This eventhandler will be called whenever a status event occurs.
@@ -53,7 +53,7 @@ namespace Flattiverse
         /// Status updates are updates which inform you about a status change of one of your units.
         /// This includes hull, shield, energy or configuration changes.
         /// </summary>
-        public event FlattiverseEventHandler? StatusEvent;
+        public event FlattiverseEventHandler StatusEvent;
 
         /// <summary>
         /// This eventhandler will be called whenever a scan event occurs.
@@ -61,7 +61,7 @@ namespace Flattiverse
         /// Scan events are updates to scanned units: Units appreaing in your event horizon, units
         /// which change something within your event horizon or units which leave your event horizon.
         /// </summary>
-        public event FlattiverseEventHandler? ScanEvent;
+        public event FlattiverseEventHandler ScanEvent;
 
         /// <summary>
         /// This eventhandler will be called whenever a chat event occurs.
@@ -69,7 +69,7 @@ namespace Flattiverse
         /// Chat events contain chat messages from other players sent to you or the universe group
         /// you are in or the team you are in. This also includes map pings or binary messages.
         /// </summary>
-        public event FlattiverseEventHandler? ChatEvent;
+        public event FlattiverseEventHandler ChatEvent;
 
         private object syncEvents;
         private bool eventInExecution;
@@ -78,7 +78,7 @@ namespace Flattiverse
 
         private bool online;
 
-        private Player? player;
+        private Player player;
 
         /// <summary>
         /// Creates a new instance of a server connection without connecting (use login for this).
@@ -87,11 +87,11 @@ namespace Flattiverse
         {
             universes = new Universe[16];
 
-            Universes = new UniversalHolder<Universe?>(universes);
+            Universes = new UniversalHolder<Universe>(universes);
 
             players = new Player[65536];
 
-            Players = new UniversalHolder<Player?>(players);
+            Players = new UniversalHolder<Player>(players);
 
             syncEvents = new object();
             events = new Queue<(FlattiverseEventHandler, FlattiverseEvent)>();
@@ -126,7 +126,7 @@ namespace Flattiverse
             connection.Disconnected += disconnected;
             connection.Received += received;
 
-            TaskCompletionSource<object?> lWaiter = new TaskCompletionSource<object?>();
+            TaskCompletionSource<object> lWaiter = new TaskCompletionSource<object>();
 
             waiter = lWaiter;
 
@@ -169,7 +169,7 @@ namespace Flattiverse
             connection.Disconnected += disconnected;
             connection.Received += received;
 
-            TaskCompletionSource<object?> lWaiter = new TaskCompletionSource<object?>();
+            TaskCompletionSource<object> lWaiter = new TaskCompletionSource<object>();
 
             waiter = lWaiter;
 
@@ -212,7 +212,7 @@ namespace Flattiverse
                         break;
                     case 0x0E: // Player Assignment
                         {
-                            Player? requestPlayer = players[packet.BaseAddress];
+                            Player requestPlayer = players[packet.BaseAddress];
 
                             // Debug.Assert(requestPlayer != null, "Player doesn't exist in local database.");
 
@@ -239,7 +239,7 @@ namespace Flattiverse
                         break;
                     case 0x0F: // Login Completed or Denied
                         {
-                            TaskCompletionSource<object?>? lWaiter = waiter;
+                            TaskCompletionSource<object> lWaiter = waiter;
 
                             waiter = null;
 
@@ -269,35 +269,35 @@ namespace Flattiverse
                         else if (universes[packet.BaseAddress] == null)
                             universes[packet.BaseAddress] = new Universe(this, packet);
                         else
-                            universes[packet.BaseAddress]!.updateFromPacket(packet);
+                            universes[packet.BaseAddress].updateFromPacket(packet);
                         break;
                     case 0x11: // Universe\Team Metainfo Updated
                         if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
                             break;
 
                         if (packet.Read().Size == 0)
-                            universes[packet.BaseAddress]!.teams[packet.SubAddress] = null;
-                        else if (universes[packet.BaseAddress]!.teams[packet.SubAddress] == null)
-                            universes[packet.BaseAddress]!.teams[packet.SubAddress] = new Team(universes[packet.BaseAddress]!, packet);
+                            universes[packet.BaseAddress].teams[packet.SubAddress] = null;
+                        else if (universes[packet.BaseAddress].teams[packet.SubAddress] == null)
+                            universes[packet.BaseAddress].teams[packet.SubAddress] = new Team(universes[packet.BaseAddress], packet);
                         else
-                            universes[packet.BaseAddress]!.teams[packet.SubAddress]?.updateFromPacket(packet);
+                            universes[packet.BaseAddress].teams[packet.SubAddress]?.updateFromPacket(packet);
                         break;
                     case 0x12: // Universe\Galaxy Metainfo Updated
                         if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
                             break;
 
                         if (packet.Read().Size == 0)
-                            universes[packet.BaseAddress]!.galaxies[packet.SubAddress] = null;
-                        else if (universes[packet.BaseAddress]!.galaxies[packet.SubAddress] == null)
-                            universes[packet.BaseAddress]!.galaxies[packet.SubAddress] = new Galaxy(universes[packet.BaseAddress]!, packet);
+                            universes[packet.BaseAddress].galaxies[packet.SubAddress] = null;
+                        else if (universes[packet.BaseAddress].galaxies[packet.SubAddress] == null)
+                            universes[packet.BaseAddress].galaxies[packet.SubAddress] = new Galaxy(universes[packet.BaseAddress], packet);
                         else
-                            universes[packet.BaseAddress]!.galaxies[packet.SubAddress]?.updateFromPacket(packet);
+                            universes[packet.BaseAddress].galaxies[packet.SubAddress]?.updateFromPacket(packet);
                         break;
                     case 0x13: // Universe\Systems Metainfo Updated
                         if (packet.BaseAddress > universes.Length || universes[packet.BaseAddress] == null)
                             break;
 
-                        universes[packet.BaseAddress]!.updateSystems(packet);
+                        universes[packet.BaseAddress].updateSystems(packet);
                         break;
                 }
             }
@@ -305,7 +305,7 @@ namespace Flattiverse
 
         internal void EnqueueMetaEvent(FlattiverseEvent @event)
         {
-            FlattiverseEventHandler? handler;
+            FlattiverseEventHandler handler;
 
             switch (@event.Kind)
             {
@@ -332,7 +332,7 @@ namespace Flattiverse
 
                 lock (syncEvents)
                 {
-                    TaskCompletionSource<object?>? tWaiter = waiter;
+                    TaskCompletionSource<object> tWaiter = waiter;
 
                     if (tWaiter != null)
                     {
@@ -382,9 +382,9 @@ namespace Flattiverse
             }
         }
 
-        internal async Task<Account?> QueryAccount(uint id)
+        internal async Task<Account> QueryAccount(uint id)
         {
-            using (Session session = connection!.NewSession())
+            using (Session session = connection.NewSession())
             {
                 Packet packet = session.Request;
 
@@ -417,7 +417,7 @@ namespace Flattiverse
             if (!Account.CheckName(name))
                 throw new ArgumentException("The given name doesn't match the name criteria.", "name");
 
-            using (Session session = connection!.NewSession())
+            using (Session session = connection.NewSession())
             {
                 Packet packet = session.Request;
 
@@ -452,7 +452,7 @@ namespace Flattiverse
 
             Queue<FlattiverseEvent> foundEvents;
 
-            TaskCompletionSource<object?>? lWaiter = null;
+            TaskCompletionSource<object> lWaiter = null;
 
             lock (syncEvents)
                 if (pollingEvents.Count > 0)
@@ -463,7 +463,7 @@ namespace Flattiverse
                 }
                 else
                 {
-                    lWaiter = new TaskCompletionSource<object?>();
+                    lWaiter = new TaskCompletionSource<object>();
 
                     waiter = lWaiter;
                 }
@@ -482,40 +482,55 @@ namespace Flattiverse
         /// <param name="name">The name of the account to query. This supports wildcards like the % or ? sign. Use null or "%" here, if you wanna search for all accounts.</param>
         /// <param name="onlyConfirmed">Use true here, if you only wanna get accounts which have been confirmed (opped in). false will also return admin, banned and accounts in optin-status.</param>
         /// <returns>An async foreachable enumerator.</returns>
-        public async IAsyncEnumerable<Account> QueryAccounts(string? name, bool onlyConfirmed)
+        public IEnumerable<Account> QueryAccounts(string name, bool onlyConfirmed)
         {
             List<uint> ids = new List<uint>();
 
-            using (Session session = connection!.NewSession())
+            using (AutoResetEvent are = new AutoResetEvent(false))
             {
-                Packet packet = session.Request;
+                using (Session session = connection.NewSession())
+                {
+                    Packet packet = session.Request;
 
-                packet.Command = 0x41;
+                    packet.Command = 0x41;
 
-                ManagedBinaryMemoryWriter writer = packet.Write();
+                    ManagedBinaryMemoryWriter writer = packet.Write();
 
-                writer.Write(name);
-                writer.Write(onlyConfirmed);
+                    writer.Write(name);
+                    writer.Write(onlyConfirmed);
 
-                connection.Send(packet);
-                connection.Flush();
+                    connection.Send(packet);
+                    connection.Flush();
 
-                packet = await session.Wait();
+                    ThreadPool.QueueUserWorkItem(async delegate {
+                        // I hate you for forcing me to do this, microsoft. Really.
+                        packet = await session.Wait().ConfigureAwait(false);
+                        are.Set();
+                    });
 
-                BinaryMemoryReader reader = packet.Read();
+                    are.WaitOne();
 
-                while (reader.Size > 0)
-                    ids.Add(reader.ReadUInt32());
-            }
+                    BinaryMemoryReader reader = packet.Read();
 
-            Account? account;
+                    while (reader.Size > 0)
+                        ids.Add(reader.ReadUInt32());
+                }
 
-            foreach (uint id in ids)
-            {
-                account = await QueryAccount(id);
+                Account account = null;
 
-                if (account != null)
-                    yield return account;
+                foreach (uint id in ids)
+                {
+                    ThreadPool.QueueUserWorkItem(async delegate {
+                        // I hate you for forcing me to do this, microsoft. Really.
+                        account = await QueryAccount(id).ConfigureAwait(false);
+                        are.Set();
+                    });
+
+                    are.WaitOne();
+
+                    if (account != null)
+                        yield return account;
+                }
             }
         }
 
@@ -534,7 +549,7 @@ namespace Flattiverse
         /// <summary>
         /// Your player instance.
         /// </summary>
-        public Player? Player => player;
+        public Player Player => player;
 
         /// <summary>
         /// Specifies if this server is still connected with us.

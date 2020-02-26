@@ -24,14 +24,14 @@ namespace Flattiverse
         private byte[] sendBuffer = new byte[262144];
         private int sendBufferPosition;
 
-        private ICryptoTransform? sendAES;
-        private ICryptoTransform? recvAES;
+        private ICryptoTransform sendAES;
+        private ICryptoTransform recvAES;
 
         public delegate void DisconnectedHandler();
-        public event DisconnectedHandler? Disconnected;
+        public event DisconnectedHandler Disconnected;
 
         public delegate void ReceivedHandler(List<Packet> packets);
-        public event ReceivedHandler? Received;
+        public event ReceivedHandler Received;
 
         private object sync = new object();
         private bool closed;
@@ -385,7 +385,7 @@ namespace Flattiverse
                         if (recvPlainPosition + useableData > 262144)
                             useableData = (262144 - recvPlainPosition) - ((262144 - recvPlainPosition) % 16);
 
-                        recvAES!.TransformBlock(recvBuffer, 0, useableData, recvPlain, recvPlainPosition);
+                        recvAES.TransformBlock(recvBuffer, 0, useableData, recvPlain, recvPlainPosition);
 
                         recvPlainPosition += useableData;
 
@@ -489,11 +489,11 @@ namespace Flattiverse
 
                     p.write(sendBuffer, ref sendBufferPosition);
 
-                    sendAES!.TransformBlock(sendBuffer, sendBufferPosition - 16, 16, sendBuffer, sendBufferPosition - 16);
+                    sendAES.TransformBlock(sendBuffer, sendBufferPosition - 16, 16, sendBuffer, sendBufferPosition - 16);
 
                     try
                     {
-                        if (socket!.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
+                        if (socket.Send(sendBuffer, 0, sendBufferPosition, SocketFlags.None, out socketError) != sendBufferPosition || socketError != SocketError.Success)
                             socket.Close();
                     }
                     catch
@@ -525,16 +525,16 @@ namespace Flattiverse
 
                         try
                         {
-                            if (socket!.Send(sendBuffer, 0, currentBlock, SocketFlags.None, out socketError) != currentBlock || socketError != SocketError.Success)
+                            if (socket.Send(sendBuffer, 0, currentBlock, SocketFlags.None, out socketError) != currentBlock || socketError != SocketError.Success)
                             {
-                                socket!.Close();
+                                socket.Close();
 
                                 return;
                             }
                         }
                         catch
                         {
-                            socket!.Close();
+                            socket.Close();
 
                             return;
                         }
@@ -555,7 +555,7 @@ namespace Flattiverse
                     int newBlock = sendBufferPosition - (sendBufferPosition % 16);
 
                     if (currentBlock != newBlock)
-                        sendAES!.TransformBlock(sendBuffer, currentBlock, newBlock - currentBlock, sendBuffer, currentBlock);
+                        sendAES.TransformBlock(sendBuffer, currentBlock, newBlock - currentBlock, sendBuffer, currentBlock);
                 }
             }
         }

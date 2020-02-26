@@ -9,7 +9,7 @@ namespace Flattiverse
     /// A universal holder.
     /// </summary>
     /// <typeparam name="T">The type to hold.</typeparam>
-    public class UniversalHolder<T> : IEnumerable<T> where T : class?, UniversalEnumerable?
+    public class UniversalHolder<T> : IEnumerable<T> where T : class, UniversalEnumerable
     {
         private T[] values;
 
@@ -59,7 +59,7 @@ namespace Flattiverse
         /// <returns>The element specified by the index.</returns>
         public T this[string name]
         {
-            [return: MaybeNull]
+            //[return: MaybeNull]
             get
             {
                 foreach (T value in values)

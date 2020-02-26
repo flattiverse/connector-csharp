@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Flattiverse
 {
@@ -33,9 +34,9 @@ namespace Flattiverse
         private byte maxShipsPerPlayer;
         private ushort maxShipsPerTeam;
 
-        internal Team?[] teams;
+        internal Team[] teams;
 
-        internal Galaxy?[] galaxies;
+        internal Galaxy[] galaxies;
 
         /// <summary>
         /// The server where this universe is hosted.
@@ -45,12 +46,12 @@ namespace Flattiverse
         /// <summary>
         /// The teams residing in this universe.
         /// </summary>
-        public readonly UniversalHolder<Team?> Teams;
+        public readonly UniversalHolder<Team> Teams;
 
         /// <summary>
         /// The galaxies in this universe.
         /// </summary>
-        public readonly UniversalHolder<Galaxy?> Galaxies;
+        public readonly UniversalHolder<Galaxy> Galaxies;
 
         private List<UniverseSystem> systems;
 
@@ -60,10 +61,10 @@ namespace Flattiverse
             ID = packet.BaseAddress;
 
             teams = new Team[16];
-            Teams = new UniversalHolder<Team?>(teams);
+            Teams = new UniversalHolder<Team>(teams);
 
             galaxies = new Galaxy[32];
-            Galaxies = new UniversalHolder<Galaxy?>(galaxies);
+            Galaxies = new UniversalHolder<Galaxy>(galaxies);
 
             systems = new List<UniverseSystem>();
 
@@ -111,30 +112,74 @@ namespace Flattiverse
         /// Queries all privileges assigned to this universe.
         /// </summary>
         /// <returns>An async foreachable enumerator returning KeyValuePairs of Account? and Privileges. When the corresponding Account is null.</returns>
-        public async IAsyncEnumerable<KeyValuePair<Account?, Privileges>> QueryPrivileges()
+        public IEnumerable<KeyValuePair<Account, Privileges>> QueryPrivileges()
         {
-            List<KeyValuePair<uint, Privileges>> ids = new List<KeyValuePair<uint, Privileges>>();
+            using (System.Threading.AutoResetEvent are = new System.Threading.AutoResetEvent(false))
+            {
+                List<KeyValuePair<uint, Privileges>> ids = new List<KeyValuePair<uint, Privileges>>();
 
-            using (Session session = Server.connection!.NewSession())
+                using (Session session = Server.connection.NewSession())
+                {
+                    Packet packet = session.Request;
+
+                    packet.Command = 0x44;
+                    packet.BaseAddress = ID;
+
+                    Server.connection.Send(packet);
+                    Server.connection.Flush();
+
+                    ThreadPool.QueueUserWorkItem(async delegate {
+                        // I hate you for forcing me to do this, microsoft. Really.
+                        packet = await session.Wait().ConfigureAwait(false);
+                        are.Set();
+                    });
+
+                    are.WaitOne();
+
+                    BinaryMemoryReader reader = packet.Read();
+
+                    while (reader.Size > 0)
+                        ids.Add(new KeyValuePair<uint, Privileges>(reader.ReadUInt32(), (Privileges)reader.ReadByte()));
+                }
+
+                Account account = null;
+
+                foreach (KeyValuePair<uint, Privileges> kvp in ids)
+                {
+                    ThreadPool.QueueUserWorkItem(async delegate {
+                        // I hate you for forcing me to do this, microsoft. Really.
+                        account = await Server.QueryAccount(kvp.Key).ConfigureAwait(false);
+                        are.Set();
+                    });
+
+                    are.WaitOne();
+
+                    yield return new KeyValuePair<Account, Privileges>(account, kvp.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Changes the privileges of an account of this universe. Use the same Privileges as this.DefaultPrivileges to remove the ACL (access control list) entry.
+        /// </summary>
+        /// <param name="account">The account to change the settings.</param>
+        /// <param name="privileges">The privileges to change the settings to.</param>
+        public async Task AlterPrivileges(Account account, Privileges privileges)
+        {
+            using (Session session = Server.connection.NewSession())
             {
                 Packet packet = session.Request;
 
-                packet.Command = 0x44;
+                packet.Command = 0x45;
                 packet.BaseAddress = ID;
+                packet.ID = account.ID;
+                packet.Helper = (byte)privileges;
 
                 Server.connection.Send(packet);
                 Server.connection.Flush();
 
-                packet = await session.Wait();
-
-                BinaryMemoryReader reader = packet.Read();
-
-                while (reader.Size > 0)
-                    ids.Add(new KeyValuePair<uint, Privileges>(reader.ReadUInt32(), (Privileges)reader.ReadByte()));
+                await session.Wait();
             }
-
-            foreach (KeyValuePair<uint, Privileges> kvp in ids)
-                yield return new KeyValuePair<Account?, Privileges>(await Server.QueryAccount(kvp.Key), kvp.Value);
         }
 
         /// <summary>
@@ -144,7 +189,7 @@ namespace Flattiverse
         /// <exception cref="Flattiverse.JoinRefusedException">Thrown, when the universe is full, or you don't have access because of another reason.</exception>
         public async Task Join()
         {
-            using (Session session = Server.connection!.NewSession())
+            using (Session session = Server.connection.NewSession())
             {
                 Packet packet = session.Request;
 
@@ -173,7 +218,7 @@ namespace Flattiverse
 
             bool teamAvailable = false;
 
-            foreach (Team? t in teams)
+            foreach (Team t in teams)
                 if (t == team)
                 {
                     teamAvailable = true;
@@ -183,7 +228,7 @@ namespace Flattiverse
             if (!teamAvailable)
                 throw new ArgumentException("The given team must be part of the universe you want to join.", "team");
 
-            using (Session session = Server.connection!.NewSession())
+            using (Session session = Server.connection.NewSession())
             {
                 Packet packet = session.Request;
 
@@ -204,7 +249,7 @@ namespace Flattiverse
         /// <exception cref="System.InvalidOperationException">Thrown, you are not in the universe or when you still have active controllables.</exception>
         public async Task Part()
         {
-            using (Session session = Server.connection!.NewSession())
+            using (Session session = Server.connection.NewSession())
             {
                 Packet packet = session.Request;
 

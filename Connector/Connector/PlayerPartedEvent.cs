@@ -21,8 +21,8 @@ namespace Flattiverse
 
         internal PlayerPartedEvent(Player player) : base(player)
         {
-            Universe = player.Universe!;
-            Team = player.Team!;
+            Universe = player.Universe;
+            Team = player.Team;
         }
 
         /// <summary>

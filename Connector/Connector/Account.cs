@@ -10,7 +10,7 @@ namespace Flattiverse
     /// </summary>
     public class Account
     {
-        private readonly uint ID;
+        internal readonly uint ID;
 
         /// <summary>
         /// The name of the account.
@@ -35,12 +35,12 @@ namespace Flattiverse
         /// <summary>
         /// The eMail of the account. This will be null, if you don't have administrative access.
         /// </summary>
-        public readonly string? EMail;
+        public readonly string EMail;
 
         /// <summary>
         /// The new eMail of the account which will be setup after this account reoppedin. This will be null, if you don't have administrative access or no reoptin is in progress.
         /// </summary>
-        public readonly string? NewEMail;
+        public readonly string NewEMail;
 
         internal Account(Packet packet)
         {
@@ -60,7 +60,7 @@ namespace Flattiverse
         /// </summary>
         /// <param name="name">The name to check.</param>
         /// <returns>true, if the name is valid. false otherwise.</returns>
-        public static bool CheckName(string? name)
+        public static bool CheckName(string name)
         {
             if (name == null || name.Length <= 2 || name.Length > 32)
                 return false;

@@ -44,7 +44,7 @@ namespace DevelopmentArea
                     foreach (UniverseSystem system in universe.Systems)
                         Console.WriteLine($"   * (Component) {system}");
 
-                    await foreach (KeyValuePair<Account?, Privileges> privs in universe.QueryPrivileges())
+                    foreach (KeyValuePair<Account?, Privileges> privs in universe.QueryPrivileges())
                         Console.WriteLine($"   * (Privilege) {privs.Key.Name}: {privs.Value.ToString()}");
                 }
 
@@ -56,8 +56,6 @@ namespace DevelopmentArea
                 try
                 {
                     Account acc = await server.QueryAccount("asdf");
-
-                    Thread.Sleep(1);
                 }
                 catch (Exception exception)
                 {
@@ -66,8 +64,145 @@ namespace DevelopmentArea
 
                 Console.WriteLine("\nQuery of all Players:");
 
-                await foreach (Account acc in server.QueryAccounts(null, false))
+                foreach (Account acc in server.QueryAccounts(null, false))
                     Console.WriteLine($" * {acc.Name}");
+
+                Console.Write("\nChanging Privileges on \"Beginners Course\": ");
+
+                try
+                {
+                    await server.Universes["Beginners Course"].AlterPrivileges(await server.QueryAccount("GhostTyper").ConfigureAwait(false), Privileges.Join | Privileges.ManageUniverse).ConfigureAwait(false);
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.Write("\nSetting Privileges on \"Development\": ");
+
+                try
+                {
+                    await server.Universes["Development"].AlterPrivileges(await server.QueryAccount("GhostTyper").ConfigureAwait(false), Privileges.Join | Privileges.ManageUniverse).ConfigureAwait(false);
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.Write("\nChanging Privileges on \"Development\": ");
+
+                try
+                {
+                    await server.Universes["Development"].AlterPrivileges(await server.QueryAccount("GhostTyper").ConfigureAwait(false), Privileges.Join | Privileges.ManageUniverse | Privileges.ManageRegions).ConfigureAwait(false);
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.Write("\nRemoving Privileges on \"Development\": ");
+
+                try
+                {
+                    await server.Universes["Development"].AlterPrivileges(await server.QueryAccount("GhostTyper").ConfigureAwait(false), server.Universes["Development"].DefaultPrivileges).ConfigureAwait(false);
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                // MAP EDITS
+
+                ConsoleColor color = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Map Edit Section. Press Key, whenever the code doesn't automatically continue. :)\n");
+                Console.ForegroundColor = color;
+
+                Console.Write("\nQuerying \"Zirp\" from \"Development\": ");
+
+                try
+                {
+                    Console.WriteLine(await server.Universes["Development"].Galaxies["Dev #0"].QueryUnitXml("Zirp"));
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.Write("\nQuerying \"UnknownUnit\" from \"Development\": ");
+
+                try
+                {
+                    Console.WriteLine(await server.Universes["Development"].Galaxies["Dev #0"].QueryUnitXml("UnknownUnit"));
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.Write("\nCreating \"UnknownUnit\" in \"Development\": ");
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Sun Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />");
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.ReadKey(false);
+
+                Console.Write("\nUpdating \"UnknownUnit\" in \"Development\": ");
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Sun Name=\"UnknownUnit\" Radius=\"400\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />");
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.Write("\nQuerying \"UnknownUnit\" from \"Development\": ");
+
+                try
+                {
+                    Console.WriteLine(await server.Universes["Development"].Galaxies["Dev #0"].QueryUnitXml("UnknownUnit"));
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.ReadKey(false);
+
+                Console.Write("\nDeleting \"UnknownUnit\" in \"Development\": ");
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].DeleteUnit("UnknownUnit");
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                // EOF MAP EDITS
 
                 Console.WriteLine("\nPlayers online:");
 

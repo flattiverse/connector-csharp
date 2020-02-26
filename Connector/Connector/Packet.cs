@@ -32,7 +32,7 @@ namespace Flattiverse
         public byte SubAddress;    // Controllable, Map
 
         internal BinaryMemoryReader reader;
-        private ManagedBinaryMemoryWriter? writer;
+        private ManagedBinaryMemoryWriter writer;
 
         /// <summary>
         /// OutOfBand is 0, if the packet is a regular Packet. When OutOfband is > 0, then the values represents
@@ -297,7 +297,7 @@ namespace Flattiverse
                         *pData++ = Helper;
 
                     if (length > 0)
-                        writer!.ToPointer(pData);
+                        writer.ToPointer(pData);
                 }
             }
 
