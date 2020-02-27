@@ -68,23 +68,7 @@ namespace Flattiverse
 
             systems = new List<UniverseSystem>();
 
-            BinaryMemoryReader reader = packet.Read();
-
-            name = reader.ReadStringNonNull();
-            description = reader.ReadStringNonNull();
-
-            difficulty = (Difficulty)reader.ReadByte();
-            mode = (UniverseMode)reader.ReadByte();
-
-            ownerID = reader.ReadUInt32();
-
-            maxPlayers = reader.ReadUInt16();
-            maxPlayersPerTeam = reader.ReadUInt16();
-            maxShipsPerPlayer = reader.ReadByte();
-            maxShipsPerTeam = reader.ReadUInt16();
-
-            status = (UniverseStatus)reader.ReadByte();
-            defaultPrivileges = (Privileges)reader.ReadByte();
+            updateFromPacket(packet);
         }
 
         internal void updateFromPacket(Packet packet)
