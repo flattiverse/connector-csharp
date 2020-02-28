@@ -263,20 +263,16 @@ namespace DevelopmentArea
                 await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFE) { Name = "Hallo1" }).ConfigureAwait(false);
                 await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFF) { Name = "Hallo2" }).ConfigureAwait(false);
 
-                Console.ReadKey(true);
-
                 Console.WriteLine("Updating the Region in Development\\Dev #0...");
 
                 await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFF) { Name = "Hallo" }).ConfigureAwait(false);
-
-                Console.ReadKey(true);
 
                 Console.WriteLine("Querying Regions in Development\\Dev #0:");
 
                 foreach (Region region in await server.Universes["Development"].Galaxies["Dev #0"].QueryRegions().ConfigureAwait(false))
                     Console.WriteLine($" * {region.Name ?? "<null>"}");
 
-                Console.WriteLine("Deleting three Regions in Development\\Dev #0:");
+                Console.WriteLine("Deleting three Regions in Development\\Dev #0...");
 
                 await server.Universes["Development"].Galaxies["Dev #0"].DeleteRegion(new Region(0xFD)).ConfigureAwait(false);
                 await server.Universes["Development"].Galaxies["Dev #0"].DeleteRegion(new Region(0xFE)).ConfigureAwait(false);
