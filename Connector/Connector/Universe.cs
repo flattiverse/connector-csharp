@@ -95,7 +95,7 @@ namespace Flattiverse
         /// <summary>
         /// Queries all privileges assigned to this universe.
         /// </summary>
-        /// <returns>An async foreachable enumerator returning KeyValuePairs of Account? and Privileges. When the corresponding Account is null.</returns>
+        /// <returns>An enumerator returning KeyValuePairs of Account and Privileges. The entry can be orphaned, when the corresponding Account is null.</returns>
         public IEnumerable<KeyValuePair<Account, Privileges>> QueryPrivileges()
         {
             using (System.Threading.AutoResetEvent are = new System.Threading.AutoResetEvent(false))
@@ -132,7 +132,7 @@ namespace Flattiverse
                 {
                     ThreadPool.QueueUserWorkItem(async delegate {
                         // I hate you for forcing me to do this, microsoft. Really.
-                        account = await Server.QueryAccount(kvp.Key).ConfigureAwait(false);
+                        account = (await Server.QueryAccount(kvp.Key).ConfigureAwait(false)) ?? new Account(Server, kvp.Key);
                         are.Set();
                     });
 

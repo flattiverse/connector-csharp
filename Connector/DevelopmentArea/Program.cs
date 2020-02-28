@@ -11,6 +11,8 @@ namespace DevelopmentArea
     {
         static async Task Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             using (Server server = new Server())
             {
 #if DEBUG
@@ -44,7 +46,7 @@ namespace DevelopmentArea
                     foreach (UniverseSystem system in universe.Systems)
                         Console.WriteLine($"   * (Component) {system}");
 
-                    foreach (KeyValuePair<Account?, Privileges> privs in universe.QueryPrivileges())
+                    foreach (KeyValuePair<Account, Privileges> privs in universe.QueryPrivileges())
                         Console.WriteLine($"   * (Privilege) {privs.Key.Name}: {privs.Value.ToString()}");
                 }
 
@@ -65,7 +67,7 @@ namespace DevelopmentArea
                 Console.WriteLine("\nQuery of all Players:");
 
                 foreach (Account acc in server.QueryAccounts(null, false))
-                    Console.WriteLine($" * {acc.Name}");
+                    Console.WriteLine($" * {acc.Name} [{acc.Status}]");
 
                 Console.Write("\nChanging Privileges on \"Beginners Course\": ");
 
@@ -119,12 +121,39 @@ namespace DevelopmentArea
                     Console.WriteLine(exception.Message);
                 }
 
-                // MAP EDITS
+                Console.ForegroundColor = ConsoleColor.White;
 
-                ConsoleColor color = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Map Edit Section. Press Key, whenever the code doesn't automatically continue. :)\n");
-                Console.ForegroundColor = color;
+                Console.Write("\nChanging own Password to Password: ");
+
+                try
+                {
+                    await (await server.QueryAccount(server.Player.Name).ConfigureAwait(false)).ChangePassword("Password").ConfigureAwait(false);
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                Console.WriteLine("\nChanging Password of GhostTyper to Password: ");
+
+                try
+                {
+                    await (await server.QueryAccount("GhostTyper").ConfigureAwait(false)).ChangePassword("Password").ConfigureAwait(false);
+
+                    Console.WriteLine("SUCCESS.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                // MAP EDITS
 
                 Console.Write("\nQuerying \"Zirp\" from \"Development\": ");
 
@@ -161,7 +190,7 @@ namespace DevelopmentArea
                     Console.WriteLine(exception.Message);
                 }
 
-                Console.ReadKey(false);
+                Thread.Sleep(1000);
 
                 Console.Write("\nUpdating \"UnknownUnit\" in \"Development\": ");
 
@@ -187,7 +216,7 @@ namespace DevelopmentArea
                     Console.WriteLine(exception.Message);
                 }
 
-                Console.ReadKey(false);
+                Thread.Sleep(1000);
 
                 Console.Write("\nDeleting \"UnknownUnit\" in \"Development\": ");
 
@@ -202,7 +231,67 @@ namespace DevelopmentArea
                     Console.WriteLine(exception.Message);
                 }
 
-                // EOF MAP EDITS
+                Console.WriteLine("\nChecking Unit XML <Sun Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />:");
+
+                try
+                {
+                    Console.WriteLine(await server.CheckUnitXml("<Sun Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />"));
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.WriteLine("\nChecking Unit XML <Sun Name=\"#UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />:");
+
+                try
+                {
+                    Console.WriteLine(await server.CheckUnitXml("<Sun Name=\"#UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />"));
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                }
+
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                // END OF MAP EDITS NOW: REGIONS
+
+                Console.WriteLine("\nCreating three Regions in Development\\Dev #0...");
+
+                await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFD) { Name = null }).ConfigureAwait(false);
+                await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFE) { Name = "Hallo1" }).ConfigureAwait(false);
+                await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFF) { Name = "Hallo2" }).ConfigureAwait(false);
+
+                Console.ReadKey(true);
+
+                Console.WriteLine("Updating the Region in Development\\Dev #0...");
+
+                await server.Universes["Development"].Galaxies["Dev #0"].UpdateRegion(new Region(0xFF) { Name = "Hallo" }).ConfigureAwait(false);
+
+                Console.ReadKey(true);
+
+                Console.WriteLine("Querying Regions in Development\\Dev #0:");
+
+                foreach (Region region in await server.Universes["Development"].Galaxies["Dev #0"].QueryRegions().ConfigureAwait(false))
+                    Console.WriteLine($" * {region.Name ?? "<null>"}");
+
+                Console.WriteLine("Deleting three Regions in Development\\Dev #0:");
+
+                await server.Universes["Development"].Galaxies["Dev #0"].DeleteRegion(new Region(0xFD)).ConfigureAwait(false);
+                await server.Universes["Development"].Galaxies["Dev #0"].DeleteRegion(new Region(0xFE)).ConfigureAwait(false);
+                await server.Universes["Development"].Galaxies["Dev #0"].DeleteRegion(new Region(0xFF)).ConfigureAwait(false);
+
+                Console.WriteLine("Done Regions.");
+
+                // END OF REGIONS
+
+                Console.WriteLine();
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("  The following sequence is a demonstration of how to live view the\n  universe and how to edit it.\n");
+                Console.WriteLine("  Here you can see, how and of which delay you will get unit updates\n  if you edit some of the units.");
+                Console.ForegroundColor = ConsoleColor.Gray;
 
                 Console.WriteLine("\nPlayers online:");
 
@@ -210,12 +299,47 @@ namespace DevelopmentArea
                     Console.WriteLine($" * {player.Name} with a ping of {player.Ping}.");
 
                 server.MetaEvent += metaEvent;
+                server.ScanEvent += scanEvent;
 
                 await server.Universes["Development"].Join(server.Universes["Development"].Teams["Dark Blue"]);
 
-                Console.WriteLine("\nKey?");
+                Thread.Sleep(1000);
 
-                Console.ReadKey();
+                Console.WriteLine("Starting View...");
+
+                await server.Universes["Development"].Galaxies["Dev #0"].StartView();
+
+                Console.WriteLine("View started.");
+
+                Thread.Sleep(1000);
+
+                Console.WriteLine("\nCreating \"UnknownUnit\" in \"Development\"...\n");
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Sun Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />");
+                }
+                catch
+                { }
+
+                Thread.Sleep(1000);
+
+                Console.WriteLine("\nDeleting \"UnknownUnit\" in \"Development\"...\n");
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].DeleteUnit("UnknownUnit");
+                }
+                catch
+                { }
+
+                Thread.Sleep(1000);
+
+                Console.WriteLine("\nStopping View...\n");
+
+                await server.Universes["Development"].Galaxies["Dev #0"].StopView();
+
+                Thread.Sleep(1000);
 
                 Console.WriteLine("\nPlayers online:");
 
@@ -224,13 +348,32 @@ namespace DevelopmentArea
 
                 await server.Universes["Development"].Part();
 
-                Console.WriteLine("Done.");
+                Console.WriteLine();
+
+                Thread.Sleep(1000);
+
+                Console.WriteLine();
+
+                Console.WriteLine(" * SILENCE?!");
+
+                Thread.Sleep(1000);
+
+                Console.WriteLine(" * YEP!");
+
+                Thread.Sleep(1000);
+
+                Console.WriteLine("\nDone.");
             }
         }
 
         private static void metaEvent(FlattiverseEvent @event)
         {
             Console.WriteLine($" * [META-EVENT] {@event}");
+        }
+
+        private static void scanEvent(FlattiverseEvent @event)
+        {
+            Console.WriteLine($" * [SCAN-EVENT] {@event}");
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 namespace Flattiverse
 {
     /// <summary>
-    /// A helper event managin player stuff.
+    /// A helper event managing player stuff.
     /// </summary>
     public class PlayerEvent : FlattiverseEvent
     {

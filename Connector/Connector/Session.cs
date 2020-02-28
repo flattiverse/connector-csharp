@@ -47,6 +47,15 @@ namespace Flattiverse
                     case 0x01:
                         exception = new UniverseServerUnhandledException();
                         break;
+                    case 0x02:
+                        exception = new InvalidParameterException();
+                        break;
+                    case 0x03:
+                        exception = new AccountDoesntExistException();
+                        break;
+                    case 0x04:
+                        exception = new OperationRequiresAdminStatusException();
+                        break;
                     case 0x05:
                         exception = new PermissionDeniedException(packet.SubAddress);
                         break;
@@ -55,6 +64,15 @@ namespace Flattiverse
                         break;
                     case 0x07:
                         exception = new UnitDoesntExistException();
+                        break;
+                    case 0x08:
+                        exception = new NoUniverseAssignmentException();
+                        break;
+                    case 0x09:
+                        exception = new WrongStateException();
+                        break;
+                    case 0x0A:
+                        exception = new TooManyEntriesException();
                         break;
                     case 0x10:
                         exception = new JoinRefusedException(packet.SubAddress);
@@ -70,6 +88,9 @@ namespace Flattiverse
                         break;
                     case 0x22:
                         exception = new UniverseGoneWhileExecutingRequestException();
+                        break;
+                    case 0x23:
+                        exception = new NoUniverseAvailableException();
                         break;
                     case 0x24:
                         exception = new GalaxyDoesntExistException();

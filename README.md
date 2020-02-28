@@ -18,6 +18,6 @@ The Server runs on `galaxy.flattiverse.com` port `80`. You need to use one of th
 
 Join command works for universe `Development` but not for the universe `For The Noobs`. (Just so you can test the server replys.) Currently `Universe`s, `Team`s, `Galaxy`(ie)s and `UniverseSystem`s are transferred to the connector, other things could be queries by using various endpoints.
 
-It's also possible to Query, Update and Delete Units in the galaxy. Checkout the code for how it's done. :)
+It's also possible to Query, Update and Delete Units and Regions in the galaxy. Additionally: You now can Live View Galaxies. :D - Checkout the code for how it's done. :)
 
 *Please see the most updated information about the server [here](https://documentation.flattiverse.com/display/FLAT/Connector+development). If the development of this connector progresses we will also update the server on `galaxy.flattiverse.com:80`.*

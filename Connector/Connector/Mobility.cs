@@ -12,7 +12,7 @@ namespace Flattiverse
         /// <summary>
         /// The unit is still and will reside forever on it's location.
         /// </summary>
-        Still,
+        Still = 0,
         /// <summary>
         /// The unit obeys a steady course, not affected by gravity.
         /// </summary>

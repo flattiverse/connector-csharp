@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Flattiverse
 {
@@ -11,6 +12,8 @@ namespace Flattiverse
     public class Account
     {
         internal readonly uint ID;
+
+        private Server server;
 
         /// <summary>
         /// The name of the account.
@@ -42,10 +45,8 @@ namespace Flattiverse
         /// </summary>
         public readonly string NewEMail;
 
-        internal Account(Packet packet)
+        internal Account(Server server, ref BinaryMemoryReader reader)
         {
-            BinaryMemoryReader reader = packet.Read();
-
             ID = reader.ReadUInt32();
             Name = reader.ReadStringNonNull();
             Status = (AccountStatus)reader.ReadByte();
@@ -53,6 +54,40 @@ namespace Flattiverse
             Deaths = reader.ReadUInt32();
             EMail = reader.ReadString();
             NewEMail = reader.ReadString();
+
+            this.server = server;
+        }
+
+        internal Account(Server server, uint id)
+        {
+            ID = id;
+            Name = "[Orphaned Account]";
+            Status = AccountStatus.Vanished;
+        }
+
+        /// <summary>
+        /// Changes the password of the account. You can only change the password of yourself as regular player.
+        /// </summary>
+        /// <param name="password">The new password which should be setup.</param>
+        public async Task ChangePassword(string password)
+        {
+            byte[] hash = Crypto.HashPassword(Name, password);
+
+            using (Session session = server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x42;
+
+                packet.ID = ID;
+
+                packet.Write().WriteBytes(hash, 0, 16);
+
+                server.connection.Send(packet);
+                server.connection.Flush();
+
+                await session.Wait();
+            }
         }
 
         /// <summary>

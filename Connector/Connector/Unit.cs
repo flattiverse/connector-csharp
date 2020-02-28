@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flattiverse.Utils;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,6 +10,110 @@ namespace Flattiverse
     /// </summary>
     public class Unit
     {
+        /// <summary>
+        /// The name of the unit. This name is unique in the universe.
+        /// </summary>
+        public readonly string Name;
+
+        /// <summary>
+        /// The galaxy this unit is in.
+        /// </summary>
+        public readonly Galaxy Galaxy;
+
+        /// <summary>
+        /// The radius of this unit.
+        /// </summary>
+        public readonly float Radius;
+
+        /// <summary>
+        /// The mobility of the unit.
+        /// </summary>
+        public readonly Mobility Mobility;
+
+        /// <summary>
+        /// The position of the unit.
+        /// </summary>
+        public readonly Vector Position;
+
+        /// <summary>
+        /// The movement of the unit or null, if the unit is Still.
+        /// </summary>
+        public readonly Vector Movement;
+
+        /// <summary>
+        /// The team of the unit or null, if the unit doesn't have a team assignment.
+        /// </summary>
+        public readonly Team Team;
+
+        /// <summary>
+        /// The gravity which the unit is producing.
+        /// </summary>
+        public readonly float Gravity;
+
+        /// <summary>
+        /// The radiation the unit is generating.
+        /// </summary>
+        public readonly float Radiation;
+
+        /// <summary>
+        /// The power output of the unit.
+        /// </summary>
+        public readonly float PowerOutput;
+
+        /// <summary>
+        /// True, if the unit can be altered by the XML Unit API.
+        /// </summary>
+        public readonly bool Alterable;
+
+        internal Unit(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader)
+        {
+            byte datas = reader.ReadByte();
+
+            Mobility = (Mobility)(datas >> 6);
+
+            Name = reader.ReadString();
+
+            Galaxy = galaxy;
+
+            Position = new Vector(ref reader);
+
+            if (Mobility == Mobility.Still)
+                Movement = null;
+            else
+                Movement = new Vector(ref reader);
+
+            Radius = reader.ReadSingle();
+
+            if ((datas & 0b0000_0001) == 0b0000_0001)
+                Gravity = reader.ReadSingle();
+
+            if ((datas & 0b0000_0010) == 0b0000_0010)
+                Radiation = reader.ReadSingle();
+
+            if ((datas & 0b0000_0100) == 0b0000_0100)
+                PowerOutput = reader.ReadSingle();
+
+            if ((datas & 0b0000_1000) == 0b0000_1000)
+                Team = universe.teams[reader.ReadByte()];
+
+            Alterable = ((datas & 0b0010_0000) == 0b0010_0000);
+        }
+
+        internal static Unit FromPacket(Universe universe, Packet packet)
+        {
+            BinaryMemoryReader reader = packet.Read();
+            Galaxy galaxy = universe.galaxies[packet.SubAddress];
+
+            switch (packet.Helper)
+            {
+                case 0x08: // Sun
+                    return new Sun(universe, galaxy, ref reader);
+            }
+
+            // Unknown unit.
+            return null;
+        }
+
         /// <summary>
         /// Checks, if the name of a unit is valid. Rules for this are:
         /// 1-64 chars, all latin chars, including umlauts and the chars: space . - _ \ / | and #.
@@ -51,6 +156,15 @@ namespace Flattiverse
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// The String representation of the unit.
+        /// </summary>
+        /// <returns>The string.</returns>
+        public override string ToString()
+        {
+            return $"[{GetType()}] {Name} {Position} r={Radius}";
         }
     }
 }

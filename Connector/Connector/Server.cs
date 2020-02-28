@@ -299,6 +299,35 @@ namespace Flattiverse
 
                         universes[packet.BaseAddress].updateSystems(packet);
                         break;
+                    case 0x80: // Heartbeat received
+                        EnqueueMetaEvent(HeartbeatEvent.Event);
+                        break;
+                    case 0x88: // New Unit
+                        {
+                            Unit unit = Unit.FromPacket(player.Universe, packet);
+
+                            if (unit != null)
+                                EnqueueMetaEvent(new NewUnitEvent(unit));
+                        }
+                        break;
+                    case 0x89: // Updated Unit
+                        {
+                            Unit unit = Unit.FromPacket(player.Universe, packet);
+
+                            if (unit != null)
+                                EnqueueMetaEvent(new NewUnitEvent(unit));
+                        }
+                        break;
+                    case 0x90: // Deleted Unit
+                        {
+                            BinaryMemoryReader reader = packet.Read();
+
+                            if (reader.Size == 0)
+                                break;
+
+                            EnqueueMetaEvent(new GoneUnitEvent(reader.ReadString()));
+                        }
+                        break;
                 }
             }
         }
@@ -403,19 +432,19 @@ namespace Flattiverse
                 if (reader.Size == 0)
                     return null;
 
-                return new Account(packet);
+                return new Account(this, ref reader);
             }
         }
 
         /// <summary>
         /// Querys the account with the given name.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">The name you are looking for.</param>
+        /// <returns>The account.</returns>
         public async Task<Account> QueryAccount(string name)
         {
             if (!Account.CheckName(name))
-                throw new ArgumentException("The given name doesn't match the name criteria.", "name");
+                throw new IllegalNameException();
 
             using (Session session = connection.NewSession())
             {
@@ -436,7 +465,32 @@ namespace Flattiverse
                 if (reader.Size == 0)
                     throw new AccountDoesntExistException(name);
 
-                return new Account(packet);
+                return new Account(this, ref reader);
+            }
+        }
+
+        /// <summary>
+        /// Rephrases the given XML.
+        /// </summary>
+        /// <param name="xml">The XML to validate.</param>
+        /// <returns>Returns reformulated XML by one of the universe instances.</returns>
+        public async Task<string> CheckUnitXml(string xml)
+        {
+            if (xml == null || xml.Length < 5)
+                throw new AmbiguousXmlDataException();
+
+            using (Session session = connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x63;
+
+                packet.Write().Write(xml);
+
+                connection.Send(packet);
+                connection.Flush();
+
+                return (await session.Wait().ConfigureAwait(false)).Read().ReadString();
             }
         }
 

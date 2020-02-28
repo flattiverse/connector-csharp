@@ -132,5 +132,120 @@ namespace Flattiverse
                 await session.Wait().ConfigureAwait(false);
             }
         }
+
+        /// <summary>
+        /// Queries all regions of the universe.
+        /// </summary>
+        /// <returns>A list of regions.</returns>
+        public async Task<List<Region>> QueryRegions()
+        {
+            List<Region> regions = new List<Region>();
+
+            using (Session session = Universe.Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x68;
+                packet.BaseAddress = Universe.ID;
+                packet.SubAddress = ID;
+
+                Universe.Server.connection.Send(packet);
+                Universe.Server.connection.Flush();
+
+                Packet response = await session.Wait().ConfigureAwait(false);
+
+                BinaryMemoryReader reader = response.Read();
+
+                for (int position = 0; position < response.Helper; position++)
+                    regions.Add(new Region(Universe, ref reader));
+            }
+
+            return regions;
+        }
+
+        /// <summary>
+        /// Updates the specified region. Regions with the same ID will be overwritten.
+        /// </summary>
+        /// <param name="region">The region to write.</param>
+        public async Task UpdateRegion(Region region)
+        {
+            using (Session session = Universe.Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x69;
+                packet.BaseAddress = Universe.ID;
+                packet.SubAddress = ID;
+
+                region.Write(packet.Write());
+
+                Universe.Server.connection.Send(packet);
+                Universe.Server.connection.Flush();
+
+                await session.Wait().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the specified region.
+        /// </summary>
+        /// <param name="region">The region to delete.</param>
+        public async Task DeleteRegion(Region region)
+        {
+            using (Session session = Universe.Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x6A;
+                packet.BaseAddress = Universe.ID;
+                packet.SubAddress = ID;
+                packet.Helper = region.ID;
+
+                Universe.Server.connection.Send(packet);
+                Universe.Server.connection.Flush();
+
+                await session.Wait().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Starts the universe view.
+        /// </summary>
+        public async Task StartView()
+        {
+            using (Session session = Universe.Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x84;
+                packet.BaseAddress = Universe.ID;
+                packet.SubAddress = ID;
+
+                Universe.Server.connection.Send(packet);
+                Universe.Server.connection.Flush();
+
+                await session.Wait().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Stopps the universe view.
+        /// </summary>
+        public async Task StopView()
+        {
+            using (Session session = Universe.Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x85;
+                packet.BaseAddress = Universe.ID;
+                packet.SubAddress = ID;
+
+                Universe.Server.connection.Send(packet);
+                Universe.Server.connection.Flush();
+
+                await session.Wait().ConfigureAwait(false);
+            }
+        }
     }
 }
