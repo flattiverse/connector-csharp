@@ -309,11 +309,56 @@ namespace DevelopmentArea
 
                 Thread.Sleep(1000);
 
-                Console.WriteLine("\nCreating \"UnknownUnit\" in \"Development\"...\n");
+                Console.WriteLine("\nCreating some \"UnknownUnit\"s in \"Development\"...\n");
 
                 try
                 {
-                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Sun Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\" />");
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Sun Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" PowerOutput=\"150\"><Plasma Level=\"3\" Amount=\"2\" Radius=\"700\" /></Sun>");
+                }
+                catch
+                { }
+
+                Thread.Sleep(250);
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Planet Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" />");
+                }
+                catch
+                { }
+
+                Thread.Sleep(250);
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Moon Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" />");
+                }
+                catch
+                { }
+
+                Thread.Sleep(250);
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Meteoroid Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\" />");
+                }
+                catch
+                { }
+
+                Thread.Sleep(250);
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Buoy Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Gravity=\"0.7\" Radiation=\"2\">Meine kleine Message...</Buoy>");
+                }
+                catch
+                { }
+
+                Thread.Sleep(250);
+
+                try
+                {
+                    await server.Universes["Development"].Galaxies["Dev #0"].UpdateUnitXml("<Target Name=\"UnknownUnit\" Radius=\"300\" PositionX=\"0\" PositionY=\"0\" Sequence=\"2\" />");
                 }
                 catch
                 { }
@@ -369,7 +414,40 @@ namespace DevelopmentArea
 
         private static void scanEvent(FlattiverseEvent @event)
         {
-            Console.WriteLine($" * [SCAN-EVENT] {@event}");
+            //Console.WriteLine($" * [SCAN-EVENT] {@event}");
+
+            if (@event is NewUnitEvent)
+            {
+                switch (((NewUnitEvent)@event).Unit)
+                {
+                    case Target target:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($" * [TARGET] {target.Name} Sequence: {target.Sequence}.");
+                        break;
+                    case Sun sun:
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($" * [SUN] {sun.Name} Corona: {(sun.Corona == null ? "NO" : $"l={sun.Corona.Plasma} r={sun.Corona.Radius} a={sun.Corona.Amount}")}.");
+                        break;
+                    case Planet planet:
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($" * [PLANET] {planet.Name}.");
+                        break;
+                    case Moon moon:
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.WriteLine($" * [MOON] {moon.Name}.");
+                        break;
+                    case Meteoroid meteoroid:
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine($" * [METEOROID] {meteoroid.Name}.");
+                        break;
+                    case Buoy buoy:
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.WriteLine($" * [BUOY] {buoy.Name} message={buoy.Message}.");
+                        break;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
         }
     }
 }

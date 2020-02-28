@@ -106,8 +106,18 @@ namespace Flattiverse
 
             switch (packet.Helper)
             {
+                case 0x04: // Target
+                    return new Target(universe, galaxy, ref reader);
                 case 0x08: // Sun
                     return new Sun(universe, galaxy, ref reader);
+                case 0x10: // Planet
+                    return new Planet(universe, galaxy, ref reader);
+                case 0x11: // Moon
+                    return new Moon(universe, galaxy, ref reader);
+                case 0x12: // Meteoroid
+                    return new Meteoroid(universe, galaxy, ref reader);
+                case 0x20: // Buoy
+                    return new Buoy(universe, galaxy, ref reader);
             }
 
             // Unknown unit.
