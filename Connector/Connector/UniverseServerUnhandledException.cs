@@ -9,7 +9,7 @@ namespace Flattiverse
     /// </summary>
     public class UniverseServerUnhandledException : Exception
     {
-        internal UniverseServerUnhandledException() : base("The universe server encountered an exception which has not been handled properly in the code. Additionally the proxy can't understand the exact deatils of this exceptiion. Please forward this incident to info@flattiverse.com.")
+        internal UniverseServerUnhandledException() : base("The universe server encountered an exception which has not been handled properly in the code. Additionally the proxy can't understand the exact details of this exception. Please forward this incident to info@flattiverse.com.")
         {
         }
     }
