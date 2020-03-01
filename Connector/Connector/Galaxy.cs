@@ -82,7 +82,7 @@ namespace Flattiverse
         }
 
         /// <summary>
-        /// Updates or creates an unit according to the specified XML data.
+        /// Updates or creates an unit according to the specified XML data. Requires ManageUnits privilege.
         /// </summary>
         /// <param name="xml">The unit specification.</param>
         public async Task UpdateUnitXml(string xml)
@@ -108,7 +108,7 @@ namespace Flattiverse
         }
 
         /// <summary>
-        /// Deletes the unit with the given name.
+        /// Deletes the unit with the given name. Requires ManageUnits privilege.
         /// </summary>
         /// <param name="name">The name of the unit to delete.</param>
         public async Task DeleteUnit(string name)
