@@ -114,6 +114,8 @@ namespace Flattiverse
 
             switch (packet.Helper)
             {
+                case 0x01: // PlayerUnit
+                    return new PlayerUnit(universe, galaxy, ref reader);
                 case 0x04: // Target
                     return new Target(universe, galaxy, ref reader);
                 case 0x08: // Sun

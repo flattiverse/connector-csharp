@@ -90,6 +90,11 @@ namespace Flattiverse
         public bool Alive => hull > 0;
 
         /// <summary>
+        /// The size of the controllable.
+        /// </summary>
+        public float Radius => radius;
+
+        /// <summary>
         /// The maximum amount of energy the vessel has.
         /// </summary>
         public int EnergyMax => energyMax;
@@ -178,7 +183,7 @@ namespace Flattiverse
         /// <summary>
         /// The direction in which the scanner is currently looking.
         /// </summary>
-        public float ScannerBroadDirection => scannerBroadDestination;
+        public float ScannerBroadDirection => scannerBroadDirection;
 
         /// <summary>
         /// The destination the scanner is turning to.
