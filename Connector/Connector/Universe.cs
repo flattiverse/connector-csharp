@@ -228,6 +228,34 @@ namespace Flattiverse
         }
 
         /// <summary>
+        /// Creates a new ship under your control.
+        /// </summary>
+        /// <param name="name">The name of the ship.</param>
+        /// <returns>The controllable.</returns>
+        public async Task<Controllable> NewShip(string name)
+        {
+            if (Server.Player.Universe != this || Server.Player.Team == null)
+                throw new InvalidOperationException("You need to join as a player (with team assignment) first.");
+
+            if (!Unit.CheckName(name))
+                throw new ArgumentException("name doesn't match unit naming criteria.", "name");
+
+            using (Session session = Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0xB0;
+
+                packet.Write().Write(name);
+
+                Server.connection.Send(packet);
+                Server.connection.Flush();
+
+                return Server.controllables[(await session.Wait().ConfigureAwait(false)).SubAddress];
+            }
+        }
+
+        /// <summary>
         /// Closes your session with the universe.
         /// </summary>
         /// <exception cref="System.InvalidOperationException">Thrown, you are not in the universe or when you still have active controllables.</exception>
@@ -309,9 +337,9 @@ namespace Flattiverse
 
             BinaryMemoryReader reader = packet.Read();
 
-            while (reader.Size > 0)
+            for (int position = 0; reader.Size > 0; position++)
             {
-                UniverseSystem universeSystem = new UniverseSystem(ref reader);
+                UniverseSystem universeSystem = new UniverseSystem(position, reader.ReadByte());
 
                 if (universeSystem.InUse)
                     systems.Add(universeSystem);

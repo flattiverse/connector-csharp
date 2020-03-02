@@ -8,41 +8,56 @@ namespace Flattiverse
     public enum UniverseSystemKind
     {
         /// <summary>
-        /// The hull. This system is your ships hull. A higher level indicates more hull points.
+        /// The engine of the ship. They can accelerate a ship only in the forward direction.
         /// </summary>
-        Hull = 0x00,
+        Engine = 0,
         /// <summary>
-        /// The armor of your ship. A higher level indicates more effective hitpoints for your ship.
-        /// </summary>
-        Armor,
-        // Shield,
-        // RadiationShield,
-        /// <summary>
-        /// Your primary scanner. (Short range scanner.)
-        /// </summary>
-        Scanner0 = 0x08,
-        /// <summary>
-        /// Your secondary scanner. (Long range scanner.)
-        /// </summary>
-        Scanner1,
-        /// <summary>
-        /// Your ships engine. Higher level equals more acceleration.
-        /// </summary>
-        Engine = 0x10,
-        /// <summary>
-        /// Your ships thruster jets. Higher level equals more turn-rate acceleration.
+        /// Thrusters. They can turn the ship around (in both directions).
         /// </summary>
         Thruster,
         /// <summary>
-        /// You ships solar cells. A higher level means you can harvest pro energy from sunrays.
+        /// The chassis of the ship. It generally specifies the size of the ship. (And therefore how many components, with which level can be put into the ship.)
         /// </summary>
-        Cell = 0x18,
-
-        // Here resources shit is starting.
-
+        Chassis,
         /// <summary>
-        /// The battery of your ship which indeicates the storage capacity of energy of your ship.
+        /// The armor. Generally increasing your hit-points.
         /// </summary>
-        Battery = 0xC0
+        Armor,
+        /// <summary>
+        /// The shield, which is driven by plasma.
+        /// </summary>
+        Shield,
+        /// <summary>
+        /// The broad (but not so far) scanner.
+        /// </summary>
+        ScannerBroad,
+        /// <summary>
+        /// The long range scanner. (Which doesn't span such a wide area.)
+        /// </summary>
+        ScannerLong,
+        /// <summary>
+        /// The energy systems: battery and solar cell.
+        /// </summary>
+        Energy,
+        /// <summary>
+        /// The plasma systems: storage, collector, refiner.
+        /// </summary>
+        Plasma,
+        /// <summary>
+        /// A torpedo launcher directed forward.
+        /// </summary>
+        LauncherForward,
+        /// <summary>
+        /// A torpedo launcher directed backwards.
+        /// </summary>
+        LauncherBackward,
+        /// <summary>
+        /// A set of reactors which will automatically produce energy, plasma and materials.
+        /// </summary>
+        Reactor,
+        /// <summary>
+        /// The materials system: storage and collector.
+        /// </summary>
+        Materials
     }
 }

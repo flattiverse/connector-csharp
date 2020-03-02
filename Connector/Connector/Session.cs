@@ -101,6 +101,9 @@ namespace Flattiverse
                     case 0x61:
                         exception = new AmbiguousXmlDataException();
                         break;
+                    case 0xFE:
+                        exception = new Exception("This exception will be replaced with an generic exception.");
+                        break;
                     case 0xFF:
                         BinaryMemoryReader reader = packet.Read();
                         exception = new InvalidProgramException($"!!! INVALID EXCEPTION COUGHT BY SERVER !!!\n\nThe server has cought a \"{reader.ReadString()}\" and did just forward this to the client (you). The exception has the following message:\n\n{reader.ReadString()}\n\nAnd the following stack trace:\n\n{reader.ReadString()}\n\nIf you are in the C# course of the HS-Esslingen: Contact your teacher.");

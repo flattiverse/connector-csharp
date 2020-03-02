@@ -11,13 +11,15 @@ namespace Flattiverse
     /// <summary>
     /// This represents a server you connected to.
     /// </summary>
-    public class Server : IDisposable
+    public sealed class Server : IDisposable
     {
         internal Connection connection;
 
         internal Universe[] universes;
 
         private Player[] players;
+
+        internal Controllable[] controllables;
 
         /// <summary>
         /// All the universes available.
@@ -28,6 +30,11 @@ namespace Flattiverse
         /// All the players registered to flattiverse.
         /// </summary>
         public readonly UniversalHolder<Player> Players;
+
+        /// <summary>
+        /// All controllables unter the control of the connected player.
+        /// </summary>
+        public readonly UniversalHolder<Controllable> Controllables;
 
         private TaskCompletionSource<object> waiter;
 
@@ -92,6 +99,10 @@ namespace Flattiverse
             players = new Player[65536];
 
             Players = new UniversalHolder<Player>(players);
+
+            controllables = new Controllable[256];
+
+            Controllables = new UniversalHolder<Controllable>(controllables);
 
             syncEvents = new object();
             events = new Queue<(FlattiverseEventHandler, FlattiverseEvent)>();
@@ -326,6 +337,27 @@ namespace Flattiverse
                                 break;
 
                             EnqueueMetaEvent(new GoneUnitEvent(reader.ReadString()));
+                        }
+                        break;
+                    case 0xC0: // Create Controllable
+                        controllables[packet.SubAddress] = new Controllable(this, player.Universe, packet);
+                        break;
+                    case 0xC1: // Structural Update Controllable
+                        {
+                            BinaryMemoryReader reader = packet.Read();
+
+                            controllables[packet.SubAddress]?.updateStructural(player.Universe, ref reader);
+                        }
+                        break;
+                    case 0xC2: // Controllable deleted.
+                        controllables[packet.SubAddress]?.deactivate();
+                        controllables[packet.SubAddress] = null;
+                        break;
+                    case 0xC3: // Regular Update Controllable
+                        {
+                            BinaryMemoryReader reader = packet.Read();
+
+                            controllables[packet.SubAddress]?.updateRegular(ref reader);
                         }
                         break;
                 }

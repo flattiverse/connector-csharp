@@ -27,12 +27,12 @@ namespace Flattiverse
 
         internal bool InUse => StartLevel != 0 || EndLevel != 0;
 
-        internal UniverseSystem(ref BinaryMemoryReader reader)
+        internal UniverseSystem(int id, byte levels)
         {
-            Kind = (UniverseSystemKind)reader.ReadByte();
+            Kind = (UniverseSystemKind)id;
 
-            StartLevel = reader.ReadByte();
-            EndLevel = reader.ReadByte();
+            StartLevel = levels >> 4;
+            EndLevel = levels & 0x0F;
         }
 
         /// <summary>

@@ -41,6 +41,13 @@ namespace Flattiverse
         public readonly Vector Movement;
 
         /// <summary>
+        /// Units, which are phased out of the galaxy don't take part in the game. Thus you never can scan such units.
+        /// However admin view operations will return phased units. This is, as an example, in the case of a player ship
+        /// which died. This player ship will then be reported by the view api at the location it died.
+        /// </summary>
+        public readonly bool Phased;
+
+        /// <summary>
         /// The team of the unit or null, if the unit doesn't have a team assignment.
         /// </summary>
         public readonly Team Team;
@@ -96,7 +103,8 @@ namespace Flattiverse
             if ((datas & 0b0000_1000) == 0b0000_1000)
                 Team = universe.teams[reader.ReadByte()];
 
-            Alterable = ((datas & 0b0010_0000) == 0b0010_0000);
+            Alterable = (datas & 0b0010_0000) == 0b0010_0000;
+            Phased = (datas & 0b0001_0000) == 0b0001_0000;
         }
 
         internal static Unit FromPacket(Universe universe, Packet packet)
