@@ -141,9 +141,9 @@ namespace Flattiverse
 
             waiter = lWaiter;
 
-            await connection.Connect(username, password);
+            await connection.Connect(username, password).ConfigureAwait(false);
 
-            await waiter.Task;
+            await waiter.Task.ConfigureAwait(false);
 
             waiter = null;
             online = true;
@@ -184,9 +184,9 @@ namespace Flattiverse
 
             waiter = lWaiter;
 
-            await connection.Connect(username, hash);
+            await connection.Connect(username, hash).ConfigureAwait(false);
 
-            await lWaiter.Task;
+            await lWaiter.Task.ConfigureAwait(false);
 
             waiter = null;
             online = true;
@@ -457,7 +457,7 @@ namespace Flattiverse
                 connection.Send(packet);
                 connection.Flush();
 
-                packet = await session.Wait();
+                packet = await session.Wait().ConfigureAwait(false);
 
                 BinaryMemoryReader reader = packet.Read();
 
@@ -490,7 +490,7 @@ namespace Flattiverse
                 connection.Send(packet);
                 connection.Flush();
 
-                packet = await session.Wait();
+                packet = await session.Wait().ConfigureAwait(false);
 
                 BinaryMemoryReader reader = packet.Read();
 
@@ -555,7 +555,7 @@ namespace Flattiverse
                 }
 
             if (lWaiter != null)
-                await lWaiter.Task;
+                await lWaiter.Task.ConfigureAwait(false);
 
             foundEvents = pollingEvents;
             pollingEvents = new Queue<FlattiverseEvent>();

@@ -123,7 +123,7 @@ namespace Flattiverse
 
         internal async Task<Packet> Wait()
         {
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         public void Dispose()

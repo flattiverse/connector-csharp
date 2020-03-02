@@ -89,10 +89,10 @@ namespace Flattiverse
                 socket.ReceiveTimeout = 60000;
                 socket.Blocking = false;
 
-                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null);
-                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null);
+                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null).ConfigureAwait(false);
+                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null).ConfigureAwait(false);
 
-                int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend);
+                int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend).ConfigureAwait(false);
 
                 if (amount != 48)
                 {
@@ -103,7 +103,7 @@ namespace Flattiverse
 
                 SocketError socketError;
 
-                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive);
+                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive).ConfigureAwait(false);
 
                 if (socketError != SocketError.Success && socketError != SocketError.IOPending || amount != 48)
                 {
@@ -148,7 +148,7 @@ namespace Flattiverse
                     throw new InvalidOperationException("The framework failed in decrypting data.");
                 }
 
-                amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 16, SocketFlags.None, null, null), socket.EndSend);
+                amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 16, SocketFlags.None, null, null), socket.EndSend).ConfigureAwait(false);
 
                 if (amount != 16)
                 {
@@ -157,7 +157,7 @@ namespace Flattiverse
                     throw new System.IO.InvalidDataException("Couldn't sent auth challenge.");
                 }
 
-                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive);
+                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive).ConfigureAwait(false);
 
                 if (socketError != SocketError.Success && socketError != SocketError.IOPending || amount != 16)
                 {
@@ -236,10 +236,10 @@ namespace Flattiverse
                 socket.ReceiveTimeout = 60000;
                 socket.Blocking = false;
 
-                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null);
+                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null).ConfigureAwait(false);
                 // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null);
 
-                int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend);
+                int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend).ConfigureAwait(false);
 
                 if (amount != 48)
                 {
@@ -250,7 +250,7 @@ namespace Flattiverse
 
                 SocketError socketError;
 
-                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive);
+                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 64, SocketFlags.None, out socketError, null, null), socket.EndReceive).ConfigureAwait(false);
 
                 if (socketError != SocketError.Success && socketError != SocketError.IOPending || amount != 48)
                 {
@@ -295,7 +295,7 @@ namespace Flattiverse
                     throw new InvalidOperationException("The framework failed in decrypting data.");
                 }
 
-                amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 16, SocketFlags.None, null, null), socket.EndSend);
+                amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 16, SocketFlags.None, null, null), socket.EndSend).ConfigureAwait(false);
 
                 if (amount != 16)
                 {
@@ -304,7 +304,7 @@ namespace Flattiverse
                     throw new System.IO.InvalidDataException("Couldn't sent auth challenge.");
                 }
 
-                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 16, SocketFlags.None, out socketError, null, null), socket.EndReceive);
+                amount = await Task.Factory.FromAsync(socket.BeginReceive(packetData, 0, 16, SocketFlags.None, out socketError, null, null), socket.EndReceive).ConfigureAwait(false);
 
                 if (socketError != SocketError.Success && socketError != SocketError.IOPending || amount != 16)
                 {

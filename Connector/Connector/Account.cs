@@ -86,7 +86,7 @@ namespace Flattiverse
                 server.connection.Send(packet);
                 server.connection.Flush();
 
-                await session.Wait();
+                await session.Wait().ConfigureAwait(false);
             }
         }
 

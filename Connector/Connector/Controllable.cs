@@ -210,7 +210,7 @@ namespace Flattiverse
                 server.connection.Send(packet);
                 server.connection.Flush();
 
-                packet = await session.Wait();
+                packet = await session.Wait().ConfigureAwait(false);
             }
         }
     }

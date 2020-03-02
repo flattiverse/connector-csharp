@@ -162,7 +162,7 @@ namespace Flattiverse
                 Server.connection.Send(packet);
                 Server.connection.Flush();
 
-                await session.Wait();
+                await session.Wait().ConfigureAwait(false);
             }
         }
 
@@ -186,7 +186,7 @@ namespace Flattiverse
                 Server.connection.Send(packet);
                 Server.connection.Flush();
 
-                await session.Wait();
+                await session.Wait().ConfigureAwait(false);
             }
         }
 
@@ -223,7 +223,7 @@ namespace Flattiverse
                 Server.connection.Send(packet);
                 Server.connection.Flush();
 
-                await session.Wait();
+                await session.Wait().ConfigureAwait(false);
             }
         }
 
@@ -272,7 +272,7 @@ namespace Flattiverse
                 Server.connection.Send(packet);
                 Server.connection.Flush();
 
-                await session.Wait();
+                await session.Wait().ConfigureAwait(false);
             }
         }
 

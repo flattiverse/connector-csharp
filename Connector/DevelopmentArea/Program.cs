@@ -15,7 +15,8 @@ namespace DevelopmentArea
 
             using (Server server = new Server())
             {
-                await server.Login("Player0", "Password");
+                //await server.Login("Player0", "Password");
+                await server.Login("Air50HE", "abc123");
 
                 Universe universe = server.Universes["Beginners Course"];
 
