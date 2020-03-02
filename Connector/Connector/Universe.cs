@@ -167,6 +167,31 @@ namespace Flattiverse
         }
 
         /// <summary>
+        /// Checks whether the name is already used and meets the requirements.
+        /// </summary>
+        /// <param name="account">The account to change the settings.</param>
+        /// <param name="privileges">The privileges to change the settings to.</param>
+        public async Task<bool> CheckName(string name)
+        {
+            if (name == null || !Unit.CheckName(name))
+                return false;
+
+            using (Session session = Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x64;
+
+                packet.Write().Write(name);
+
+                Server.connection.Send(packet);
+                Server.connection.Flush();
+
+                return (await session.Wait().ConfigureAwait(false)).Read().ReadBoolean();
+            }
+        }
+
+        /// <summary>
         /// Joins the universe and selects the team where fewer players are in. If a tournament is
         /// active it will join you the team of the tournament you are on or deny the access.
         /// </summary>
