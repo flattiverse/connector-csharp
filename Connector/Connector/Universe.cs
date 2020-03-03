@@ -169,8 +169,8 @@ namespace Flattiverse
         /// <summary>
         /// Checks whether the name is already used and meets the requirements.
         /// </summary>
-        /// <param name="account">The account to change the settings.</param>
-        /// <param name="privileges">The privileges to change the settings to.</param>
+        /// <param name="name">The name that should be checked.</param>
+        /// <returns>True, when the the name meets the requirements and is not yet used. Returns false when requirements don't match or the name is in use in this universe. Also returns false when all universes are offline.</returns>
         public async Task<bool> CheckName(string name)
         {
             if (name == null || !Unit.CheckName(name))
