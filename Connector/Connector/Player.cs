@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Flattiverse
 {
@@ -63,6 +64,38 @@ namespace Flattiverse
         /// The team the player is on. null, if the player isn't in an universe.
         /// </summary>
         public Team Team => team;
+
+        /// <summary>
+        /// Sending a message to this player.
+        /// </summary>
+        /// <param name="chatMessage">The chat message that should be send to this player.</param>
+        /// <exception cref="ArgumentException">The chat message is larger than 256 characters.</exception>
+        /// <exception cref="ArgumentNullException">The chat message is null.</exception>
+        public async Task Chat(string chatMessage)
+        {
+            if (chatMessage == null)
+                throw new ArgumentNullException("The chat message can't be null.", chatMessage);
+
+            if (chatMessage.Length > 256)
+            {
+                throw new ArgumentException("The chat message is not allowed to have more than 256 characters!", chatMessage);
+            }
+
+            using (Session session = Server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0x65;
+                packet.BaseAddress = (ushort)id;
+
+                packet.Write().Write(chatMessage);
+
+                Server.connection.Send(packet);
+                Server.connection.Flush();
+
+                await session.Wait().ConfigureAwait(false);
+            }
+        }
 
         internal void UpdatePing(Packet packet)
         {

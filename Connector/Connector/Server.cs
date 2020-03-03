@@ -314,6 +314,27 @@ namespace Flattiverse
                     case 0x80: // Heartbeat received
                         EnqueueMetaEvent(HeartbeatEvent.Event);
                         break;
+                    case 0x81: // Player Chat received
+                        {
+                            BinaryMemoryReader reader = packet.Read();
+                            string message = reader.ReadString();
+                            EnqueueMetaEvent(new PlayerChatEvent(message));
+                            break;
+                        }
+                    case 0x82: // Universe Chat received
+                        {
+                            BinaryMemoryReader reader = packet.Read();
+                            string message = reader.ReadString();
+                            EnqueueMetaEvent(new UniverseChatEvent(message));
+                            break;
+                        }
+                    case 0x83: // Team Chat received
+                        {
+                            BinaryMemoryReader reader = packet.Read();
+                            string message = reader.ReadString();
+                            EnqueueMetaEvent(new TeamChatEvent(message));
+                            break;
+                        }
                     case 0x88: // New Unit
                         {
                             Units.Unit unit = Units.Unit.FromPacket(player.Universe, packet);
