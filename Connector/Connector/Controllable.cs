@@ -218,5 +218,50 @@ namespace Flattiverse
                 packet = await session.Wait().ConfigureAwait(false);
             }
         }
+
+        /// <summary>
+        /// Sets the thrusters to the value. Use 0 here to stop accelerating the rotation into one specific direction. In general:
+        /// * The rotation of the ship is changed every heartbeat by: rotation += thrusters.
+        /// * The direction of the ship is changed every heartbeat by: direction += rotation.
+        /// </summary>
+        /// <param name="directrion">The direction in which the thrusters should accelerate the ship.</param>
+        /// <remarks>This method transmitts the request to the server without awaiting acknowledgement. The controllable will be updated with the next heartbeat.</remarks>
+        public void SetThrusters(float directrion)
+        {
+            if (float.IsNaN(directrion) || float.IsInfinity(directrion))
+                throw new ArgumentException("direction needs to be a real number.", "direction");
+
+            Packet packet = new Packet();
+
+            packet.Command = 0xB4;
+            packet.SubAddress = ID;
+
+            packet.Write().Write(directrion);
+
+            server.connection.Send(packet);
+            server.connection.Flush();
+        }
+
+        /// <summary>
+        /// Sets the engine output to the given value. Use 0 here to stop engine output. In general:
+        /// * Movement += Vector of direction direction with length of engine every heartbeat.
+        /// </summary>
+        /// <param name="engine">The amount of acceleration which the engine should "produce".</param>
+        /// <remarks>This method transmitts the request to the server without awaiting acknowledgement. The controllable will be updated with the next heartbeat.</remarks>
+        public void SetEngine(float engine)
+        {
+            if (float.IsNaN(engine) || float.IsInfinity(engine) || engine < 0f)
+                throw new ArgumentException("engine needs to be a positive real number.", "engine");
+
+            Packet packet = new Packet();
+
+            packet.Command = 0xB5;
+            packet.SubAddress = ID;
+
+            packet.Write().Write(engine);
+
+            server.connection.Send(packet);
+            server.connection.Flush();
+        }
     }
 }

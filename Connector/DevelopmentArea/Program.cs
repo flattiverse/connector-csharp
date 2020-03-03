@@ -13,32 +13,45 @@ namespace DevelopmentArea
         {
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            using (Server server = new Server())
+            using (Server server0 = new Server())
+            using (Server server1 = new Server())
             {
-                //await server.Login("Player0", "Password");
-                await server.Login("Air50HE", "abc123");
+                await server0.Login("Player0", "Password");
+                await server1.Login("Player1", "Password");
 
-                Universe universe = server.Universes["Beginners Course"];
+                Universe universe0 = server0.Universes["Beginners Course"];
+                Universe universe1 = server1.Universes["Beginners Course"];
 
-                await universe.Join();
+                await universe0.Join();
+                await universe1.Join();
 
-                Controllable controllable = await universe.NewShip("Bounty");
+                Controllable controllable0 = await universe0.NewShip("Bounty0");
 
-                Console.WriteLine($" * Registered: {controllable.Name} at position: {controllable.Position} with a hull of {controllable.Hull}.");
+                Console.WriteLine($" * Registered: {controllable0.Name} at position: {controllable0.Position} with a hull of {controllable0.Hull}.");
 
-                await controllable.Continue();
+                await controllable0.Continue();
 
-                Console.WriteLine($" * Registered: {controllable.Name} at position: {controllable.Position} with a hull of {controllable.Hull}.");
+                Console.WriteLine($" * Registered: {controllable0.Name} at position: {controllable0.Position} with a hull of {controllable0.Hull}.");
+
+                Controllable controllable1 = await universe1.NewShip("Bounty1");
+
+                await controllable1.Continue();
 
                 FlattiverseEvent @event;
 
+                // controllable0.SetEngine(1f);
+                controllable0.SetThrusters(1f);
+
                 while (true)
                 {
-                    Queue<FlattiverseEvent> events = await server.GatherEvents();
+                    Queue<FlattiverseEvent> events = await server0.GatherEvents();
 
                     while (events.TryDequeue(out @event))
                     {
                         Console.WriteLine(@event.ToString());
+
+                        if (@event is HeartbeatEvent)
+                            Console.WriteLine($" * ENERGY={controllable0.Energy}; ROTATION={controllable0.Direction}");
                     }
                 }
             }
