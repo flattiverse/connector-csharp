@@ -224,19 +224,19 @@ namespace Flattiverse
         /// * The rotation of the ship is changed every heartbeat by: rotation += thrusters.
         /// * The direction of the ship is changed every heartbeat by: direction += rotation.
         /// </summary>
-        /// <param name="directrion">The direction in which the thrusters should accelerate the ship.</param>
+        /// <param name="direction">The direction in which the thrusters should accelerate the ship.</param>
         /// <remarks>This method transmitts the request to the server without awaiting acknowledgement. The controllable will be updated with the next heartbeat.</remarks>
-        public void SetThrusters(float directrion)
+        public void SetThrusters(float direction)
         {
-            if (float.IsNaN(directrion) || float.IsInfinity(directrion))
-                throw new ArgumentException("direction needs to be a real number.", "direction");
+            if (float.IsNaN(direction) || float.IsInfinity(direction))
+                throw new ArgumentException("direction needs to be a real number.", nameof(direction));
 
             Packet packet = new Packet();
 
             packet.Command = 0xB4;
             packet.SubAddress = ID;
 
-            packet.Write().Write(directrion);
+            packet.Write().Write(direction);
 
             server.connection.Send(packet);
             server.connection.Flush();
@@ -251,7 +251,7 @@ namespace Flattiverse
         public void SetEngine(float engine)
         {
             if (float.IsNaN(engine) || float.IsInfinity(engine) || engine < 0f)
-                throw new ArgumentException("engine needs to be a positive real number.", "engine");
+                throw new ArgumentException("engine needs to be a positive real number.", nameof(engine));
 
             Packet packet = new Packet();
 
