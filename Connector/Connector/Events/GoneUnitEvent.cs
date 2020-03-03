@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// An event indicating that an unit left your scan horizon.
@@ -17,7 +17,7 @@ namespace Flattiverse
         /// <summary>
         /// This specifies the kind of this event.
         /// </summary>
-        public override FlattiverseEventKind Kind => FlattiverseEventKind.Scan;
+        public override FlattiverseEventGroup Group => FlattiverseEventGroup.Scan;
 
         internal GoneUnitEvent(string name)
         {
@@ -32,5 +32,7 @@ namespace Flattiverse
         {
             return $"Gone Unit: {Name}";
         }
+
+        public override FlattiverseEventKind Kind => FlattiverseEventKind.GoneUnit;
     }
 }

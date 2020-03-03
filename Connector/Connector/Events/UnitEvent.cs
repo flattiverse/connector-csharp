@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// An event indicating that something happend to a unit.
@@ -12,14 +12,14 @@ namespace Flattiverse
         /// <summary>
         /// The unit which is new.
         /// </summary>
-        public readonly Unit Unit;
+        public readonly Units.Unit Unit;
 
         /// <summary>
         /// This specifies the kind of this event.
         /// </summary>
-        public override FlattiverseEventKind Kind => FlattiverseEventKind.Scan;
+        public override FlattiverseEventGroup Group => FlattiverseEventGroup.Scan;
 
-        internal UnitEvent(Unit unit)
+        internal UnitEvent(Units.Unit unit)
         {
             Unit = unit;
         }

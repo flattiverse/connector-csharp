@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A plasma containing corona of a sun.
     /// </summary>
-    public class Corona
+    public class SunCorona
     {
         /// <summary>
         /// The kind of plasma the corona contains.
@@ -25,7 +25,7 @@ namespace Flattiverse
         /// </summary>
         public readonly float Radius;
 
-        internal Corona(byte plasma, ref BinaryMemoryReader reader)
+        internal SunCorona(byte plasma, ref BinaryMemoryReader reader)
         {
             Plasma = (Plasma)plasma;
             Amount = reader.ReadSingle();

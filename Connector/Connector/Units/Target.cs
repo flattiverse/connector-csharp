@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A Target, former MissionTarget. It has a sequence number (check the score!) 
@@ -28,5 +28,7 @@ namespace Flattiverse
             if (Hint == -1)
                 Hint = null;
         }
+
+        public override UnitKind Kind => UnitKind.Target;
     }
 }

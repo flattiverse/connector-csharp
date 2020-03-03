@@ -61,7 +61,7 @@ namespace Flattiverse
         /// <returns>The unit represented as xml.</returns>
         public async Task<string> QueryUnitXml(string name)
         {
-            if (!Unit.CheckName(name))
+            if (!Units.Unit.CheckName(name))
                 throw new IllegalNameException();
 
             using (Session session = Universe.Server.connection.NewSession())
@@ -113,7 +113,7 @@ namespace Flattiverse
         /// <param name="name">The name of the unit to delete.</param>
         public async Task DeleteUnit(string name)
         {
-            if (!Unit.CheckName(name))
+            if (!Units.Unit.CheckName(name))
                 throw new IllegalNameException();
 
             using (Session session = Universe.Server.connection.NewSession())

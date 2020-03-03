@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A player unit. This is a controllable of you or another player.
@@ -45,5 +45,7 @@ namespace Flattiverse
             if (reader.ReadBoolean())
                 BroadScanner = new Scanner(90, reader.ReadSingle());
         }
+
+        public override UnitKind Kind => UnitKind.PlayerUnit;
     }
 }

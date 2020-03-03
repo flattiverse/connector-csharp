@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Utils;
+using Flattiverse.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -315,7 +316,7 @@ namespace Flattiverse
                         break;
                     case 0x88: // New Unit
                         {
-                            Unit unit = Unit.FromPacket(player.Universe, packet);
+                            Units.Unit unit = Units.Unit.FromPacket(player.Universe, packet);
 
                             if (unit != null)
                                 EnqueueMetaEvent(new NewUnitEvent(unit));
@@ -323,10 +324,10 @@ namespace Flattiverse
                         break;
                     case 0x89: // Updated Unit
                         {
-                            Unit unit = Unit.FromPacket(player.Universe, packet);
+                            Units.Unit unit = Units.Unit.FromPacket(player.Universe, packet);
 
                             if (unit != null)
-                                EnqueueMetaEvent(new NewUnitEvent(unit));
+                                EnqueueMetaEvent(new UpdatedUnitEvent(unit));
                         }
                         break;
                     case 0x90: // Deleted Unit
@@ -368,18 +369,18 @@ namespace Flattiverse
         {
             FlattiverseEventHandler handler;
 
-            switch (@event.Kind)
+            switch (@event.Group)
             {
-                case FlattiverseEventKind.Meta:
+                case FlattiverseEventGroup.Meta:
                     handler = MetaEvent;
                     break;
-                case FlattiverseEventKind.Status:
+                case FlattiverseEventGroup.Status:
                     handler = StatusEvent;
                     break;
-                case FlattiverseEventKind.Scan:
+                case FlattiverseEventGroup.Scan:
                     handler = ScanEvent;
                     break;
-                case FlattiverseEventKind.Chat:
+                case FlattiverseEventGroup.Chat:
                     handler = ChatEvent;
                     break;
                 default:

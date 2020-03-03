@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// A helper event managing player stuff.

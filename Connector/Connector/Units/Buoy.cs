@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A Buoy. This unit transports a message.
@@ -62,5 +62,7 @@ namespace Flattiverse
 
             return true;
         }
+
+        public override UnitKind Kind => UnitKind.Buoy;
     }
 }

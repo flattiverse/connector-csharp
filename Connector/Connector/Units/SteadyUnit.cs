@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A unit which can stay Still or has a Steady (Orbiting) Movement.

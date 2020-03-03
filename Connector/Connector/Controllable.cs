@@ -33,6 +33,7 @@ namespace Flattiverse
         private int hull;
         private int energy;
         private float direction;
+        private float rotation;
         private float engine;
         private float thruster;
         private bool scannerBroadEnabled;
@@ -72,6 +73,7 @@ namespace Flattiverse
             hull = reader.ReadByte();
             energy = reader.ReadUInt16();
             direction = reader.ReadSingle();
+            rotation = reader.ReadSingle();
             engine = reader.ReadSingle();
             thruster = reader.ReadSingle();
             scannerBroadEnabled = reader.ReadBoolean();

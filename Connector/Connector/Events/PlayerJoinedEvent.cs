@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// An event specifying a player joined an universe.
@@ -33,5 +33,7 @@ namespace Flattiverse
         {
             return $"{Player.Name} joined {Universe.Name} with team {Team.Name}.";
         }
+
+        public override FlattiverseEventKind Kind => FlattiverseEventKind.PlayerJoined;
     }
 }

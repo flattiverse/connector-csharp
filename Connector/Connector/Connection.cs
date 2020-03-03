@@ -66,7 +66,7 @@ namespace Flattiverse
                 Buffer.BlockCopy(iv, 0, packetData, 0, 16);
 
                 byte[] userHash = new SHA256Managed().ComputeHash(Encoding.UTF8.GetBytes(user.ToLower()));
-                byte[] passwordHash;
+                byte[] passwordHash = null;
 
                 unsafe
                 {
@@ -81,7 +81,7 @@ namespace Flattiverse
                     }
                 }
 
-                passwordHash = Crypto.HashPassword(user, password);
+                await Task.Run(() => passwordHash = Crypto.HashPassword(user, password)).ConfigureAwait(false);
 
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -166,11 +166,12 @@ namespace Flattiverse
                     throw new ArgumentException("Wrong password. Check your credentials.", "password");
                 }
 
-                if (packetData[14] + packetData[15] * 256 != 1)
+                // VERSION CHECK
+                if (packetData[14] + packetData[15] * 256 != 2)
                 {
                     socket.Close();
 
-                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 1. Please update your connector.");
+                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 2. Please update your connector.");
                 }
 
                 eventArgs = new SocketAsyncEventArgs();
@@ -313,11 +314,12 @@ namespace Flattiverse
                     throw new ArgumentException("Wrong password. Check your credentials.", "password");
                 }
 
-                if (packetData[14] + packetData[15] * 256 != 1)
+                // VERSION CHECK
+                if (packetData[14] + packetData[15] * 256 != 2)
                 {
                     socket.Close();
 
-                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 1. Please update your connector.");
+                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 2. Please update your connector.");
                 }
 
                 eventArgs = new SocketAsyncEventArgs();

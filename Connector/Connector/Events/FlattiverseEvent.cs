@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// Represents a flattiverse event
@@ -12,7 +12,7 @@ namespace Flattiverse
         /// <summary>
         /// This specifies the kind of this event.
         /// </summary>
-        public virtual FlattiverseEventKind Kind => FlattiverseEventKind.Meta;
+        public virtual FlattiverseEventGroup Group => FlattiverseEventGroup.Meta;
 
         /// <summary>
         /// This event as string.
@@ -22,5 +22,7 @@ namespace Flattiverse
         {
             return $"Sadly {this.GetType()} has no valid .ToString().";
         }
+
+        public virtual FlattiverseEventKind Kind => throw new NotImplementedException("Please contact info@flattiverse.com.");
     }
 }

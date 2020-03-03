@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// An event indicating that a new unit enetered your scan horizon.
     /// </summary>
     public class NewUnitEvent : UnitEvent
     {
-        internal NewUnitEvent(Unit unit) : base(unit)
+        internal NewUnitEvent(Units.Unit unit) : base(unit)
         {
         }
 
@@ -21,5 +21,7 @@ namespace Flattiverse
         {
             return $"New Unit: {Unit}";
         }
+
+        public override FlattiverseEventKind Kind => FlattiverseEventKind.NewUnit;
     }
 }

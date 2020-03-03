@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// The occurrence of the HeartbeatEvent indicates a finished tick of the universe. You should see this event exactly 20 times the second in average.
@@ -29,5 +29,6 @@ namespace Flattiverse
         {
             return "[HEARTBEAT]";
         }
+        public override FlattiverseEventKind Kind => FlattiverseEventKind.Heartbeat;
     }
 }

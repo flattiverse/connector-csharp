@@ -22,9 +22,9 @@ namespace Flattiverse
 
         private string name;
 
-        private float r;
-        private float g;
-        private float b;
+        private byte r;
+        private byte g;
+        private byte b;
 
         internal Team(Universe universe, Packet packet)
         {
@@ -40,9 +40,9 @@ namespace Flattiverse
 
             name = reader.ReadString();
 
-            r = reader.ReadByte() / 255f;
-            g = reader.ReadByte() / 255f;
-            b = reader.ReadByte() / 255f;
+            r = reader.ReadByte();
+            g = reader.ReadByte();
+            b = reader.ReadByte();
         }
 
         /// <summary>
@@ -53,58 +53,21 @@ namespace Flattiverse
         /// <summary>
         /// The red color component from 0f to 1f.
         /// </summary>
-        public float R => r;
+        public byte R => r;
         
         /// <summary>
         /// The green color component from 0f to 1f.
         /// </summary>
-        public float G => g;
+        public byte G => g;
 
         /// <summary>
         /// The blue color component from 0f to 1f.
         /// </summary>
-        public float B => b;
+        public byte B => b;
 
         /// <summary>
-        /// Translates the color to the next console color according to DOS colors.
-        /// There may be a slightly mismatch depending on the colormapping configured.
+        /// The color as hex representation without leading hash.
         /// </summary>
-        public ConsoleColor ConsoleColor
-        {
-            get
-            {
-                float nearestDistance = 9f;
-                ConsoleColor color = ConsoleColor.White;
-
-                foreach (float[] colorDef in new float[][] { new float[] { 0.5f, 0f, 0f, 0f },
-                                                             new float[] { 1.5f, 0f, 0f, 0.5f },
-                                                             new float[] { 2.5f, 0f, 0.5f, 0f },
-                                                             new float[] { 3.5f, 0f, 0.5f, 0.5f },
-                                                             new float[] { 4.5f, 0.5f, 0f, 0f },
-                                                             new float[] { 5.5f, 0.5f, 0f, 0.5f },
-                                                             new float[] { 6.5f, 0.5f, 0.5f, 0f },
-                                                             new float[] { 7.5f, 0.666f, 0.666f, 0.666f },
-                                                             new float[] { 8.5f, 0.333f, 0.333f, 0.333f },
-                                                             new float[] { 9.5f, 0f, 0f, 1f },
-                                                             new float[] { 10.5f, 0f, 1f, 0f },
-                                                             new float[] { 11.5f, 0f, 1f, 1f },
-                                                             new float[] { 12.5f, 1f, 0f, 0f },
-                                                             new float[] { 13.5f, 1f, 0f, 1f },
-                                                             new float[] { 14.5f, 1f, 1f, 0f },
-                                                             new float[] { 15.5f, 1f, 1f, 1f }})
-                {
-                    float dist = (colorDef[1] - r) * (colorDef[1] - r) + (colorDef[2] - g) * (colorDef[2] - g) + (colorDef[3] - b) * (colorDef[3] - b);
-
-                    if (dist < nearestDistance)
-                    {
-                        nearestDistance = dist;
-
-                        color = (ConsoleColor)(int)colorDef[0];
-                    }
-                }
-
-                return color;
-            }
-        }
+        public string Hex => $"{r.ToString("X02")}{g.ToString("X02")}{b.ToString("X02")}";
     }
 }

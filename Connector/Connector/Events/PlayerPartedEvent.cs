@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
     /// An event specifying a player left an universe.
@@ -33,5 +33,7 @@ namespace Flattiverse
         {
             return $"{Player.Name} parted {Universe.Name}. He was on team {Team.Name}.";
         }
+
+        public override FlattiverseEventKind Kind => FlattiverseEventKind.PlayerParted;
     }
 }

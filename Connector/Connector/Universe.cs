@@ -173,7 +173,7 @@ namespace Flattiverse
         /// <returns>True, when the the name meets the requirements and is not yet used. Returns false when requirements don't match or the name is in use in this universe. Also returns false when all universes are offline.</returns>
         public async Task<bool> CheckName(string name)
         {
-            if (name == null || !Unit.CheckName(name))
+            if (name == null || !Units.Unit.CheckName(name))
                 return false;
 
             using (Session session = Server.connection.NewSession())
@@ -262,7 +262,7 @@ namespace Flattiverse
             if (Server.Player.Universe != this || Server.Player.Team == null)
                 throw new InvalidOperationException("You need to join as a player (with team assignment) first.");
 
-            if (!Unit.CheckName(name))
+            if (!Units.Unit.CheckName(name))
                 throw new ArgumentException("name doesn't match unit naming criteria.", "name");
 
             using (Session session = Server.connection.NewSession())

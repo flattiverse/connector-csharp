@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Utils
 {
     /// <summary>
     /// Crypto helper functions.

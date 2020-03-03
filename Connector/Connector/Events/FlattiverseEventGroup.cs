@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Events
 {
     /// <summary>
-    /// Specifies the kind of an flattiverse event.
+    /// Specifies the group of an flattiverse event.
     /// </summary>
-    public enum FlattiverseEventKind
+    public enum FlattiverseEventGroup
     {
         /// <summary>
         /// Meta events are usually no direct game events. Meta events are used to inform you about

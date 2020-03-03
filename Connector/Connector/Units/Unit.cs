@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A unit.
@@ -115,19 +115,19 @@ namespace Flattiverse
             switch (packet.Helper)
             {
                 case 0x01: // PlayerUnit
-                    return new PlayerUnit(universe, galaxy, ref reader);
+                    return new Units.PlayerUnit(universe, galaxy, ref reader);
                 case 0x04: // Target
-                    return new Target(universe, galaxy, ref reader);
+                    return new Units.Target(universe, galaxy, ref reader);
                 case 0x08: // Sun
-                    return new Sun(universe, galaxy, ref reader);
+                    return new Units.Sun(universe, galaxy, ref reader);
                 case 0x10: // Planet
-                    return new Planet(universe, galaxy, ref reader);
+                    return new Units.Planet(universe, galaxy, ref reader);
                 case 0x11: // Moon
-                    return new Moon(universe, galaxy, ref reader);
+                    return new Units.Moon(universe, galaxy, ref reader);
                 case 0x12: // Meteoroid
-                    return new Meteoroid(universe, galaxy, ref reader);
+                    return new Units.Meteoroid(universe, galaxy, ref reader);
                 case 0x20: // Buoy
-                    return new Buoy(universe, galaxy, ref reader);
+                    return new Units.Buoy(universe, galaxy, ref reader);
             }
 
             // Unknown unit.
@@ -177,6 +177,8 @@ namespace Flattiverse
 
             return true;
         }
+
+        public virtual UnitKind Kind => throw new NotImplementedException("Sorry. Please contact info@flattiverse.com.");
 
         /// <summary>
         /// The String representation of the unit.

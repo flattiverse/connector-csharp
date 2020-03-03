@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A Sun. A unit mostly producing much energy and sometimes also much radiation.
@@ -13,14 +13,16 @@ namespace Flattiverse
         /// <summary>
         /// The corona the sun has or null if the sun has no corona.
         /// </summary>
-        public readonly Corona Corona;
+        public readonly SunCorona Corona;
 
         internal Sun(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {
             byte plasma = reader.ReadByte();
 
             if (plasma > 0)
-                Corona = new Corona(plasma, ref reader);
+                Corona = new SunCorona(plasma, ref reader);
         }
+
+        public override UnitKind Kind => UnitKind.Sun;
     }
 }

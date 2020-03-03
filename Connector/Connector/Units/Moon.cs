@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Flattiverse
+namespace Flattiverse.Units
 {
     /// <summary>
     /// A Moon. A cosmetic "wall" unit.
@@ -13,5 +13,6 @@ namespace Flattiverse
         internal Moon(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {
         }
+        public override UnitKind Kind => UnitKind.Moon;
     }
 }
