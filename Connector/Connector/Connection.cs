@@ -167,7 +167,7 @@ namespace Flattiverse
                 }
 
                 // VERSION CHECK
-                if (packetData[14] + packetData[15] * 256 != 4)
+                if (packetData[14] + packetData[15] * 256 != 5)
                 {
                     socket.Close();
 
