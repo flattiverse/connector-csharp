@@ -16,7 +16,7 @@ namespace Flattiverse
         /// </summary>
         public readonly Server Server;
 
-        private int id;
+        internal int id;
         private string name;
         private bool online;
         private float ping;
