@@ -20,8 +20,8 @@ Join command works for universe `Development` and for `Beginners Course`. The `D
 
 It's also possible to Query, Update and Delete Units and Regions in the galaxy. Additionally: You now can Live View Galaxies and we implemented `Sun`s, `Planet`s, `Moon`s, `Meteoroid`s, `Buoy`s and ofc Mission`Target`s. :D - Checkout the code for how it's done. :)
 
-The game itself currently doesn't support properly scanning, so it's just sending you ALL the untis. However, movement and gravity has been implemented. But without colissions.
+The game itself currently doesn't support properly scanning, so it's just sending you ALL the untis. However, movement, gravity, colissions have been implemented. Shots will follow tomorrow.
 
 More to come the next hours and days. :)
 
-*Please see the most updated information about the server [here](https://documentation.flattiverse.com/display/FLAT/Connector+development). If the development of this connector progresses we will also update the server on `galaxy.flattiverse.com:80`.*
+*Please see the most updated information about the server [here](https://documentation.flattiverse.com/display/FLAT/Connector+development). If the development of this connector progresses we will also update the server on `galaxy.flattiverse.com:22`.*

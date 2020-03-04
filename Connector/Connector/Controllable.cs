@@ -119,6 +119,16 @@ namespace Flattiverse
         public float HullMax => hullMax;
 
         /// <summary>
+        /// Specifies the maximum rotation.
+        /// </summary>
+        public float RotationMax => 30f;
+
+        /// <summary>
+        /// Specifies the maximum speed. If you go faster than this speed, you will be softly limited to that speed with 1/10 drop of.
+        /// </summary>
+        public float SpeedMax => 3.5f;
+
+        /// <summary>
         /// The maximum range the broad scanner has.
         /// </summary>
         public float ScannerBroadMax => scannerBroadMax;

@@ -4,9 +4,15 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>FlattiverseConnector</AssemblyName>
     <RootNamespace>Flattiverse</RootNamespace>
-    <AssemblyVersion>0.99.0.0</AssemblyVersion>
-    <FileVersion>1.99.0.0</FileVersion>
-    <Version>0.99.0.4</Version>
+    <AssemblyVersion>0.99.0.5</AssemblyVersion>
+    <FileVersion>0.99.0.5</FileVersion>
+    <Version>0.99.0.5</Version>
+    <Authors>Matthias Lukaseder</Authors>
+    <Company>Lukaseder Hard- und Software Entwicklung</Company>
+    <Product>Flattiverse Reference Connector</Product>
+    <Description>Flattiverse is a learning game for programmers and engineers. This is the reference implementation.</Description>
+    <Copyright>Matthias Lukaseder</Copyright>
+    <PackageProjectUrl>http://www.flattiverse.com</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
