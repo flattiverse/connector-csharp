@@ -103,18 +103,22 @@ namespace Flattiverse
                         break;
                     case 0xFB:
                         {
-                            string message = packet.Read().ReadString();
-                            string parameter = packet.Read().ReadString();
+                            BinaryMemoryReader tmpReader = packet.Read();
+
+                            string message = tmpReader.ReadString();
+                            string parameter = tmpReader.ReadString();
 
                             exception = new ArgumentException(message, parameter);
                         }
                         break;
                     case 0xFC:
                         {
-                            string message = packet.Read().ReadString();
-                            string parameter = packet.Read().ReadString();
+                            BinaryMemoryReader tmpReader = packet.Read();
 
-                            exception = new ArgumentNullException(message, parameter);
+                            string message = tmpReader.ReadString();
+                            string parameter = tmpReader.ReadString();
+
+                            exception = new ArgumentNullException(parameter, message);
                         }
                         break;
                     case 0xFD:

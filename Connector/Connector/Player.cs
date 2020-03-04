@@ -68,18 +68,16 @@ namespace Flattiverse
         /// <summary>
         /// Sending a message to this player.
         /// </summary>
-        /// <param name="chatMessage">The chat message that should be send to this player.</param>
+        /// <param name="message">The chat message that should be send to this player.</param>
         /// <exception cref="ArgumentException">The chat message is larger than 256 characters.</exception>
         /// <exception cref="ArgumentNullException">The chat message is null.</exception>
-        public async Task Chat(string chatMessage)
+        public async Task Chat(string message)
         {
-            if (chatMessage == null)
-                throw new ArgumentNullException("The chat message can't be null.", chatMessage);
+            if (message == null)
+                throw new ArgumentNullException(nameof(message), "The chat message can't be null.");
 
-            if (chatMessage.Length > 256)
-            {
-                throw new ArgumentException("The chat message is not allowed to have more than 256 characters!", chatMessage);
-            }
+            if (message.Length > 256)
+                throw new ArgumentException("The chat message is not allowed to have more than 256 characters.", nameof(message));
 
             using (Session session = Server.connection.NewSession())
             {
@@ -88,7 +86,7 @@ namespace Flattiverse
                 packet.Command = 0x65;
                 packet.BaseAddress = (ushort)id;
 
-                packet.Write().Write(chatMessage);
+                packet.Write().Write(message);
 
                 Server.connection.Send(packet);
                 Server.connection.Flush();

@@ -237,8 +237,8 @@ namespace Flattiverse
                 socket.ReceiveTimeout = 60000;
                 socket.Blocking = false;
 
-                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null).ConfigureAwait(false);
-                //await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null);
+                //await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null).ConfigureAwait(false);
+                await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null);
 
                 int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend).ConfigureAwait(false);
 
