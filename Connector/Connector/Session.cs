@@ -101,6 +101,29 @@ namespace Flattiverse
                     case 0x61:
                         exception = new AmbiguousXmlDataException();
                         break;
+                    case 0xFB:
+                        {
+                            string message = packet.Read().ReadString();
+                            string parameter = packet.Read().ReadString();
+
+                            exception = new ArgumentException(message, parameter);
+                        }
+                        break;
+                    case 0xFC:
+                        {
+                            string message = packet.Read().ReadString();
+                            string parameter = packet.Read().ReadString();
+
+                            exception = new ArgumentNullException(message, parameter);
+                        }
+                        break;
+                    case 0xFD:
+                        {
+                            string message = packet.Read().ReadString();
+
+                            exception = new InvalidOperationException(message);
+                        }
+                        break;
                     case 0xFE:
                         exception = new Exception("This exception will be replaced with an generic exception.");
                         break;
