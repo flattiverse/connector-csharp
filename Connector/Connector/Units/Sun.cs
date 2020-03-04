@@ -23,6 +23,9 @@ namespace Flattiverse.Units
                 Corona = new SunCorona(plasma, ref reader);
         }
 
+        /// <summary>
+        /// The kind of the unit.
+        /// </summary>
         public override UnitKind Kind => UnitKind.Sun;
     }
 }

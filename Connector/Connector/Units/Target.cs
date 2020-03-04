@@ -29,6 +29,9 @@ namespace Flattiverse.Units
                 Hint = null;
         }
 
+        /// <summary>
+        /// The kind of the unit.
+        /// </summary>
         public override UnitKind Kind => UnitKind.Target;
     }
 }

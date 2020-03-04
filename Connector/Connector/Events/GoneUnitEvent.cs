@@ -33,6 +33,9 @@ namespace Flattiverse.Events
             return $"Gone Unit: {Name}";
         }
 
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public override FlattiverseEventKind Kind => FlattiverseEventKind.GoneUnit;
     }
 }

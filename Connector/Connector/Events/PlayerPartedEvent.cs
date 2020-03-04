@@ -34,6 +34,9 @@ namespace Flattiverse.Events
             return $"{Player.Name} parted {Universe.Name}. He was on team {Team.Name}.";
         }
 
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public override FlattiverseEventKind Kind => FlattiverseEventKind.PlayerParted;
     }
 }

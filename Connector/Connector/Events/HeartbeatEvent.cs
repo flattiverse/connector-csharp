@@ -29,6 +29,10 @@ namespace Flattiverse.Events
         {
             return "[HEARTBEAT]";
         }
+
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public override FlattiverseEventKind Kind => FlattiverseEventKind.Heartbeat;
     }
 }

@@ -14,6 +14,9 @@ namespace Flattiverse.Units
         {
         }
 
+        /// <summary>
+        /// The kind of the unit.
+        /// </summary>
         public override UnitKind Kind => UnitKind.Meteoroid;
     }
 }

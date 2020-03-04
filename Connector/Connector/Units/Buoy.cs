@@ -63,6 +63,9 @@ namespace Flattiverse.Units
             return true;
         }
 
+        /// <summary>
+        /// The kind of the unit.
+        /// </summary>
         public override UnitKind Kind => UnitKind.Buoy;
     }
 }

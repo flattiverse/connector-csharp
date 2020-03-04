@@ -23,6 +23,9 @@ namespace Flattiverse.Events
             return $"Sadly {this.GetType()} has no valid .ToString().";
         }
 
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public virtual FlattiverseEventKind Kind => throw new NotImplementedException("Please contact info@flattiverse.com.");
     }
 }

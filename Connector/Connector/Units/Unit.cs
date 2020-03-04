@@ -178,6 +178,9 @@ namespace Flattiverse.Units
             return true;
         }
 
+        /// <summary>
+        /// The kind of the unit.
+        /// </summary>
         public virtual UnitKind Kind => throw new NotImplementedException("Sorry. Please contact info@flattiverse.com.");
 
         /// <summary>

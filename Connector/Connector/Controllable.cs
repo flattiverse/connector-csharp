@@ -20,18 +20,18 @@ namespace Flattiverse
         private bool active;
 
         private float radius;
-        private int energyMax;
+        private float energyMax;
         private float engineMax;
         private float thrusterMax;
-        private int hullMax;
+        private float hullMax;
         private float scannerBroadMax;
         private Galaxy galaxy;
         private byte[] systems;
 
         private Vector position;
         private Vector movement;
-        private int hull;
-        private int energy;
+        private float hull;
+        private float energy;
         private float direction;
         private float rotation;
         private float engine;
@@ -45,6 +45,8 @@ namespace Flattiverse
             this.server = server;
             ID = packet.SubAddress;
 
+            active = true;
+
             BinaryMemoryReader reader = packet.Read();
 
             name = reader.ReadString();
@@ -55,10 +57,10 @@ namespace Flattiverse
         internal void updateStructural(Universe universe, ref BinaryMemoryReader reader)
         {
             radius = reader.ReadSingle();
-            energyMax = reader.ReadUInt16();
+            energyMax = reader.ReadSingle();
             engineMax = reader.ReadSingle();
             thrusterMax = reader.ReadSingle();
-            hullMax = reader.ReadByte();
+            hullMax = reader.ReadSingle();
             scannerBroadMax = reader.ReadUInt16();
             galaxy = universe.galaxies[reader.ReadByte()];
             systems = new byte[13];
@@ -70,8 +72,8 @@ namespace Flattiverse
         {
             position = new Vector(ref reader);
             movement = new Vector(ref reader);
-            hull = reader.ReadByte();
-            energy = reader.ReadUInt16();
+            hull = reader.ReadSingle();
+            energy = reader.ReadSingle();
             direction = reader.ReadSingle();
             rotation = reader.ReadSingle();
             engine = reader.ReadSingle();
@@ -99,7 +101,7 @@ namespace Flattiverse
         /// <summary>
         /// The maximum amount of energy the vessel has.
         /// </summary>
-        public int EnergyMax => energyMax;
+        public float EnergyMax => energyMax;
 
         /// <summary>
         /// The maximum amount of movement the main engine can do.
@@ -114,7 +116,7 @@ namespace Flattiverse
         /// <summary>
         /// The maximum hull the ship has.
         /// </summary>
-        public int HullMax => hullMax;
+        public float HullMax => hullMax;
 
         /// <summary>
         /// The maximum range the broad scanner has.
@@ -155,12 +157,12 @@ namespace Flattiverse
         /// <summary>
         /// The hull the current ship has.
         /// </summary>
-        public int Hull => hull;
+        public float Hull => hull;
 
         /// <summary>
         /// The energy of the controllable.
         /// </summary>
-        public int Energy => energy;
+        public float Energy => energy;
 
         /// <summary>
         /// The direction this controllable is turned to in degree.
@@ -176,6 +178,11 @@ namespace Flattiverse
         /// The output of the thruster. If this is 0 the speed of how fast the ship is turning doesn't change. If this is -0.5 the ship is turning faster to the left each internal tick.
         /// </summary>
         public float Thruster => thruster;
+
+        /// <summary>
+        /// The rotation speed of the unit. (Every heartbeat: Direction += Rotation.)
+        /// </summary>
+        public float Rotation => rotation;
 
         /// <summary>
         /// true, if the Scanner is enabled. false otherwise.
@@ -217,7 +224,26 @@ namespace Flattiverse
                 server.connection.Send(packet);
                 server.connection.Flush();
 
-                packet = await session.Wait().ConfigureAwait(false);
+                await session.Wait().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Ends the current unit. This will take up to 2 seconds, if your unit is alive.
+        /// </summary>
+        public async Task Close()
+        {
+            using (Session session = server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0xB1;
+                packet.SubAddress = ID;
+
+                server.connection.Send(packet);
+                server.connection.Flush();
+
+                await session.Wait().ConfigureAwait(false);
             }
         }
 

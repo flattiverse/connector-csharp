@@ -46,6 +46,9 @@ namespace Flattiverse.Units
                 BroadScanner = new Scanner(90, reader.ReadSingle());
         }
 
+        /// <summary>
+        /// The kind of the unit.
+        /// </summary>
         public override UnitKind Kind => UnitKind.PlayerUnit;
     }
 }

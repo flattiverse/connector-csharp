@@ -167,7 +167,7 @@ namespace Flattiverse
                 }
 
                 // VERSION CHECK
-                if (packetData[14] + packetData[15] * 256 != 2)
+                if (packetData[14] + packetData[15] * 256 != 3)
                 {
                     socket.Close();
 
@@ -315,7 +315,7 @@ namespace Flattiverse
                 }
 
                 // VERSION CHECK
-                if (packetData[14] + packetData[15] * 256 != 2)
+                if (packetData[14] + packetData[15] * 256 != 3)
                 {
                     socket.Close();
 

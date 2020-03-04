@@ -22,6 +22,9 @@ namespace Flattiverse.Events
             return $"Updated Unit: {Unit}";
         }
 
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public override FlattiverseEventKind Kind => FlattiverseEventKind.UpdatedUnit;
     }
 }

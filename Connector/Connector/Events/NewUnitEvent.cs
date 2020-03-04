@@ -5,7 +5,7 @@ using System.Text;
 namespace Flattiverse.Events
 {
     /// <summary>
-    /// An event indicating that a new unit enetered your scan horizon.
+    /// An event indicating that a new unit entered your scan horizon.
     /// </summary>
     public class NewUnitEvent : UnitEvent
     {
@@ -22,6 +22,9 @@ namespace Flattiverse.Events
             return $"New Unit: {Unit}";
         }
 
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public override FlattiverseEventKind Kind => FlattiverseEventKind.NewUnit;
     }
 }

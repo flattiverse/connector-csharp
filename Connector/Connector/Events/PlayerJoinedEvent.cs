@@ -34,6 +34,9 @@ namespace Flattiverse.Events
             return $"{Player.Name} joined {Universe.Name} with team {Team.Name}.";
         }
 
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
         public override FlattiverseEventKind Kind => FlattiverseEventKind.PlayerJoined;
     }
 }
