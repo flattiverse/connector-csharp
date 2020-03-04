@@ -8,7 +8,7 @@ namespace Flattiverse.Units
     /// <summary>
     /// A Moon. A cosmetic "wall" unit.
     /// </summary>
-    public class Moon : SteadyUnit
+    public class Moon : CommodityUnit
     {
         internal Moon(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {

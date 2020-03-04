@@ -8,7 +8,7 @@ namespace Flattiverse.Units
     /// <summary>
     /// A Planet. A cosmetic "wall" unit.
     /// </summary>
-    public class Planet : SteadyUnit
+    public class Planet : CommodityUnit
     {
         internal Planet(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {

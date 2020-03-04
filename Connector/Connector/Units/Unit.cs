@@ -72,11 +72,21 @@ namespace Flattiverse.Units
         /// </summary>
         public readonly bool Alterable;
 
+        /// <summary>
+        /// true, if a colission with this element may harm you.
+        /// </summary>
+        public readonly bool Solid;
+
+        /// <summary>
+        /// true, if you can't scan behind this object or if it will keep radiation back.
+        /// </summary>
+        public readonly bool Masking;
+
         internal Unit(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader)
         {
-            byte datas = reader.ReadByte();
+            ushort datas = reader.ReadUInt16();
 
-            Mobility = (Mobility)(datas >> 6);
+            Mobility = (Mobility)((datas >> 6) & 0b11);
 
             Name = reader.ReadString();
 
@@ -91,20 +101,23 @@ namespace Flattiverse.Units
 
             Radius = reader.ReadSingle();
 
-            if ((datas & 0b0000_0001) == 0b0000_0001)
+            if ((datas & 0b00000000_00000001) == 0b00000000_00000001)
                 Gravity = reader.ReadSingle();
 
-            if ((datas & 0b0000_0010) == 0b0000_0010)
+            if ((datas & 0b00000000_00000010) == 0b00000000_00000010)
                 Radiation = reader.ReadSingle();
 
-            if ((datas & 0b0000_0100) == 0b0000_0100)
+            if ((datas & 0b00000000_00000100) == 0b00000000_00000100)
                 PowerOutput = reader.ReadSingle();
 
-            if ((datas & 0b0000_1000) == 0b0000_1000)
+            if ((datas & 0b00000000_00001000) == 0b00000000_00001000)
                 Team = universe.teams[reader.ReadByte()];
 
-            Alterable = (datas & 0b0010_0000) == 0b0010_0000;
-            Phased = (datas & 0b0001_0000) == 0b0001_0000;
+            Alterable = (datas & 0b00000000_00100000) == 0b00000000_00100000;
+            Phased = (datas & 0b00000000_00010000) == 0b00000000_00010000;
+
+            Solid = (datas & 0b00000001_00000000) == 0b00000001_00000000;
+            Masking = (datas & 0b00000010_00000000) == 0b00000010_00000000;
         }
 
         internal static Unit FromPacket(Universe universe, Packet packet)

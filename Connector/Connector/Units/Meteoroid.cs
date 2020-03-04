@@ -8,7 +8,7 @@ namespace Flattiverse.Units
     /// <summary>
     /// A Meteoroid. A cosmetic "wall" unit.
     /// </summary>
-    public class Meteoroid : SteadyUnit
+    public class Meteoroid : CommodityUnit
     {
         internal Meteoroid(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {

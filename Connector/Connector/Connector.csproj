@@ -6,7 +6,7 @@
     <RootNamespace>Flattiverse</RootNamespace>
     <AssemblyVersion>0.99.0.0</AssemblyVersion>
     <FileVersion>1.99.0.0</FileVersion>
-    <Version>0.99.0.1</Version>
+    <Version>0.99.0.4</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

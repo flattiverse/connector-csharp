@@ -52,6 +52,9 @@ namespace DevelopmentArea
                     {
                         Console.WriteLine(@event.ToString());
 
+                        if (@event is NewUnitEvent && ((NewUnitEvent)@event).Unit is CommodityUnit)
+                            Console.WriteLine($" => {((NewUnitEvent)@event).Unit.Name} RESOURCE={((CommodityUnit)((NewUnitEvent)@event).Unit).Resource}");
+
                         if (@event is HeartbeatEvent)
                             Console.WriteLine($" * ENERGY={controllable0.Energy}; HULL={controllable0.Hull}/{controllable0.HullMax}; ACTIVE={controllable0.Active}; ALIVE={controllable0.Alive}");
                     }
