@@ -43,7 +43,7 @@ namespace DevelopmentArea
 
                 int heartbeat = 0;
 
-                for (int eventsCounter = 0; heartbeat < 40; eventsCounter++)
+                for (int eventsCounter = 0; heartbeat < 120; eventsCounter++)
                 {
                     Queue<FlattiverseEvent> events = await server0.GatherEvents();
 
@@ -53,49 +53,68 @@ namespace DevelopmentArea
                         {
                             //Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {controllable0.Name} THRUSTER={controllable0.Thruster} ROTATION={controllable0.Rotation} DIRECTION={controllable0.Direction}");
 
-                            Console.WriteLine("\n *** " + heartbeat.ToString() + " E: " + controllable0.Energy + " cE: " + controllable0.EnergyOnLocation);
+                            Console.WriteLine("\n *** " + heartbeat.ToString());
 
-                            foreach (FlattiverseResourceKind kind in Enum.GetValues(typeof(FlattiverseResourceKind)))
-                                if (kind != FlattiverseResourceKind.None)
-                                    Console.WriteLine($" => {kind}: {controllable0.GetResource(kind).Current} / {controllable0.GetResource(kind).Max}");
+                            //foreach (FlattiverseResourceKind kind in Enum.GetValues(typeof(FlattiverseResourceKind)))
+                            //    if (kind != FlattiverseResourceKind.None)
+                            //        Console.WriteLine($" => {kind}: {controllable0.GetResource(kind).Current} / {controllable0.GetResource(kind).Max}");
 
                             heartbeat++;
                         }
 
+                        Unit unit = null;
+
+                        if (@event is NewUnitEvent)
+                            unit = ((NewUnitEvent)@event).Unit;
+                        else if (@event is UpdatedUnitEvent)
+                            unit = ((UpdatedUnitEvent)@event).Unit;
+                        else if (@event is GoneUnitEvent)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine(" GONE: " + ((GoneUnitEvent)@event).Name);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        }
+
+                            if (unit != null)
+                            Console.WriteLine(" UNIT: " + unit.ToString());
+
+                        if (@event is HeartbeatEvent && heartbeat == 5)
+                            Console.WriteLine($" * SHOT_NAME = \"{await controllable0.ShootFront(FlattiverseResourceKind.AmmunitionRed, 30)}\".");
+
                         //if (@event is UpdatedUnitEvent && ((UpdatedUnitEvent)@event).Unit is PlayerUnit && ((UpdatedUnitEvent)@event).Unit.Name == "Bounty0")
                         //    Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((UpdatedUnitEvent)@event).Unit.Name} THRUSTER={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Thruster} ROTATION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Rotation} DIRECTION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Direction}");
 
-                        //if (@event is NewUnitEvent && ((NewUnitEvent)@event).Unit is Sun)
-                        //    Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((NewUnitEvent)@event).Unit.Name} RESOURCE={((Sun)((NewUnitEvent)@event).Unit).Resource}");
+                            //if (@event is NewUnitEvent && ((NewUnitEvent)@event).Unit is Sun)
+                            //    Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((NewUnitEvent)@event).Unit.Name} RESOURCE={((Sun)((NewUnitEvent)@event).Unit).Resource}");
 
-                        switch (heartbeat)
-                        {
-                            case 10:
-                                controllable0.SetThrusters(-1f);
-                                break;
-                            case 11:
-                                controllable0.SetThrusters(0);
-                                break;
-                            case 15:
-                                controllable0.SetThrusters(1f);
-                                break;
-                            case 16:
-                                controllable0.SetThrusters(0f);
-                                break;
-                            case 18:
-                                controllable0.SetThrusters(1f);
-                                break;
-                            case 19:
-                                controllable0.SetThrusters(0f);
-                                break;
-                            case 22:
-                                controllable0.SetThrusters(1f);
-                                break;
-                            case 24:
-                                controllable0.SetThrusters(0f);
-                                break;
+                            //switch (heartbeat)
+                            //{
+                            //    case 10:
+                            //        controllable0.SetThrusters(-1f);
+                            //        break;
+                            //    case 11:
+                            //        controllable0.SetThrusters(0);
+                            //        break;
+                            //    case 15:
+                            //        controllable0.SetThrusters(1f);
+                            //        break;
+                            //    case 16:
+                            //        controllable0.SetThrusters(0f);
+                            //        break;
+                            //    case 18:
+                            //        controllable0.SetThrusters(1f);
+                            //        break;
+                            //    case 19:
+                            //        controllable0.SetThrusters(0f);
+                            //        break;
+                            //    case 22:
+                            //        controllable0.SetThrusters(1f);
+                            //        break;
+                            //    case 24:
+                            //        controllable0.SetThrusters(0f);
+                            //        break;
 
-                        }
+                            //}
                     }
                 }
             }

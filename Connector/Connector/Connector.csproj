@@ -4,9 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>FlattiverseConnector</AssemblyName>
     <RootNamespace>Flattiverse</RootNamespace>
-    <AssemblyVersion>0.99.0.6</AssemblyVersion>
-    <FileVersion>0.99.0.6</FileVersion>
-    <Version>0.99.0.6</Version>
+    <AssemblyVersion>0.99.0.7</AssemblyVersion>
+    <FileVersion>0.99.0.7</FileVersion>
+    <Version>0.99.0.7</Version>
     <Authors>Matthias Lukaseder</Authors>
     <Company>Lukaseder Hard- und Software Entwicklung</Company>
     <Product>Flattiverse Reference Connector</Product>

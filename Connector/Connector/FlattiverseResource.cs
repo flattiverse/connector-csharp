@@ -26,7 +26,7 @@ namespace Flattiverse
         {
             current = value;
 
-            if (Kind <= FlattiverseResourceKind.AmmunitionMagenta)
+            if (Kind <= FlattiverseResourceKind.PlasmaMagenta)
                 max = (ushort)(cargoSystemLevel * 20 + 20);
             else if (Kind <= FlattiverseResourceKind.Silicon)
                 max = 50000;

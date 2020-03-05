@@ -18,6 +18,10 @@ namespace Flattiverse.Units
         /// </summary>
         Shot = 0x02,
         /// <summary>
+        /// A explosion.
+        /// </summary>
+        Explosion = 0x03,
+        /// <summary>
         /// A target.
         /// </summary>
         Target = 0x04,

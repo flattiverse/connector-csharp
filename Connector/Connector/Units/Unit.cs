@@ -82,6 +82,11 @@ namespace Flattiverse.Units
         /// </summary>
         public readonly bool Masking;
 
+        /// <summary>
+        /// true, if the unit most likely will stay there forever. (May only be deleted by the map editor.)
+        /// </summary>
+        public readonly bool Persistent;
+
         internal Unit(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader)
         {
             ushort datas = reader.ReadUInt16();
@@ -118,6 +123,7 @@ namespace Flattiverse.Units
 
             Solid = (datas & 0b00000001_00000000) == 0b00000001_00000000;
             Masking = (datas & 0b00000010_00000000) == 0b00000010_00000000;
+            Persistent = (datas & 0b00000100_00000000) == 0b00000100_00000000;
         }
 
         internal static Unit FromPacket(Universe universe, Packet packet)
@@ -129,6 +135,10 @@ namespace Flattiverse.Units
             {
                 case 0x01: // PlayerUnit
                     return new Units.PlayerUnit(universe, galaxy, ref reader);
+                case 0x02: // Shot
+                    return new Units.Shot(universe, galaxy, ref reader);
+                case 0x03: // Explosion
+                    return new Units.Explosion(universe, galaxy, ref reader);
                 case 0x04: // Target
                     return new Units.Target(universe, galaxy, ref reader);
                 case 0x08: // Sun
@@ -202,7 +212,7 @@ namespace Flattiverse.Units
         /// <returns>The string.</returns>
         public override string ToString()
         {
-            return $"[{GetType()}] {Name} {Position} r={Radius}";
+            return $"[{Kind}] {Name} {Position} => {Movement} - r={Radius}";
         }
     }
 }

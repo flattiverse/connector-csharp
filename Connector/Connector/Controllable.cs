@@ -296,6 +296,40 @@ namespace Flattiverse
         }
 
         /// <summary>
+        /// Shoots into the forward direction.
+        /// </summary>
+        /// <param name="kind">The kind of shot.</param>
+        /// <param name="time">The amount of ticks when the produced shot shall explode.</param>
+        /// <returns>The name of the shot.</returns>
+        public async Task<string> ShootFront(FlattiverseResourceKind kind, int time)
+        {
+            using (Session session = server.connection.NewSession())
+            {
+                Packet packet = session.Request;
+
+                packet.Command = 0xB8;
+                packet.SubAddress = ID;
+
+                ManagedBinaryMemoryWriter writer = packet.Write();
+
+                writer.Write((byte)kind);
+                writer.Write((ushort)time);
+
+                server.connection.Send(packet);
+                server.connection.Flush();
+
+                Packet responsePacket = await session.Wait().ConfigureAwait(false);
+
+                BinaryMemoryReader reader = responsePacket.Read();
+
+                if (reader.Size < 11)
+                    throw new InvalidOperationException("Couldn't create Shot.");
+
+                return reader.ReadString();
+            }
+        }
+
+        /// <summary>
         /// Sets the thrusters to the value. Use 0 here to stop accelerating the rotation into one specific direction. In general:
         /// * The rotation of the ship is changed every heartbeat by: rotation += thrusters.
         /// * The direction of the ship is changed every heartbeat by: direction += rotation.
