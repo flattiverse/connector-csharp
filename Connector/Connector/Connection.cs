@@ -12,6 +12,8 @@ namespace Flattiverse
 {
     class Connection
     {
+        private const ushort PROTOCOL_VERSION = 6;
+
         private Socket socket;
         private SocketAsyncEventArgs eventArgs;
 
@@ -167,11 +169,11 @@ namespace Flattiverse
                 }
 
                 // VERSION CHECK
-                if (packetData[14] + packetData[15] * 256 != 5)
+                if (packetData[14] + packetData[15] * 256 != PROTOCOL_VERSION)
                 {
                     socket.Close();
 
-                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 5. Please update your connector.");
+                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version {PROTOCOL_VERSION}. Please update your connector.");
                 }
 
                 eventArgs = new SocketAsyncEventArgs();
@@ -315,11 +317,11 @@ namespace Flattiverse
                 }
 
                 // VERSION CHECK
-                if (packetData[14] + packetData[15] * 256 != 5)
+                if (packetData[14] + packetData[15] * 256 != PROTOCOL_VERSION)
                 {
                     socket.Close();
 
-                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version 5. Please update your connector.");
+                    throw new InvalidOperationException($"Invalid protocol version. Server required protocol version {packetData[14] + packetData[15] * 256} while this connector speaks version {PROTOCOL_VERSION}. Please update your connector.");
                 }
 
                 eventArgs = new SocketAsyncEventArgs();
