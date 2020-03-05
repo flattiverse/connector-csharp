@@ -119,10 +119,10 @@ namespace Flattiverse
         public async Task Login(string username, string password)
         {
             if (connection != null && online)
-                throw new AlreadyConnectedException();
+                throw new InvalidOperationException("You are already connected.");
             
             if (connection != null)
-                throw new InstanceWasBurnedException("This server instance was used once and has then been disconnected. Create a new instance.");
+                throw new InvalidOperationException("This server instance was used once and has then been disconnected. Create a new instance.");
 
             if (username == null)
                 throw new ArgumentNullException("username", "username can't be null.");
@@ -159,10 +159,10 @@ namespace Flattiverse
         public async Task Login(string username, byte[] hash)
         {
             if (connection != null && online)
-                throw new AlreadyConnectedException();
+                throw new InvalidOperationException("You are already connected.");
 
             if (connection != null)
-                throw new InstanceWasBurnedException("This server instance was used once and has then been disconnected. Create a new instance.");
+                throw new InvalidOperationException("This server instance was used once and has then been disconnected. Create a new instance.");
 
             if (username == null)
                 throw new ArgumentNullException("username", "username can't be null.");
@@ -262,7 +262,33 @@ namespace Flattiverse
                                 ThreadPool.QueueUserWorkItem(delegate { lWaiter?.SetResult(null); });
                             }
                             else
-                                ThreadPool.QueueUserWorkItem(delegate { lWaiter?.SetException(new ClientRefusedException((RefuseReason)packet.Helper)); });
+                            {
+                                string exMessage = "";
+
+                                switch ((RefuseReason)packet.Helper)
+                                {
+                                    case RefuseReason.AlreadyOnline:
+                                        exMessage = "You are not allowed to connect, because you are already online.";
+                                        break;
+                                    case RefuseReason.Pending:
+                                        exMessage = "You are not allowed to connect, because some of your ships are still lingering due to an unordered disconnect.";
+                                        break;
+                                    case RefuseReason.OptIn:
+                                        exMessage = "You are not allowed to connect, because you didn't complete the optin cycle.";
+                                        break;
+                                    case RefuseReason.Banned:
+                                        exMessage = "You are banned from using flattiverse. Please contact the administration via https://forums.flattiverse.com/.";
+                                        break;
+                                    case RefuseReason.ServerFull:
+                                        exMessage = "This server is full with clients. Try again later.";
+                                        break;
+                                    default:
+                                        exMessage = "Your connection has been refused due to an unknown refuse reason. Please update your connector.";
+                                        break;
+                                }
+
+                                ThreadPool.QueueUserWorkItem(delegate { lWaiter?.SetException(new InvalidOperationException(exMessage)); });
+                            }
                         }
                         break;
                     case 0x10: // Universe Metainfo Updated
@@ -534,7 +560,7 @@ namespace Flattiverse
         public async Task<Account> QueryAccount(string name)
         {
             if (!Account.CheckName(name))
-                throw new IllegalNameException();
+                throw new ArgumentException("Invalid account name", nameof(name));
 
             using (Session session = connection.NewSession())
             {
@@ -553,7 +579,7 @@ namespace Flattiverse
                 BinaryMemoryReader reader = packet.Read();
 
                 if (reader.Size == 0)
-                    throw new AccountDoesntExistException(name);
+                    throw new ArgumentException("Account doesn't exist", nameof(name));
 
                 return new Account(this, ref reader);
             }
@@ -567,7 +593,7 @@ namespace Flattiverse
         public async Task<string> CheckUnitXml(string xml)
         {
             if (xml == null || xml.Length < 5)
-                throw new AmbiguousXmlDataException();
+                throw new ArgumentException("Xml data is ambiguous.", nameof(xml));
 
             using (Session session = connection.NewSession())
             {

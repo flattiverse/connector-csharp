@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,7 +13,7 @@ namespace Flattiverse
 {
     class Connection
     {
-        private const ushort PROTOCOL_VERSION = 6;
+        private const ushort PROTOCOL_VERSION = 7;
 
         private Socket socket;
         private SocketAsyncEventArgs eventArgs;
@@ -92,7 +93,7 @@ namespace Flattiverse
                 socket.Blocking = false;
 
                 await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "galaxy.flattiverse.com", 22, null).ConfigureAwait(false);
-                // await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null).ConfigureAwait(false);
+                //await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, "127.0.0.1", 22, null).ConfigureAwait(false);
 
                 int amount = await Task.Factory.FromAsync(socket.BeginSend(packetData, 0, 48, SocketFlags.None, null, null), socket.EndSend).ConfigureAwait(false);
 
@@ -337,7 +338,7 @@ namespace Flattiverse
         internal Session NewSession()
         {
             if (closed)
-                throw new FlattiverseNotConnectedException();
+                throw new IOException("Flattiverse is not connected.");
 
             Session session = new Session(this);
 

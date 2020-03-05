@@ -62,7 +62,7 @@ namespace Flattiverse
         public async Task<string> QueryUnitXml(string name)
         {
             if (!Units.Unit.CheckName(name))
-                throw new IllegalNameException();
+                throw new ArgumentException("Invalid name.", nameof(name));
 
             using (Session session = Universe.Server.connection.NewSession())
             {
@@ -88,7 +88,7 @@ namespace Flattiverse
         public async Task UpdateUnitXml(string xml)
         {
             if (xml == null || xml.Length < 5 || xml.Length > 8192)
-                throw new AmbiguousXmlDataException();
+                throw new ArgumentException("Xml data is ambiguous.", nameof(xml));
 
             using (Session session = Universe.Server.connection.NewSession())
             {
@@ -114,7 +114,7 @@ namespace Flattiverse
         public async Task DeleteUnit(string name)
         {
             if (!Units.Unit.CheckName(name))
-                throw new IllegalNameException();
+                throw new ArgumentException("Invalid name.", nameof(name));
 
             using (Session session = Universe.Server.connection.NewSession())
             {

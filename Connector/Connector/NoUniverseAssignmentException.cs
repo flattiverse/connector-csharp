@@ -9,7 +9,7 @@ namespace Flattiverse
     /// </summary>
     public class NoUniverseAssignmentException : InvalidOperationException
     {
-        internal NoUniverseAssignmentException() : base("You need to be assigned (Joinned) to a universe.")
+        internal NoUniverseAssignmentException() : base("You need to be assigned (Joined) to a universe.")
         {
         }
     }

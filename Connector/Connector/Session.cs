@@ -1,6 +1,7 @@
 ﻿using Flattiverse.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace Flattiverse
 
         internal void Disconnected()
         {
-            ThreadPool.QueueUserWorkItem(delegate { tcs.SetException(new FlattiverseDisconnectedException()); });
+            ThreadPool.QueueUserWorkItem(delegate { tcs.SetException(new IOException("Disconnected.")); });
         }
 
         internal void Answer(Packet packet)
@@ -100,6 +101,13 @@ namespace Flattiverse
                         break;
                     case 0x61:
                         exception = new AmbiguousXmlDataException();
+                        break;
+                    case 0xFA:
+                        {
+                            string message = packet.Read().ReadString();
+
+                            exception = new IOException(message);
+                        }
                         break;
                     case 0xFB:
                         {
