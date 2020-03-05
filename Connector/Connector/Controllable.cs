@@ -141,7 +141,7 @@ namespace Flattiverse
         /// <summary>
         /// Specifies the maximum speed. If you go faster than this speed, you will be softly limited to that speed with 1/10 drop of.
         /// </summary>
-        public float SpeedMax => 3.5f;
+        public float SpeedMax => 2.5f;
 
         /// <summary>
         /// The maximum range the broad scanner has.

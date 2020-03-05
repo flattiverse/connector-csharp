@@ -10,8 +10,11 @@ namespace Flattiverse.Units
     /// </summary>
     public class Explosion : SteadyUnit
     {
+        public readonly FlattiverseResourceKind Ammunition;
+
         internal Explosion(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {
+            Ammunition = (FlattiverseResourceKind)reader.ReadByte();
         }
 
         /// <summary>
