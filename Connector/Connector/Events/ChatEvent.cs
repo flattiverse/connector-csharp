@@ -16,7 +16,7 @@ namespace Flattiverse.Events
         /// </summary>
         public readonly string Message;
 
-        public ChatEvent(string message)
+        internal ChatEvent(string message)
         {
             Message = message;
         }

@@ -51,15 +51,22 @@ namespace DevelopmentArea
                     {
                         if (@event is HeartbeatEvent)
                         {
-                            Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {controllable0.Name} THRUSTER={controllable0.Thruster} ROTATION={controllable0.Rotation} DIRECTION={controllable0.Direction}");
+                            //Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {controllable0.Name} THRUSTER={controllable0.Thruster} ROTATION={controllable0.Rotation} DIRECTION={controllable0.Direction}");
+
+                            Console.WriteLine("\n *** " + heartbeat.ToString() + " E: " + controllable0.Energy + " cE: " + controllable0.EnergyOnLocation);
+
+                            foreach (FlattiverseResourceKind kind in Enum.GetValues(typeof(FlattiverseResourceKind)))
+                                if (kind != FlattiverseResourceKind.None)
+                                    Console.WriteLine($" => {kind}: {controllable0.GetResource(kind).Current} / {controllable0.GetResource(kind).Max}");
+
                             heartbeat++;
                         }
 
-                        if (@event is UpdatedUnitEvent && ((UpdatedUnitEvent)@event).Unit is PlayerUnit && ((UpdatedUnitEvent)@event).Unit.Name == "Bounty0")
-                            Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((UpdatedUnitEvent)@event).Unit.Name} THRUSTER={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Thruster} ROTATION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Rotation} DIRECTION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Direction}");
+                        //if (@event is UpdatedUnitEvent && ((UpdatedUnitEvent)@event).Unit is PlayerUnit && ((UpdatedUnitEvent)@event).Unit.Name == "Bounty0")
+                        //    Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((UpdatedUnitEvent)@event).Unit.Name} THRUSTER={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Thruster} ROTATION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Rotation} DIRECTION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Direction}");
 
-                        if (@event is NewUnitEvent && ((NewUnitEvent)@event).Unit is Sun)
-                            Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((NewUnitEvent)@event).Unit.Name} RESOURCE={((Sun)((NewUnitEvent)@event).Unit).Resource}");
+                        //if (@event is NewUnitEvent && ((NewUnitEvent)@event).Unit is Sun)
+                        //    Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((NewUnitEvent)@event).Unit.Name} RESOURCE={((Sun)((NewUnitEvent)@event).Unit).Resource}");
 
                         switch (heartbeat)
                         {

@@ -330,7 +330,7 @@ namespace Flattiverse
                                 }
                             }
 
-                            EnqueueMetaEvent(new PlayerChatEvent(message, player));
+                            EnqueueMetaEvent(new PlayerChatEvent(message, player, this.player));
                             break;
                         }
                     case 0x82: // Universe Chat received

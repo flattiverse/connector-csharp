@@ -27,6 +27,7 @@ namespace Flattiverse
         private float scannerBroadMax;
         private Galaxy galaxy;
         private byte[] systems;
+        private FlattiverseResource[] resources;
 
         private Vector position;
         private Vector movement;
@@ -36,6 +37,8 @@ namespace Flattiverse
         private float rotation;
         private float engine;
         private float thruster;
+        private float energyOnLocation;
+        private float radiationOnLocation;
         private bool scannerBroadEnabled;
         private float scannerBroadDirection;
         private float scannerBroadDestination;
@@ -50,6 +53,11 @@ namespace Flattiverse
             BinaryMemoryReader reader = packet.Read();
 
             name = reader.ReadString();
+
+            resources = new FlattiverseResource[(int)FlattiverseResourceKind.None];
+
+            for (int position = 0; position < resources.Length; position++)
+                resources[position] = new FlattiverseResource((FlattiverseResourceKind)position);
 
             updateStructural(universe, ref reader);
         }
@@ -66,6 +74,11 @@ namespace Flattiverse
             systems = new byte[13];
 
             reader.ReadBytes(systems, 0, 13);
+
+            byte materialsSystem = systems[(int)UniverseSystemKind.Materials];
+
+            for (int position = 0; position < resources.Length; position++)
+                resources[position].Update(reader.ReadUInt16(), materialsSystem);
         }
 
         internal void updateRegular(ref BinaryMemoryReader reader)
@@ -78,6 +91,8 @@ namespace Flattiverse
             rotation = reader.ReadSingle();
             engine = reader.ReadSingle();
             thruster = reader.ReadSingle();
+            energyOnLocation = reader.ReadSingle();
+            radiationOnLocation = reader.ReadSingle();
             scannerBroadEnabled = reader.ReadBoolean();
             scannerBroadDirection = reader.ReadSingle();
             scannerBroadDestination = reader.ReadSingle();
@@ -139,6 +154,19 @@ namespace Flattiverse
         public Galaxy Galaxy => galaxy;
 
         /// <summary>
+        /// Returns the requested flattiverse resource object.
+        /// </summary>
+        /// <param name="kind">The kind of the resource object.</param>
+        /// <returns>The resource object.</returns>
+        public FlattiverseResource GetResource(FlattiverseResourceKind kind)
+        {
+            if (kind < 0 || kind >= FlattiverseResourceKind.None)
+                return null;
+
+            return resources[(int)kind];
+        }
+
+        /// <summary>
         /// Generates a dictionary of ship systems out of stored raw data and the current system level of the corresponding systems.
         /// </summary>
         public Dictionary<UniverseSystemKind, int> Systems
@@ -173,6 +201,16 @@ namespace Flattiverse
         /// The energy of the controllable.
         /// </summary>
         public float Energy => energy;
+
+        /// <summary>
+        /// The energy which reaches you currently from all energy sources.
+        /// </summary>
+        public float EnergyOnLocation => energyOnLocation;
+
+        /// <summary>
+        /// The current radiation on the ships location.
+        /// </summary>
+        public float RadiationOnLocation => radiationOnLocation;
 
         /// <summary>
         /// The direction this controllable is turned to in degree.

@@ -5,69 +5,45 @@ using System.Text;
 namespace Flattiverse
 {
     /// <summary>
-    /// A resource which can be found on planets, moons or meteoroids.
+    /// A resource on a ship.
     /// </summary>
-    public enum FlattiverseResource
+    public class FlattiverseResource
     {
         /// <summary>
-        /// No resource.
+        /// The kind of the resource.
         /// </summary>
-        None = 0x00,
+        public readonly FlattiverseResourceKind Kind;
+
+        private ushort current;
+        private ushort max;
+
+        internal FlattiverseResource(FlattiverseResourceKind kind)
+        {
+            Kind = kind;
+        }
+
+        internal void Update(ushort value, byte cargoSystemLevel)
+        {
+            current = value;
+
+            if (Kind <= FlattiverseResourceKind.AmmunitionMagenta)
+                max = (ushort)(cargoSystemLevel * 20 + 20);
+            else if (Kind <= FlattiverseResourceKind.Silicon)
+                max = 50000;
+            else if (Kind == FlattiverseResourceKind.SpaceCrystal)
+                max = (ushort)(cargoSystemLevel * 3);
+            else
+                max = (ushort)(cargoSystemLevel * 5 + 5);
+        }
+
         /// <summary>
-        /// Plasma Level 1 which can be gathered at a sun.
+        /// The current amount on this ship.
         /// </summary>
-        PlasmaRed,
+        public int Current => current;
+
         /// <summary>
-        /// Plasma Level 2 which can be gathered at a sun.
+        /// The maximum amount on this ship.
         /// </summary>
-        PlasmaOrange,
-        /// <summary>
-        /// Plasma Level 3 which can be gathered at a sun.
-        /// </summary>
-        PlasmaYellow,
-        /// <summary>
-        /// Plasma Level 4 which can be gathered at a sun.
-        /// </summary>
-        PlasmaGreen,
-        /// <summary>
-        /// Plasma Level 5 which can be gathered at a sun.
-        /// </summary>
-        PlasmaCyan,
-        /// <summary>
-        /// Plasma Level 6 which can be gathered at a sun.
-        /// </summary>
-        PlasmaBlue,
-        /// <summary>
-        /// Plasma Level 7 which can be gathered at a sun.
-        /// </summary>
-        PlasmaMagenta,
-        /// <summary>
-        /// Iron. A base resource needed almost for everything.
-        /// </summary>
-        Iron,
-        /// <summary>
-        /// Copper.
-        /// </summary>
-        Copper,
-        /// <summary>
-        /// Gold. This yellow shiny thing.
-        /// </summary>
-        Gold,
-        /// <summary>
-        /// Platinum.
-        /// </summary>
-        Platinum,
-        /// <summary>
-        /// Lithium.
-        /// </summary>
-        Lithium,
-        /// <summary>
-        /// Silicon.
-        /// </summary>
-        Silicon,
-        /// <summary>
-        /// A very seldom resource only found at black holes.
-        /// </summary>
-        SpaceCrystal
+        public int Max => max;
     }
 }

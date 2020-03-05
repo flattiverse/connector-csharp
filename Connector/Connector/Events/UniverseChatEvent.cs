@@ -9,13 +9,20 @@ namespace Flattiverse.Events
     /// </summary>
     public class UniverseChatEvent : ChatEvent
     {
-        public readonly Player Sender;
-        public readonly Universe Universe;
+        /// <summary>
+        /// The source of the message.
+        /// </summary>
+        public readonly Player Source;
 
-        internal UniverseChatEvent(string message, Player sender, Universe universe) : base(message)
+        /// <summary>
+        /// The destination of the message.
+        /// </summary>
+        public readonly Universe Destination;
+
+        internal UniverseChatEvent(string message, Player source, Universe destination) : base(message)
         {
-            Sender = sender;
-            Universe = universe;
+            Source = source;
+            Destination = destination;
         }
 
         /// <summary>
@@ -24,7 +31,7 @@ namespace Flattiverse.Events
         /// <returns>The string.</returns>
         public override string ToString()
         {
-            return $"[{Sender.Name}->{Universe.Name}]: {Message}";
+            return $"[{Source.Name}->{Destination.Name}]: {Message}";
         }
     }
 }

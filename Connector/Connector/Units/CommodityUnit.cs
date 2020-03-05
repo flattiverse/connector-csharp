@@ -10,11 +10,14 @@ namespace Flattiverse.Units
     /// </summary>
     public class CommodityUnit : SteadyUnit
     {
-        public readonly FlattiverseResource Resource;
+        /// <summary>
+        /// The resource you will gather when you fly near this units core. (unit.Position - your.Position &lt; unit.Radius + your.Radius + 25f)
+        /// </summary>
+        public readonly FlattiverseResourceKind Resource;
 
         internal CommodityUnit(Universe universe, Galaxy galaxy, ref BinaryMemoryReader reader) : base(universe, galaxy, ref reader)
         {
-            Resource = (FlattiverseResource)reader.ReadByte();
+            Resource = (FlattiverseResourceKind)reader.ReadByte();
         }
     }
 }

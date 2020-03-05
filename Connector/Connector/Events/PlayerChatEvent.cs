@@ -9,11 +9,20 @@ namespace Flattiverse.Events
     /// </summary>
     public class PlayerChatEvent : ChatEvent
     {
-        public readonly Player Sender;
+        /// <summary>
+        /// The source of the message.
+        /// </summary>
+        public readonly Player Source;
 
-        public PlayerChatEvent(string message, Player sender) : base(message)
+        /// <summary>
+        /// The destination of the message.
+        /// </summary>
+        public readonly Player Destination;
+
+        internal PlayerChatEvent(string message, Player source, Player destination) : base(message)
         {
-            Sender = sender;
+            Source = source;
+            Destination = destination;
         }
 
         /// <summary>
@@ -22,7 +31,7 @@ namespace Flattiverse.Events
         /// <returns>The string.</returns>
         public override string ToString()
         {
-            return $"[{Sender.Name}->YOU]: {Message}";
+            return $"[{Source.Name}->YOU]: {Message}";
         }
     }
 }
