@@ -205,6 +205,9 @@ namespace Flattiverse
 
                 switch (packet.Command)
                 {
+                    case 0x09: // Player Removed.
+                        players[packet.BaseAddress]?.Scores.update(packet.Read());
+                        break;
                     case 0x0A: // Player Removed.
                         players[packet.BaseAddress] = null;
                         break;
@@ -226,8 +229,6 @@ namespace Flattiverse
                         {
                             Player requestPlayer = players[packet.BaseAddress];
 
-                            // Debug.Assert(requestPlayer != null, "Player doesn't exist in local database.");
-
                             if (requestPlayer == null)
                                 break;
 
@@ -236,7 +237,25 @@ namespace Flattiverse
                                 // TODO: Wenn wir selbst betroffen sind: Alle Controllables zerstören.
 
                                 if (player != null && requestPlayer.Universe == player.Universe)
+                                {
+                                    if (player == requestPlayer)
+                                    {
+                                        foreach (Player sPlayer in players)
+                                            if (sPlayer != null && sPlayer.Universe == player.Universe)
+                                                sPlayer.Scores.clear();
+
+                                        for (int position = 0; position < controllables.Length; position++)
+                                            if (controllables[position] != null)
+                                            {
+                                                controllables[position].deactivate();
+                                                controllables[position] = null;
+                                            }
+                                    }
+                                    else
+                                        requestPlayer.Scores.clear();
+
                                     EnqueueMetaEvent(new PlayerPartedEvent(requestPlayer));
+                                }
 
                                 requestPlayer.UpdatePlayerAssignment(packet);
                             }

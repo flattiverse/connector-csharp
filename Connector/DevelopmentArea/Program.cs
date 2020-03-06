@@ -43,7 +43,7 @@ namespace DevelopmentArea
 
                 int heartbeat = 0;
 
-                for (int eventsCounter = 0; heartbeat < 120; eventsCounter++)
+                for (int eventsCounter = 0; heartbeat < 12000; eventsCounter++)
                 {
                     Queue<FlattiverseEvent> events = await server0.GatherEvents();
 
@@ -80,6 +80,9 @@ namespace DevelopmentArea
 
                         if (@event is HeartbeatEvent && heartbeat == 5)
                             Console.WriteLine($" * SHOT_NAME = \"{await controllable0.ShootFront(FlattiverseResourceKind.AmmunitionRed, 30)}\".");
+
+                        if (@event is HeartbeatEvent)
+                            Console.WriteLine($" * SCORE: {server0.Player.Scores.Crashes}");
 
                         //if (@event is UpdatedUnitEvent && ((UpdatedUnitEvent)@event).Unit is PlayerUnit && ((UpdatedUnitEvent)@event).Unit.Name == "Bounty0")
                         //    Console.WriteLine($" =[{heartbeat.ToString("00")}]=> {((UpdatedUnitEvent)@event).Unit.Name} THRUSTER={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Thruster} ROTATION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Rotation} DIRECTION={((PlayerUnit)((UpdatedUnitEvent)@event).Unit).Direction}");

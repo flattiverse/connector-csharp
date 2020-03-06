@@ -129,6 +129,7 @@ namespace Flattiverse.Units
         internal static Unit FromPacket(Universe universe, Packet packet)
         {
             BinaryMemoryReader reader = packet.Read();
+
             Galaxy galaxy = universe.galaxies[packet.SubAddress];
 
             switch (packet.Helper)

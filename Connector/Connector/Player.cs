@@ -26,6 +26,11 @@ namespace Flattiverse
         private Universe universe;
         private Team team;
 
+        /// <summary>
+        /// The scores of the player.
+        /// </summary>
+        public readonly Scores Scores;
+
         internal Player(Server server, Packet packet)
         {
             Server = server;
@@ -38,6 +43,8 @@ namespace Flattiverse
             name = reader.ReadStringNonNull();
             online = reader.ReadBoolean();
             ping = reader.ReadSingle();
+
+            Scores = new Scores();
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Flattiverse
 {
     class Connection
     {
-        private const ushort PROTOCOL_VERSION = 8;
+        private const ushort PROTOCOL_VERSION = 9;
 
         private Socket socket;
         private SocketAsyncEventArgs eventArgs;
