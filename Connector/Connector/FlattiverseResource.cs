@@ -27,13 +27,24 @@ namespace Flattiverse
             current = value;
 
             if (Kind <= FlattiverseResourceKind.PlasmaMagenta)
-                max = (ushort)(cargoSystemLevel * 20 + 20);
+                max = (ushort)(cargoSystemLevel * 90 + 20);
             else if (Kind <= FlattiverseResourceKind.Silicon)
                 max = 50000;
             else if (Kind == FlattiverseResourceKind.SpaceCrystal)
                 max = (ushort)(cargoSystemLevel * 3);
             else
-                max = (ushort)(cargoSystemLevel * 5 + 5);
+                switch (cargoSystemLevel)
+                {
+                    default:
+                        max = 5;
+                        break;
+                    case 1:
+                        max = 15;
+                        break;
+                    case 2:
+                        max = 35;
+                        break;
+                }
         }
 
         /// <summary>

@@ -11,6 +11,8 @@ namespace Flattiverse
     /// </summary>
     public class Controllable : UniversalEnumerable
     {
+        private static readonly float[] energyLevels = { 3000, 5000, 10000, 20000, 50000 };
+
         private readonly string name;
 
         private readonly byte ID;
@@ -21,10 +23,6 @@ namespace Flattiverse
 
         private float radius;
         private float energyMax;
-        private float engineMax;
-        private float thrusterMax;
-        private float hullMax;
-        private float scannerBroadMax;
         private Galaxy galaxy;
         private byte[] systems;
         private FlattiverseResource[] resources;
@@ -65,17 +63,12 @@ namespace Flattiverse
         internal void updateStructural(Universe universe, ref BinaryMemoryReader reader)
         {
             radius = reader.ReadSingle();
-            energyMax = reader.ReadSingle();
-            engineMax = reader.ReadSingle();
-            thrusterMax = reader.ReadSingle();
-            hullMax = reader.ReadSingle();
-            scannerBroadMax = reader.ReadUInt16();
             galaxy = universe.galaxies[reader.ReadByte()];
-            systems = new byte[13];
+            systems = new byte[5];
 
-            reader.ReadBytes(systems, 0, 13);
+            reader.ReadBytes(systems, 0, 5);
 
-            byte materialsSystem = systems[(int)UniverseSystemKind.Materials];
+            byte materialsSystem = systems[(int)UniverseSystemKind.Cargo];
 
             for (int position = 0; position < resources.Length; position++)
                 resources[position].Update(reader.ReadUInt16(), materialsSystem);
@@ -99,6 +92,11 @@ namespace Flattiverse
         }
 
         /// <summary>
+        /// The number with which some things (radius, acceleration) gets multiplied internally. This factor will increase with more components.
+        /// </summary>
+        public float PunishmentFactor => 0.8f + (systems[0] + systems[1] + systems[2] + systems[3] + systems[4]) * 0.04f;
+
+        /// <summary>
         /// True, if this unit is still registered to the game. This will change, when you get disconnected or if the unit gets disposed.
         /// </summary>
         public bool Active => active;
@@ -116,22 +114,22 @@ namespace Flattiverse
         /// <summary>
         /// The maximum amount of energy the vessel has.
         /// </summary>
-        public float EnergyMax => energyMax;
+        public float EnergyMax => energyLevels[systems[(int)UniverseSystemKind.Energy]];
 
         /// <summary>
         /// The maximum amount of movement the main engine can do.
         /// </summary>
-        public float EngineMax => engineMax;
+        public float EngineMax => (systems[(int)UniverseSystemKind.Engine] * 0.0125f + 0.05f) / PunishmentFactor;
 
         /// <summary>
         /// The absolute maximum the thrusters can accelerate the ship turning.
         /// </summary>
-        public float ThrusterMax => thrusterMax;
+        public float ThrusterMax => (systems[(int)UniverseSystemKind.Engine] * 1.5f + 3f) / PunishmentFactor;
 
         /// <summary>
         /// The maximum hull the ship has.
         /// </summary>
-        public float HullMax => hullMax;
+        public float HullMax => 20f;
 
         /// <summary>
         /// Specifies the maximum rotation.
@@ -146,7 +144,12 @@ namespace Flattiverse
         /// <summary>
         /// The maximum range the broad scanner has.
         /// </summary>
-        public float ScannerBroadMax => scannerBroadMax;
+        public ushort ScannerBroadMax => (ushort)(systems[(int)UniverseSystemKind.Scanner] * 50 + 150);
+
+        /// <summary>
+        /// The maximum range th elong scanner has.
+        /// </summary>
+        public ushort ScannerLongMax => (ushort)(systems[(int)UniverseSystemKind.Scanner] * 75 + 250);
 
         /// <summary>
         /// The galaxy this controllable currently is in.
@@ -173,9 +176,9 @@ namespace Flattiverse
         {
             get
             {
-                Dictionary<UniverseSystemKind, int> systems = new Dictionary<UniverseSystemKind, int>(13);
+                Dictionary<UniverseSystemKind, int> systems = new Dictionary<UniverseSystemKind, int>(5);
 
-                for (int systemKind = 0; systemKind < 13; systemKind++)
+                for (int systemKind = 0; systemKind < 5; systemKind++)
                     systems.Add((UniverseSystemKind)systemKind, this.systems[systemKind]);
 
                 return systems;

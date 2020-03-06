@@ -79,7 +79,10 @@ namespace DevelopmentArea
                             Console.WriteLine(" UNIT: " + unit.ToString());
 
                         if (@event is HeartbeatEvent && heartbeat == 5)
+                        {
                             Console.WriteLine($" * SHOT_NAME = \"{await controllable0.ShootFront(FlattiverseResourceKind.AmmunitionRed, 30)}\".");
+                            //Console.WriteLine($" * SHOT_NAME = \"{await controllable0.ShootFront(FlattiverseResourceKind.AmmunitionRed, 30)}\".");
+                        }
 
                         if (@event is HeartbeatEvent)
                             Console.WriteLine($" * SCORE: {server0.Player.Scores.Crashes}");
