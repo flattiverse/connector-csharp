@@ -29,5 +29,10 @@ namespace Flattiverse.Events
         {
             return Message;
         }
+
+        /// <summary>
+        /// The kind of the event.
+        /// </summary>
+        public override FlattiverseEventKind Kind => FlattiverseEventKind.PlayerChat;
     }
 }
