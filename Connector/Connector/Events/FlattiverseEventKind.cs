@@ -32,6 +32,10 @@ namespace Flattiverse.Events
         /// <summary>
         /// A player parted event.
         /// </summary>
-        PlayerParted
+        PlayerParted,
+        /// <summary>
+        /// A chat event.
+        /// </summary>
+        PlayerChat
     }
 }
