@@ -205,7 +205,7 @@ namespace Flattiverse
 
                 switch (packet.Command)
                 {
-                    case 0x09: // Player Removed.
+                    case 0x09: // Player Score Updated.
                         players[packet.BaseAddress]?.Scores.update(packet.Read());
                         break;
                     case 0x0A: // Player Removed.
