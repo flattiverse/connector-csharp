@@ -22,7 +22,6 @@ namespace Flattiverse
         private bool active;
 
         private float radius;
-        private float energyMax;
         private Galaxy galaxy;
         private byte[] systems;
         private FlattiverseResource[] resources;
