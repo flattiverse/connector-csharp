@@ -6,4 +6,4 @@ This connector is compatible to .NET 6.
 
 # The current status
 
-* 2k23.01.11: Cleanup and start of reference connector development together with @CptnChoas.
+* 2k23.01.11: Cleanup and start of reference connector development together with [CptnChoas](https://www.github.com/CptnChoas).
