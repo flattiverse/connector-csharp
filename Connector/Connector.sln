@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connector", "Connector\Connector.csproj", "{7A79FBBC-B454-4E1A-8AC6-64A982808FC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connector", "Connector\Connector.csproj", "{7A79FBBC-B454-4E1A-8AC6-64A982808FC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Development", "Development\Development.csproj", "{E05328C6-C166-4BA0-9B85-12458A6F6E6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{7A79FBBC-B454-4E1A-8AC6-64A982808FC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A79FBBC-B454-4E1A-8AC6-64A982808FC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A79FBBC-B454-4E1A-8AC6-64A982808FC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E05328C6-C166-4BA0-9B85-12458A6F6E6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E05328C6-C166-4BA0-9B85-12458A6F6E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E05328C6-C166-4BA0-9B85-12458A6F6E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E05328C6-C166-4BA0-9B85-12458A6F6E6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
