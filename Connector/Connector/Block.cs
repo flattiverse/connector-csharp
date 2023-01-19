@@ -20,6 +20,9 @@ namespace Flattiverse
         public async Task Wait() 
         {
             await taskCompletionSource.Task;
+
+            if (Response == null)
+                throw new Exception("Disconnected from server.");
         }
 
         public void Answer(JsonDocument? response) 

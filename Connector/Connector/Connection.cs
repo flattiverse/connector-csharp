@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Reflection.Metadata;
 using System.Runtime.Serialization;
 using System.Text.Json;
 
@@ -24,6 +26,9 @@ namespace Flattiverse
 
         private static int recvBufferLimit = 262144;
 
+        public delegate void ConnectionHandler(Exception? ex);
+
+        public event ConnectionHandler? ConnectionClosed;
        
 
         public Connection(string host, string apiKey) 
@@ -74,7 +79,6 @@ namespace Flattiverse
             Memory<byte> recvMemory = new Memory<byte>(recv);
             JsonDocument document;
             JsonElement element;
-            string? command;
             string? id;
 
             while (true)
@@ -86,21 +90,22 @@ namespace Flattiverse
                 catch (Exception ex)
                 {
                     connected = false;
-                    throw new Exception($"Exception in ReceiveAsync: {ex}");
+                    blockManager.ConnectionClosed(new Exception($"Exception in ReceiveAsync: {ex.Message}"));
+                    return;
                 }
 
                 if (client.State == WebSocketState.CloseReceived)
                 {
                     connected = false;
-                    Console.WriteLine($"Connection closed due to {client.State}.");
 
                     try
                     {
-                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Thank for choosing deutsche bahn", CancellationToken.None);
+                        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal closure", CancellationToken.None);
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"fatal failed in CloseAsync: {ex.Message}");
+                        blockManager.ConnectionClosed(new Exception($"Fatal exception in CloseAsync: {ex.Message}"));
+                        return;
                     }
 
                     return;
@@ -108,25 +113,39 @@ namespace Flattiverse
                 else if (client.State != WebSocketState.Open)
                 {
                     connected = false;
-                    throw new Exception($"Connection closed due to {client.State}.");
+                    blockManager.ConnectionClosed(new Exception($"Connection closed due to {client.State}."));
+                    return;
                 }
 
                 if (!result.EndOfMessage)
                 {
+
+                    connected = false;
+
+                    Exception e;
+
                     if (result.Count == recvBufferLimit)
-                        throw new Exception("Messages can't exceed 16KB.");
+                        e = new Exception($"Connection closed due to Messages can't exceed 256.");
                     else
-                        throw new Exception("You can't split up messages manually.");
+                        e = new Exception($"Connection closed due to split Message.");
+
+                    await payloadExceptionSocketClose(e);
+
+                    return;
                 }
 
                 if (result.MessageType != WebSocketMessageType.Text)
                 {
-                    throw new Exception("Only messages of type text are allowed.");
+                    connected = false;
+                    await payloadExceptionSocketClose(new Exception($"Connection closed due to Messages not being of type text."));
+                    return;
                 }
 
                 if (result.Count == 0)
                 {
-                    throw new Exception("Empty messages aren't allowed.");
+                    connected = false;
+                    await payloadExceptionSocketClose(new Exception($"Connection closed due to Messages being empty."));
+                    return;
                 }
 
                 try
@@ -135,12 +154,16 @@ namespace Flattiverse
                 }
                 catch (Exception exception)
                 {
-                    throw new Exception($"Ambiguous JSON content: {exception}.");
+                    connected = false;
+                    await payloadExceptionSocketClose(new Exception($"Connection closed due to Ambiguous JSON content: {exception}."));
+                    return;
                 }
 
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
                 {
-                    throw new Exception($"Root element needs to be a JSON object. Received instead: {document.RootElement.ValueKind}.");
+                    connected = false;
+                    await payloadExceptionSocketClose(new Exception($"Connection closed due Root element needs to be a JSON object. Received instead: {document.RootElement.ValueKind}."));
+                    return;
                 }
 
                 if (document.RootElement.TryGetProperty("id", out element))
@@ -148,14 +171,16 @@ namespace Flattiverse
 
                     if (element.ValueKind != JsonValueKind.String)
                     {
-                        throw new Exception($"id property must be a string. You sent {element.ValueKind}.");
+                        await payloadExceptionSocketClose(new Exception($"Id property must be a string. Received {element.ValueKind}."));
+                        return;
                     }
 
                     id = element.GetString();
 
                     if (string.IsNullOrWhiteSpace(id))
                     {
-                        throw new Exception($"id can't be null or empty.");
+                        await payloadExceptionSocketClose(new Exception($"Id can't be null or empty."));
+                        return;
                     }
 
                     blockManager.Answer(id, document);
@@ -168,14 +193,16 @@ namespace Flattiverse
 
                     if (element.ValueKind != JsonValueKind.String)
                     {
-                        throw new Exception($"id message must be a string. You sent {element.ValueKind}.");
+                        await payloadExceptionSocketClose(new Exception($"Message must be a string. You sent {element.ValueKind}."));
+                        return;
                     }
 
-                    string message = element.GetString();
+                    string? message = element.GetString();
 
                     if (string.IsNullOrWhiteSpace(message))
                     {
-                        throw new Exception($"message can't be null or empty.");
+                        await payloadExceptionSocketClose(new Exception($"Message can't be null or empty."));
+                        return;
                     }
 
                     //do broadcasting messages here
@@ -188,17 +215,53 @@ namespace Flattiverse
 
                     if (element.ValueKind != JsonValueKind.String)
                     {
-                        throw new Exception($"id message must be a string. You sent {element.ValueKind}.");
+                        await payloadExceptionSocketClose(new Exception($"Fatal must be a string. You sent {element.ValueKind}."));
+                        return;
                     }
 
-                    string message = element.GetString();
+                    string? fatal = element.GetString();
 
-                    throw new Exception($"Fatal excetion: {message}");
+                    if (string.IsNullOrWhiteSpace(fatal))
+                    {
+                        await payloadExceptionSocketClose(new Exception($"Fatal can't be null or empty."));
+                        return;
+                    }
+
+                    await fatalExceptionSocketClose(new Exception($"Fatal excetion: {fatal}"));
+                    return;
                 }
 
-                throw new Exception($"Something unexpected happened");
-
+                await fatalExceptionSocketClose(new Exception($"Unkown json format received."));
+                return;
             }
+        }
+
+        internal void ConnectionClose(Exception? exception)
+        {
+            if (ConnectionClosed != null)
+                ConnectionClosed(exception);
+        }
+
+        private async Task payloadExceptionSocketClose(Exception ex)
+        {
+            blockManager.ConnectionClosed(ex);
+
+            try
+            {
+                await client.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Closed because of an exception", CancellationToken.None);
+            }
+            catch { }
+        }
+
+        private async Task fatalExceptionSocketClose(Exception ex)
+        {
+            blockManager.ConnectionClosed(ex);
+
+            try
+            {
+                await client.CloseAsync(WebSocketCloseStatus.InternalServerError, "Closed because of an exception", CancellationToken.None);
+            }
+            catch { }
         }
 
 

@@ -10,6 +10,9 @@ class Program
         {
             await connection.ConnectAsync();
 
+            connection.ConnectionClosed += Connection_ConnectionClosed;
+
+
             Universe universe;
 
             if (!connection.UniverseGroup.TryGet(0, out universe))
@@ -27,6 +30,11 @@ class Program
 
         }
 
+    }
+
+    private static void Connection_ConnectionClosed(Exception? ex)
+    {
+        ;
     }
 
     //public async void test()

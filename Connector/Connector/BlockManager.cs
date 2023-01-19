@@ -37,6 +37,19 @@ namespace Flattiverse
             }
         }
 
+        public void ConnectionClosed(Exception ex)
+        {
+            lock (sync)
+            {
+                foreach (KeyValuePair<string,Block> blockKvP in blocks)
+                    blockKvP.Value.Answer(null);
+
+                blocks.Clear();
+            }
+
+            connection.ConnectionClose(ex);
+        }
+
         public void Answer(string blockId, JsonDocument? response)
         {
             lock (sync)
