@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Flattiverse
@@ -36,14 +37,14 @@ namespace Flattiverse
             }
         }
 
-        public void Answer(Packet packet)
+        public void Answer(string blockId, JsonDocument? response)
         {
             lock (sync)
             {
-                if (!blocks.TryGetValue(packet.BlockId, out Block block))
+                if (!blocks.TryGetValue(blockId, out Block block))
                     return;
 
-                block.Answer(packet);
+                block.Answer(response);
             }
 
         }

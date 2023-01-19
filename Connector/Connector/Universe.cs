@@ -24,9 +24,9 @@ namespace Flattiverse
         {
             using (Block block = connection.blockManager.GetBlock())
             {
-                Packet packet = new Packet(block.Id);
-                packet.Command = "setunit";
+                string command = "setunit";
 
+                List<CommandParameter> parameters = new List<CommandParameter>();
                 CommandParameter param = new CommandParameter("data");
 
                 try
@@ -61,13 +61,13 @@ namespace Flattiverse
 
                 param.SetJsonValue(data);
 
-                packet.Parameters.Add(param);
+                parameters.Add(param);
 
-                await connection.SendCommand(packet);
+                await connection.SendCommand(command, block.Id, parameters);
 
                 await block.Wait();
 
-                Packet? responsePacket = block.Packet;
+                JsonDocument? response = block.Response;
 
                 //ResponsePacket lesen
             }
@@ -77,19 +77,19 @@ namespace Flattiverse
         {
             using (Block block = connection.blockManager.GetBlock())
             {
-                Packet packet = new Packet(block.Id);
-                packet.Command = "DeleteUnit";
+                string command = "DeleteUnit";
 
+                List<CommandParameter> parameters = new List<CommandParameter>();
                 CommandParameter param = new CommandParameter("name");
                 param.SetValue(name);
 
-                packet.Parameters.Add(param);
+                parameters.Add(param);
 
-                await connection.SendCommand(packet);
+                await connection.SendCommand(command, block.Id, parameters);
 
                 await block.Wait();
 
-                Packet? responsePacket = block.Packet;
+                JsonDocument? response = block.Response;
 
                 //ResponsePacket lesen
             }

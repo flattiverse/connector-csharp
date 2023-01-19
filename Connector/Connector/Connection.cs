@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Runtime.Serialization;
 using System.Text.Json;
 
 namespace Flattiverse
@@ -44,9 +46,25 @@ namespace Flattiverse
             ThreadPool.QueueUserWorkItem(delegate { socketWork(); });
         }
 
-        internal async Task SendCommand(Packet packet)
+        internal async Task SendCommand(string command, string blockId, List<CommandParameter> parameters)
         {
-            await client.SendAsync(packet.Compile(), WebSocketMessageType.Text, true, CancellationToken.None);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, jsonOptions))
+                {
+                    writer.WriteStartObject();
+
+                    writer.WriteString("command", command);
+                    writer.WriteString("id", blockId);
+
+                    foreach (CommandParameter cp in parameters)
+                        cp.WriteJson(writer);
+
+                    writer.WriteEndObject();
+                }
+
+                await client.SendAsync(ms.ToArray(), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
         }
 
         internal async void socketWork()
@@ -125,26 +143,61 @@ namespace Flattiverse
                     throw new Exception($"Root element needs to be a JSON object. Received instead: {document.RootElement.ValueKind}.");
                 }
 
-
-
-                if (!document.RootElement.TryGetProperty("id", out element))
+                if (document.RootElement.TryGetProperty("id", out element))
                 {
-                    throw new Exception($"id property is missing.");
+
+                    if (element.ValueKind != JsonValueKind.String)
+                    {
+                        throw new Exception($"id property must be a string. You sent {element.ValueKind}.");
+                    }
+
+                    id = element.GetString();
+
+                    if (string.IsNullOrWhiteSpace(id))
+                    {
+                        throw new Exception($"id can't be null or empty.");
+                    }
+
+                    blockManager.Answer(id, document);
+
+                    continue;
                 }
 
-                if (element.ValueKind != JsonValueKind.String)
+                if (document.RootElement.TryGetProperty("message", out element))
                 {
-                    throw new Exception($"id property must be a string. You sent {element.ValueKind}.");
+
+                    if (element.ValueKind != JsonValueKind.String)
+                    {
+                        throw new Exception($"id message must be a string. You sent {element.ValueKind}.");
+                    }
+
+                    string message = element.GetString();
+
+                    if (string.IsNullOrWhiteSpace(message))
+                    {
+                        throw new Exception($"message can't be null or empty.");
+                    }
+
+                    //do broadcasting messages here
+                    continue;
                 }
 
-                id = element.GetString();
-
-                if (string.IsNullOrWhiteSpace(id))
+                //something unexpected happened
+                if (document.RootElement.TryGetProperty("fatal", out element))
                 {
-                    throw new Exception($"id can't be null or empty.");
+
+                    if (element.ValueKind != JsonValueKind.String)
+                    {
+                        throw new Exception($"id message must be a string. You sent {element.ValueKind}.");
+                    }
+
+                    string message = element.GetString();
+
+                    throw new Exception($"Fatal excetion: {message}");
                 }
 
-                blockManager.Answer(new Packet(id, document));
+                throw new Exception($"Something unexpected happened");
+
             }
         }
 

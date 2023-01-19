@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse
 {
@@ -14,7 +8,7 @@ namespace Flattiverse
 
         private TaskCompletionSource taskCompletionSource;
         private BlockManager manager;
-        public Packet? Packet;
+        public JsonDocument? Response;
 
         public Block(BlockManager manager, string Id) 
         {
@@ -28,9 +22,9 @@ namespace Flattiverse
             await taskCompletionSource.Task;
         }
 
-        public void Answer(Packet packet) 
+        public void Answer(JsonDocument? response) 
         { 
-            Packet = packet;
+            Response = response;
             taskCompletionSource.SetResult();
         }
 
