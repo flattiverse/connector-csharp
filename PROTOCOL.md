@@ -4,13 +4,18 @@ This is the documentation of the Flattiverse JSON protocol for the Universe Simu
 
 You can connect to the Universe Simulator (to a specific universe group) by opening a WebSocket connection to it. You can send single text frames which must not exceed 16 KiB of data. Note that you must split up each command into one frame. The server, however can send you frames up to 256 KiB. Also the server will group commands together when sending bulks of events like when a server tick has been processed.
 
-Commands are expected to be in JSON format.
+# Connecting
+
+Simply connect with your websocket to the specific URI with port 80.
 
 # Sending commands
 
+Commands are expected to be in JSON format.
+To execute a command on the server simply send a request with the corresponding command as payload.
+
 ```json
 {
-  "command": "your command",
+  "command": "command name",
   "id": "asdfgh",
   "data":
   {
@@ -19,21 +24,23 @@ Commands are expected to be in JSON format.
 }
 
 {
-  "command": "UpdateUnit",
+  "command": "updateunit",
   "id": "asdfgh",
   "data":
   {
-    "universegroup": 0,
     "universe": 0,
-    "name": "NiceUnit>9000",
-    "position":
+    "unit":
     {
-      "x": 1,
-      "y": 12
-    },
-    "radius": 10,
-    "corona": 67,
-    "gravity": 13
+      "name": "NiceUnit>9000",
+      "position":
+      {
+        "x": 1,
+        "y": 12
+      },
+      "radius": 10,
+      "corona": 67,
+      "gravity": 13
+    }
   }
 }
 
@@ -42,60 +49,43 @@ Commands are expected to be in JSON format.
 You can identify the reply to your command by waiting for an reply to the `id` you did specify.
 If a command fails with an exception a JSON with following structure will be send:
 
-{
-  "fatal": Exception Message as Text  
-}
+{  "fatal": Exception Message as Text }
 
 # List of known and unknown commands
 
-CreateUnit
-[
+CreateUnit:
   returns: 0 if successful, -1 otherwise
-  payload:
+
+```json
+  "data":
   {
-    "universegroup": ushort,
-    "universe": ushort,
-    "name": text of max. 32 characters size,
-    "position":
-    {
-      "x": double precision number,
-      "y": double precision number
-    },
-    "radius": double precision number,
-    "corona": double precision number,
-    "gravity": double precision number
+    "universe": number (short),
+    "unit": unit data
   }
-]
+```
+
 
 UpdateUnit:
-[
   returns: 0 if successful, -1 otherwise
-  payload:
+
+```json
+  "data":
   {
-    "universegroup": ushort,
-    "universe": ushort,
-    "name": text of max. 32 characters size,
-    "position":
-    {
-      "x": double precision number,
-      "y": double precision number
-    },
-    "radius": double precision number,
-    "corona": double precision number,
-    "gravity": double precision number
+    "universe": number (short),
+    "unit": unit data
   }
-]
+```
 
 DeleteUnit:
-[
   returns: 0 if successful, -1 otherwise
-  payload:
+
+```json
+  "data":
   {
-    "universegroup": ushort,
-    "universe": ushort,
+    "universe": number (short),
     "name": text of max. 32 characters size
   }
-]
+```
 
 yadda, yadda...
 
