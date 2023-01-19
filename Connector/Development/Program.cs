@@ -1,15 +1,38 @@
-﻿using System.Net.WebSockets;
+﻿using Flattiverse;
+using System.Net.WebSockets;
 using System.Text;
 
 class Program
 {
     private static async Task Main(string[] args)
     {
+        using (Connection connection = new Connection("127.0.0.1" , "TestUser"))
+        {
+            await connection.ConnectAsync();
+
+            await connection.UnitManager.Create();
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+    }
+
+    public async void test()
+    {
         var client = new ClientWebSocket();
 
         await client.ConnectAsync(new Uri("ws://127.0.0.1"), CancellationToken.None);
 
-        var buffer = new ArraySegment<byte>(new byte[4096]);
+        ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[4096]);
 
         while (client.State == WebSocketState.Open)
         {
