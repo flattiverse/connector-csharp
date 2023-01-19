@@ -22,12 +22,12 @@ namespace Flattiverse
 
         public async Task Create(string unitJson)
         {
-            await createUpdateUnit("CreateUnit", unitJson);
+            await createUpdateUnit("createunit", unitJson);
         }
 
         public async Task Update(string unitJson)
         {
-            await createUpdateUnit("UpdateUnit", unitJson);
+            await createUpdateUnit("updateunit", unitJson);
         }
 
         private async Task createUpdateUnit(string command, string unitJson)
@@ -54,17 +54,14 @@ namespace Flattiverse
                 {
                     using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, Connection.jsonOptions))
                     {
-                        writer.WritePropertyName("data");
-
                         writer.WriteStartObject();
 
                         writer.WriteNumber("universe", ID);
 
                         writer.WritePropertyName("unit");
-
                         writer.WriteRawValue(unitJson);
 
-                        writer.WriteEndObject();         
+                        writer.WriteEndObject();
                     }
 
                     ms.Position = 0;
@@ -90,12 +87,16 @@ namespace Flattiverse
             using (Block block = connection.blockManager.GetBlock())
             {
                 Packet packet = new Packet(block.Id);
-                packet.Command = "DeleteUnit";
+                packet.Command = "deleteunit";
 
                 CommandParameter param = new CommandParameter("name");
                 param.SetValue(name);
 
+                CommandParameter universeParam = new CommandParameter("universe");
+                universeParam.SetValue(ID);
+
                 packet.Parameters.Add(param);
+                packet.Parameters.Add(universeParam);
 
                 await connection.SendCommand(packet);
 

@@ -6,7 +6,7 @@ using System.Text.Json;
 class Program
 {
     private static async Task Main(string[] args)
-    {        
+    {
         using (Connection connection = new Connection("127.0.0.1" , "TestUser"))
         {
             await connection.ConnectAsync();
@@ -17,7 +17,7 @@ class Program
                 throw new Exception("Default Universe not found.");
 
             await universe.Create(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-            await universe.Update("");
+            //await universe.Update("");
             await universe.Delete("SomeUnit");
 
 
@@ -28,7 +28,7 @@ class Program
 
     }
 
-    public async void test()
+    public static async void test()
     {
         var client = new ClientWebSocket();
 
@@ -46,7 +46,7 @@ class Program
             using (Utf8JsonWriter writer = new Utf8JsonWriter(stream))
             {
                 writer.WriteStartObject();
-                writer.WriteString("command", "createunit");
+                writer.WriteString("command", "updateunit");
                 writer.WriteString("id", "abc");
 
                 writer.WriteStartObject("data");
@@ -57,7 +57,7 @@ class Program
                 writer.WriteString("kind", "Sun");
 
                 writer.WriteStartObject("position");
-                writer.WriteNumber("x", 12);
+                writer.WriteNumber("x", 80);
                 writer.WriteNumber("y", 89);
                 writer.WriteEndObject();
 
