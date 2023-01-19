@@ -69,7 +69,7 @@ setunit:
 
 ```json
   {
-    "command": "deleteunit",
+    "command": "setunit",
     "id": "exampleId",
     "data":
     {
@@ -126,6 +126,7 @@ Sun:
 the initial universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
 ```json
 {
+  "kind": "events",
   "tick": 0,
   "payload":
   {    
