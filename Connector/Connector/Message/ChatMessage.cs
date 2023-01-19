@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Flattiverse
+namespace Flattiverse.Message
 {
-    internal enum CommandParameterKind
+    public class ChatMessage : Message
     {
-        String,
-        Integer,
-        Double,
-        Vector,
-        Json
+        internal ChatMessage() : base()
+        {
+        }
     }
 }

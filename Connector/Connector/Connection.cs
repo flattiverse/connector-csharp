@@ -2,9 +2,11 @@
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.Serialization;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Flattiverse
 {
@@ -29,16 +31,42 @@ namespace Flattiverse
         public delegate void ConnectionHandler(Exception? ex);
 
         public event ConnectionHandler? ConnectionClosed;
-       
 
-        public Connection(string host, string apiKey) 
+        private static readonly Dictionary<string, MethodInfo> commands = new Dictionary<string, MethodInfo>();
+
+        public Connection(Uri host)
         {
             client = new ClientWebSocket();
-            uri = new Uri($"ws://{host}?auth={apiKey}");
+            uri = host;
             blockManager = new BlockManager(this);
 
             UniverseGroup = new UniverseGroup(this);
-            
+            initializeCommands();
+        }
+
+        public Connection(string host, string apiKey, bool https) 
+        {
+            client = new ClientWebSocket();
+
+            if (https)
+                uri = new Uri($"wss://{host}?auth={apiKey}");
+            else
+                uri = new Uri($"ws://{host}?auth={apiKey}");
+
+            blockManager = new BlockManager(this);
+            UniverseGroup = new UniverseGroup(this);
+            initializeCommands();
+        }
+
+        private static void initializeCommands()
+        {
+            foreach (MethodInfo method in typeof(Connection).GetMethods())
+            {
+                Command? command = method.GetCustomAttribute<Command>(false);
+
+                if (command != null)
+                    commands[command.Name] = method;
+            }
         }
 
         public async Task ConnectAsync()
@@ -51,7 +79,7 @@ namespace Flattiverse
             ThreadPool.QueueUserWorkItem(delegate { socketWork(); });
         }
 
-        internal async Task SendCommand(string command, string blockId, List<CommandParameter> parameters)
+        internal async Task SendCommand(string command, string blockId, List<ClientCommandParameter> parameters)
         {
             using (MemoryStream ms = new MemoryStream())
             {
@@ -62,11 +90,14 @@ namespace Flattiverse
                     writer.WriteString("command", command);
                     writer.WriteString("id", blockId);
 
-                    foreach (CommandParameter cp in parameters)
+                    foreach (ClientCommandParameter cp in parameters)
                         cp.WriteJson(writer);
 
                     writer.WriteEndObject();
                 }
+
+                //ms.Position = 0;
+                //string debugText = new StreamReader(ms).ReadToEnd();
 
                 await client.SendAsync(ms.ToArray(), WebSocketMessageType.Text, true, CancellationToken.None);
             }
@@ -188,27 +219,6 @@ namespace Flattiverse
                     continue;
                 }
 
-                if (document.RootElement.TryGetProperty("message", out element))
-                {
-
-                    if (element.ValueKind != JsonValueKind.String)
-                    {
-                        await payloadExceptionSocketClose(new Exception($"Message must be a string. You sent {element.ValueKind}."));
-                        return;
-                    }
-
-                    string? message = element.GetString();
-
-                    if (string.IsNullOrWhiteSpace(message))
-                    {
-                        await payloadExceptionSocketClose(new Exception($"Message can't be null or empty."));
-                        return;
-                    }
-
-                    //do broadcasting messages here
-                    continue;
-                }
-
                 //something unexpected happened
                 if (document.RootElement.TryGetProperty("fatal", out element))
                 {
@@ -231,8 +241,36 @@ namespace Flattiverse
                     return;
                 }
 
-                await fatalExceptionSocketClose(new Exception($"Unkown json format received."));
-                return;
+                string? command;
+                if (!document.RootElement.TryGetProperty("command", out element))
+                {
+                    await payloadExceptionSocketClose(new Exception($"Command property is missing."));
+                    return;
+                }
+
+                if (element.ValueKind != JsonValueKind.String)
+                {
+                    await payloadExceptionSocketClose(new Exception($"Command must be a string. You sent {element.ValueKind}."));
+                    return;
+                }
+
+                command = element.GetString();
+
+                if (string.IsNullOrWhiteSpace(command))
+                {
+                    await payloadExceptionSocketClose(new Exception($"Command can't be null or empty."));
+                    return;
+                }
+
+                if (!commands.TryGetValue(command, out MethodInfo? method))
+                {
+                    await payloadExceptionSocketClose(new Exception($"Unknown command."));
+                    return;
+                }
+
+                CommandCaller caller = new CommandCaller(method);
+                if (!await caller.Call(this, document.RootElement))
+                    return;
             }
         }
 
@@ -242,7 +280,7 @@ namespace Flattiverse
                 ConnectionClosed(exception);
         }
 
-        private async Task payloadExceptionSocketClose(Exception ex)
+        internal async Task payloadExceptionSocketClose(Exception ex)
         {
             blockManager.ConnectionClosed(ex);
 
@@ -252,6 +290,10 @@ namespace Flattiverse
             }
             catch { }
         }
+
+
+        [Command("message")]
+        internal bool handleMessage(JsonElement data) => UniverseGroup.Chat.handleMessage(data);
 
         private async Task fatalExceptionSocketClose(Exception ex)
         {
@@ -264,6 +306,43 @@ namespace Flattiverse
             catch { }
         }
 
+        internal static bool responseSuccess(JsonDocument response, out string? error)
+        {
+            if (response.RootElement.ValueKind != JsonValueKind.Object)
+                throw new Exception($"Response error: Root element needs to be a JSON object. Received instead: {response.RootElement.ValueKind}.");
+
+            JsonElement element;
+            if (!response.RootElement.TryGetProperty("kind", out element))
+                throw new Exception("Response error: kind property is missing.");
+
+            if (element.ValueKind != JsonValueKind.String)
+                throw new Exception($"Response error: kind property must be a string. You sent {element.ValueKind}.");
+
+            string kind = element.GetString();
+
+            if(string.IsNullOrEmpty(kind))
+                throw new Exception($"Response error: kind property cant be empty.");
+
+            if (kind == "success")
+            {
+                error = null;
+                return true;
+            }
+
+            if (!response.RootElement.TryGetProperty("result", out element))
+                throw new Exception("Response error: result property is missing.");
+
+            if (element.ValueKind != JsonValueKind.String)
+                throw new Exception($"Response error: result property must be a string. You sent {element.ValueKind}.");
+
+            string result = element.GetString();
+
+            if (string.IsNullOrEmpty(kind))
+                throw new Exception($"Response error: result property cant be empty.");
+
+            error = result;
+            return false;
+        }
 
         public void Dispose()
         {

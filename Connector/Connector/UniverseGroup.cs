@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flattiverse.Message.Chat;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -13,12 +14,15 @@ namespace Flattiverse
 
         private Dictionary<short, Universe> universes;
 
+        public readonly Chat Chat;
+
         private object sync = new object();
 
         internal UniverseGroup(Connection connection) 
         {
             this.connection = connection;
             universes = new Dictionary<short, Universe>();
+            //Chat = new Chat(connection);
         }
 
         internal void addUniverse(short id)

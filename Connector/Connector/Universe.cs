@@ -26,8 +26,8 @@ namespace Flattiverse
             {
                 string command = "setunit";
 
-                List<CommandParameter> parameters = new List<CommandParameter>();
-                CommandParameter param = new CommandParameter("data");
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+                ClientCommandParameter param = new ClientCommandParameter("data");
 
                 try
                 {
@@ -69,7 +69,8 @@ namespace Flattiverse
 
                 JsonDocument? response = block.Response;
 
-                //ResponsePacket lesen
+                if(!Connection.responseSuccess(response, out string error))
+                    throw new Exception(error);
             }
         }
 
@@ -79,13 +80,13 @@ namespace Flattiverse
             {
                 string command = "deleteunit";
 
-                List<CommandParameter> parameters = new List<CommandParameter>();
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
 
-                CommandParameter paramName = new CommandParameter("name");
+                ClientCommandParameter paramName = new ClientCommandParameter("name");
                 paramName.SetValue(name);
                 parameters.Add(paramName);
 
-                CommandParameter paramUniverse = new CommandParameter("universe");
+                ClientCommandParameter paramUniverse = new ClientCommandParameter("universe");
                 paramUniverse.SetValue(ID);
                 parameters.Add(paramUniverse);
 
@@ -95,7 +96,8 @@ namespace Flattiverse
 
                 JsonDocument? response = block.Response;
 
-                //ResponsePacket lesen
+                if (!Connection.responseSuccess(response, out string error))
+                    throw new Exception(error);
             }
         }
 

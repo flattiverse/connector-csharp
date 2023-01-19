@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Flattiverse
 {
-    internal class CommandParameter
+    internal class ClientCommandParameter
     {
         public readonly string Name;
 
@@ -20,7 +20,7 @@ namespace Flattiverse
 
         public CommandParameterKind Kind => kind;
 
-        public CommandParameter(string name)
+        public ClientCommandParameter(string name)
         {
             Name = name;
         }
