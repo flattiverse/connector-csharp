@@ -16,3 +16,25 @@ You can connect to the Universe Simulator (to a specific universe group) by open
 You can identify the reply to your command by waiting for an reply to the `id` you did specify.
 
 yadda, yadda...
+
+# Unit Body Structure
+
+Unit base:
+{
+  "kind": "<unit type>",
+  "name": "<unique unit name>",
+  "position :
+    { "x" : double, "y" : double },
+  "radius" : double,
+  "gravity" : double,
+  "universe" : short,
+  "universegroup" : short
+}
+  
+each kind of unit has additional fields to add to this json Body and a specific value that needs to be filled into the "kind" field.
+  
+Sun:
+{
+  "kind" : "Sun",
+  "corona" : double"
+}
