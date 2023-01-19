@@ -102,6 +102,7 @@ yadda, yadda...
 # Unit Body Structure
 
 Unit base:
+```json
 {
   "kind": "<unit type>",
   "name": "<unique unit name>",
@@ -112,11 +113,14 @@ Unit base:
   "universe" : short,
   "universegroup" : short
 }
+```
   
 each kind of unit has additional fields to add to this json Body and a specific value that needs to be filled into the "kind" field.
   
 Sun:
+```json
 {
   "kind" : "Sun",
   "corona" : double"
 }
+```
