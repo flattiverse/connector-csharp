@@ -106,12 +106,10 @@ Unit base:
 {
   "kind": "<unit type>",
   "name": "<unique unit name>",
-  "position :
-    { "x" : double, "y" : double },
-  "radius" : double,
-  "gravity" : double,
-  "universe" : short,
-  "universegroup" : short
+  "position" :
+    { "x" : 0.0, "y" : 0.0 },
+  "radius" : 0.0,
+  "gravity" : 0.0,
 }
 ```
   
@@ -121,6 +119,6 @@ Sun:
 ```json
 {
   "kind" : "Sun",
-  "corona" : double"
+  "corona" : 0.0
 }
 ```
