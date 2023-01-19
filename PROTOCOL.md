@@ -123,6 +123,7 @@ Sun:
 ```
 
 # Universe Updates
+the initial universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
 ```json
 {
   "tick": 0,
@@ -132,40 +133,24 @@ Sun:
     [{
       "id": 0,
       "units":
-      [{
+      {
         "created":
-        [{
-          {
-            "kind": "<unit type>",
-            "name": "<unique unit name>",
-            "position" :
-              {
-                "x" : 0.0,
-                "y" : 0.0 
-              },
-            "radius" : 0.0,
-            "gravity" : 0.0,
-          }
-        }],
-        "updated":
-        [{
-          {
-            "kind": "<unit type>",
-            "name": "<unique unit name>",
-            "position" :
-              {
-                "x" : 0.0,
-                "y" : 0.0 
-              },
-            "radius" : 0.0,
-            "gravity" : 0.0,
-          }
-        }],
+        {
+        "name":
+          "<unit according to unit body structure>",
+        "name":
+          "<unit according to unit body structure>"
+        },
+        "updated": 
+        {
+        "name":
+          "<unit according to unit body structure>"
+        },
         "deleted":
         [
           "name"
         ]
-      }]
+      }
     }]
   }
 }
