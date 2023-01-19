@@ -128,8 +128,7 @@ the initial universe update sent with the initial tick, and all units in the "cr
 {
   "kind": "events",
   "tick": 0,
-  "payload":
-  {    
+  "payload":      
     [
       {
         "kind": "newUnit",
@@ -156,6 +155,5 @@ the initial universe update sent with the initial tick, and all units in the "cr
         }
       }
     ]
-  }
 }
 ```
