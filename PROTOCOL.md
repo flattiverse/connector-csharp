@@ -126,47 +126,34 @@ Sun:
 ```json
 {
   "tick": 0,
-  "tickinfo":
-  {
-    "universe":
-    [{
-      "id": 0,
-      "units":
-      [{
-        "created":
-        [{
+  "payload":
+  {    
+    [
+      {
+        "kind": "newunit",
+        "universe": 0,
+        "unit":
+        {
+          "kind": "sun",
+          "name": "zirp",
+          "position":
           {
-            "kind": "<unit type>",
-            "name": "<unique unit name>",
-            "position" :
-              {
-                "x" : 0.0,
-                "y" : 0.0 
-              },
-            "radius" : 0.0,
-            "gravity" : 0.0,
+            "x": 20,
+            "y": 10
           }
-        }],
-        "updated":
-        [{
-          {
-            "kind": "<unit type>",
-            "name": "<unique unit name>",
-            "position" :
-              {
-                "x" : 0.0,
-                "y" : 0.0 
-              },
-            "radius" : 0.0,
-            "gravity" : 0.0,
-          }
-        }],
-        "deleted":
-        [
-          "name"
-        ]
-      }]
-    }]
+        }
+      },
+      {
+        "kind": "message",
+        "message":
+        {
+          "sender": "tobi",
+          "receiver": "broadcast",
+          "timestamp": "yyyy-mm-ddTdd:hh:mm:ss.fffZ",
+          "text": "Hallo Freunde"
+        }
+      }
+    ]
   }
 }
 ```
