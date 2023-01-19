@@ -145,10 +145,9 @@ the initial universe update sent with the initial tick, and all units in the "cr
         }
       },
       {
-        "kind": "message",
+        "kind": "broadcastMessage",
         "message":
         {
-          "kind": "broadcast",
           "sender": "tobi",
           "timestamp": "yyyy-mm-ddTdd:hh:mm:ss.fffZ",
           "text": "Hallo Freunde"
