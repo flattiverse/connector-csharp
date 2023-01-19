@@ -24,7 +24,7 @@ namespace Flattiverse
         {
             using (Block block = connection.blockManager.GetBlock())
             {
-                string command = "setunit";
+                string command = "setUnit";
 
                 List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
                 ClientCommandParameter param = new ClientCommandParameter("data");
@@ -78,7 +78,7 @@ namespace Flattiverse
         {
             using (Block block = connection.blockManager.GetBlock())
             {
-                string command = "deleteunit";
+                string command = "deleteUnit";
 
                 List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
 

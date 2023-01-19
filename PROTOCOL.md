@@ -24,7 +24,7 @@ To execute a command on the server simply send a request with the corresponding 
 }
 
 {
-  "command": "updateunit",
+  "command": "updateUnit",
   "id": "asdfgh",
   "data":
   {
@@ -69,7 +69,7 @@ setunit:
 
 ```json
   {
-    "command": "setunit",
+    "command": "setUnit",
     "id": "exampleId",
     "data":
     {
@@ -85,7 +85,7 @@ deleteunit:
 
 ```json
   {
-    "command": "deleteunit",
+    "command": "deleteUnit",
     "id": "exampleId",
     "universe": number (short),
     "name": text of max. 32 characters size
@@ -132,7 +132,7 @@ the initial universe update sent with the initial tick, and all units in the "cr
   {    
     [
       {
-        "kind": "newunit",
+        "kind": "newUnit",
         "universe": 0,
         "unit":
         {

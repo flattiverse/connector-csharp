@@ -24,7 +24,7 @@ namespace Flattiverse
 
         internal static readonly JsonWriterOptions jsonOptions = new JsonWriterOptions() { Indented = false };
 
-        internal static readonly JsonDocumentOptions jsonDocOptions = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 4 };
+        internal static readonly JsonDocumentOptions jsonDocOptions = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 8 };
 
         private static int recvBufferLimit = 262144;
 
