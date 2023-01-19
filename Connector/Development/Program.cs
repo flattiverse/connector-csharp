@@ -6,7 +6,10 @@ class Program
 {
     private static async Task Main(string[] args)
     {
-        using (Connection connection = new Connection("127.0.0.1" , "TestUser"))
+        // This is the real server. You can change it back to 127.0.0.1.
+        //using (Connection connection = new Connection("80.255.8.76/api/universes/beginnersGround.ws", "TestUser"))
+        // Internal address.
+        using (Connection connection = new Connection("10.251.20.32/api/universes/beginnersGround.ws", "TestUser"))
         {
             await connection.ConnectAsync();
 
