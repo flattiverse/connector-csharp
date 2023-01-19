@@ -53,7 +53,8 @@ If a command fails with an exception a JSON with following structure will be sen
 
 # List of known and unknown commands
 
-CreateUnit:
+setunit:
+  Creates or updates an unit, complete unit data is expected.
   returns: 0 if successful, -1 otherwise
 
 ```json
@@ -64,19 +65,8 @@ CreateUnit:
   }
 ```
 
-
-UpdateUnit:
-  returns: 0 if successful, -1 otherwise
-
-```json
-  "data":
-  {
-    "universe": number (short),
-    "unit": unit data
-  }
-```
-
-DeleteUnit:
+deleteunit:
+  Deletes an existing unit.
   returns: 0 if successful, -1 otherwise
 
 ```json
@@ -97,7 +87,10 @@ Unit base:
   "kind": "<unit type>",
   "name": "<unique unit name>",
   "position" :
-    { "x" : 0.0, "y" : 0.0 },
+    {
+      "x" : 0.0,
+     "y" : 0.0 
+    },
   "radius" : 0.0,
   "gravity" : 0.0,
 }
@@ -109,6 +102,7 @@ Sun:
 ```json
 {
   "kind" : "sun",
+  ... general unit data...
   "corona" : 0.0
 }
 ```
