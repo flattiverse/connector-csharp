@@ -10,7 +10,11 @@ class Program
         {
             await connection.ConnectAsync();
 
-            await connection.UnitManager.Create();
+            //await connection.UnitManager.Create(0, 0, "test", UnitKind.Sun, 20, 70, 120, 10, 60);
+
+            //await connection.UnitManager.Update(0, 0, "test", UnitKind.Sun, 20, 70, 200, 10, 60);
+
+            //await connection.UnitManager.Delete();
 
 
 
@@ -26,32 +30,32 @@ class Program
 
     }
 
-    public async void test()
-    {
-        var client = new ClientWebSocket();
+    //public async void test()
+    //{
+    //    var client = new ClientWebSocket();
 
-        await client.ConnectAsync(new Uri("ws://127.0.0.1"), CancellationToken.None);
+    //    await client.ConnectAsync(new Uri("ws://127.0.0.1"), CancellationToken.None);
 
-        ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[4096]);
+    //    ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[4096]);
 
-        while (client.State == WebSocketState.Open)
-        {
-            Console.Write("Request: ");
+    //    while (client.State == WebSocketState.Open)
+    //    {
+    //        Console.Write("Request: ");
 
-            var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"command\":\"OhWhat\",\"id\":\"asd\",\"str\":\"string\"}"));
-            await client.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+    //        var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"command\":\"OhWhat\",\"id\":\"asd\",\"str\":\"string\"}"));
+    //        await client.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
-            Console.ForegroundColor = ConsoleColor.White;
+    //        Console.ForegroundColor = ConsoleColor.White;
 
-            var result = await client.ReceiveAsync(buffer, CancellationToken.None);
-            var message = Encoding.UTF8.GetString(buffer.Array!, 0, result.Count);
-            Console.WriteLine(message);
+    //        var result = await client.ReceiveAsync(buffer, CancellationToken.None);
+    //        var message = Encoding.UTF8.GetString(buffer.Array!, 0, result.Count);
+    //        Console.WriteLine(message);
 
-            Console.ForegroundColor = ConsoleColor.Gray;
+    //        Console.ForegroundColor = ConsoleColor.Gray;
 
-            break;
-        }
+    //        break;
+    //    }
 
-        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-    }
+    //    await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+    //}
 }
