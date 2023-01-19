@@ -15,6 +15,8 @@ namespace Flattiverse
 
         public readonly JsonDocument? document;
 
+        private static JsonWriterOptions jsonOptions = new JsonWriterOptions() { Indented = false };
+
         public Packet(string blockID)
         {
             BlockId = blockID;
@@ -30,29 +32,23 @@ namespace Flattiverse
 
         public byte[] Compile()
         {
-            JsonWriterOptions options= new JsonWriterOptions();
-            options.Indented = false;
-
-            byte[] data;
-
-            using (MemoryStream ms = new MemoryStream())
-            using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, options))
+            using (MemoryStream ms = new MemoryStream())          
             {
-                writer.WriteStartObject();
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, jsonOptions))
+                {
+                    writer.WriteStartObject();
 
-                writer.WriteString("command", Command);
-                writer.WriteString("id", BlockId);
+                    writer.WriteString("command", Command);
+                    writer.WriteString("id", BlockId);
 
-                foreach (CommandParameter cp in Parameters)
-                    cp.WriteJson(writer);
+                    foreach (CommandParameter cp in Parameters)
+                        cp.WriteJson(writer);
 
-                writer.WriteEndObject();
+                    writer.WriteEndObject();
+                }
 
-                writer.Flush();
-                data = ms.ToArray();
+                return ms.ToArray();
             }
-
-            return data;
         }
     }
 }

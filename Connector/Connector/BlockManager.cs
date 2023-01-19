@@ -13,8 +13,6 @@ namespace Flattiverse
 
         private object sync;
 
-        private int blockLimit = 256;
-
         private Dictionary<string, Block> blocks = new Dictionary<string, Block>();
 
         private const string idSampleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -30,14 +28,8 @@ namespace Flattiverse
 
         public Block GetBlock()
         {
-            if(blocks.Count >= blockLimit)
-                throw new Exception("No free Slot in current Communication Channel.");
-
             lock (sync) 
             {
-                if (blocks.Count >= blockLimit)
-                    throw new Exception("No free Slot in current Communication Channel.");
-
                 Block block = new Block(this, generateId());
                 blocks.Add(block.Id, block);
                 return block;
