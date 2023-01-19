@@ -131,7 +131,7 @@ the initial universe update sent with the initial tick, and all units in the "cr
   "payload":      
     [
       {
-        "kind": "newunit",
+        "kind": "newUnit",
         "universe": 0,
         "unit":
         {
