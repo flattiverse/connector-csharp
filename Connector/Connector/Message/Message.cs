@@ -44,12 +44,11 @@ namespace Flattiverse.Message
             if (element.ValueKind != JsonValueKind.Object)
                 throw new Exception($"Type property must be a object. Received {element.ValueKind}.");
 
-            Message message;
-
             switch(messageType)
             {
                 case ChatMessageType.Uni:
-                    return new UniCastChatMessage(element, connection);
+                    throw new NotImplementedException();
+                //return new UniCastChatMessage(element, connection);
                 case ChatMessageType.Broad:
                     return new BroadCastChatMessage(element, connection);
                 case ChatMessageType.Team:

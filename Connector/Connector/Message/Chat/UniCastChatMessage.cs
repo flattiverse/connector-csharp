@@ -7,45 +7,45 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Message.Chat
 {
-    internal class UniCastChatMessage : ChatMessage
-    {
-        public User ToUser;
+    //internal class UniCastChatMessage : ChatMessage
+    //{
+    //    public User ToUser;
 
-        public readonly string Message;
+    //    public readonly string Message;
 
-        internal override ChatMessageType type => ChatMessageType.Uni;
+    //    internal override ChatMessageType type => ChatMessageType.Uni;
 
-        public UniCastChatMessage(User toUser, string message) : base()
-        {
-            ToUser = toUser;
-            Message = message;
-        }
+    //    public UniCastChatMessage(User toUser, string message) : base()
+    //    {
+    //        ToUser = toUser;
+    //        Message = message;
+    //    }
 
-        internal UniCastChatMessage(JsonElement data, Connection connection) 
-        { 
+    //    internal UniCastChatMessage(JsonElement data, Connection connection) 
+    //    { 
         
-        }
+    //    }
 
-        internal override string ToJson()
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, Connection.jsonOptions))
-                {
-                    writer.WriteStartObject();
+    //    internal override string ToJson()
+    //    {
+    //        using (MemoryStream ms = new MemoryStream())
+    //        {
+    //            using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, Connection.jsonOptions))
+    //            {
+    //                writer.WriteStartObject();
 
-                    writer.WriteNumber("userId", ToUser.Id);
+    //                writer.WriteNumber("userId", ToUser.Id);
 
-                    writer.WritePropertyName("message");
+    //                writer.WritePropertyName("message");
 
-                    writer.WriteRawValue(Message);
+    //                writer.WriteRawValue(Message);
 
-                    writer.WriteEndObject();
-                }
+    //                writer.WriteEndObject();
+    //            }
 
-                ms.Position = 0;
-                return new StreamReader(ms).ReadToEnd();
-            }
-        }
-    }
+    //            ms.Position = 0;
+    //            return new StreamReader(ms).ReadToEnd();
+    //        }
+    //    }
+    //}
 }
