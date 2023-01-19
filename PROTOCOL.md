@@ -58,10 +58,14 @@ setunit:
   returns: 0 if successful, -1 otherwise
 
 ```json
-  "data":
   {
-    "universe": number (short),
-    "unit": unit data
+    "command": "deleteunit",
+    "id": "exampleid",
+    "data":
+    {
+      "universe": number (short),
+      "unit": unit data
+    }
   }
 ```
 
@@ -70,8 +74,9 @@ deleteunit:
   returns: 0 if successful, -1 otherwise
 
 ```json
-  "data":
   {
+    "command": "deleteunit",
+    "id": "exampleid",
     "universe": number (short),
     "name": text of max. 32 characters size
   }
