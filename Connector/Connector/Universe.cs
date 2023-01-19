@@ -77,13 +77,17 @@ namespace Flattiverse
         {
             using (Block block = connection.blockManager.GetBlock())
             {
-                string command = "DeleteUnit";
+                string command = "deleteunit";
 
                 List<CommandParameter> parameters = new List<CommandParameter>();
-                CommandParameter param = new CommandParameter("name");
-                param.SetValue(name);
 
-                parameters.Add(param);
+                CommandParameter paramName = new CommandParameter("name");
+                paramName.SetValue(name);
+                parameters.Add(paramName);
+
+                CommandParameter paramUniverse = new CommandParameter("universe");
+                paramUniverse.SetValue(ID);
+                parameters.Add(paramUniverse);
 
                 await connection.SendCommand(command, block.Id, parameters);
 
