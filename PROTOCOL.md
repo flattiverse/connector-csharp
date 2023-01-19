@@ -121,3 +121,52 @@ Sun:
   "corona" : 0.0
 }
 ```
+
+# Universe Updates
+```json
+{
+  "tick": 0,
+  "tickinfo":
+  {
+    "universe":
+    [{
+      "id": 0,
+      "units":
+      [{
+        "created":
+        [{
+          {
+            "kind": "<unit type>",
+            "name": "<unique unit name>",
+            "position" :
+              {
+                "x" : 0.0,
+                "y" : 0.0 
+              },
+            "radius" : 0.0,
+            "gravity" : 0.0,
+          }
+        }],
+        "updated":
+        [{
+          {
+            "kind": "<unit type>",
+            "name": "<unique unit name>",
+            "position" :
+              {
+                "x" : 0.0,
+                "y" : 0.0 
+              },
+            "radius" : 0.0,
+            "gravity" : 0.0,
+          }
+        }],
+        "deleted":
+        [
+          "name"
+        ]
+      }]
+    }]
+  }
+}
+```
