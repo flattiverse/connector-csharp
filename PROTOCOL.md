@@ -118,7 +118,7 @@ each kind of unit has additional fields to add to this json Body and a specific 
 Sun:
 ```json
 {
-  "kind" : "Sun",
+  "kind" : "sun",
   "corona" : 0.0
 }
 ```
