@@ -10,23 +10,20 @@ class Program
         {
             await connection.ConnectAsync();
 
-            //await connection.UnitManager.Create(0, 0, "test", UnitKind.Sun, 20, 70, 120, 10, 60);
+            Universe universe;
 
-            //await connection.UnitManager.Update(0, 0, "test", UnitKind.Sun, 20, 70, 200, 10, 60);
+            if (!connection.UniverseGroup.TryGet(0, out universe))
+                throw new Exception("Default Universe not found.");
 
-            //await connection.UnitManager.Delete();
+            await universe.Create(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+            await universe.Update("");
+            await universe.Delete("SomeUnit");
+
 
 
 
 
         }
-
-
-
-
-
-
-
 
     }
 
