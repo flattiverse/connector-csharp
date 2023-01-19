@@ -18,11 +18,11 @@ class Program
             if (!connection.UniverseGroup.TryGet(0, out universe))
                 throw new Exception("Default Universe not found.");
 
-            await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-
             //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
-            //await universe.Delete("SomeUnit");
+            //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":60,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+
+            await universe.Delete("SomeUnit");
 
 
 
