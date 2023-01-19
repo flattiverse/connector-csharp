@@ -1,7 +1,6 @@
 ﻿using Flattiverse;
 using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 
 class Program
 {
@@ -16,9 +15,11 @@ class Program
             if (!connection.UniverseGroup.TryGet(0, out universe))
                 throw new Exception("Default Universe not found.");
 
-            await universe.Create(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-            //await universe.Update("");
-            await universe.Delete("SomeUnit");
+            await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+
+            //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+
+            //await universe.Delete("SomeUnit");
 
 
 
@@ -28,66 +29,32 @@ class Program
 
     }
 
-    public static async void test()
-    {
-        var client = new ClientWebSocket();
+    //public async void test()
+    //{
+    //    var client = new ClientWebSocket();
 
-        await client.ConnectAsync(new Uri("ws://127.0.0.1"), CancellationToken.None);
+    //    await client.ConnectAsync(new Uri("ws://127.0.0.1"), CancellationToken.None);
 
-        ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[4096]);
+    //    ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[4096]);
 
-        while (client.State == WebSocketState.Open)
-        {
-            Console.Write("Request: ");
+    //    while (client.State == WebSocketState.Open)
+    //    {
+    //        Console.Write("Request: ");
 
-            byte[] sendBuffer;
+    //        var sendBuffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes("{\"command\":\"OhWhat\",\"id\":\"asd\",\"str\":\"string\"}"));
+    //        await client.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
-            using (MemoryStream stream = new MemoryStream())
-            using (Utf8JsonWriter writer = new Utf8JsonWriter(stream))
-            {
-                writer.WriteStartObject();
-                writer.WriteString("command", "updateunit");
-                writer.WriteString("id", "abc");
+    //        Console.ForegroundColor = ConsoleColor.White;
 
-                writer.WriteStartObject("data");
-                writer.WriteNumber("universe", 0);
+    //        var result = await client.ReceiveAsync(buffer, CancellationToken.None);
+    //        var message = Encoding.UTF8.GetString(buffer.Array!, 0, result.Count);
+    //        Console.WriteLine(message);
 
-                writer.WriteStartObject("unit");
-                writer.WriteString("name", "test");
-                writer.WriteString("kind", "Sun");
+    //        Console.ForegroundColor = ConsoleColor.Gray;
 
-                writer.WriteStartObject("position");
-                writer.WriteNumber("x", 80);
-                writer.WriteNumber("y", 89);
-                writer.WriteEndObject();
+    //        break;
+    //    }
 
-                writer.WriteNumber("radius", 99);
-                writer.WriteNumber("corona", 23);
-                writer.WriteNumber("gravity", 329);
-
-                writer.WriteEndObject();
-
-                writer.WriteEndObject();
-                writer.WriteEndObject();
-                writer.Flush();
-
-                sendBuffer = stream.ToArray();
-            }
-
-            await client.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
-
-            Console.ForegroundColor = ConsoleColor.White;
-
-            var result = await client.ReceiveAsync(buffer, CancellationToken.None);
-            var message = Encoding.UTF8.GetString(buffer.Array!, 0, result.Count);
-            Console.WriteLine(message);
-
-            Console.ForegroundColor = ConsoleColor.Gray;
-
-            break;
-        }
-
-        await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-        return;
-    }
+    //    await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+    //}
 }
