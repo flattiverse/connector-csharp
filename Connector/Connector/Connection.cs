@@ -125,22 +125,7 @@ namespace Flattiverse
                     throw new Exception($"Root element needs to be a JSON object. Received instead: {document.RootElement.ValueKind}.");
                 }
 
-                //if (!document.RootElement.TryGetProperty("command", out element))
-                //{
-                //    throw new Exception("command property is missing.");
-                //}
 
-                //if (element.ValueKind != JsonValueKind.String)
-                //{
-                //    throw new Exception($"command property must be a string. You sent {element.ValueKind}.");
-                //}
-
-                //command = element.GetString();
-
-                //if (string.IsNullOrWhiteSpace(command))
-                //{
-                //    throw new Exception($"command can't be null or empty.");
-                //}
 
                 if (!document.RootElement.TryGetProperty("id", out element))
                 {
