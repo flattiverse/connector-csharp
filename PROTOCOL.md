@@ -51,6 +51,16 @@ If a command fails with an exception a JSON with following structure will be sen
 
 {  "fatal": Exception Message as Text }
 
+Example JSON Response:
+
+```json
+{
+  "kind": "success",
+  "id": "exampleId",
+  "result": see command result
+}
+```
+
 # List of known and unknown commands
 
 setunit:
@@ -60,7 +70,7 @@ setunit:
 ```json
   {
     "command": "deleteunit",
-    "id": "exampleid",
+    "id": "exampleId",
     "data":
     {
       "universe": number (short),
@@ -76,7 +86,7 @@ deleteunit:
 ```json
   {
     "command": "deleteunit",
-    "id": "exampleid",
+    "id": "exampleId",
     "universe": number (short),
     "name": text of max. 32 characters size
   }
