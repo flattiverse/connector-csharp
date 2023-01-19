@@ -197,6 +197,24 @@ namespace Flattiverse
                     return;
                 }
 
+                if (document.RootElement.TryGetProperty("tick", out element))
+                {
+
+                    if (element.ValueKind != JsonValueKind.Number)
+                    {
+                        await payloadExceptionSocketClose(new Exception($"tick property must be a number. Received {element.ValueKind}."));
+                        return;
+                    }
+
+                     long tick = element.GetInt64();
+
+                    
+                    //TODO: handle tick
+                    
+
+                    continue;
+                }
+
                 if (document.RootElement.TryGetProperty("id", out element))
                 {
 

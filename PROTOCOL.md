@@ -123,6 +123,7 @@ Sun:
 ```
 
 # Universe Updates
+the initial universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
 ```json
 {
   "tick": 0,
