@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Diagnostics;
 using System.Net.WebSockets;
-using System.Reflection;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Flattiverse
 {
@@ -16,30 +10,38 @@ namespace Flattiverse
 
         private Uri uri;
 
-        private Thread socketWorker;
-
-        public readonly Units UnitManager;
+        public readonly UniverseGroup UniverseGroup;
 
         internal readonly BlockManager blockManager;
 
         internal bool connected;
 
-        private static readonly JsonDocumentOptions options = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 4 };
+        internal static readonly JsonWriterOptions jsonOptions = new JsonWriterOptions() { Indented = false };
+
+        internal static readonly JsonDocumentOptions jsonDocOptions = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 4 };
+
+        private static int recvBufferLimit = 262144;
+
+       
 
         public Connection(string host, string apiKey) 
         {
             client = new ClientWebSocket();
             uri = new Uri($"ws://{host}?auth={apiKey}");
-            socketWorker = new Thread(socketWork);
-            UnitManager = new Units(this);
-            blockManager  = new BlockManager(this);
+            blockManager = new BlockManager(this);
+
+            UniverseGroup = new UniverseGroup(this);
+            
         }
 
         public async Task ConnectAsync()
         {
             await client.ConnectAsync(uri, CancellationToken.None);
             connected = true;
-            socketWorker.Start();
+
+            UniverseGroup.addUniverse(0);
+
+            ThreadPool.QueueUserWorkItem(delegate { socketWork(); });
         }
 
         internal async Task SendCommand(Packet packet)
@@ -49,7 +51,7 @@ namespace Flattiverse
 
         internal async void socketWork()
         {
-            byte[] recv = new byte[16384];
+            byte[] recv = new byte[recvBufferLimit];
             ValueWebSocketReceiveResult result;
             Memory<byte> recvMemory = new Memory<byte>(recv);
             JsonDocument document;
@@ -93,7 +95,7 @@ namespace Flattiverse
 
                 if (!result.EndOfMessage)
                 {
-                    if (result.Count == 16384)
+                    if (result.Count == recvBufferLimit)
                         throw new Exception("Messages can't exceed 16KB.");
                     else
                         throw new Exception("You can't split up messages manually.");
@@ -111,7 +113,7 @@ namespace Flattiverse
 
                 try
                 {
-                    document = JsonDocument.Parse(recvMemory.Slice(0, result.Count), options);
+                    document = JsonDocument.Parse(recvMemory.Slice(0, result.Count), jsonDocOptions);
                 }
                 catch (Exception exception)
                 {
@@ -123,22 +125,7 @@ namespace Flattiverse
                     throw new Exception($"Root element needs to be a JSON object. Received instead: {document.RootElement.ValueKind}.");
                 }
 
-                //if (!document.RootElement.TryGetProperty("command", out element))
-                //{
-                //    throw new Exception("command property is missing.");
-                //}
 
-                //if (element.ValueKind != JsonValueKind.String)
-                //{
-                //    throw new Exception($"command property must be a string. You sent {element.ValueKind}.");
-                //}
-
-                //command = element.GetString();
-
-                //if (string.IsNullOrWhiteSpace(command))
-                //{
-                //    throw new Exception($"command can't be null or empty.");
-                //}
 
                 if (!document.RootElement.TryGetProperty("id", out element))
                 {
@@ -162,10 +149,18 @@ namespace Flattiverse
         }
 
 
-        public async void Dispose()
+        public void Dispose()
         {
-            if(client.State == WebSocketState.Open)
-                await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+            try
+            {
+                if (client.State == WebSocketState.Open)
+                    client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None).Wait();
+            }
+            catch (Exception e)
+            {
+
+                Debug.WriteLine($"Error while disposing connection: {e.Message}");
+            }
         }
     }
 }
