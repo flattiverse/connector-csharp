@@ -101,9 +101,7 @@ Receiver is only needed for uni chat message
   "kind": "uni"/"broadcast",
   "message":
   {
-    "sender": "tobi",
     ("receiver"): "andi",
-    "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
     "text": "Hallo Freunde"
   }
 }
@@ -281,8 +279,6 @@ A serverwide message
   "kind": "broadcast",
   "message":
   {
-    "sender": "tobi",
-    "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
     "text": "Hallo Freunde"
   }
 }
@@ -296,9 +292,7 @@ A message addressed directly to another player
   "kind": "uni",
   "message":
   {
-    "sender": "tobi",
     "receiver": "adni",
-    "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
     "text": "Hallo Freund"
   }
 }
