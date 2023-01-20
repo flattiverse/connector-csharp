@@ -65,7 +65,7 @@ namespace Flattiverse
             ThreadPool.QueueUserWorkItem(delegate { initialTcs.SetResult(); });
         }
 
-        private void addUser(string name)
+        internal void addUser(string name)
         {
             lock (userSync)
                 users.Add(name, new User(name));
@@ -162,6 +162,60 @@ namespace Flattiverse
                 List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
 
                 ClientCommandParameter kindParam = new ClientCommandParameter("kind");
+                kindParam.SetValue("broadcast");
+
+                string data;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, Connection.jsonOptions))
+                    {
+                        writer.WriteStartObject();
+
+                        writer.WriteString("text", message);
+
+                        writer.WriteEndObject();
+                    }
+
+                    ms.Position = 0;
+                    data = new StreamReader(ms).ReadToEnd();
+                }
+
+                ClientCommandParameter messageParam = new ClientCommandParameter("message");
+
+                messageParam.SetJsonValue(data);
+
+                parameters.Add(messageParam);
+
+                await connection.SendCommand(command, block.Id, parameters);
+
+                await block.Wait();
+
+                JsonDocument? response = block.Response;
+
+                if (!Connection.responseSuccess(response!, out string? error))
+                    throw new Exception(error);
+            }
+        }
+
+        public async Task SendUniMessage(string message, User user)
+        {
+            if (string.IsNullOrEmpty(message))
+                throw new ArgumentNullException("Message can not be null or empty.", nameof(message));
+
+            if(user == null)
+                throw new ArgumentNullException("Message can not be null.", nameof(user));
+
+            if (message.Length > 2048)
+                throw new ArgumentException("Message cant be longer than 2048 characters", nameof(message));
+
+            using (Block block = connection.blockManager.GetBlock())
+            {
+                string command = "message";
+
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+
+                ClientCommandParameter kindParam = new ClientCommandParameter("kind");
                 kindParam.SetValue("broadcastMessage");
 
                 string data;
@@ -172,6 +226,7 @@ namespace Flattiverse
                     {
                         writer.WriteStartObject();
 
+                        writer.WriteString("receiver", user.Name);
                         writer.WriteString("text", message);
 
                         writer.WriteEndObject();

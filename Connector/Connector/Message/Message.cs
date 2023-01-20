@@ -13,7 +13,7 @@ namespace Flattiverse.Message
 
         internal Message()
         {
-            TimeStamp = DateTime.Now;
+            TimeStamp = DateTime.UtcNow;
         }
 
         internal virtual string ToJson() => throw new NotImplementedException();

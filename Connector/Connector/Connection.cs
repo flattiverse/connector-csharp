@@ -31,6 +31,8 @@ namespace Flattiverse
 
         private static readonly Dictionary<string, MethodInfo> commands = new Dictionary<string, MethodInfo>();
 
+        private static bool initialized = false;
+
         public Connection(Uri host)
         {
             client = new ClientWebSocket();
@@ -219,28 +221,6 @@ namespace Flattiverse
 
                     switch (kind)
                     {
-                        case "initial":
-                            if (document.RootElement.TryGetProperty("payload", out element))
-                            {
-                                try
-                                {
-                                    UniverseGroup.parseInitialization(element);
-                                    continue;
-                                }
-                                catch (Exception initialEx)
-                                {
-                                    await payloadExceptionSocketClose(initialEx);
-                                    return;
-                                }
-                                
-                            }
-                            else
-                            {
-                                await payloadExceptionSocketClose(new Exception("Initial does not contain a payload."));
-                                return;
-                            }
-
-                            break;
                         case "success":
                         case "error":
                             if(!tryGetId(document, out string? blockId, out Exception? ex))
@@ -249,13 +229,11 @@ namespace Flattiverse
                                 return;
                             }
 
-                            blockManager.Answer(blockId, document);
+                            blockManager.Answer(blockId!, document);
                             continue;
-
                         case "events":
                             if (document.RootElement.TryGetProperty("payload", out element))
                             {
-
                                 if (element.ValueKind != JsonValueKind.Array)
                                 {
                                     await payloadExceptionSocketClose(new Exception($"Payload must be a string. You sent {element.ValueKind}."));
@@ -264,8 +242,17 @@ namespace Flattiverse
 
                                 try
                                 {
+                                    if (!Utils.Traverse(document.RootElement, out int tick, "tick"))
+                                        throw new Exception("Event does not contain a valid tick property.");
+
                                     foreach (JsonElement fvEvent in element.EnumerateArray())
-                                        UniverseGroup.pushEvent(FlattiverseEvent.parse(this, fvEvent));
+                                        UniverseGroup.pushEvent(FlattiverseEvent.parse(this, fvEvent, tick));
+
+                                    if (!initialized)
+                                    {
+                                        ThreadPool.QueueUserWorkItem(delegate { UniverseGroup.initialTcs.SetResult(); });
+                                        initialized= true;
+                                    }
 
                                     continue;
                                 }
@@ -280,17 +267,17 @@ namespace Flattiverse
                                 await payloadExceptionSocketClose(new Exception("Events do not contain a payload."));
                                 return;
                             }
-                        case "ping":
-                            try
-                            {
-                                await SendPong();
-                            }
-                            catch (Exception pongEx)
-                            {
-                                await payloadExceptionSocketClose(pongEx);
-                                return;
-                            }
-                            break;
+                        //case "ping":
+                        //    try
+                        //    {
+                        //        await SendPong();
+                        //    }
+                        //    catch (Exception pongEx)
+                        //    {
+                        //        await payloadExceptionSocketClose(pongEx);
+                        //        return;
+                        //    }
+                        //    break;
                         default:
                             await payloadExceptionSocketClose(new Exception($"Unkown message kind: {kind}."));
                             return;

@@ -4,7 +4,7 @@ namespace Flattiverse.Events
 {
     public class FlattiverseEvent
     {
-        internal static FlattiverseEvent parse(Connection connection, JsonElement element)
+        internal static FlattiverseEvent parse(Connection connection, JsonElement element, int tick)
         {
             string kind;
 
@@ -13,14 +13,40 @@ namespace Flattiverse.Events
 
             switch (kind)
             {
+                //Units
                 case "newUnit":
                     return new UnitEventNew(element);
                 case "updateUnit":
                     return new UnitEventUpdate(element);
                 case "removeUnit":
                     return new UnitEventRemove(element);
-                case "broadcastMessage":
-                    return new FlattiverseBroadCastMessage(connection, element);
+
+                //Chat
+                case "broadcast":
+                    if (!Utils.Traverse(element, out JsonElement subBElement, JsonValueKind.Object, "message"))
+                        throw new InvalidDataException("Event does not contain valid message property.");
+                    return new BroadCastMessageEvent(subBElement);
+
+                case "uni":
+                    if (!Utils.Traverse(element, out JsonElement subUElement, JsonValueKind.Object, "message"))
+                        throw new InvalidDataException("Event does not contain valid message property.");
+                    return new UniChatMessageEvent(subUElement);
+
+                //User
+                case "newUser":
+                    return new UnitEventNew(element);
+                case "removeUser":
+                    return new UnitEventUpdate(element);
+
+                //General
+                case "universeInfo":
+                    UniverseInfoEvent uie = new UniverseInfoEvent(element);
+                    connection.UniverseGroup.addUniverse(uie.UniverseId);
+                    return uie;
+                case "tickCompleted":
+                    return new TickCompleteEvent(tick);
+
+
                 default:
                     throw new NotImplementedException();
             }

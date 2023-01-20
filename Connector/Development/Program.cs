@@ -21,8 +21,12 @@ class Program
 
             Universe universe;
 
-            if (!connection.UniverseGroup.TryGetUniverse(0, out universe))
-                throw new Exception("Default Universe not found.");
+            while (true)
+            {
+                if (connection.UniverseGroup.TryGetUniverse(0, out universe))
+                    break;
+            }
+            
 
             //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
@@ -32,28 +36,35 @@ class Program
 
             //await connection.UniverseGroup.SendBroadCastMessage("Hello there!");
 
-            ThreadPool.QueueUserWorkItem(async delegate {
-                while (true)
-                {
-                    Thread.Sleep(3000);
-                    await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                    Thread.Sleep(3000);
-                    await universe.Delete("SomeUnit");
-                }
+                
+           
+
+            ThreadPool.QueueUserWorkItem(async delegate
+            {
+                FlattiverseEvent ev = await connection.UniverseGroup.NextEvent();
+                Console.WriteLine($"{ev.GetType().Name}");
             });
 
             while (true)
             {
-                FlattiverseEvent ev = await connection.UniverseGroup.NextEvent();
-                Console.WriteLine($"{ev.GetType().Name}");
-                ;
+                Thread.Sleep(2000);
+                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                Thread.Sleep(2000);
+                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                Thread.Sleep(2000);
+                await universe.Delete("SomeUnit");
+                Thread.Sleep(2000);
+                await connection.UniverseGroup.SendBroadCastMessage("Some broadcast message");
+                Thread.Sleep(2000);
+                await connection.UniverseGroup.SendUniMessage("Some broadcast message", connection.UniverseGroup.EnumerateUsers().First());
+
             }
 
 
             Thread.Sleep(2000000);
 
 
-
+            ;
         }
 
     }

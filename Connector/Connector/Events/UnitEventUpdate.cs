@@ -9,7 +9,10 @@ namespace Flattiverse.Events
 
         internal UnitEventUpdate(JsonElement element) : base(element)
         {
-            Unit = Unit.DeseializeJson(element);
+            if (!Utils.Traverse(element, out JsonElement unitElement, JsonValueKind.Object, "unit"))
+                throw new InvalidDataException("Unit property invalid.");
+
+            Unit = Unit.DeseializeJson(unitElement);
         }
     }
 }
