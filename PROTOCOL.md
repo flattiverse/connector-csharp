@@ -122,8 +122,64 @@ Sun:
 }
 ```
 
+# Events
+Events will be sent with a rootnode named "kind" with value "events" for identifictaion.
+Every event message contains the server tick and a payload containing an array of event objects.
+
+```json
+{
+  "kind": "events",
+  "tick": 0,
+  "payload": 
+  [
+    {
+      eventObject,
+      eventObject,
+      eventObject
+    }
+  ]
+}
+```
+
+# Event Objects
+
+Ping:
+An event with an empty payload for keepalive and time measurement purpose.
+
+New Universe:
+Indicates a new universe or an update on an existing one.
+Will be sent on initial connect or when a new universe is available.
+
+```json
+{  
+    "kind": "universeUpdate",
+    "universe": 0
+}
+```
+
+New Unit:
+A new unit entered the field of view. For unit object data see #Unit Body Structure above
+
+```json
+{
+  "kind": "newUnit",
+  "universe": 0,
+  "unit": object with unit data  
+}
+```
+Update Unit:
+
+
+```json
+{
+  "kind": "updateUnit",
+  "universe": 0,
+  "unit": object with unit data  
+}
+```
+
 # Universe Updates
-the initial universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
+the universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
 ```json
 {
   "kind": "events",
@@ -149,7 +205,7 @@ the initial universe update sent with the initial tick, and all units in the "cr
         "message":
         {
           "sender": "tobi",
-          "timestamp": "yyyy-mm-ddTdd:hh:mm:ss.fffZ",
+          "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
           "text": "Hallo Freunde"
         }
       }
