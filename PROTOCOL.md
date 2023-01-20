@@ -92,6 +92,23 @@ deleteunit:
   }
 ```
 
+message:
+Receiver is only needed for uni chat message
+
+```json
+{
+  "command": "message",
+  "kind": "uni"/"broadcast",
+  "message":
+  {
+    "sender": "tobi",
+    ("receiver"): "andi",
+    "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
+    "text": "Hallo Freunde"
+  }
+}
+```
+
 yadda, yadda...
 
 # Unit Body Structure
