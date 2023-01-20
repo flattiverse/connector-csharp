@@ -256,6 +256,38 @@ Sent when a unit is removed from the universe.
 }
 ```
 
+BroadCast Message:
+A serverwide message
+
+```json
+{
+  "kind": "broadcast",
+  "message":
+  {
+    "sender": "tobi",
+    "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
+    "text": "Hallo Freunde"
+  }
+}
+```
+
+UniChat Message:
+A message addressed directly to another player
+
+```json
+{
+  "kind": "uni",
+  "message":
+  {
+    "sender": "tobi",
+    "receiver": "adni",
+    "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
+    "text": "Hallo Freund"
+  }
+}
+```
+
+
 # Universe Updates
 the universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
 ```json
@@ -279,7 +311,7 @@ the universe update sent with the initial tick, and all units in the "created" o
         }
       },
       {
-        "kind": "broadcastMessage",
+        "kind": "broadcast",
         "message":
         {
           "sender": "tobi",
