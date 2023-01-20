@@ -62,9 +62,7 @@ namespace Flattiverse
 
             }
 
-
-
-            initialTcs.SetResult();
+            ThreadPool.QueueUserWorkItem(delegate { initialTcs.SetResult(); });
         }
 
         private void addUser(string name)
@@ -195,7 +193,7 @@ namespace Flattiverse
 
                 JsonDocument? response = block.Response;
 
-                if (!Connection.responseSuccess(response, out string error))
+                if (!Connection.responseSuccess(response!, out string? error))
                     throw new Exception(error);
             }
         }

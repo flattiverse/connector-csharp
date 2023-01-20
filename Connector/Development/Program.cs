@@ -1,6 +1,10 @@
 ﻿using Flattiverse;
+using Flattiverse.Events;
+using Flattiverse.Units;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml.Linq;
 
 class Program
 {
@@ -28,7 +32,25 @@ class Program
 
             //await connection.UniverseGroup.SendBroadCastMessage("Hello there!");
 
-            Thread.Sleep(20000);
+            ThreadPool.QueueUserWorkItem(async delegate {
+                while (true)
+                {
+                    Thread.Sleep(3000);
+                    await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                    Thread.Sleep(3000);
+                    await universe.Delete("SomeUnit");
+                }
+            });
+
+            while (true)
+            {
+                FlattiverseEvent ev = await connection.UniverseGroup.NextEvent();
+                Console.WriteLine($"{ev.GetType().Name}");
+                ;
+            }
+
+
+            Thread.Sleep(2000000);
 
 
 

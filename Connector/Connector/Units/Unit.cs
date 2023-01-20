@@ -54,7 +54,7 @@ namespace Flattiverse.Units
 
         internal static Unit DeseializeJson(JsonElement element)
         {
-            if (Utils.Traverse(element, out JsonElement unitElement, JsonValueKind.Object, "unit"))
+            if (!Utils.Traverse(element, out JsonElement unitElement, JsonValueKind.Object, "unit"))
                 throw new InvalidDataException("Unit property invalid.");
 
             if(!Utils.Traverse(unitElement, out string kind, false, "kind"))
@@ -72,7 +72,7 @@ namespace Flattiverse.Units
             if (ctor is null)
                 throw new SystemException($"Unit {kind} has no valid Json Constructor");
 
-            return (Unit)ctor.Invoke(new object[] { element });
+            return (Unit)ctor.Invoke(new object[] { unitElement });
         }
 
     }

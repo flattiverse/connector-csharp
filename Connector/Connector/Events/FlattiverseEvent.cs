@@ -15,6 +15,8 @@ namespace Flattiverse.Events
             {
                 case "newUnit":
                     return new UnitEventNew(element);
+                case "updateUnit":
+                    return new UnitEventUpdate(element);
                 case "removeUnit":
                     return new UnitEventRemove(element);
                 case "broadcastMessage":

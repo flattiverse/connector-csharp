@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Events;
+using Flattiverse.Message;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -81,6 +82,25 @@ namespace Flattiverse
 
                 //ms.Position = 0;
                 //string debugText = new StreamReader(ms).ReadToEnd();
+
+                await client.SendAsync(ms.ToArray(), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+
+        internal async Task SendPong()
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (Utf8JsonWriter writer = new Utf8JsonWriter(ms))
+                {
+                    writer.WriteStartObject();
+
+                    writer.WriteString("command", "pong");
+                    writer.WriteString("id", "0");
+                    writer.WriteString("ticksAsString", DateTime.UtcNow.Ticks.ToString());
+
+                    writer.WriteEndObject();
+                }
 
                 await client.SendAsync(ms.ToArray(), WebSocketMessageType.Text, true, CancellationToken.None);
             }
@@ -260,6 +280,17 @@ namespace Flattiverse
                                 await payloadExceptionSocketClose(new Exception("Events do not contain a payload."));
                                 return;
                             }
+                        case "ping":
+                            try
+                            {
+                                await SendPong();
+                            }
+                            catch (Exception pongEx)
+                            {
+                                await payloadExceptionSocketClose(pongEx);
+                                return;
+                            }
+                            break;
                         default:
                             await payloadExceptionSocketClose(new Exception($"Unkown message kind: {kind}."));
                             return;
