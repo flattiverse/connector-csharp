@@ -107,6 +107,32 @@ Receiver is only needed for uni chat message
 }
 ```
 
+thruster:
+Sets Ships Thruster to desired value. Accepts values between 0 and 0.025. Returns Projected Energy Usage.
+
+```json
+{
+  "command": "thruster",
+  "id": "exampleId",
+  "universe" : number (short),
+  "unit": "unitName"
+  "value" : number (double)
+}
+```
+
+controlNuzzle:
+Sets Ships Thruster to desired value. Accepts values between -2 and 2. Returns Projected Energy Usage.
+
+```json
+{
+  "command": "thruster",
+  "id": "exampleId",
+  "universe" : number (short),
+  "unit": "unitName"
+  "value" : number (double)
+}
+```
+
 yadda, yadda...
 
 # Unit Body Structure
@@ -134,6 +160,16 @@ Sun:
   "kind" : "sun",
   ... general unit data...
   "corona" : 0.0
+}
+```
+
+PlayerShip:
+For Now just unit base info is needed. radius and gravity are overridden on server.
+:
+```json
+{
+  "kind" : "playership",
+  ... general unit data...
 }
 ```
 
