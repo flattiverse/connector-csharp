@@ -1,14 +1,8 @@
 ﻿using Flattiverse.Events;
-using System;
 using System.Diagnostics;
-using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.Serialization;
 using System.Text.Json;
-using System.Xml.Linq;
 
 namespace Flattiverse
 {
@@ -63,9 +57,9 @@ namespace Flattiverse
             await client.ConnectAsync(uri, CancellationToken.None);
             connected = true;
 
-            UniverseGroup.addUniverse(0);
-
             ThreadPool.QueueUserWorkItem(delegate { socketWork(); });
+
+            await UniverseGroup.initialTcs.Task;
         }
 
         internal async Task SendCommand(string command, string blockId, List<ClientCommandParameter> parameters)
@@ -195,7 +189,7 @@ namespace Flattiverse
                         return;
                     }
 
-                    string kind = element.GetString();
+                    string kind = element.GetString()!;
 
                     if (string.IsNullOrWhiteSpace(kind))
                     {
@@ -205,6 +199,28 @@ namespace Flattiverse
 
                     switch (kind)
                     {
+                        case "initial":
+                            if (document.RootElement.TryGetProperty("payload", out element))
+                            {
+                                try
+                                {
+                                    UniverseGroup.parseInitialization(element);
+                                    continue;
+                                }
+                                catch (Exception initialEx)
+                                {
+                                    await payloadExceptionSocketClose(initialEx);
+                                    return;
+                                }
+                                
+                            }
+                            else
+                            {
+                                await payloadExceptionSocketClose(new Exception("Initial does not contain a payload."));
+                                return;
+                            }
+
+                            break;
                         case "success":
                         case "error":
                             if(!tryGetId(document, out string? blockId, out Exception? ex))
@@ -239,7 +255,11 @@ namespace Flattiverse
                                     return;
                                 }
                             }
-                            break;
+                            else
+                            {
+                                await payloadExceptionSocketClose(new Exception("Events do not contain a payload."));
+                                return;
+                            }
                         default:
                             await payloadExceptionSocketClose(new Exception($"Unkown message kind: {kind}."));
                             return;

@@ -12,38 +12,22 @@ namespace Flattiverse.Events
 
         internal FlattiverseMessage(Connection connection, JsonElement element)
         {
-            element.TryGetProperty("message", out JsonElement messageElement);
-            if (messageElement.ValueKind != JsonValueKind.Object)
-                throw new InvalidDataException("Message property needs to be an object.");
+            JsonElement subElement;
 
-            messageElement.TryGetProperty("sender", out JsonElement senderElement);
-            if (senderElement.ValueKind != JsonValueKind.String)
-                throw new InvalidDataException("Sender property needs to be a ´string.");
+            if (!Utils.Traverse(element, out subElement, JsonValueKind.Object, "message"))
+                throw new InvalidDataException("Event does not contain a valid message property.");
 
-            string sender = senderElement.GetString()!;
-
-            if (string.IsNullOrEmpty(sender))
-                throw new InvalidDataException($"Message Sender must not be null or empty");
-
+            string sender;
+            if(!Utils.Traverse(subElement, out sender, false, "sender"))
+                throw new InvalidDataException("Message does not contain a valid sender property.");
             connection.tryGetUser(sender, out From);
 
-            messageElement.TryGetProperty("timestamp", out JsonElement stampElement);
-            if (stampElement.ValueKind != JsonValueKind.String)
-                throw new InvalidDataException("Timestamp property needs to be a ´string.");
+            if (!Utils.Traverse(subElement, out TimeStamp, "timestamp"))
+                throw new InvalidDataException("Message does not contain a valid timestamp property.");
 
-            if(!stampElement.TryGetDateTime(out TimeStamp))
-                throw new InvalidDataException("Timestamp property could not be parsed to datetime.");
 
-            messageElement.TryGetProperty("text", out JsonElement textElement);
-            if (textElement.ValueKind != JsonValueKind.String)
-                throw new InvalidDataException("Text property needs to be a ´string.");
-
-            string text = senderElement.GetString()!;
-
-            if (string.IsNullOrEmpty(text))
-                throw new InvalidDataException($"Message text must not be null or empty");
-
-            Message = text;
+            if (!Utils.Traverse(subElement, out Message, false, "text"))
+                throw new InvalidDataException("Message does not contain a valid text property.");
         }
     }
 }

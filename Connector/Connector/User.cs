@@ -8,11 +8,11 @@ namespace Flattiverse
 {
     public class User
     {
-        public readonly long Id;
+        public readonly string Name;
 
-        internal User(long id) 
+        internal User(string name) 
         {
-            Id = id;
+            Name = name;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Flattiverse
 
         private Dictionary<short, Universe> universes;
 
-        private object sync = new object();
+        private object universeSync = new object();
 
         private readonly Queue<TaskCompletionSource<FlattiverseEvent>> eventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
 
@@ -17,58 +17,99 @@ namespace Flattiverse
 
         private readonly object eventSync = new object();
 
+        internal readonly TaskCompletionSource initialTcs;
+
+        private readonly Dictionary<string, User> users;
+
+        private readonly object userSync = new object();
+
         internal UniverseGroup(Connection connection) 
         {
             this.connection = connection;
             universes = new Dictionary<short, Universe>();
+            users = new Dictionary<string, User>();
+            initialTcs = new TaskCompletionSource();
+        }
+
+        internal void parseInitialization(JsonElement element)
+        {
+            if (element.ValueKind != JsonValueKind.Array)
+                throw new Exception("Payload is not of type array");
+
+            foreach (JsonElement subElement in element.EnumerateArray())
+            {
+                if(!Utils.Traverse(subElement, out string kind, false, "kind"))
+                    throw new Exception("Payload array element kind property not valid.");
+
+                switch (kind)
+                {
+                    case "universeUpdate":
+                        if (!Utils.Traverse(subElement, out int universeId, "universe"))
+                            throw new Exception("Payload array element universe property not valid.");
+
+                        addUniverse((short)universeId);
+                        break;
+                    case "userUpdate":
+                        if (!Utils.Traverse(subElement, out string name, false, "name"))
+                            throw new Exception("Payload array element name property not valid.");
+
+                        addUser(name);
+                        break;
+
+                    default:
+                        throw new Exception("Payload array element kind property not valid.");
+                }
+
+            }
+
+
+
+            initialTcs.SetResult();
+        }
+
+        private void addUser(string name)
+        {
+            lock (userSync)
+                users.Add(name, new User(name));
         }
 
         internal void addUniverse(short id)
         {
-            lock (sync)
-                universes.Add(0, new Universe(this, connection, id));
+            lock (universeSync)
+                universes.Add(id, new Universe(this, connection, id));
         }
 
-        public bool TryGet(int id, out Universe universe)
+        public bool TryGetUser(string name, out User user)
+        {
+            lock (userSync)
+                return users.TryGetValue(name, out user);
+        }
+
+        public IEnumerable<User> EnumerateUsers()
+        {
+            Dictionary<string, User> localUsers;
+
+            lock (userSync)
+                localUsers = new Dictionary<string, User>(users);
+
+            foreach (KeyValuePair<string, User> userKvP in localUsers)
+                yield return userKvP.Value;
+        }
+
+        public bool TryGetUniverse(int id, out Universe universe)
         {
             if(id > 0 || id > short.MaxValue)
                 throw new ArgumentOutOfRangeException($"Id must be between 0 and {short.MaxValue}.", nameof(id));
 
-            return universes.TryGetValue((short)id, out universe);
+            lock (universeSync)
+                return universes.TryGetValue((short)id, out universe);
         }
-
-        //public async Task Send(FlattiverseMessage message)
-        //{
-        //    using (Block block = connection.blockManager.GetBlock())
-        //    {
-        //        string command = "message";
-
-        //        List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
-
-        //        ClientCommandParameter paramType = new ClientCommandParameter("type");
-        //        paramType.SetValue();
-        //        parameters.Add(paramType);
-
-        //        ClientCommandParameter paramUniverse = new ClientCommandParameter("message");
-        //        paramUniverse.SetJsonValue();
-        //        parameters.Add(paramUniverse);
-
-        //        await connection.SendCommand(command, block.Id, parameters);
-
-        //        await block.Wait();
-
-        //        JsonDocument? response = block.Response;
-
-        //        if (!Connection.responseSuccess(response, out string error))
-        //            throw new Exception(error);
-        //    }
-        //}
 
         public IEnumerable<Universe> EnumerateUniverses() 
         {
             Dictionary<short, Universe> localUniverses;
 
-            lock (sync)
+            lock (universeSync)
                 localUniverses= new Dictionary<short, Universe>(universes);
 
             foreach (KeyValuePair<short, Universe> universeKvP in localUniverses)
@@ -105,6 +146,57 @@ namespace Flattiverse
                 }
 
                 pendingEvents.Enqueue(fvEvent);
+            }
+        }
+
+        public async Task SendBroadCastMessage(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                throw new ArgumentNullException("Message can not be null or empty", nameof(message));
+
+            if (message.Length > 2048)
+                throw new ArgumentException("Message cant be longer than 2048 characters", nameof(message));
+
+            using (Block block = connection.blockManager.GetBlock())
+            {
+                string command = "message";
+
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+
+                ClientCommandParameter kindParam = new ClientCommandParameter("kind");
+                kindParam.SetValue("broadcastMessage");
+
+                string data;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (Utf8JsonWriter writer = new Utf8JsonWriter(ms, Connection.jsonOptions))
+                    {
+                        writer.WriteStartObject();
+
+                        writer.WriteString("text", message);
+
+                        writer.WriteEndObject();
+                    }
+
+                    ms.Position = 0;
+                    data = new StreamReader(ms).ReadToEnd();
+                }
+
+                ClientCommandParameter messageParam = new ClientCommandParameter("message");
+
+                messageParam.SetJsonValue(data);
+
+                parameters.Add(messageParam);
+
+                await connection.SendCommand(command, block.Id, parameters);
+
+                await block.Wait();
+
+                JsonDocument? response = block.Response;
+
+                if (!Connection.responseSuccess(response, out string error))
+                    throw new Exception(error);
             }
         }
     }

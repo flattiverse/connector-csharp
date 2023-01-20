@@ -17,7 +17,7 @@ class Program
 
             Universe universe;
 
-            if (!connection.UniverseGroup.TryGet(0, out universe))
+            if (!connection.UniverseGroup.TryGetUniverse(0, out universe))
                 throw new Exception("Default Universe not found.");
 
             //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
@@ -25,6 +25,8 @@ class Program
             //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":60,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
             //await universe.Delete("SomeUnit");
+
+            //await connection.UniverseGroup.SendBroadCastMessage("Hello there!");
 
             Thread.Sleep(20000);
 

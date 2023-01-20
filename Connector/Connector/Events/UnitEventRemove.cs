@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Events
 {
@@ -13,8 +8,8 @@ namespace Flattiverse.Events
 
         internal UnitEventRemove(JsonElement element) : base (element)
         {
-            if (!traverse(element, out Name, "name"))
-                throw new InvalidDataException("name doesn't exist or isn't a string.");
+            if (!Utils.Traverse(element, out Name, false, "name"))
+                throw new InvalidDataException("Event does not contain valid name property.");
         }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Events
 {
@@ -13,8 +8,8 @@ namespace Flattiverse.Events
 
         internal UnitEvent(JsonElement element)
         {
-            if (!traverse(element, out UniverseId, "universe"))
-                throw new InvalidDataException("universe doesn't exist or is incompatible.");
+            if (!Utils.Traverse(element, out UniverseId, "universe"))
+                throw new InvalidDataException("Event does not contain valid universe property.");
         }
     }
 }
