@@ -11,7 +11,7 @@ namespace Flattiverse.Events
     {
         public readonly string UserName;
 
-        internal UserEvent(Connection connection, JsonElement element)
+        internal UserEvent(JsonElement element)
         {
             if(!Utils.Traverse(element, out string name, false, "name"))
                 throw new InvalidDataException("Event does not contain valid name property.");

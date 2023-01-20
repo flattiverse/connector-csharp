@@ -9,9 +9,8 @@ namespace Flattiverse.Events
 {
     public class NewUserEvent : UserEvent
     {
-        internal NewUserEvent(Connection connection, JsonElement element) : base(connection, element)
+        internal NewUserEvent(JsonElement element) : base(element)
         {
-            connection.UniverseGroup.addUser(UserName);
         }
     }
 }

@@ -236,7 +236,7 @@ namespace Flattiverse
                             {
                                 if (element.ValueKind != JsonValueKind.Array)
                                 {
-                                    await payloadExceptionSocketClose(new Exception($"Payload must be a string. You sent {element.ValueKind}."));
+                                    await payloadExceptionSocketClose(new Exception($"Payload must be a Array. You sent {element.ValueKind}."));
                                     return;
                                 }
 

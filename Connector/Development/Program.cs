@@ -11,7 +11,7 @@ class Program
     private static async Task Main(string[] args)
     {
         // This is the real server. You can change it back to 127.0.0.1.
-        using (Connection connection = new Connection("127.0.0.1", "TestUser", false))
+        using (Connection connection = new Connection("127.0.0.1", "AdminUser", false))
         //using (Connection connection = new Connection("80.255.8.76/api/universes/beginnersGround.ws", "TestUser", false))
         {
             await connection.ConnectAsync();
@@ -41,19 +41,24 @@ class Program
 
             ThreadPool.QueueUserWorkItem(async delegate
             {
-                FlattiverseEvent ev = await connection.UniverseGroup.NextEvent();
-                Console.WriteLine($"{ev.GetType().Name}");
+                while (true)
+                {
+                    FlattiverseEvent ev = await connection.UniverseGroup.NextEvent();
+                    if(ev is not TickCompleteEvent)
+                        Console.WriteLine($"{ev.GetType().Name}");
+                }
+                
             });
 
             while (true)
             {
-                Thread.Sleep(2000);
-                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                Thread.Sleep(2000);
-                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                Thread.Sleep(2000);
-                await universe.Delete("SomeUnit");
-                Thread.Sleep(2000);
+                //Thread.Sleep(2000);
+                //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                //Thread.Sleep(2000);
+                //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                //Thread.Sleep(2000);
+                //await universe.Delete("SomeUnit");
+                //Thread.Sleep(2000);
                 await connection.UniverseGroup.SendBroadCastMessage("Some broadcast message");
                 Thread.Sleep(2000);
                 await connection.UniverseGroup.SendUniMessage("Some broadcast message", connection.UniverseGroup.EnumerateUsers().First());

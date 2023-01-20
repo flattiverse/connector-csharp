@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
 
 namespace Flattiverse.Events
 {
@@ -34,9 +35,13 @@ namespace Flattiverse.Events
 
                 //User
                 case "newUser":
-                    return new UnitEventNew(element);
+                    NewUserEvent nue = new NewUserEvent(element);
+                    connection.UniverseGroup.addUser(nue.UserName);
+                    return nue;
                 case "removeUser":
-                    return new UnitEventUpdate(element);
+                    RemoveUserEvent rue = new RemoveUserEvent(element);
+                    connection.UniverseGroup.removeUser(rue.UserName);
+                    return rue;
 
                 //General
                 case "universeInfo":

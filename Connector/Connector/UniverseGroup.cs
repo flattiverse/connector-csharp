@@ -1,5 +1,6 @@
 ﻿using Flattiverse.Events;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Flattiverse
 {
@@ -68,7 +69,13 @@ namespace Flattiverse
         internal void addUser(string name)
         {
             lock (userSync)
-                users.Add(name, new User(name));
+                users.TryAdd(name, new User(name));
+        }
+
+        internal void removeUser(string name)
+        {
+            lock (userSync)
+                users.Remove(name);
         }
 
         internal void addUniverse(short id)
@@ -163,6 +170,7 @@ namespace Flattiverse
 
                 ClientCommandParameter kindParam = new ClientCommandParameter("kind");
                 kindParam.SetValue("broadcast");
+                parameters.Add(kindParam);
 
                 string data;
 
@@ -217,6 +225,7 @@ namespace Flattiverse
 
                 ClientCommandParameter kindParam = new ClientCommandParameter("kind");
                 kindParam.SetValue("broadcastMessage");
+                parameters.Add(kindParam);
 
                 string data;
 
@@ -252,5 +261,7 @@ namespace Flattiverse
                     throw new Exception(error);
             }
         }
+
+        
     }
 }
