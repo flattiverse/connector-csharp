@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Flattiverse.Events;
+using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -41,7 +43,6 @@ namespace Flattiverse
             blockManager = new BlockManager(this);
 
             UniverseGroup = new UniverseGroup(this);
-            initializeCommands();
         }
 
         public Connection(string host, string apiKey, bool https) 
@@ -55,18 +56,6 @@ namespace Flattiverse
 
             blockManager = new BlockManager(this);
             UniverseGroup = new UniverseGroup(this);
-            initializeCommands();
-        }
-
-        private static void initializeCommands()
-        {
-            foreach (MethodInfo method in typeof(Connection).GetMethods())
-            {
-                Command? command = method.GetCustomAttribute<Command>(false);
-
-                if (command != null)
-                    commands[command.Name] = method;
-            }
         }
 
         public async Task ConnectAsync()
@@ -197,47 +186,66 @@ namespace Flattiverse
                     return;
                 }
 
-                if (document.RootElement.TryGetProperty("tick", out element))
-                {
-
-                    if (element.ValueKind != JsonValueKind.Number)
-                    {
-                        await payloadExceptionSocketClose(new Exception($"tick property must be a number. Received {element.ValueKind}."));
-                        return;
-                    }
-
-                     long tick = element.GetInt64();
-
-                    
-                    //TODO: handle tick
-                    
-
-                    continue;
-                }
-
-                if (document.RootElement.TryGetProperty("id", out element))
+                if (document.RootElement.TryGetProperty("kind", out element))
                 {
 
                     if (element.ValueKind != JsonValueKind.String)
                     {
-                        await payloadExceptionSocketClose(new Exception($"Id property must be a string. Received {element.ValueKind}."));
+                        await payloadExceptionSocketClose(new Exception($"kind property must be a number. Received {element.ValueKind}."));
                         return;
                     }
 
-                    id = element.GetString();
+                    string kind = element.GetString();
 
-                    if (string.IsNullOrWhiteSpace(id))
+                    if (string.IsNullOrWhiteSpace(kind))
                     {
-                        await payloadExceptionSocketClose(new Exception($"Id can't be null or empty."));
+                        await payloadExceptionSocketClose(new Exception($"kind property can't be null or empty."));
                         return;
                     }
 
-                    blockManager.Answer(id, document);
+                    switch (kind)
+                    {
+                        case "success":
+                        case "error":
+                            if(!tryGetId(document, out string? blockId, out Exception? ex))
+                            {
+                                await payloadExceptionSocketClose(ex);
+                                return;
+                            }
 
-                    continue;
+                            blockManager.Answer(blockId, document);
+                            continue;
+
+                        case "events":
+                            if (document.RootElement.TryGetProperty("payload", out element))
+                            {
+
+                                if (element.ValueKind != JsonValueKind.Array)
+                                {
+                                    await payloadExceptionSocketClose(new Exception($"Payload must be a string. You sent {element.ValueKind}."));
+                                    return;
+                                }
+
+                                try
+                                {
+                                    foreach (JsonElement fvEvent in element.EnumerateArray())
+                                        UniverseGroup.pushEvent(FlattiverseEvent.parse(this, fvEvent));
+
+                                    continue;
+                                }
+                                catch (Exception parseEx)
+                                {
+                                    await payloadExceptionSocketClose(parseEx);
+                                    return;
+                                }
+                            }
+                            break;
+                        default:
+                            await payloadExceptionSocketClose(new Exception($"Unkown message kind: {kind}."));
+                            return;
+                    }
                 }
 
-                //something unexpected happened
                 if (document.RootElement.TryGetProperty("fatal", out element))
                 {
 
@@ -258,38 +266,33 @@ namespace Flattiverse
                     await fatalExceptionSocketClose(new Exception($"Fatal excetion: {fatal}"));
                     return;
                 }
+            }
+        }
 
-                string? command;
-                if (!document.RootElement.TryGetProperty("command", out element))
-                {
-                    await payloadExceptionSocketClose(new Exception($"Command property is missing."));
-                    return;
-                }
+        private bool tryGetId(JsonDocument document, out string? id, out Exception? ex)
+        {
+            JsonElement element;
+            id = null;
+            ex = null;
 
+            if (document.RootElement.TryGetProperty("id", out element))
+            {
                 if (element.ValueKind != JsonValueKind.String)
                 {
-                    await payloadExceptionSocketClose(new Exception($"Command must be a string. You sent {element.ValueKind}."));
-                    return;
+                    ex = new Exception($"Id property must be a string. Received {element.ValueKind}.");
+                    return false;
                 }
 
-                command = element.GetString();
+                id = element.GetString();
 
-                if (string.IsNullOrWhiteSpace(command))
+                if (string.IsNullOrWhiteSpace(id))
                 {
-                    await payloadExceptionSocketClose(new Exception($"Command can't be null or empty."));
-                    return;
+                    ex = new Exception($"Id can't be null or empty.");
+                    return false;
                 }
-
-                if (!commands.TryGetValue(command, out MethodInfo? method))
-                {
-                    await payloadExceptionSocketClose(new Exception($"Unknown command."));
-                    return;
-                }
-
-                CommandCaller caller = new CommandCaller(method);
-                if (!await caller.Call(this, document.RootElement))
-                    return;
             }
+
+            return true;
         }
 
         internal void ConnectionClose(Exception? exception)
@@ -308,10 +311,6 @@ namespace Flattiverse
             }
             catch { }
         }
-
-
-        [Command("message")]
-        internal bool handleMessage(JsonElement data) => UniverseGroup.Chat.handleMessage(data);
 
         private async Task fatalExceptionSocketClose(Exception ex)
         {
@@ -374,6 +373,12 @@ namespace Flattiverse
 
                 Debug.WriteLine($"Error while disposing connection: {e.Message}");
             }
+        }
+
+        internal bool tryGetUser(string sender, out User? from)
+        {
+            from = null;
+            return false;
         }
     }
 }

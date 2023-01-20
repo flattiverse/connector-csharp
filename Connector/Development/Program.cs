@@ -7,7 +7,8 @@ class Program
     private static async Task Main(string[] args)
     {
         // This is the real server. You can change it back to 127.0.0.1.
-        using (Connection connection = new Connection("80.255.8.76/api/universes/beginnersGround.ws", "TestUser"))
+        using (Connection connection = new Connection("127.0.0.1", "TestUser", false))
+        //using (Connection connection = new Connection("80.255.8.76/api/universes/beginnersGround.ws", "TestUser", false))
         {
             await connection.ConnectAsync();
 
@@ -23,9 +24,9 @@ class Program
 
             //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":60,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
-            await universe.Delete("SomeUnit");
+            //await universe.Delete("SomeUnit");
 
-
+            Thread.Sleep(20000);
 
 
 

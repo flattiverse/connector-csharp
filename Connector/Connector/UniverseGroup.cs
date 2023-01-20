@@ -1,10 +1,5 @@
-﻿using Flattiverse.Message.Chat;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Flattiverse.Events;
+using System.Text.Json;
 
 namespace Flattiverse
 {
@@ -14,15 +9,18 @@ namespace Flattiverse
 
         private Dictionary<short, Universe> universes;
 
-        public readonly Chat Chat;
-
         private object sync = new object();
+
+        private readonly Queue<TaskCompletionSource<FlattiverseEvent>> eventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
+
+        private readonly Queue<FlattiverseEvent> pendingEvents = new Queue<FlattiverseEvent>();
+
+        private readonly object eventSync = new object();
 
         internal UniverseGroup(Connection connection) 
         {
             this.connection = connection;
             universes = new Dictionary<short, Universe>();
-            //Chat = new Chat(connection);
         }
 
         internal void addUniverse(short id)
@@ -39,6 +37,33 @@ namespace Flattiverse
             return universes.TryGetValue((short)id, out universe);
         }
 
+        //public async Task Send(FlattiverseMessage message)
+        //{
+        //    using (Block block = connection.blockManager.GetBlock())
+        //    {
+        //        string command = "message";
+
+        //        List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+
+        //        ClientCommandParameter paramType = new ClientCommandParameter("type");
+        //        paramType.SetValue();
+        //        parameters.Add(paramType);
+
+        //        ClientCommandParameter paramUniverse = new ClientCommandParameter("message");
+        //        paramUniverse.SetJsonValue();
+        //        parameters.Add(paramUniverse);
+
+        //        await connection.SendCommand(command, block.Id, parameters);
+
+        //        await block.Wait();
+
+        //        JsonDocument? response = block.Response;
+
+        //        if (!Connection.responseSuccess(response, out string error))
+        //            throw new Exception(error);
+        //    }
+        //}
+
         public IEnumerable<Universe> EnumerateUniverses() 
         {
             Dictionary<short, Universe> localUniverses;
@@ -50,6 +75,37 @@ namespace Flattiverse
                 yield return universeKvP.Value;
         }
 
+        public async Task<FlattiverseEvent> NextEvent()
+        {
+            FlattiverseEvent? fvEvent;
+            TaskCompletionSource<FlattiverseEvent> tcs;
 
+            lock (eventSync)
+            {
+                if(pendingEvents.TryDequeue(out fvEvent))
+                    return fvEvent;
+
+                tcs = new TaskCompletionSource<FlattiverseEvent>();
+                eventWaiters.Enqueue(tcs);
+            }
+
+            return await tcs.Task;
+        }
+
+        internal void pushEvent(FlattiverseEvent fvEvent)
+        {
+            TaskCompletionSource<FlattiverseEvent> tcs;
+
+            lock (eventSync) 
+            { 
+                if(eventWaiters.TryDequeue(out tcs))
+                {
+                    ThreadPool.QueueUserWorkItem(delegate { tcs.SetResult(fvEvent); });
+                    return;
+                }
+
+                pendingEvents.Enqueue(fvEvent);
+            }
+        }
     }
 }
