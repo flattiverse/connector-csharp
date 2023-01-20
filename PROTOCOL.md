@@ -146,13 +146,80 @@ Every event message contains the server tick and a payload containing an array o
 Ping:
 An event with an empty payload for keepalive and time measurement purpose.
 
-New Universe:
+```json
+{
+  "kind": "events",
+  "tick": 0,
+  "payload": 
+  [
+    {
+      "kind": "ping"
+    },
+    otherEventData
+  ]
+}
+```
+
+TickCompleted:
+Will be send after a tick is completed.
+
+```json
+{
+  "kind": "events",
+  "tick": 0,
+  "payload": 
+  [
+    {
+      "kind": "tickCompleted"
+    },
+    otherEventData
+  ]
+}
+```
+
+New User:
+Sent when a new User is connected or at initial connect
+
+```json
+{
+  "kind": "events",
+  "tick": 0,
+  "payload": 
+  [
+    {
+      "kind": "newUser",
+      "name": "DerStarkeBenutzer"
+    },
+    otherEventData
+  ]
+}
+```
+
+Remvove User:
+Sent when an User disconnects
+
+```json
+{
+  "kind": "events",
+  "tick": 0,
+  "payload": 
+  [
+    {
+      "kind": "removeUser",
+      "name": "DerSchwacheBenutzer"
+    },
+    otherEventData
+  ]
+}
+```
+
+Universe Info:
 Indicates a new universe or an update on an existing one.
 Will be sent on initial connect or when a new universe is available.
 
 ```json
 {  
-    "kind": "universeUpdate",
+    "kind": "universeInfo",
     "universe": 0
 }
 ```
@@ -168,13 +235,24 @@ A new unit entered the field of view. For unit object data see #Unit Body Struct
 }
 ```
 Update Unit:
-
+Update for an existing unit. The unit is sent as complete object.
 
 ```json
 {
   "kind": "updateUnit",
   "universe": 0,
   "unit": object with unit data  
+}
+```
+
+Remove Unit:
+Sent when a unit is removed from the universe.
+
+```json
+{
+  "kind": "removeUnite",
+  "universe": 0,
+  "name": "GoodByeUnit" 
 }
 ```
 
