@@ -53,12 +53,12 @@ class Program
             while (true)
             {
                 //Thread.Sleep(2000);
-                //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                //Thread.Sleep(2000);
-                //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                //Thread.Sleep(2000);
-                //await universe.Delete("SomeUnit");
-                //Thread.Sleep(2000);
+                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                Thread.Sleep(2000);
+                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+                Thread.Sleep(2000);
+                await universe.Delete("SomeUnit");
+                Thread.Sleep(2000);
                 await connection.UniverseGroup.SendBroadCastMessage("Some broadcast message");
                 Thread.Sleep(2000);
                 await connection.UniverseGroup.SendUniMessage("Some broadcast message", connection.UniverseGroup.EnumerateUsers().First());

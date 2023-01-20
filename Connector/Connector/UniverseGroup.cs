@@ -224,7 +224,7 @@ namespace Flattiverse
                 List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
 
                 ClientCommandParameter kindParam = new ClientCommandParameter("kind");
-                kindParam.SetValue("broadcastMessage");
+                kindParam.SetValue("uni");
                 parameters.Add(kindParam);
 
                 string data;
