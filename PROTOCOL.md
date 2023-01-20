@@ -125,7 +125,7 @@ Sets Ships Thruster to desired value. Accepts values between -2 and 2. Returns P
 
 ```json
 {
-  "command": "thruster",
+  "command": "controlNuzzle",
   "id": "exampleId",
   "universe" : number (short),
   "unit": "unitName"
