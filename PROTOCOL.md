@@ -133,6 +133,29 @@ Sets Ships Thruster to desired value. Accepts values between -2 and 2. Returns P
 }
 ```
 
+createUniverse:
+  Creates a persistant universe.
+
+  ```json
+  {  
+      "kind": "createUniverse",
+      "name": "DasNetteUniversum",
+      "xBounds": 0,
+      "yBounds": 0
+  }
+  ```
+
+registerShip:
+  Registers a new ship for the connected player.
+
+  ```json
+  {
+    "kind": "registerShip",
+    "universe": 0,
+    "unit": PlayerShipObject
+  }
+  ```
+
 yadda, yadda...
 
 # Unit Body Structure
@@ -292,19 +315,7 @@ Universe Events:
       "kind": "universeInfo",
       "universe": 0
   }
-  ```
-
-  Create Universe:
-  Creates a persistant universe.
-
-  ```json
-  {  
-      "kind": "createUniverse",
-      "name": "DasNetteUniversum",
-      "xBounds": 0,
-      "yBounds": 0
-  }
-  ```
+  ```  
 
 Unit Events:
   New Unit:
@@ -336,17 +347,6 @@ Unit Events:
     "kind": "removeUnite",
     "universe": 0,
     "name": "GoodByeUnit" 
-  }
-  ```
-
-  Register Ship:
-  Registers a new ship for the connected player.
-
-  ```json
-  {
-    "kind": "registerShip",
-    "universe": 0,
-    "unit": PlayerShipObject
   }
   ```
 
