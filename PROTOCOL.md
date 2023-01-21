@@ -160,7 +160,9 @@ yadda, yadda...
 
 # Unit Body Structure
 
-Unit base:
+Units have a complex structure based on type, sender and such. Some fields must be sent, others will be ignored by server and just sent as information.
+
+Unit base: (always included, must always be sent)
 ```json
 {
   "kind": "<unit type>",
@@ -174,6 +176,18 @@ Unit base:
   "gravity" : 0.0,
 }
 ```
+additional information from Server:
+
+```json
+    "movement":
+    {
+      "x": 0,
+      "y": 0
+    }
+```
+
+
+each kind of unit has additional fields to add to this json Body and a specific value that needs to be filled into the "kind" field.
 
 Player Units:
   Ship:
@@ -190,8 +204,17 @@ Player Units:
     "gravity" : 0.0,
   }
 ```
-  
-each kind of unit has additional fields to add to this json Body and a specific value that needs to be filled into the "kind" field.
+  player ship may also send:
+  ```json
+    "currentHull": 1,
+    "maximumHull": 1,
+    "energy": 100000,
+    "energyCapacity": 20000,
+    "nuzzleThrust": 0,
+    "orientation": 0,
+    "rotation": 0,
+    "thrust": 1.0
+  ```
   
 Sun:
 ```json
@@ -202,14 +225,9 @@ Sun:
 }
 ```
 
-PlayerShip:
-For Now just unit base info is needed. radius and gravity are overridden on server.
-:
+Planet, Moon, Asteroid:
 ```json
-{
-  "kind" : "playership",
-  ... general unit data...
-}
+  "kind" : "planet"/"moon"/"asteroid"
 ```
 
 # Events
