@@ -138,7 +138,7 @@ createUniverse:
 
   ```json
   {  
-      "kind": "createUniverse",
+      "command": "createUniverse",
       "name": "DasNetteUniversum",
       "xBounds": 0,
       "yBounds": 0
@@ -150,7 +150,7 @@ registerShip:
 
   ```json
   {
-    "kind": "registerShip",
+    "command": "registerShip",
     "universe": 0,
     "unit": PlayerShipObject
   }
