@@ -28,7 +28,7 @@ namespace Flattiverse
             Y = y;
         }
 
-        internal Vector(JsonElement json)
+        public Vector(JsonElement json)
         {
             double x;
             double y;
