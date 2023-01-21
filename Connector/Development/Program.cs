@@ -11,22 +11,14 @@ class Program
     private static async Task Main(string[] args)
     {
         // This is the real server. You can change it back to 127.0.0.1.
-        //using (Connection connection = new Connection("127.0.0.1", "AdminUser", false))
-        using (Connection connection = new Connection("www.flattiverse.com/api/universes/beginnersGround.ws", "TestUser", true))
+        using (UniverseGroup universeGroup = new UniverseGroup("127.0.0.1", "AdminUser", false))
+        //using (UniverseGroup universeGroup = new UniverseGroup("www.flattiverse.com/api/universes/beginnersGround.ws", "AdminUser", true))
         {
-            await connection.ConnectAsync();
+            await universeGroup.ConnectAsync();
 
-            connection.ConnectionClosed += Connection_ConnectionClosed;
+            universeGroup.ConnectionClosed += Connection_ConnectionClosed;
 
-
-            Universe universe;
-
-            while (true)
-            {
-                if (connection.UniverseGroup.TryGetUniverse(0, out universe))
-                    break;
-            }
-            
+            Universe universe = universeGroup.EnumerateUniverses().First();
 
             //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
@@ -36,14 +28,14 @@ class Program
 
             //await connection.UniverseGroup.SendBroadCastMessage("Hello there!");
 
-                
-           
+
+
 
             ThreadPool.QueueUserWorkItem(async delegate
             {
                 while (true)
                 {
-                    FlattiverseEvent ev = await connection.UniverseGroup.NextEvent();
+                    FlattiverseEvent ev = await universeGroup.NextEvent();
                     if(ev is not TickCompleteEvent)
                         Console.WriteLine($"{ev.GetType().Name}");
                 }
@@ -52,16 +44,16 @@ class Program
 
             while (true)
             {
-                //Thread.Sleep(2000);
+                Thread.Sleep(2000);
                 await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
                 Thread.Sleep(2000);
                 await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
                 Thread.Sleep(2000);
                 await universe.Delete("SomeUnit");
                 Thread.Sleep(2000);
-                await connection.UniverseGroup.SendBroadCastMessage("Some broadcast message");
+                await universeGroup.SendBroadCastMessage("Some broadcast message");
                 Thread.Sleep(2000);
-                await connection.UniverseGroup.SendUniMessage("Some broadcast message", connection.UniverseGroup.EnumerateUsers().First());
+                await universeGroup.SendUniMessage("Some broadcast message", universeGroup.EnumerateUsers().First());
 
             }
 

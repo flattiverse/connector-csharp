@@ -1,5 +1,4 @@
 ﻿using Flattiverse.Events;
-using Flattiverse.Message;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -7,7 +6,7 @@ using System.Text.Json;
 
 namespace Flattiverse
 {
-    public class Connection : IDisposable
+    internal class Connection : IDisposable
     {
         private ClientWebSocket client;
 
@@ -25,24 +24,20 @@ namespace Flattiverse
 
         private static int recvBufferLimit = 262144;
 
-        public delegate void ConnectionHandler(Exception? ex);
-
-        public event ConnectionHandler? ConnectionClosed;
-
         private static readonly Dictionary<string, MethodInfo> commands = new Dictionary<string, MethodInfo>();
 
         private static bool initialized = false;
 
-        public Connection(Uri host)
+        internal Connection(Uri host, UniverseGroup universeGroup)
         {
             client = new ClientWebSocket();
             uri = host;
             blockManager = new BlockManager(this);
 
-            UniverseGroup = new UniverseGroup(this);
+            UniverseGroup = universeGroup;
         }
 
-        public Connection(string host, string apiKey, bool https) 
+        internal Connection(string host, string apiKey, bool https, UniverseGroup universeGroup) 
         {
             client = new ClientWebSocket();
 
@@ -52,10 +47,10 @@ namespace Flattiverse
                 uri = new Uri($"ws://{host}?auth={apiKey}");
 
             blockManager = new BlockManager(this);
-            UniverseGroup = new UniverseGroup(this);
+            UniverseGroup = universeGroup;
         }
 
-        public async Task ConnectAsync()
+        internal async Task ConnectAsync()
         {
             await client.ConnectAsync(uri, CancellationToken.None);
             connected = true;
@@ -115,7 +110,6 @@ namespace Flattiverse
             Memory<byte> recvMemory = new Memory<byte>(recv);
             JsonDocument document;
             JsonElement element;
-            string? id;
 
             while (true)
             {
@@ -333,13 +327,7 @@ namespace Flattiverse
             return true;
         }
 
-        internal void ConnectionClose(Exception? exception)
-        {
-            if (ConnectionClosed != null)
-                ConnectionClosed(exception);
-        }
-
-        internal async Task payloadExceptionSocketClose(Exception ex)
+        internal async Task payloadExceptionSocketClose(Exception? ex)
         {
             blockManager.ConnectionClosed(ex);
 
@@ -373,7 +361,7 @@ namespace Flattiverse
             if (element.ValueKind != JsonValueKind.String)
                 throw new Exception($"Response error: kind property must be a string. You sent {element.ValueKind}.");
 
-            string kind = element.GetString();
+            string kind = element.GetString()!;
 
             if(string.IsNullOrEmpty(kind))
                 throw new Exception($"Response error: kind property cant be empty.");
@@ -390,7 +378,7 @@ namespace Flattiverse
             if (element.ValueKind != JsonValueKind.String)
                 throw new Exception($"Response error: result property must be a string. You sent {element.ValueKind}.");
 
-            string result = element.GetString();
+            string result = element.GetString()!;
 
             if (string.IsNullOrEmpty(kind))
                 throw new Exception($"Response error: result property cant be empty.");
@@ -408,15 +396,8 @@ namespace Flattiverse
             }
             catch (Exception e)
             {
-
                 Debug.WriteLine($"Error while disposing connection: {e.Message}");
             }
-        }
-
-        internal bool tryGetUser(string sender, out User? from)
-        {
-            from = null;
-            return false;
         }
     }
 }

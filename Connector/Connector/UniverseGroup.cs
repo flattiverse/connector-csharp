@@ -1,10 +1,10 @@
 ﻿using Flattiverse.Events;
+using System;
 using System.Text.Json;
-using System.Xml.Linq;
 
 namespace Flattiverse
 {
-    public class UniverseGroup
+    public class UniverseGroup : IDisposable
     {
         private Connection connection;
 
@@ -24,12 +24,38 @@ namespace Flattiverse
 
         private readonly object userSync = new object();
 
-        internal UniverseGroup(Connection connection) 
+        public delegate void ConnectionHandler(Exception? ex);
+
+        public event ConnectionHandler? ConnectionClosed;
+
+
+        public UniverseGroup(Uri host)
         {
-            this.connection = connection;
+            connection = new Connection(host, this);
+
             universes = new Dictionary<short, Universe>();
             users = new Dictionary<string, User>();
             initialTcs = new TaskCompletionSource();
+        }
+
+        public UniverseGroup(string host, string apiKey, bool https)
+        {
+            connection = new Connection(host, apiKey, https, this);
+
+            universes = new Dictionary<short, Universe>();
+            users = new Dictionary<string, User>();
+            initialTcs = new TaskCompletionSource();
+        }
+
+        public async Task ConnectAsync()
+        {
+            await connection.ConnectAsync();
+        }
+
+        internal void ConnectionClose(Exception? exception)
+        {
+            if (ConnectionClosed != null)
+                ConnectionClosed(exception);
         }
 
         internal void parseInitialization(JsonElement element)
@@ -84,7 +110,7 @@ namespace Flattiverse
                 universes.Add(id, new Universe(this, connection, id));
         }
 
-        public bool TryGetUser(string name, out User user)
+        public bool TryGetUser(string name, out User? user)
         {
             lock (userSync)
                 return users.TryGetValue(name, out user);
@@ -101,7 +127,7 @@ namespace Flattiverse
                 yield return userKvP.Value;
         }
 
-        public bool TryGetUniverse(int id, out Universe universe)
+        public bool TryGetUniverse(int id, out Universe? universe)
         {
             if(id > 0 || id > short.MaxValue)
                 throw new ArgumentOutOfRangeException($"Id must be between 0 and {short.MaxValue}.", nameof(id));
@@ -140,7 +166,7 @@ namespace Flattiverse
 
         internal void pushEvent(FlattiverseEvent fvEvent)
         {
-            TaskCompletionSource<FlattiverseEvent> tcs;
+            TaskCompletionSource<FlattiverseEvent>? tcs;
 
             lock (eventSync) 
             { 
@@ -262,6 +288,9 @@ namespace Flattiverse
             }
         }
 
-        
+        public void Dispose()
+        {
+            connection.Dispose();
+        }
     }
 }

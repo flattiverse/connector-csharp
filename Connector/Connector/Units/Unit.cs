@@ -5,12 +5,12 @@ namespace Flattiverse.Units
 {
     public class Unit
     {
-        public string Name;
+        public readonly string Name;
 
-        public Vector Position;
+        public readonly Vector Position;
 
-        public double Radius;
-        public double Gravity;
+        public readonly double Radius;
+        public readonly double Gravity;
 
         private static Dictionary<string, Type> unitClasses = initializeUnitClasses();
         private static Dictionary<string, Type> initializeUnitClasses()
