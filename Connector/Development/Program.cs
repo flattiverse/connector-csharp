@@ -11,8 +11,8 @@ class Program
     private static async Task Main(string[] args)
     {
         // This is the real server. You can change it back to 127.0.0.1.
-        using (UniverseGroup universeGroup = new UniverseGroup("127.0.0.1", "AdminUser", false))
-        //using (UniverseGroup universeGroup = new UniverseGroup("www.flattiverse.com/api/universes/beginnersGround.ws", "AdminUser", true))
+        //using (UniverseGroup universeGroup = new UniverseGroup("127.0.0.1", "AdminUser", false))
+        using (UniverseGroup universeGroup = new UniverseGroup("www.flattiverse.com/api/universes/beginnersGround.ws", "AdminUser", true))
         {
             await universeGroup.ConnectAsync();
 
@@ -20,9 +20,35 @@ class Program
 
             Universe universe = universeGroup.EnumerateUniverses().First();
 
-            //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
-            //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""Sun"",""position"":{""x"":60,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+            //ThreadPool.QueueUserWorkItem(async delegate
+            //{
+            //    while (true)
+            //    {
+            //        FlattiverseEvent ev = await universeGroup.NextEvent();
+            //        if (ev is UnitEventUpdate ueu)
+            //        {
+            //            Console.WriteLine($"Ship: {ueu.Unit.Name} | X:{ueu.Unit.Position.X} | Y:{ueu.Unit.Position.Y}");
+            //        }
+                        
+            //        //if (ev is not TickCompleteEvent)
+            //        //    Console.WriteLine($"{ev.GetType().Name}");
+            //    }
+            //});
+
+            //Thread.Sleep(1000);
+
+            //await universe.RegisterShip(@"{""name"":""MyShipMoving"",""kind"":""ship"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+
+            //Thread.Sleep(1000);
+
+            //await universeGroup.SetUnitThruster("MyShipMoving", 0.01);
+
+            //Thread.Sleep(20000);
+
+            //return;
+
+            //await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":60,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
 
             //await universe.Delete("SomeUnit");
 
@@ -31,31 +57,48 @@ class Program
 
 
 
-            ThreadPool.QueueUserWorkItem(async delegate
-            {
-                while (true)
-                {
-                    FlattiverseEvent ev = await universeGroup.NextEvent();
-                    if(ev is not TickCompleteEvent)
-                        Console.WriteLine($"{ev.GetType().Name}");
-                }
-                
-            });
+            //ThreadPool.QueueUserWorkItem(async delegate
+            //{
+            //    while (true)
+            //    {
+            //        FlattiverseEvent ev = await universeGroup.NextEvent();
+            //        if(ev is not TickCompleteEvent)
+            //            Console.WriteLine($"{ev.GetType().Name}");
+            //    }
 
-            while (true)
-            {
-                Thread.Sleep(2000);
-                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                Thread.Sleep(2000);
-                await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
-                Thread.Sleep(2000);
-                await universe.Delete("SomeUnit");
-                Thread.Sleep(2000);
-                await universeGroup.SendBroadCastMessage("Some broadcast message");
-                Thread.Sleep(2000);
-                await universeGroup.SendUniMessage("Some broadcast message", universeGroup.EnumerateUsers().First());
+            //});
 
-            }
+            //Thread.Sleep(2000);
+
+            //await universe.SetUnit(@"{""name"":""SomeNewUnit3"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+
+
+            //await universe.RegisterShip(@"{""name"":""MyShip"",""kind"":""ship"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+
+            //Thread.Sleep(1000);
+
+            //await universeGroup.SetUnitThruster("MyShip", 0.01);
+
+            //Thread.Sleep(1000);
+
+            //await universeGroup.SetUnitNuzzle("MyShip", 1);
+
+
+
+            //while (true)
+            //{
+            //    Thread.Sleep(2000);
+            //    await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":20,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+            //    Thread.Sleep(2000);
+            //    await universe.Set(@"{""name"":""SomeUnit"",""kind"":""sun"",""position"":{""x"":50,""y"":70},""radius"":120,""gravity"":10,""corona"":60}");
+            //    Thread.Sleep(2000);
+            //    await universe.Delete("SomeUnit");
+            //    Thread.Sleep(2000);
+            //    await universeGroup.SendBroadCastMessage("Some broadcast message");
+            //    Thread.Sleep(2000);
+            //    await universeGroup.SendUniMessage("Some broadcast message", universeGroup.EnumerateUsers().First());
+
+            //}
 
 
             Thread.Sleep(2000000);
