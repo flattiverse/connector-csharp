@@ -58,18 +58,18 @@ namespace Flattiverse
                     writer.WriteString(Name, text);
                     break;
                 case CommandParameterKind.Integer:
-                    writer.WriteNumber(Name, (decimal)number);
+                    writer.WriteNumber(Name, (decimal)number!);
                     break;
                 case CommandParameterKind.Double:
-                    writer.WriteNumber(Name, (decimal)doubleNumber);
+                    writer.WriteNumber(Name, (decimal)doubleNumber!);
                     break;
                 case CommandParameterKind.Vector:
                     writer.WritePropertyName(Name);
-                    vector.WriteJson(writer);
+                    vector!.WriteJson(writer);
                     break;
                 case CommandParameterKind.Json:
                     writer.WritePropertyName(Name);
-                    writer.WriteRawValue(text);
+                    writer.WriteRawValue(text!);
                     break;
             }
         }

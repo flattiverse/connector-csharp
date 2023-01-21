@@ -20,7 +20,7 @@ namespace Flattiverse
             this.ID = ID;
         }
 
-        public async Task Set(string unitJson)
+        public async Task SetUnit(string unitJson)
         {
             using (Block block = connection.blockManager.GetBlock())
             {
@@ -74,7 +74,7 @@ namespace Flattiverse
             }
         }
 
-        public async Task Delete(string name)
+        public async Task DeleteUnit(string name)
         {
             using (Block block = connection.blockManager.GetBlock())
             {
@@ -101,6 +101,41 @@ namespace Flattiverse
             }
         }
 
+        public async Task RegisterShip(string shipJson)
+        {
+            using (Block block = connection.blockManager.GetBlock())
+            {
+                string command = "registerShip";
+
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+               
+                try
+                {
+                    JsonDocument.Parse(shipJson, Connection.jsonDocOptions);
+                }
+                catch
+                {
+                    throw new ArgumentException($"Json format invalid.", nameof(shipJson));
+                }
+
+                ClientCommandParameter paramUniverse = new ClientCommandParameter("universe");
+                paramUniverse.SetValue(ID);
+                parameters.Add(paramUniverse);
+
+                ClientCommandParameter paramUnit = new ClientCommandParameter("unit");
+                paramUnit.SetJsonValue(shipJson);
+                parameters.Add(paramUnit);
+
+                await connection.SendCommand(command, block.Id, parameters);
+
+                await block.Wait();
+
+                JsonDocument response = block.Response!;
+
+                if (!Connection.responseSuccess(response, out string? error))
+                    throw new Exception(error);
+            }
+        }
 
     }
 }

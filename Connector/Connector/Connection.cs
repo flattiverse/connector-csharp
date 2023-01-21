@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Events;
+using System.Buffers;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -105,16 +106,30 @@ namespace Flattiverse
 
         internal async void socketWork()
         {
-            byte[] recv = new byte[recvBufferLimit];
+            //byte[] recv = new byte[recvBufferLimit];
+            //Memory<byte> recvMemory = new Memory<byte>(recv);
+
+            byte[] recv = null;
+            Memory<byte> recvMemory = default;
+
             ValueWebSocketReceiveResult result;
-            Memory<byte> recvMemory = new Memory<byte>(recv);
             JsonDocument document;
             JsonElement element;
+
+            bool rentNew = true;
+
 
             while (true)
             {
                 try
                 {
+                    if (rentNew)
+                    {
+                        recv = ArrayPool<byte>.Shared.Rent(recvBufferLimit);
+                        recvMemory = new Memory<byte>(recv);
+                        rentNew = false;
+                    }
+
                     result = await client.ReceiveAsync(recvMemory, CancellationToken.None);
                 }
                 catch (Exception ex)
@@ -223,7 +238,9 @@ namespace Flattiverse
                                 return;
                             }
 
-                            blockManager.Answer(blockId!, document);
+                            rentNew = true;
+                            blockManager.Answer(blockId!, recv!, document);
+
                             continue;
                         case "events":
                             if (document.RootElement.TryGetProperty("payload", out element))

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Buffers;
+using System.Text.Json;
 
 namespace Flattiverse
 {
@@ -6,18 +7,19 @@ namespace Flattiverse
     {
         public string Id;
 
+        private byte[]? recv;
         private TaskCompletionSource taskCompletionSource;
         private BlockManager manager;
         public JsonDocument? Response;
 
-        public Block(BlockManager manager, string Id) 
+        public Block(BlockManager manager, string Id)
         {
             this.Id = Id;
             this.manager = manager;
             taskCompletionSource = new TaskCompletionSource();
         }
 
-        public async Task Wait() 
+        public async Task Wait()
         {
             await taskCompletionSource.Task;
 
@@ -25,14 +27,18 @@ namespace Flattiverse
                 throw new Exception("Disconnected from server.");
         }
 
-        public void Answer(JsonDocument? response) 
-        { 
+        public void Answer(byte[]? recv, JsonDocument? response)
+        {
+            this.recv = recv;
             Response = response;
-            taskCompletionSource.SetResult();
+            ThreadPool.QueueUserWorkItem(delegate { taskCompletionSource.SetResult(); });
         }
 
         public void Dispose()
         {
+            if(recv != null)
+                ArrayPool<byte>.Shared.Return(recv);
+
             manager.Unblock(Id);
         }
     }

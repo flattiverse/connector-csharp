@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -42,7 +44,7 @@ namespace Flattiverse
             lock (sync)
             {
                 foreach (KeyValuePair<string,Block> blockKvP in blocks)
-                    blockKvP.Value.Answer(null);
+                    blockKvP.Value.Answer(null, null);
 
                 blocks.Clear();
             }
@@ -50,16 +52,15 @@ namespace Flattiverse
             connection.UniverseGroup.ConnectionClose(ex);
         }
 
-        public void Answer(string blockId, JsonDocument? response)
+        public void Answer(string blockId, byte[] recv, JsonDocument response)
         {
             lock (sync)
             {
                 if (!blocks.TryGetValue(blockId, out Block? block))
                     return;
 
-                block.Answer(response);
+                block.Answer(recv, response);
             }
-
         }
 
         public void Unblock(string id)

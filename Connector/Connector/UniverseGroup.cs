@@ -237,11 +237,11 @@ namespace Flattiverse
             if (string.IsNullOrEmpty(message))
                 throw new ArgumentNullException("Message can not be null or empty.", nameof(message));
 
-            if(user == null)
-                throw new ArgumentNullException("Message can not be null.", nameof(user));
-
             if (message.Length > 2048)
                 throw new ArgumentException("Message cant be longer than 2048 characters", nameof(message));
+
+            if (user == null)
+                throw new ArgumentNullException("user can not be null.", nameof(user));
 
             using (Block block = connection.blockManager.GetBlock())
             {
@@ -284,6 +284,118 @@ namespace Flattiverse
                 JsonDocument? response = block.Response;
 
                 if (!Connection.responseSuccess(response!, out string? error))
+                    throw new Exception(error);
+            }
+        }
+
+        public async Task CreateUniverse(string name, double xBounds, double yBounds)
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentNullException("Name can not be null or empty.", nameof(name));
+
+            if (xBounds < 100)
+                throw new ArgumentException("xBounds must be at least 100", nameof(xBounds));
+
+            if (yBounds < 100)
+                throw new ArgumentException("yBounds must be at least 100", nameof(yBounds));
+
+            using (Block block = connection.blockManager.GetBlock())
+            {
+                string command = "createUniverse";
+
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+
+                ClientCommandParameter paramName = new ClientCommandParameter("name");
+                paramName.SetValue(name);
+                parameters.Add(paramName);
+
+                ClientCommandParameter paramXBounds = new ClientCommandParameter("xBounds");
+                paramXBounds.SetValue(xBounds);
+                parameters.Add(paramXBounds);
+
+                ClientCommandParameter paramYBounds = new ClientCommandParameter("yBounds");
+                paramYBounds.SetValue(yBounds);
+                parameters.Add(paramYBounds);
+
+                await connection.SendCommand(command, block.Id, parameters);
+
+                await block.Wait();
+
+                JsonDocument response = block.Response!;
+
+                if (!Connection.responseSuccess(response, out string? error))
+                    throw new Exception(error);
+            }
+        }
+
+        public async Task SetUnitThruster(string unitName, double value)
+        {
+            if (string.IsNullOrEmpty(unitName))
+                throw new ArgumentNullException("UnitName can not be null or empty.", nameof(unitName));
+
+            if (unitName.Length > 32)
+                throw new ArgumentException("UnitName can not be longer than 32.", nameof(unitName));
+
+            if (value < 0 || value > 0.025)
+                throw new ArgumentOutOfRangeException(nameof(value), "Thruster value must be between 0 and 0.025");
+
+            using (Block block = connection.blockManager.GetBlock())
+            {
+                string command = "thruster";
+
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+
+                ClientCommandParameter paramName = new ClientCommandParameter("name");
+                paramName.SetValue(unitName);
+                parameters.Add(paramName);
+
+                ClientCommandParameter paramValue = new ClientCommandParameter("value");
+                paramValue.SetValue(value);
+                parameters.Add(paramValue);
+
+                await connection.SendCommand(command, block.Id, parameters);
+
+                await block.Wait();
+
+                JsonDocument response = block.Response!;
+
+                if (!Connection.responseSuccess(response, out string? error))
+                    throw new Exception(error);
+            }
+        }
+
+        public async Task SetUnitNuzzle(string unitName, double value)
+        {
+            if (string.IsNullOrEmpty(unitName))
+                throw new ArgumentNullException("UnitName can not be null or empty.", nameof(unitName));
+
+            if (unitName.Length > 32)
+                throw new ArgumentException("UnitName can not be longer than 32.", nameof(unitName));
+
+            if (value < -2 || value > 2)
+                throw new ArgumentOutOfRangeException(nameof(value), "Nuzzle value must be between -2 and 2");
+
+            using (Block block = connection.blockManager.GetBlock())
+            {
+                string command = "controlNuzzle";
+
+                List<ClientCommandParameter> parameters = new List<ClientCommandParameter>();
+
+                ClientCommandParameter paramName = new ClientCommandParameter("name");
+                paramName.SetValue(unitName);
+                parameters.Add(paramName);
+
+                ClientCommandParameter paramValue = new ClientCommandParameter("value");
+                paramValue.SetValue(value);
+                parameters.Add(paramValue);
+
+                await connection.SendCommand(command, block.Id, parameters);
+
+                await block.Wait();
+
+                JsonDocument response = block.Response!;
+
+                if (!Connection.responseSuccess(response, out string? error))
                     throw new Exception(error);
             }
         }
