@@ -2,7 +2,7 @@
 
 namespace Flattiverse.Units
 {
-    internal class PlayerShip : Unit
+    public class PlayerShip : Unit
     {
         public readonly string UserName;
 
