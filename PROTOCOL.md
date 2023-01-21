@@ -125,6 +125,22 @@ Unit base:
   "gravity" : 0.0,
 }
 ```
+
+Player Units:
+  Ship:
+  ```json
+  {
+    "kind": "playership",
+    "name": "<unique unit name>",
+    "position" :
+      {
+        "x" : 0.0,
+        "y" : 0.0 
+      },
+    "radius" : 0.0,
+    "gravity" : 0.0,
+  }
+```
   
 each kind of unit has additional fields to add to this json Body and a specific value that needs to be filled into the "kind" field.
   
@@ -158,146 +174,173 @@ Every event message contains the server tick and a payload containing an array o
 
 # Event Objects
 
-Ping:
-An event with an empty payload for keepalive and time measurement purpose.
+General Events:
+  Ping:
+  An event with an empty payload for keepalive and time measurement purpose.
 
-```json
-{
-  "kind": "events",
-  "tick": 0,
-  "payload": 
-  [
-    {
-      "kind": "ping"
-    },
-    otherEventData
-  ]
-}
-```
-
-TickCompleted:
-Will be send after a tick is completed.
-
-```json
-{
-  "kind": "events",
-  "tick": 0,
-  "payload": 
-  [
-    {
-      "kind": "tickCompleted"
-    },
-    otherEventData
-  ]
-}
-```
-
-New User:
-Sent when a new User is connected or at initial connect
-
-```json
-{
-  "kind": "events",
-  "tick": 0,
-  "payload": 
-  [
-    {
-      "kind": "newUser",
-      "name": "DerStarkeBenutzer"
-    },
-    otherEventData
-  ]
-}
-```
-
-Remvove User:
-Sent when an User disconnects
-
-```json
-{
-  "kind": "events",
-  "tick": 0,
-  "payload": 
-  [
-    {
-      "kind": "removeUser",
-      "name": "DerSchwacheBenutzer"
-    },
-    otherEventData
-  ]
-}
-```
-
-Universe Info:
-Indicates a new universe or an update on an existing one.
-Will be sent on initial connect or when a new universe is available.
-
-```json
-{  
-    "kind": "universeInfo",
-    "universe": 0
-}
-```
-
-New Unit:
-A new unit entered the field of view. For unit object data see #Unit Body Structure above
-
-```json
-{
-  "kind": "newUnit",
-  "universe": 0,
-  "unit": object with unit data  
-}
-```
-Update Unit:
-Update for an existing unit. The unit is sent as complete object.
-
-```json
-{
-  "kind": "updateUnit",
-  "universe": 0,
-  "unit": object with unit data  
-}
-```
-
-Remove Unit:
-Sent when a unit is removed from the universe.
-
-```json
-{
-  "kind": "removeUnite",
-  "universe": 0,
-  "name": "GoodByeUnit" 
-}
-```
-
-BroadCast Message:
-A serverwide message
-
-```json
-{
-  "kind": "broadcast",
-  "message":
+  ```json
   {
-    "text": "Hallo Freunde"
+    "kind": "events",
+    "tick": 0,
+    "payload": 
+    [
+      {
+        "kind": "ping"
+      },
+      otherEventData
+    ]
   }
-}
-```
+  ```
 
-UniChat Message:
-A message addressed directly to another player
+  TickCompleted:
+  Will be send after a tick is completed.
 
-```json
-{
-  "kind": "uni",
-  "message":
+  ```json
   {
-    "receiver": "adni",
-    "text": "Hallo Freund"
+    "kind": "events",
+    "tick": 0,
+    "payload": 
+    [
+      {
+        "kind": "tickCompleted"
+      },
+      otherEventData
+    ]
   }
-}
-```
+  ```
 
+User Events:
+  New User:
+  Sent when a new User is connected or at initial connect
+
+  ```json
+  {
+    "kind": "events",
+    "tick": 0,
+    "payload": 
+    [
+      {
+        "kind": "newUser",
+        "name": "DerStarkeBenutzer"
+      },
+      otherEventData
+    ]
+  }
+  ```
+
+  Remvove User:
+  Sent when an User disconnects
+
+  ```json
+  {
+    "kind": "events",
+    "tick": 0,
+    "payload": 
+    [
+      {
+        "kind": "removeUser",
+        "name": "DerSchwacheBenutzer"
+      },
+      otherEventData
+    ]
+  }
+  ```
+
+Universe Events:
+  Universe Info:
+  Indicates a new universe or an update on an existing one.
+  Will be sent on initial connect or when a new universe is available.
+
+  ```json
+  {  
+      "kind": "universeInfo",
+      "universe": 0
+  }
+  ```
+
+  Create Universe:
+  Creates a persistant universe.
+
+  ```json
+  {  
+      "kind": "createUniverse",
+      "name": "DasNetteUniversum",
+      "xBounds": 0,
+      "yBounds": 0
+  }
+  ```
+
+Unit Events:
+  New Unit:
+  A new unit entered the field of view. For unit object data see #Unit Body Structure above
+
+  ```json
+  {
+    "kind": "newUnit",
+    "universe": 0,
+    "unit": object with unit data  
+  }
+  ```
+  Update Unit:
+  Update for an existing unit. The unit is sent as complete object.
+
+  ```json
+  {
+    "kind": "updateUnit",
+    "universe": 0,
+    "unit": object with unit data  
+  }
+  ```
+
+  Remove Unit:
+  Sent when a unit is removed from the universe.
+
+  ```json
+  {
+    "kind": "removeUnite",
+    "universe": 0,
+    "name": "GoodByeUnit" 
+  }
+  ```
+
+  Register Ship:
+  Registers a new ship for the connected player.
+
+  ```json
+  {
+    "kind": "registerShip",
+    "universe": 0,
+    "unit": PlayerShipObject
+  }
+  ```
+
+Message Events:
+  BroadCast Message:
+  A serverwide message
+
+  ```json
+  {
+    "kind": "broadcast",
+    "message":
+    {
+      "text": "Hallo Freunde"
+    }
+  }
+  ```
+
+  UniChat Message:
+  A message addressed directly to another player
+
+  ```json
+  {
+    "kind": "uni",
+    "message":
+    {
+      "receiver": "adni",
+      "text": "Hallo Freund"
+    }
+  }
+  ```
 
 # Universe Updates
 the universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
