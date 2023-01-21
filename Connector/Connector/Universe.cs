@@ -67,9 +67,9 @@ namespace Flattiverse
 
                 await block.Wait();
 
-                JsonDocument? response = block.Response;
+                JsonDocument response = block.Response!;
 
-                if(!Connection.responseSuccess(response, out string error))
+                if(!Connection.responseSuccess(response, out string? error))
                     throw new Exception(error);
             }
         }
@@ -94,9 +94,9 @@ namespace Flattiverse
 
                 await block.Wait();
 
-                JsonDocument? response = block.Response;
+                JsonDocument response = block.Response!;
 
-                if (!Connection.responseSuccess(response, out string error))
+                if (!Connection.responseSuccess(response, out string? error))
                     throw new Exception(error);
             }
         }

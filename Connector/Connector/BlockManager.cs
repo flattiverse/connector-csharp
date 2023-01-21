@@ -37,7 +37,7 @@ namespace Flattiverse
             }
         }
 
-        public void ConnectionClosed(Exception ex)
+        public void ConnectionClosed(Exception? ex)
         {
             lock (sync)
             {
@@ -47,14 +47,14 @@ namespace Flattiverse
                 blocks.Clear();
             }
 
-            connection.ConnectionClose(ex);
+            connection.UniverseGroup.ConnectionClose(ex);
         }
 
         public void Answer(string blockId, JsonDocument? response)
         {
             lock (sync)
             {
-                if (!blocks.TryGetValue(blockId, out Block block))
+                if (!blocks.TryGetValue(blockId, out Block? block))
                     return;
 
                 block.Answer(response);
@@ -62,7 +62,7 @@ namespace Flattiverse
 
         }
 
-        public void Unblock(string? id)
+        public void Unblock(string id)
         {
             lock (sync)
                 blocks.Remove(id);

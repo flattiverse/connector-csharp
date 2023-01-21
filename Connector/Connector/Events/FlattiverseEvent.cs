@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Events
 {
@@ -27,7 +26,6 @@ namespace Flattiverse.Events
                     if (!Utils.Traverse(element, out JsonElement subBElement, JsonValueKind.Object, "message"))
                         throw new InvalidDataException("Event does not contain valid message property.");
                     return new BroadCastMessageEvent(subBElement);
-
                 case "uni":
                     if (!Utils.Traverse(element, out JsonElement subUElement, JsonValueKind.Object, "message"))
                         throw new InvalidDataException("Event does not contain valid message property.");

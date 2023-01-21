@@ -4,7 +4,7 @@ namespace Flattiverse.Events
 {
     public class FlattiverseMessage : FlattiverseEvent 
     {
-        public readonly User? From;
+        public readonly string FromUserName;
 
         public readonly DateTime TimeStamp;
 
@@ -17,10 +17,8 @@ namespace Flattiverse.Events
             if (!Utils.Traverse(element, out subElement, JsonValueKind.Object, "message"))
                 throw new InvalidDataException("Event does not contain a valid message property.");
 
-            string sender;
-            if(!Utils.Traverse(subElement, out sender, false, "sender"))
+            if(!Utils.Traverse(subElement, out FromUserName, false, "sender"))
                 throw new InvalidDataException("Message does not contain a valid sender property.");
-            connection.tryGetUser(sender, out From);
 
             if (!Utils.Traverse(subElement, out TimeStamp, "timestamp"))
                 throw new InvalidDataException("Message does not contain a valid timestamp property.");
