@@ -1,432 +1,68 @@
-# Flattiverse WebSocket JSON Protocol: Universe Simulator
+# Flattiverse WebSocket JSON Protocol
 
-This is the documentation of the Flattiverse JSON protocol for the Universe Simulator. The Flattiverse Universe Simulator is a service which takes care of one universe group including their universes, units, players, etc.. You can't access an universe group when connected to another universe group.
+Flattiverse is a simulated 2D universe intended for students and others interested in getting a practical introduction to object-oriented programming. This documentation describes the protocol used to interact with Flattiverse.
 
-You can connect to the Universe Simulator (to a specific universe group) by opening a WebSocket connection to it. You can send single text frames which must not exceed 16 KiB of data. Note that you must split up each command into one frame. The server, however can send you frames up to 256 KiB. Also the server will group commands together when sending bulks of events like when a server tick has been processed.
+Communication is carried out by sending single text frames which must not exceed 16 KiB of data and must not be splitted, each frame containing one command at a time. The server responds with frames up to 256 KiB, and will also group commands together when sending bulks of events, for example when a server tick has been processed.
 
-# Connecting
+## Connection and socket behaviour
 
-Simply connect with your websocket to the specific URI with port 80.
+You can interacht with a Flattiverse `UniverseGroup` by connecting to the specific URI with a websocket on port 80.
 
-# Sending commands
+All commands are expected to be in JSON format. To execute a command on the server, simply send a request with the corresponding command as payload.
 
-Commands are expected to be in JSON format.
-To execute a command on the server simply send a request with the corresponding command as payload.
+Unless specified otherwise, all text data sent in commands must only contain any of the characters `0-9, a-z, A-Z` as well as ` `, `.`, `_`, `-`, and any `Latin Letters`.
 
-```json
-{
-  "command": "command name",
-  "id": "asdfgh",
-  "data":
-  {
-    ...
-  }
-}
+### Example request:
 
-{
-  "command": "updateUnit",
-  "id": "asdfgh",
-  "data":
-  {
-    "universe": 0,
-    "unit":
-    {
-      "name": "NiceUnit>9000",
-      "position":
-      {
-        "x": 1,
-        "y": 12
-      },
-      "radius": 10,
-      "corona": 67,
-      "gravity": 13
-    }
-  }
-}
+A command consists of the following parts:
 
-```
-
-You can identify the reply to your command by waiting for an reply to the `id` you did specify.
-If a command fails with an exception a JSON with following structure will be send:
-
-{  "fatal": Exception Message as Text }
-
-Example JSON Response:
+- `command` can be any of the commands listed in the **List of commands** section.
+- `id` is an **optional** string that will be sent back with the reply to your command. If you omit this property, the command is treated as "fire and forget" and there will be no reply to it.
+- further data depending on the command.
 
 ```json
-{
-  "kind": "success",
-  "id": "exampleId",
-  "result": see command result
+{    
+    "command": "command name",
+    "id": "frame id",
+    "payload": "some data"
 }
 ```
 
-# List of known and unknown commands
+### Example Response:
 
-setunit:
-  Creates or updates an unit, complete unit data is expected.
-  returns: 0 if successful, -1 otherwise
+A reply consists of the following parts:
 
-```json
-  {
-    "command": "setUnit",
-    "id": "exampleId",
-    "data":
-    {
-      "universe": number (short),
-      "unit": unit data
-    }
-  }
-```
-
-deleteunit:
-  Deletes an existing unit.
-  returns: 0 if successful, -1 otherwise
-
-```json
-  {
-    "command": "deleteUnit",
-    "id": "exampleId",
-    "universe": number (short),
-    "name": text of max. 32 characters size
-  }
-```
-
-message:
-Receiver is only needed for uni chat message
+- `kind` 
 
 ```json
 {
-  "command": "message",
-  "kind": "uni"/"broadcast",
-  "message":
-  {
-    ("receiver"): "andi",
-    "text": "Hallo Freunde"
-  }
+    "kind": "success",
+    "id": "frame id",    
+    "result": "see command result"
 }
 ```
 
-thruster:
-Sets Ships Thruster to desired value. Accepts values between 0 and 0.025. Returns Projected Energy Usage.
+Possible values for 'kind' are:
+
+- `success` means the command was executed.
+- `failure` means the command could not be executed. This happens, for example, if you try to do something with a ship which has been destroyed.
+
+### Example Termination:
+
+In the case of an invalid command being sent to the server, the websocket is closed and you will receive a closing frame containing a JSON with the following structure:
 
 ```json
-{
-  "command": "thruster",
-  "id": "exampleId",
-  "universe" : number (short),
-  "unit": "unitName"
-  "value" : number (double)
+{  
+    "fatal": "Exception Message as Text"
 }
 ```
 
-controlNuzzle:
-Sets Ships Thruster to desired value. Accepts values between -2 and 2. Returns Projected Energy Usage.
+## List of general errors
 
-```json
-{
-  "command": "controlNuzzle",
-  "id": "exampleId",
-  "universe" : number (short),
-  "unit": "unitName"
-  "value" : number (double)
-}
-```
+//Message toobig etc. wann?
 
-createUniverse:
-  Creates a persistant universe.
+## List of commands
 
-  ```json
-  {  
-      "command": "createUniverse",
-      "name": "DasNetteUniversum",
-      "xBounds": 0,
-      "yBounds": 0
-  }
-  ```
+### UniverseGroup commands
 
-registerShip:
-  Registers a new ship for the connected player.
-
-  ```json
-  {
-    "command": "registerShip",
-    "universe": 0,
-    "unit": PlayerShipObject
-  }
-  ```
-
-yadda, yadda...
-
-# Unit Body Structure
-
-Units have a complex structure based on type, sender and such. Some fields must be sent, others will be ignored by server and just sent as information.
-
-Unit base: (always included, must always be sent)
-```json
-{
-  "kind": "<unit type>",
-  "name": "<unique unit name>",
-  "position" :
-    {
-      "x" : 0.0,
-     "y" : 0.0 
-    },
-  "radius" : 0.0,
-  "gravity" : 0.0,
-}
-```
-additional information from Server:
-
-```json
-    "movement":
-    {
-      "x": 0,
-      "y": 0
-    }
-```
-
-
-each kind of unit has additional fields to add to this json Body and a specific value that needs to be filled into the "kind" field.
-
-Player Units:
-  Ship:
-  ```json
-  {
-    "kind": "playership",
-    "name": "<unique unit name>",
-    "position" :
-      {
-        "x" : 0.0,
-        "y" : 0.0 
-      },
-    "radius" : 0.0,
-    "gravity" : 0.0,
-  }
-```
-  player ship may also send:
-  ```json
-    "currentHull": 1,
-    "maximumHull": 1,
-    "energy": 100000,
-    "energyCapacity": 20000,
-    "nuzzleThrust": 0,
-    "orientation": 0,
-    "rotation": 0,
-    "thrust": 1.0
-  ```
-  
-Sun:
-```json
-{
-  "kind" : "sun",
-  ... general unit data...
-  "corona" : 0.0
-}
-```
-
-Planet, Moon, Asteroid:
-```json
-  "kind" : "planet"/"moon"/"asteroid"
-```
-
-# Events
-Events will be sent with a rootnode named "kind" with value "events" for identifictaion.
-Every event message contains the server tick and a payload containing an array of event objects.
-
-```json
-{
-  "kind": "events",
-  "tick": 0,
-  "payload": 
-  [
-    {
-      eventObject,
-      eventObject,
-      eventObject
-    }
-  ]
-}
-```
-
-# Event Objects
-
-General Events:
-  Ping:
-  An event with an empty payload for keepalive and time measurement purpose.
-
-  ```json
-  {
-    "kind": "events",
-    "tick": 0,
-    "payload": 
-    [
-      {
-        "kind": "ping"
-      },
-      otherEventData
-    ]
-  }
-  ```
-
-  TickCompleted:
-  Will be send after a tick is completed.
-
-  ```json
-  {
-    "kind": "events",
-    "tick": 0,
-    "payload": 
-    [
-      {
-        "kind": "tickCompleted"
-      },
-      otherEventData
-    ]
-  }
-  ```
-
-User Events:
-  New User:
-  Sent when a new User is connected or at initial connect
-
-  ```json
-  {
-    "kind": "events",
-    "tick": 0,
-    "payload": 
-    [
-      {
-        "kind": "newUser",
-        "name": "DerStarkeBenutzer"
-      },
-      otherEventData
-    ]
-  }
-  ```
-
-  Remvove User:
-  Sent when an User disconnects
-
-  ```json
-  {
-    "kind": "events",
-    "tick": 0,
-    "payload": 
-    [
-      {
-        "kind": "removeUser",
-        "name": "DerSchwacheBenutzer"
-      },
-      otherEventData
-    ]
-  }
-  ```
-
-Universe Events:
-  Universe Info:
-  Indicates a new universe or an update on an existing one.
-  Will be sent on initial connect or when a new universe is available.
-
-  ```json
-  {  
-      "kind": "universeInfo",
-      "universe": 0
-  }
-  ```  
-
-Unit Events:
-  New Unit:
-  A new unit entered the field of view. For unit object data see #Unit Body Structure above
-
-  ```json
-  {
-    "kind": "newUnit",
-    "universe": 0,
-    "unit": object with unit data  
-  }
-  ```
-  Update Unit:
-  Update for an existing unit. The unit is sent as complete object.
-
-  ```json
-  {
-    "kind": "updateUnit",
-    "universe": 0,
-    "unit": object with unit data  
-  }
-  ```
-
-  Remove Unit:
-  Sent when a unit is removed from the universe.
-
-  ```json
-  {
-    "kind": "removeUnite",
-    "universe": 0,
-    "name": "GoodByeUnit" 
-  }
-  ```
-
-Message Events:
-  BroadCast Message:
-  A serverwide message
-
-  ```json
-  {
-    "kind": "broadcast",
-    "message":
-    {
-      "text": "Hallo Freunde"
-    }
-  }
-  ```
-
-  UniChat Message:
-  A message addressed directly to another player
-
-  ```json
-  {
-    "kind": "uni",
-    "message":
-    {
-      "receiver": "adni",
-      "text": "Hallo Freund"
-    }
-  }
-  ```
-
-# Universe Updates
-the universe update sent with the initial tick, and all units in the "created" object. Ticks without changes are not sent.
-```json
-{
-  "kind": "events",
-  "tick": 0,
-  "payload":      
-    [
-      {
-        "kind": "newUnit",
-        "universe": 0,
-        "unit":
-        {
-          "kind": "sun",
-          "name": "zirp",
-          "position":
-          {
-            "x": 20,
-            "y": 10
-          }
-        }
-      },
-      {
-        "kind": "broadcast",
-        "message":
-        {
-          "sender": "tobi",
-          "timestamp": "yyyy-MM-ddTHH:mm:ss.fffZ",
-          "text": "Hallo Freunde"
-        }
-      }
-    ]
-}
-```
+### Player commands
