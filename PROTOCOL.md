@@ -6,18 +6,18 @@ Communication is carried out by sending single text frames which must not exceed
 
 ## Connection and socket behaviour
 
-You can interacht with a Flattiverse `UniverseGroup` by connecting to the specific URI with a websocket on port 80.
+You can interact with a Flattiverse `UniverseGroup` by connecting to the specific URI with a websocket.
 
 All commands are expected to be in JSON format. To execute a command on the server, simply send a request with the corresponding command as payload.
 
-Unless specified otherwise, all text data sent in commands must only contain any of the characters `0-9, a-z, A-Z` as well as ` `, `.`, `_`, `-`, and any `Latin Letters`.
+Unless specified otherwise, all text data which represents a name or id sent in commands must only contain any of the characters `0-9, a-z, A-Z` as well as ` `, `.`, `_`, `-`, and any `Latin Letters` (Unicode characters ) and must be between 2 and 32 characters long.
 
 ### Example request:
 
 A command consists of the following parts:
 
 - `command` can be any of the commands listed in the **List of commands** section.
-- `id` is an **optional** string that will be sent back with the reply to your command. If you omit this property, the command is treated as "fire and forget" and there will be no reply to it.
+- `id` is an **optional** string that will be sent back with the reply to your command. If you omit this property, the command is treated as "fire and forget" and there will be no reply to it, even if an exception is thrown.
 - further data depending on the command.
 
 ```json
@@ -30,36 +30,40 @@ A command consists of the following parts:
 
 ### Example Response:
 
-A reply consists of the following parts:
+A reply to a command consists of the following parts:
 
-- `kind` 
+- `success` to check the result of the command.
+- `id` to reference the reply to the request.
+- further data depending on the command.
 
 ```json
 {
-    "kind": "success",
-    "id": "frame id",    
-    "result": "see command result"
+    "success": "true",
+    "id": "frame id",
+    "result": "some data"
 }
 ```
 
-Possible values for 'kind' are:
+Possible values for 'success' are:
 
-- `success` means the command was executed.
-- `failure` means the command could not be executed. This happens, for example, if you try to do something with a ship which has been destroyed.
+- `true` means the command was executed.
+- `false` means the command could not be executed. This happens, for example, if you try to do something with a ship which has been destroyed.
+
 
 ### Example Termination:
 
-In the case of an invalid command being sent to the server, the websocket is closed and you will receive a closing frame containing a JSON with the following structure:
+In the case of an invalid command being sent to the server, the websocket is closed and you will receive a close status and a closing frame containing an error text:
 
-```json
-{  
-    "fatal": "Exception Message as Text"
-}
-```
+- `closeStatus` is the reason for the socket termination.
+- `message` contains further information about the error that occurred.
 
 ## List of general errors
 
-//Message toobig etc. wann?
+### WebSocketCloseStatus.InvalidPayloadData
+
+This closeStatus is sent when the command contained invalid data.
+- `Messages must consist of valid JSON data containing a valid command` when you omit the command or use invalid characters.
+- `The specified command doesn't exist` when you specify a command that does not exist.
 
 ## List of commands
 
