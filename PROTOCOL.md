@@ -42,20 +42,17 @@ A message from the server contains the following parts:
     "kind": "success",
     "id": "frame id",
     "result": "some data",
-    
 }
 ```
 
 ```json
 {
-    "kind": "events",    
+    "kind": "events",
     "events": [
-        ...
-    ]    
+        
+    ]
 }
 ```
-
-https://www.youtube.com/watch?v=98fwi22Jcus
 
 Possible values for 'kind' are:
 
