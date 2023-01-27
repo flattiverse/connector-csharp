@@ -73,10 +73,10 @@ In the case of an invalid command being sent to the server, the websocket is clo
 
 This closeStatus is sent when the command contained invalid data.
 
-| Error | Description |
-| --- | --- |
-| `Messages must consist of valid JSON data containing a valid command.` | When you omit the command or use invalid characters. |
-| `The specified command doesn't exist.` | When you specify a command that does not exist. |
+| Error Message | Reason |
+| :--- | :--- |
+| Messages must consist of valid JSON data containing a valid command. | Omitting the command or using invalid characters. |
+| The specified command doesn't exist. | Specifying a command that does not exist. |
 
 ## List of commands
 
