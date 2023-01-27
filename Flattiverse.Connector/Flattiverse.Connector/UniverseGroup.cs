@@ -19,6 +19,11 @@ namespace Flattiverse.Connector
         /// </summary>
         public readonly Player Player;
 
+        // TOG
+        internal string name;
+        internal string description;
+        internal int maxPlayers;
+
         /// <summary>
         /// Connects to the specific UniverseGroup.
         /// </summary>
@@ -26,7 +31,7 @@ namespace Flattiverse.Connector
         /// <param name="auth">The auth key for UniverseGroup access.</param>
         public UniverseGroup(string uri, string auth)
         {
-            connection = new Connection(uri, auth);
+            connection = new Connection(this, uri, auth);
 
             using (Query query = connection.Query("whoami"))
             {
@@ -52,7 +57,7 @@ namespace Flattiverse.Connector
         /// <returns>The connected UniverseGroup.</returns>
         public async Task<UniverseGroup> NewAsyncUniverseGroup(string uri, string auth)
         {
-            Connection connection = await Connection.NewAsyncConnection(uri, auth).ConfigureAwait(false);
+            Connection connection = await Connection.NewAsyncConnection(this, uri, auth).ConfigureAwait(false);
 
             using (Query query = connection.Query("whoami"))
             {
@@ -61,6 +66,23 @@ namespace Flattiverse.Connector
                 return new UniverseGroup(connection, await query.ReceiveInteger().ConfigureAwait(false));
             }
         }
+
+        // TOG
+
+        /// <summary>
+        /// The name of the UniverseGroup.
+        /// </summary>
+        public string Name => name;
+
+        /// <summary>
+        /// The description of the UniverseGroup.
+        /// </summary>
+        public string Description => description;
+
+        /// <summary>
+        /// The amount of players allowed to play simultaneous.
+        /// </summary>
+        public int MaxPlayers => maxPlayers;
 
         /// <summary>
         /// Will return the next received event from queue or wait until the event has been received.

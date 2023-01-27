@@ -21,6 +21,8 @@ namespace Flattiverse.Connector.Events
             Stamp = DateTime.UtcNow;
         }
 
+        internal virtual void Process(UniverseGroup group) => throw new NotImplementedException("Somebody fucked up.");
+
         /// <summary>
         /// Specifies the kind of the event for a better switch() experience.
         /// </summary>

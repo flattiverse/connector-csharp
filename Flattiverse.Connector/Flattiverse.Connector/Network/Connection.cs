@@ -23,8 +23,12 @@ namespace Flattiverse.Connector.Network
         private readonly Queue<TaskCompletionSource<FlattiverseEvent>> pendingEventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
         private readonly object syncEvents = new object();
 
-        public Connection(string uri, string auth)
+        public readonly UniverseGroup Group;
+
+        public Connection(UniverseGroup group, string uri, string auth)
         {
+            Group = group;
+
             Uri parsedUri = new Uri($"{uri}?auth={auth}");
 
             socket = new ClientWebSocket();
@@ -34,14 +38,16 @@ namespace Flattiverse.Connector.Network
             ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
         }
 
-        private Connection(ClientWebSocket socket)
+        private Connection(UniverseGroup group, ClientWebSocket socket)
         {
+            Group = group;
+
             this.socket = socket;
 
             ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
         }
 
-        public static async Task<Connection> NewAsyncConnection(string uri, string auth)
+        public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth)
         {
             Uri parsedUri = new Uri($"{uri}?auth={auth}");
 
@@ -49,7 +55,7 @@ namespace Flattiverse.Connector.Network
 
             await socket.ConnectAsync(parsedUri, CancellationToken.None).ConfigureAwait(false);
 
-            return new Connection(socket);
+            return new Connection(group, socket);
         }
 
         private async Task recv()

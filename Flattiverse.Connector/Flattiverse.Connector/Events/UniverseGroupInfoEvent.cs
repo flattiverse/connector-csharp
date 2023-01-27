@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace Flattiverse.Connector.Events
 {
@@ -33,6 +34,15 @@ namespace Flattiverse.Connector.Events
         internal UniverseGroupInfoEvent(JsonElement element)
         {
             // TOG: Hier aus dem element parsen, bitte.
+        }
+
+        internal override void Process(UniverseGroup group)
+        {
+            group.name = Name;
+            group.description = Description;
+            group.maxPlayers = MaxPlayers;
+
+            // TOG
         }
 
         /// <summary>
