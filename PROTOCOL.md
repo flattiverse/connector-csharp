@@ -80,3 +80,26 @@ This closeStatus is sent when the command contained invalid data.
 ### UniverseGroup commands
 
 ### Player commands
+
+#### `whoami`
+
+Returns the number in the player list this player is. If it's 0-63, then it's a real player, if it's 64, then it's an admin/spectator account.
+
+Request:
+
+```json
+{
+    "command": "whoami",
+    "id: "frame id"
+}
+```
+
+Response:
+
+```json
+{
+    "kind": "success",
+    "id: "frame id",
+    "result": 64
+}
+```
