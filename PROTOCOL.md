@@ -69,6 +69,8 @@ In the case of an invalid command being sent to the server, the websocket is clo
 
 ## List of general errors
 
+### WebSocketCloseStatus.InvalidMessageType
+
 ### WebSocketCloseStatus.InvalidPayloadData
 
 This closeStatus is sent when the command contained invalid data.
@@ -77,6 +79,14 @@ This closeStatus is sent when the command contained invalid data.
 | :--- | :--- |
 | Messages must consist of valid JSON data containing a valid command. | Omitting the command or using invalid characters. |
 | The specified command doesn't exist. | Specifying a command that does not exist. |
+
+### WebSocketCloseStatus.InternalServerError
+
+### WebSocketCloseStatus.MessageTooBig
+
+### WebSocketCloseStatus.NormalClosure
+
+### WebSocketCloseStatus.ProtocolError
 
 ## List of commands
 
@@ -91,7 +101,3 @@ The `command` and `id` values are not shown in the examples in this section.
 Returns the number in the player list this player is. If it's 0-63, then it's a real player, if it's 64, then it's an admin/spectator account.
 
 This command will only be answered by the server once all metadata has been transmitted to the player. As such, it should generally be used at the beginning.
-
-| Result type | Possible values |
-| :--- | ---: |
-| integer | 0-64 |

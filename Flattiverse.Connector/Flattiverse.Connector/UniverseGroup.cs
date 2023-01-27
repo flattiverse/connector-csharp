@@ -19,10 +19,17 @@ namespace Flattiverse.Connector
         /// </summary>
         public readonly Player Player;
 
-        // TOG
         internal string name;
         internal string description;
+        internal GameMode mode;
+
         internal int maxPlayers;
+        internal int maxShipsPerPlayer;
+        internal int maxShipsPerTeam;
+        internal int maxBasesPerPlayer;
+        internal int maxBasesPerTeam;
+
+        internal Team[] teams;
 
         /// <summary>
         /// Connects to the specific UniverseGroup.
