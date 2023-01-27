@@ -12,7 +12,7 @@ All commands are expected to be in JSON format. To execute a command on the serv
 
 Unless specified otherwise, all text data which represents a name or id sent in commands must only contain any of the characters `0-9, a-z, A-Z` as well as ` `, `.`, `_`, `-`, and any `Latin Letters` (Unicode characters ) and must be between 2 and 32 characters long.
 
-### Example request:
+### Example command:
 
 A command consists of the following parts:
 
@@ -28,29 +28,42 @@ A command consists of the following parts:
 }
 ```
 
-### Example Response:
+### Example response or event:
 
-A reply to a command consists of the following parts:
+A message from the server contains the following parts:
 
-- `success` to check the result of the command.
-- `id` to reference the reply to the request.
-- further data depending on the command.
+- `kind` as listed below.
+- `id` is only sent in replies to commands.
+- `result` containing the result in case of a command reply message.
+- `events` containing an array with data in case of an events message.
 
 ```json
 {
-    "success": "true",
+    "kind": "success",
     "id": "frame id",
-    "result": "some data"
+    "result": "some data",
+    
 }
 ```
 
-Possible values for 'success' are:
+```json
+{
+    "kind": "events",    
+    "events": [
+        ...
+    ]    
+}
+```
 
-- `true` means the command was executed.
-- `false` means the command could not be executed. This happens, for example, if you try to do something with a ship which has been destroyed.
+https://www.youtube.com/watch?v=98fwi22Jcus
 
+Possible values for 'kind' are:
 
-### Example Termination:
+- `success` means a command was executed.
+- `failure` means a command could not be executed. This happens, for example, if you try to do something with a ship which has been destroyed.
+- `events` means the message from the server is not a reply to a command sent by the client. This may, for example, be a list of scanned objects.
+
+### Example socket closure:
 
 In the case of an invalid command being sent to the server, the websocket is closed and you will receive a close status and a closing frame containing an error text:
 
