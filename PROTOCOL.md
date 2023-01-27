@@ -10,7 +10,7 @@ You can interact with a Flattiverse `UniverseGroup` by connecting to the specifi
 
 All commands are expected to be in JSON format. To execute a command on the server, simply send a request with the corresponding command as payload.
 
-Unless specified otherwise, all text data which represents a name or id sent in commands must only contain any of the characters `0-9, a-z, A-Z` as well as ` `, `.`, `_`, `-`, and any `Latin Letters` (Unicode characters ) and must be between 2 and 32 characters long.
+Unless specified otherwise, all text data which represents a name or id sent in commands must only contain any of the characters `0-9, a-z, A-Z` as well as ` `, `.`, `_`, `-`, and any `Latin Letters` (Unicode characters with the values 192-214, 216-246, and 248-687) and must be between 2 and 32 characters long.
 
 ### Example command:
 
@@ -80,6 +80,8 @@ This closeStatus is sent when the command contained invalid data.
 
 ## List of commands
 
+The `command` and `id` values are not shown in the examples in this section.
+
 ### UniverseGroup commands
 
 ### Player commands
@@ -88,21 +90,8 @@ This closeStatus is sent when the command contained invalid data.
 
 Returns the number in the player list this player is. If it's 0-63, then it's a real player, if it's 64, then it's an admin/spectator account.
 
-Request:
+This command will only be answered by the server once all metadata has been transmitted to the player. As such, it should generally be used at the beginning.
 
-```json
-{
-    "command": "whoami",
-    "id": "frame id"
-}
-```
-
-Response:
-
-```json
-{
-    "kind": "success",
-    "id": "frame id",
-    "result": 64
-}
-```
+| Result type | Possible values |
+| :--- | ---: |
+| integer | 0-64 |
