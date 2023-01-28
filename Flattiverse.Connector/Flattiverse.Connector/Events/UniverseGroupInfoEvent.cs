@@ -60,6 +60,11 @@ namespace Flattiverse.Connector.Events
 
         // TOG: Daraus bitte eine (I)ReadOnlyCollection<Team> machen.
         /// <summary>
+        /// True, if joining this universe as a spectator is allowed.
+        /// </summary>
+        public readonly bool Spectators;
+
+        /// <summary>
         /// The teams in the UniverseGroup.
         /// </summary>
         public readonly Team[] Teams;
@@ -76,6 +81,7 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out MaxShipsPerTeam, "metrics", "maxShipsPerTeam");
             Utils.Traverse(element, out MaxBasesPerPlayer, "metrics", "maxBasesPerPlayer");
             Utils.Traverse(element, out MaxBasesPerTeam, "metrics", "maxBasesPerTeam");
+            Utils.Traverse(element, out Spectators, "metrics", "spectators");
 
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
             {
@@ -105,7 +111,8 @@ namespace Flattiverse.Connector.Events
             group.maxShipsPerTeam = MaxShipsPerTeam;
             group.maxBasesPerPlayer = MaxBasesPerPlayer;
             group.maxBasesPerTeam = MaxBasesPerTeam;
-            group.teams = Teams;            
+            group.spectators = Spectators;
+            group.teams = Teams;
         }
 
         /// <summary>

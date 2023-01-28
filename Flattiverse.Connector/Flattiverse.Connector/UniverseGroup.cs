@@ -28,6 +28,7 @@ namespace Flattiverse.Connector
         internal int maxShipsPerTeam;
         internal int maxBasesPerPlayer;
         internal int maxBasesPerTeam;
+        internal bool spectators;
 
         internal Team[] teams;
 

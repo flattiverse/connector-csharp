@@ -189,6 +189,47 @@ namespace Flattiverse.Connector
             return element.TryGetInt64(out number);
         }
 
+        public static bool Traverse(JsonElement element, out bool @bool, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            @bool = false;
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            @bool = false;
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            @bool = false;
+                            return false;
+                        }
+                        break;
+                    default:
+                        @bool = false;
+                        return false;
+                }
+            }
+
+            @bool = element.ValueKind == JsonValueKind.True;
+
+            return element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False;
+        }
+
         public static bool Traverse(JsonElement element, out JsonElement result, params string[] path)
         {
             int pNum;
