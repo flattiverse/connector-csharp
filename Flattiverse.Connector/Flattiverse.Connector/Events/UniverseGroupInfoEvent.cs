@@ -58,6 +58,7 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly int MaxBasesPerTeam;
 
+        // TOG: Daraus bitte eine (I)ReadOnlyCollection<Team> machen.
         /// <summary>
         /// The teams in the UniverseGroup.
         /// </summary>
