@@ -8,6 +8,9 @@ internal class Program
         FlattiverseEvent @event;
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0123456789112345678921234567893123456789412345678951234567896123"))
+        {
+            universeGroup.SendTrashToTheServerButDontWait();
+
             while (true)
             {
                 @event = await universeGroup.NextEvent();
@@ -25,6 +28,6 @@ internal class Program
                         break;
                 }
             }
-
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Network
         private static readonly JsonDocumentOptions options = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 6 };
         private readonly ClientWebSocket socket;
 
-        private readonly object querySync = new object();
+        private readonly object syncQuery = new object();
         private readonly Dictionary<string, Query> queries = new Dictionary<string, Query>();
 
         private readonly Random rng = new Random();
@@ -69,6 +69,14 @@ namespace Flattiverse.Connector.Network
 
             if (message != null)
                 PushFailureEvent(message);
+
+            lock (syncQuery)
+            {
+                foreach (KeyValuePair<string, Query> query in queries)
+                    query.Value.Answer(0xF0);
+
+                queries.Clear();
+            }
         }
 
         private async Task recv()
@@ -103,7 +111,9 @@ namespace Flattiverse.Connector.Network
                 switch (socket.State)
                 {
                     case WebSocketState.CloseReceived:
-                        shutdown($"WebSocket got disconnected with reason \"{socket.CloseStatus}\" and message: {socket.CloseStatusDescription ?? "<none>."} Connection terminated.");
+                        PushFailureEvent($"WebSocket got disconnected with reason \"{socket.CloseStatus}\" and message: {socket.CloseStatusDescription ?? "<none>."} Connection terminated.");
+
+                        connected = false;
 
                         try
                         {
@@ -119,7 +129,8 @@ namespace Flattiverse.Connector.Network
                             }
                             catch { }
                         }
-                        break;
+                        shutdown(null);
+                        return;
                     case WebSocketState.Open:
                         break;
                     default:
@@ -158,10 +169,15 @@ namespace Flattiverse.Connector.Network
                 switch (kind)
                 {
                     case "success":
-                        if (!Utils.Traverse(document.RootElement, out id, "id") || !queries.TryGetValue(id, out query))
+                        lock (syncQuery)
                         {
-                            PushFailureEvent("Property \"id\" missing on messages from kind \"success\".");
-                            break;
+                            if (!Utils.Traverse(document.RootElement, out id, "id") || !queries.TryGetValue(id, out query))
+                            {
+                                PushFailureEvent("Property \"id\" missing on messages from kind \"success\".");
+                                break;
+                            }
+
+                            queries.Remove(id);
                         }
 
                         query.Answer(recv, document);
@@ -173,10 +189,15 @@ namespace Flattiverse.Connector.Network
                             break;
                         }
 
-                        if (!Utils.Traverse(document.RootElement, out id, "id") || !queries.TryGetValue(id, out query))
+                        lock (syncQuery)
                         {
-                            PushFailureEvent("Property \"id\" missing on messages from kind \"failure\".");
-                            break;
+                            if (!Utils.Traverse(document.RootElement, out id, "id") || !queries.TryGetValue(id, out query))
+                            {
+                                PushFailureEvent("Property \"id\" missing on messages from kind \"failure\".");
+                                break;
+                            }
+
+                            queries.Remove(id);
                         }
                         
                         query.Answer(recv, code);
@@ -262,7 +283,7 @@ namespace Flattiverse.Connector.Network
             if (queries.Count > 1000)
                 throw new InvalidOperationException("It looks like you have way too many pending commands.");
 
-            lock (querySync)
+            lock (syncQuery)
             {
                 while (queries.ContainsKey(id))
                     id = $"{tokens[rng.Next(tokens.Length)]}{tokens[rng.Next(tokens.Length)]}";

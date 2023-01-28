@@ -83,6 +83,11 @@ namespace Flattiverse.Connector.Network
             tcs.SetException(new GameException(error));
         }
 
+        public void Answer(int error)
+        {
+            tcs.SetException(new GameException(error));
+        }
+
         public async Task<double> ReceiveDouble()
         {
             await tcs.Task.ConfigureAwait(false);

@@ -47,8 +47,20 @@ namespace Flattiverse.Connector
 
                 Console.WriteLine($"WHOAMI={query.ReceiveInteger().GetAwaiter().GetResult()}.");
 
+                // MALUK
                 //Player = players[query.ReceiveInteger().GetAwaiter().GetResult()];
             }
+        }
+
+        public void SendTrashToTheServerButDontWait()
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                using (Query query = connection.Query("trash"))
+                {
+                    query.Send();
+                }
+            });
         }
 
         private UniverseGroup(Connection connection, int playerId)

@@ -30,6 +30,8 @@ namespace Flattiverse.Connector
         {
             switch (code)
             {
+                case 0xF0:
+                    return "[0xF0] The web socket got terminated while waiting for the completion of the command. This usually indicates that you have a network connectivity issue somewhere between you and the server or that the server has been rebooted to reload some level settings.";
                 case 0xFF:
                     return $"[0xFF] Some fatal error occourred and the server closed the connection. You may give this information to a flattiverse admin because this shouldn't happen:\n   -> \"{info}\"";
                 default:
