@@ -23,6 +23,10 @@ namespace Flattiverse.Connector.Network
         private readonly Queue<TaskCompletionSource<FlattiverseEvent>> pendingEventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
         private readonly object syncEvents = new object();
 
+        private readonly SemaphoreSlim syncSend = new SemaphoreSlim(1);
+
+        private bool connected = true;
+
         public readonly UniverseGroup Group;
 
         public Connection(UniverseGroup group, string uri, string auth)
@@ -58,6 +62,15 @@ namespace Flattiverse.Connector.Network
             return new Connection(group, socket);
         }
 
+        internal void shutdown(string? message)
+        {
+            connected = false;
+            socket.Dispose();
+
+            if (message != null)
+                PushFailureEvent(message);
+        }
+
         private async Task recv()
         {
             byte[] recv;
@@ -81,58 +94,66 @@ namespace Flattiverse.Connector.Network
                 {
                     result = await socket.ReceiveAsync(recvMemory, CancellationToken.None);
                 }
-                catch
+                catch (Exception exception)
                 {
-                    socket.Dispose();
-                    // Hie rirgendwie den Spieler informieren, dass jetzt alles Scheiße ist.
+                    shutdown($"WebSocket got disconnected: {exception.Message}");
                     return;
                 }
 
                 switch (socket.State)
                 {
                     case WebSocketState.CloseReceived:
-                        if (await close(WebSocketCloseStatus.NormalClosure, "Server requested to close the connection."))
-                            return;
-                        else
-                            continue;
+                        shutdown($"WebSocket got disconnected with reason \"{socket.CloseStatus}\" and message: {socket.CloseStatusDescription ?? "<none>."} Connection terminated.");
+
+                        try
+                        {
+                            await syncSend.WaitAsync();
+                            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good bye.", CancellationToken.None);
+                        }
+                        catch { }
+                        finally
+                        {
+                            try
+                            {
+                                syncSend.Release();
+                            }
+                            catch { }
+                        }
+                        break;
                     case WebSocketState.Open:
                         break;
                     default:
-                        if (await close(WebSocketCloseStatus.NormalClosure, $"Invalid WebSocket state: {socket.State}."))
-                            return;
-                        else
-                            continue;
+                        shutdown($"WebSocket had invalid state after receive: \"{socket.State}\". Connection terminated.");
+                        return;
                 }
 
                 if (!result.EndOfMessage)
-                    if (await close(WebSocketCloseStatus.MessageTooBig, "Sent messages can't exceed 256 KiB and can't be split up."))
-                        return;
-                    else
-                        continue;
+                {
+                    shutdown("Received message has exceedet 256 KiB.");
+                    return;
+                }
 
                 if (result.MessageType != WebSocketMessageType.Text)
-                    if (await close(WebSocketCloseStatus.InvalidMessageType, "Require JSON/Text frame."))
-                        return;
-                    else
-                        continue;
+                {
+                    shutdown($"Received message has type {result.MessageType}. But we require Text with JSON. Connection terminated.");
+                    return;
+                }
 
                 try
                 {
                     document = JsonDocument.Parse(recvMemory.Slice(0, result.Count), options);
                 }
-                catch (Exception exception)
+                catch
                 {
-                    if (await close(WebSocketCloseStatus.InvalidPayloadData, $"Messages must consist of valid JSON data containing a valid command: {exception.Message}"))
-                        return;
-                    else
-                        continue;
+                    shutdown($"Received message didn't contain valid JSON.");
+                    return;
                 }
 
                 if (!Utils.Traverse(document.RootElement, out kind, "kind"))
-                    if (await close(WebSocketCloseStatus.InvalidPayloadData, $"Ni kind received."))
-                        return;
-                    else
-                        continue;
+                {
+                    shutdown($"Received message didn't contain \"kind\". Connection terminated.");
+                    return;
+                }
 
                 switch (kind)
                 {
@@ -256,7 +277,20 @@ namespace Flattiverse.Connector.Network
 
         public async Task Send(byte[] query, int length)
         {
-            await socket.SendAsync(new Memory<byte>(query, 0, length), WebSocketMessageType.Text, true, CancellationToken.None);
+            try
+            {
+                await syncSend.WaitAsync();
+                await socket.SendAsync(new Memory<byte>(query, 0, length), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            catch { }
+            finally
+            {
+                try
+                {
+                    syncSend.Release();
+                }
+                catch { }
+            }
         }
 
         public void PushEvent(FlattiverseEvent @event)
@@ -300,6 +334,7 @@ namespace Flattiverse.Connector.Network
         public void Dispose()
         {
             socket.Dispose();
+            syncSend.Dispose();
         }
     }
 }
