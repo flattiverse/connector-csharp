@@ -34,27 +34,27 @@ namespace Flattiverse.Connector.Events
         public readonly GameMode Mode;
 
         /// <summary>
-        /// The amount of max Players together in the UniverseGroup.
+        /// The amount of players together in the UniverseGroup.
         /// </summary>
         public readonly int MaxPlayers;
 
         /// <summary>
-        /// The amount of max Ships a Player can have in the UniverseGroup.
+        /// The amount of ships a player can have in the UniverseGroup.
         /// </summary>
         public readonly int MaxShipsPerPlayer;
 
         /// <summary>
-        /// The amount of max Ships a Team can have in the UniverseGroup.
+        /// The amount of ships a team can have in the UniverseGroup.
         /// </summary>
         public readonly int MaxShipsPerTeam;
 
         /// <summary>
-        /// The amount of max Bases a Player can have in the UniverseGroup.
+        /// The amount of bases a player can have in the UniverseGroup.
         /// </summary>
         public readonly int MaxBasesPerPlayer;
 
         /// <summary>
-        /// The amount of max Bases a Team can have in the UniverseGroup.
+        /// The amount of bases a team can have in the UniverseGroup.
         /// </summary>
         public readonly int MaxBasesPerTeam;
 
@@ -67,7 +67,9 @@ namespace Flattiverse.Connector.Events
         /// <summary>
         /// The teams in the UniverseGroup.
         /// </summary>
-        public readonly Team[] Teams;
+        public readonly IReadOnlyCollection<Team> Teams;
+        Team[] teams;
+
 
         internal UniverseGroupInfoEvent(JsonElement element)
         {
@@ -86,18 +88,21 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
             {
                 int maxID = 0;
-                List<Team> teams = new List<Team>();
+                List<Team> teamsList = new List<Team>();
 
                 foreach (JsonElement teamObject in teamsArray.EnumerateArray())
                 {
                     Team team = new Team(teamObject);
                     if (team.ID > maxID)
                         maxID = team.ID;
-                    teams.Add(team);
+                    teamsList.Add(team);
                 }
-                Teams = new Team[maxID + 1];
-                foreach (Team team in teams)
-                    Teams[team.ID] = team;
+
+                teams = new Team[maxID + 1];
+                foreach (Team team in teamsList)
+                    teams[team.ID] = team;
+
+                Teams = teams;
             }
         }
 
@@ -112,7 +117,7 @@ namespace Flattiverse.Connector.Events
             group.maxBasesPerPlayer = MaxBasesPerPlayer;
             group.maxBasesPerTeam = MaxBasesPerTeam;
             group.spectators = Spectators;
-            group.teams = Teams;
+            group.teams = teams;
         }
 
         /// <summary>

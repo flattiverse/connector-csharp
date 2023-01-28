@@ -75,8 +75,6 @@ namespace Flattiverse.Connector
             }
         }
 
-        // TOG
-
         /// <summary>
         /// The name of the UniverseGroup.
         /// </summary>
@@ -88,9 +86,44 @@ namespace Flattiverse.Connector
         public string Description => description;
 
         /// <summary>
-        /// The amount of players allowed to play simultaneous.
+        /// The GameMode of the UniverseGroup.
+        /// </summary>
+        public GameMode Mode => mode;
+
+        /// <summary>
+        /// The amount of players allowed to play simultaneously.
         /// </summary>
         public int MaxPlayers => maxPlayers;
+
+        /// <summary>
+        /// The amount of ships a player can have in the UniverseGroup.
+        /// </summary>
+        public int MaxShipsPerPlayer => maxShipsPerPlayer;
+
+        /// <summary>
+        /// The amount of ships a team can have in the UniverseGroup.
+        /// </summary>
+        public int MaxShipsPerTeam => maxShipsPerTeam;
+
+        /// <summary>
+        /// The amount of bases a player can have in the UniverseGroup.
+        /// </summary>
+        public int MaxBasesPerPlayer => maxBasesPerPlayer;
+
+        /// <summary>
+        /// The amount of bBases a team can have in the UniverseGroup.
+        /// </summary>
+        public int MaxBasesPerTeam => maxBasesPerTeam;
+
+        /// <summary>
+        /// True, if joining this universe as a spectator is allowed.
+        /// </summary>
+        public bool Spectators => spectators;
+
+        /// <summary>
+        /// The teams in the UniverseGroup.
+        /// </summary>
+        public IReadOnlyCollection<Team> Teams => teams;
 
         /// <summary>
         /// Will return the next received event from queue or wait until the event has been received.
