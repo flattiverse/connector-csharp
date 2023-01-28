@@ -68,7 +68,8 @@ namespace Flattiverse.Connector.Events
         /// The teams in the UniverseGroup.
         /// </summary>
         public readonly IReadOnlyCollection<Team> Teams;
-        Team[] teams;
+
+        private Team[] teams;
 
 
         internal UniverseGroupInfoEvent(JsonElement element)

@@ -217,7 +217,7 @@ namespace Flattiverse.Connector.Network
                 case WebSocketState.Open:
                     try
                     {
-                        await socket.CloseOutputAsync(status, message, CancellationToken.None);
+                        await socket.CloseAsync(status, message, CancellationToken.None);
 
                         return false;
                     }
