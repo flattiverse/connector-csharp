@@ -104,7 +104,7 @@ This command will only be answered by the server once all metadata has been tran
 
 ## List of units and their definition
 
-Some units may have changed in this version of flattiverse. So it is generally a good idea to read this section carefully.
+Some units may have changed in this version of flattiverse. So it is generally a good idea to read this section carefully. Please note that optional properties can always be `null` or just not there. The server will always send you the most economical JSON he can generate (so not sending unused values). Those JSON examples contain the best approximation of what values could do. So, if you see a number without decimal point there, you can assume an integer. If you see a decimal point it's most likely a double, etc. If values can get negative there will be an example with negative values.
 
 ### Unit
 
@@ -127,7 +127,7 @@ A full unit definition:
         "y": 0.5
     },
     "radius": 240.6,
-    "gravity": 0.7,
+    "gravity": -0.7,
     "orbiting":
     [
         {
@@ -142,11 +142,11 @@ A full unit definition:
 There are more flags a unit can have like `masking` (in the C# connector the property `IsMasking`) or `solid` (in the C# connector the property `IsSolid`). Those flags are entirely calculated from the status of the unit itself. For instance a sun is always `masking` meaning you can't scan "through" a suns core.
 
 * Names (`name`) must match the criteria for proper names. However, the server can create dynamic names which include forbidden characters like a `#` (hashtag).
-* The `team` property specifies the team this unit belongs to. It is possible to have no team assigned to a unit. In that case `team` can be `null` or oyu just don't send the `team` property at all.
+* The `team` property specifies the team this unit belongs to. It is possible to have no team assigned to a unit. In that case `team` can be `null` or you just don't send the `team` property at all.
 * The `position` is mandatory. There can't be an unit without position. A position is always a `vector`.
 * The `radius` is mandatory and must be given for every unit specified via the map editor API.
 * The `gravity` property can be omitted by sending null or leaving out the property at all.
-* The `orbiting` array can also be omitted by sending null or leaving out the property at all.
+* The `orbiting` array can also be omitted if oyu don't want to have a `steady` unit. All sub values are mandatory:
 * * `distance` specifies the distance from the current position the orbiting operation will move the unit.
 * * `angle` specifies the start-angle of the orbiting calculations.
 * * `interval` specifies how many ticks it takes for one unit to move around it's orbitee position.
@@ -192,16 +192,16 @@ Suns have two modes of operation, which could also be combined:
 
 The meaning of the values are as follows:
 
-* `corona` specifies the more simple corona of a sun:
+* `corona` specifies the more simple corona of a sun and is optional:
 * * `radius` specifies the radius of the corona and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
 * * `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
 * * `particles` works like `energy` but for particles (a secondary form of energy).
 * `sections` specify the more complex sun behavior.
 * * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work.
 * * `energy` and `particles` work like described in the `corona` object above.
-* * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). If you don't want to have this dynamic: Just don't use it (`null` or no property at all).
-* * * `propability`: If a section is disabled a random number generator is checked each tick against this number.
-* * * `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. If you want to omit this phase, leave this vaiable out (`null` or no property at all).
-* * * `upramp`: Also optional. This upramps the effects of `energy` and `particles`.
+* * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). `activation` is optional if oyu don't want to use it.
+* * * `propability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
+* * * `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
+* * * `upramp`: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
 * * * `time`: Not optional. The amount of ticks before this phase fades out again.
 * * * `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
