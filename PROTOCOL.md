@@ -147,9 +147,9 @@ There are more flags a unit can have like `masking` (in the C# connector the pro
 * The `radius` is mandatory and must be given for every unit specified via the map editor API.
 * The `gravity` property can be omitted by sending null or leaving out the property at all.
 * The `orbiting` array can also be omitted if oyu don't want to have a `steady` unit. All sub values are mandatory:
-* * `distance` specifies the distance from the current position the orbiting operation will move the unit.
-* * `angle` specifies the start-angle of the orbiting calculations.
-* * `interval` specifies how many ticks it takes for one unit to move around it's orbitee position.
+  * `distance` specifies the distance from the current position the orbiting operation will move the unit.
+  * `angle` specifies the start-angle of the orbiting calculations.
+  * `interval` specifies how many ticks it takes for one unit to move around it's orbitee position.
 
 ### Sun (`sun`)
 
@@ -193,15 +193,15 @@ Suns have two modes of operation, which could also be combined:
 The meaning of the values are as follows:
 
 * `corona` specifies the more simple corona of a sun and is optional:
-* * `radius` specifies the radius of the corona and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
-* * `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
-* * `particles` works like `energy` but for particles (a secondary form of energy).
+  * `radius` specifies the radius of the corona and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
+  * `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
+  * `particles` works like `energy` but for particles (a secondary form of energy).
 * `sections` specify the more complex sun behavior.
-* * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work.
-* * `energy` and `particles` work like described in the `corona` object above.
-* * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). `activation` is optional if oyu don't want to use it.
-* * * `propability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
-* * * `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
-* * * `upramp`: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
-* * * `time`: Not optional. The amount of ticks before this phase fades out again.
-* * * `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
+  * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work.
+  * `energy` and `particles` work like described in the `corona` object above.
+  * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). `activation` is optional if oyu don't want to use it.
+    * `propability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
+    * `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
+    * `upramp`: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
+    * `time`: Not optional. The amount of ticks before this phase fades out again.
+    * `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
