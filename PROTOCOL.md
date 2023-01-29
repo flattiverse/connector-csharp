@@ -126,7 +126,13 @@ A full unit definition:
         "x": -2.5,
         "y": 0.5
     },
+    "setPosition":
+    {
+        "x": -2.5,
+        "y": 0.5
+    },
     "radius": 240.6,
+    "setRadius": 240.6,
     "gravity": -0.7,
     "orbiting":
     [
@@ -143,8 +149,10 @@ There are more flags a unit can have like `masking` (in the C# connector the pro
 
 * Names (`name`) must match the criteria for proper names. However, the server can create dynamic names which include forbidden characters like a `#` (hashtag).
 * The `team` property specifies the team this unit belongs to. It is possible to have no team assigned to a unit. In that case `team` can be `null` or you just don't send the `team` property at all.
-* The `position` is mandatory. There can't be an unit without position. A position is always a `vector`.
-* The `radius` is mandatory and must be given for every unit specified via the map editor API.
+* The `position` is the current position of the unit in the game. This is a in game status and can't be set via the map editr. There can't be an unit without position. A position is always a `vector`.
+* The `setPosition` is the position relevant for the map editor API and also is the center for the `orbiting` instruction. This values isn't there if you scan the unit in game.
+* The `radius` is mandatory and every scannable unit has one. Don't use this value for the map editor, it will be ignored.
+* The `setRadius` is mandatory and must be given for every unit specified via the map editor API. It's the configured radius for the unit. However, some units may change their radius due to in game activities and therefore `setRadius` and `radius` may differ.
 * The `gravity` property can be omitted by sending null or leaving out the property at all.
 * The `orbiting` array can also be omitted if oyu don't want to have a `steady` unit. All sub values are mandatory:
   * `distance` specifies the distance from the current position the orbiting operation will move the unit.
@@ -179,6 +187,11 @@ The sun is one of the base units in this game. You can draw energy from the suns
                 "upramp": 40,
                 "time": 120,
                 "fade": 80
+            },
+            "activationState":
+            {
+                "state": "upramp",
+                "frame": 13
             }
         }
     ]
@@ -205,3 +218,9 @@ The meaning of the values are as follows:
     * `upramp`: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
     * `time`: Not optional. The amount of ticks before this phase fades out again.
     * `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
+  * `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
+    * `state`: The state is one of:
+      * `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
+      * `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
+      * `active`: The corona segment is currently active. See `frame` to know when this state will end.
+    * `frame`: The current tick in the current `state`.
