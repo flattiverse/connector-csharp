@@ -101,3 +101,107 @@ The `command` and `id` values are not shown in the examples in this section.
 Returns the number in the player list this player is. If it's 0-63, then it's a real player, if it's 64, then it's an admin/spectator account.
 
 This command will only be answered by the server once all metadata has been transmitted to the player. As such, it should generally be used at the beginning.
+
+## List of units and their definition
+
+Some units may have changed in this version of flattiverse. So it is generally a good idea to read this section carefully.
+
+### Unit
+
+The `Unit` as parent class has some properties which will be inherites by child unit kinds. In general we have 3 kinds of units:
+
+1. `Still` units: Those units can't move at all. (Except for you move them in the map editor.)
+2. `Steady` units: Those units move according to a predefined ruleset (`orbiting`). Orbiting units have an array of `distance`, `startAngle` and `rotationInterval`. Each entry extends the orbiting information(s). You also could generate complex paths according to fourier. :) In such a case the Position of the unit is used as center of the orbiting calculations and each entry results into another point. We will add a calculation example later.
+3. `Mobile` units: Those units can move freely. Examples are player ships or shots.
+
+A full unit definition:
+
+```json
+{
+    "kind": "sun",
+    "name": "Zirp",
+    "team": 0,
+    "position":
+    {
+        "x": -2.5,
+        "y": 0.5
+    },
+    "radius": 240.6,
+    "gravity": 0.7,
+    "orbiting":
+    [
+        {
+            "distance": 200.2,
+            "angle": 82.7,
+            "interval": 600
+        }
+    ]
+}
+```
+
+There are more flags a unit can have like `masking` (in the C# connector the property `IsMasking`) or `solid` (in the C# connector the property `IsSolid`). Those flags are entirely calculated from the status of the unit itself. For instance a sun is always `masking` meaning you can't scan "through" a suns core.
+
+* Names (`name`) must match the criteria for proper names. However, the server can create dynamic names which include forbidden characters like a `#` (hashtag).
+* The `team` property specifies the team this unit belongs to. It is possible to have no team assigned to a unit. In that case `team` can be `null` or oyu just don't send the `team` property at all.
+* The `position` is mandatory. There can't be an unit without position. A position is always a `vector`.
+* The `radius` is mandatory and must be given for every unit specified via the map editor API.
+* The `gravity` property can be omitted by sending null or leaving out the property at all.
+* The `orbiting` array can also be omitted by sending null or leaving out the property at all.
+* * `distance` specifies the distance from the current position the orbiting operation will move the unit.
+* * `angle` specifies the start-angle of the orbiting calculations.
+* * `interval` specifies how many ticks it takes for one unit to move around it's orbitee position.
+
+### Sun (`sun`)
+
+The sun is one of the base units in this game. You can draw energy from the suns corona sections (or get energy drained). (This is a major change to versions before.) Suns now have corona sections instead of full circle coronas. Also corona sections can have a configurable dynamic, which leads to corona sections being randomly put on and off.
+
+```json
+{
+    "corona":
+    {
+        "radius": 777.4,
+        "energy": 60.3,
+        "particles": 1.1
+    },
+    "sections":
+    [
+        {
+            "angleStart": 17.3,
+            "angleEnd": 68.2,
+            "distanceStart": 500.2,
+            "distanceEnd": 702.8,
+            "energy": -45.2,
+            "particles": 17.2,
+            "activation":
+            {
+                "propability": 0.0025,
+                "foreshadowing": 60,
+                "upramp": 40,
+                "time": 120,
+                "fade": 80
+            }
+        }
+    ]
+}
+```
+
+Suns have two modes of operation, which could also be combined:
+
+1. A regular sun (like in the flattiverse versions before) suitable for beginners. Those suns only have one `corona` and is defined in the property `corona`.
+2. A "more complex sun" (suitable for some advanced gameplay in the future). Those suns have "corona sections" and are defined in the array `sections`.
+
+The meaning of the values are as follows:
+
+* `corona` specifies the more simple corona of a sun:
+* * `radius` specifies the radius of the corona and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
+* * `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
+* * `particles` works like `energy` but for particles (a secondary form of energy).
+* `sections` specify the more complex sun behavior.
+* * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work.
+* * `energy` and `particles` work like described in the `corona` object above.
+* * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). If you don't want to have this dynamic: Just don't use it (`null` or no property at all).
+* * * `propability`: If a section is disabled a random number generator is checked each tick against this number.
+* * * `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. If you want to omit this phase, leave this vaiable out (`null` or no property at all).
+* * * `upramp`: Also optional. This upramps the effects of `energy` and `particles`.
+* * * `time`: Not optional. The amount of ticks before this phase fades out again.
+* * * `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
