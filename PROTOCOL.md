@@ -197,7 +197,7 @@ The meaning of the values are as follows:
   * `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
   * `particles` works like `energy` but for particles (a secondary form of energy).
 * `sections` specify the more complex sun behavior.
-  * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work.
+  * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
   * `energy` and `particles` work like described in the `corona` object above.
   * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). `activation` is optional if oyu don't want to use it.
     * `propability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
