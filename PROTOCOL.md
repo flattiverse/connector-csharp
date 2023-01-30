@@ -226,7 +226,7 @@ The meaning of the values are as follows:
     * `t`ime: Not optional. The amount of ticks before this phase fades out again.
     * `f`ade: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
   * activation`S`tate is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
-    * `state`: The state is one of:
+    * `s`tate: The state is one of:
       * `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
       * `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
       * `active`: The corona segment is currently active. See `frame` to know when this state will end.
