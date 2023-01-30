@@ -58,7 +58,6 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly int MaxBasesPerTeam;
 
-        // TOG: Daraus bitte eine (I)ReadOnlyCollection<Team> machen.
         /// <summary>
         /// True, if joining this universe as a spectator is allowed.
         /// </summary>

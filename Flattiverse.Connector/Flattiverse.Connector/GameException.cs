@@ -32,6 +32,8 @@ namespace Flattiverse.Connector
             {
                 case 0xA0:
                     return "[0xA0] Your JSON defintion is missing some mandatory base value like name or radius.";
+                case 0xA1:
+                    return "[0xA1] Your JSON defintion contains invalid data.";
                 case 0xF0:
                     return "[0xF0] The web socket got terminated while waiting for the completion of the command. This usually indicates that you have a network connectivity issue somewhere between you and the server or that the server has been rebooted to reload some level settings.";
                 case 0xFF:

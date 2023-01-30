@@ -240,7 +240,7 @@ The sun is one of the base units in this game. You can draw energy from the suns
             "particles": 17.2,
             "activation":
             {
-                "propability": 0.0025,
+                "probability": 0.0025,
                 "foreshadowing": 60,
                 "upramp": 40,
                 "time": 120,
@@ -270,8 +270,8 @@ The meaning of the values are as follows:
 - `sections` specify the more complex sun behavior.
   - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
   - `energy` and `particles` work like described in the `corona` object above.
-  - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). `activation` is optional if oyu don't want to use it.
-     - `propability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
+  - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `probability` (see next point). `activation` is optional if oyu don't want to use it.
+     - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
      - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
      - `upramp`: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
      - `time`: Not optional. The amount of ticks before this phase fades out again.
