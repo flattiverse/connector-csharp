@@ -118,28 +118,35 @@ A full unit definition:
 
 ```json
 {
-    "kind": "sun",
-    "name": "Zirp",
-    "team": 0,
-    "position":
+    "k": "sun",
+    "n": "Zirp",
+    "t": 0,
+    "p":
     {
         "x": -2.5,
         "y": 0.5
     },
-    "setPosition":
+    "P":
     {
         "x": -2.5,
         "y": 0.5
     },
-    "radius": 240.6,
-    "setRadius": 240.6,
-    "gravity": -0.7,
-    "orbiting":
+    "r": 240.6,
+    "R": 240.6,
+    "g": -0.7,
+}
+```
+
+Additional parameters for `still` and `steady` units:
+
+```json
+{
+    "o":
     [
         {
-            "distance": 200.2,
-            "angle": 82.7,
-            "interval": 600
+            "d": 200.2,
+            "a": 82.7,
+            "i": 600
         }
     ]
 }
@@ -148,16 +155,16 @@ A full unit definition:
 There are more flags a unit can have like `masking` (in the C# connector the property `IsMasking`) or `solid` (in the C# connector the property `IsSolid`). Those flags are entirely calculated from the status of the unit itself. For instance a sun is always `masking` meaning you can't scan "through" a suns core.
 
 * Names (`name`) must match the criteria for proper names. However, the server can create dynamic names which include forbidden characters like a `#` (hashtag).
-* The `team` property specifies the team this unit belongs to. It is possible to have no team assigned to a unit. In that case `team` can be `null` or you just don't send the `team` property at all.
-* The `position` is the current position of the unit in the game. This is a in game status and can't be set via the map editr. There can't be an unit without position. A position is always a `vector`.
-* The `setPosition` is the position relevant for the map editor API and also is the center for the `orbiting` instruction. This values isn't there if you scan the unit in game.
-* The `radius` is mandatory and every scannable unit has one. Don't use this value for the map editor, it will be ignored.
-* The `setRadius` is mandatory and must be given for every unit specified via the map editor API. It's the configured radius for the unit. However, some units may change their radius due to in game activities and therefore `setRadius` and `radius` may differ.
-* The `gravity` property can be omitted by sending null or leaving out the property at all.
-* The `orbiting` array can also be omitted if oyu don't want to have a `steady` unit. All sub values are mandatory:
-  * `distance` specifies the distance from the current position the orbiting operation will move the unit.
-  * `angle` specifies the start-angle of the orbiting calculations.
-  * `interval` specifies how many ticks it takes for one unit to move around it's orbitee position.
+* The `t`eam property specifies the team this unit belongs to. It is possible to have no team assigned to a unit. In that case `team` can be `null` or you just don't send the `team` property at all.
+* The `p`osition is the current position of the unit in the game. This is a in game status and can't be set via the map editr. There can't be an unit without position. A position is always a `vector`.
+* The `P`osition is the position relevant for the map editor API and also is the center for the `orbiting` instruction. This values isn't there if you scan the unit in game.
+* The `r`adius is mandatory and every scannable unit has one. Don't use this value for the map editor, it will be ignored.
+* The `R`adius is mandatory and must be given for every unit specified via the map editor API. It's the configured radius for the unit. However, some units may change their radius due to in game activities and therefore `setRadius` and `radius` may differ.
+* The `g`ravity property can be omitted by sending null or leaving out the property at all.
+* The `o`rbiting array can also be omitted if oyu don't want to have a `steady` unit. All sub values are mandatory:
+  * `d`istance specifies the distance from the current position the orbiting operation will move the unit.
+  * `a`ngle specifies the start-angle of the orbiting calculations.
+  * `i`nterval specifies how many ticks it takes for one unit to move around it's orbitee position.
 
 ### Sun (`sun`)
 
@@ -165,33 +172,33 @@ The sun is one of the base units in this game. You can draw energy from the suns
 
 ```json
 {
-    "corona":
+    "c":
     {
-        "radius": 777.4,
-        "energy": 60.3,
-        "particles": 1.1
+        "r": 777.4,
+        "e": 60.3,
+        "p": 1.1
     },
-    "sections":
+    "s":
     [
         {
-            "angleStart": 17.3,
-            "angleEnd": 68.2,
-            "distanceStart": 500.2,
-            "distanceEnd": 702.8,
-            "energy": -45.2,
-            "particles": 17.2,
-            "activation":
+            "a": 17.3,
+            "A": 68.2,
+            "d": 500.2,
+            "D": 702.8,
+            "e": -45.2,
+            "p": 17.2,
+            "u":
             {
-                "propability": 0.0025,
-                "foreshadowing": 60,
-                "upramp": 40,
-                "time": 120,
-                "fade": 80
+                "p": 0.0025,
+                "s": 60,
+                "u": 40,
+                "t": 120,
+                "f": 80
             },
-            "activationState":
+            "S":
             {
-                "state": "upramp",
-                "frame": 13
+                "s": "upramp",
+                "f": 13
             }
         }
     ]
@@ -205,22 +212,22 @@ Suns have two modes of operation, which could also be combined:
 
 The meaning of the values are as follows:
 
-* `corona` specifies the more simple corona of a sun and is optional:
-  * `radius` specifies the radius of the corona and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
-  * `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
-  * `particles` works like `energy` but for particles (a secondary form of energy).
-* `sections` specify the more complex sun behavior.
-  * `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
-  * `energy` and `particles` work like described in the `corona` object above.
-  * `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `propability` (see next point). `activation` is optional if oyu don't want to use it.
-    * `propability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
-    * `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
-    * `upramp`: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
-    * `time`: Not optional. The amount of ticks before this phase fades out again.
-    * `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
-  * `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
+* `c`orona specifies the more simple corona of a sun and is optional:
+  * `r`adius specifies the radius of the corona and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
+  * `e`nergy is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
+  * `p`articles works like `energy` but for particles (a secondary form of energy).
+* `s`ections specify the more complex sun behavior.
+  * `a`ngleStart, `A`ngleEnd, 'd'istanceStart and `D`istanceEnd specify the radial sun section. A sips center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
+  * `e`nergy and `p`articles work like described in the `c`orona object above.
+  * `u`sage is another property which specifies a more dynamic availability behavior: A section must be activated by `p`ropability (see next point). `a`ctivation is optional if you don't want to use it.
+    * `p`ropability: If a section is disabled a random number generator is checked each tick against this number. (RNG < `propability` starts the sequence.)
+    * fore`s`hadowing: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
+    * `u`pramp: Also optional. This upramps the effects of `energy` and `particles` (from 0 to the set values).
+    * `t`ime: Not optional. The amount of ticks before this phase fades out again.
+    * `f`ade: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
+  * activation`S`tate is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
     * `state`: The state is one of:
       * `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
       * `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
       * `active`: The corona segment is currently active. See `frame` to know when this state will end.
-    * `frame`: The current tick in the current `state`.
+    * `f`rame: The current tick in the current `state`.
