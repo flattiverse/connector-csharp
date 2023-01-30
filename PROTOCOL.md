@@ -147,6 +147,11 @@ Additional parameters for (`still` and) `steady` units - (a `still` unit becomes
 
 ```json
 {
+    "orbitingCenter":
+    {
+        "x": 222.2,
+        "y": -160.2
+    },
     "orbiting":
     [
         {
@@ -169,6 +174,7 @@ There are more flags a unit can have like `masking` (in the C# connector the pro
 * The `radius` is mandatory and every scannable unit has one. Don't use this value for the map editor, it will be ignored.
 * The `setRadius` is mandatory and must be given for every unit specified via the map editor API. It's the configured radius for the unit. However, some units may change their radius due to in game activities and therefore `setRadius` and `radius` may differ.
 * The `gravity` property can be omitted by sending null or leaving out the property at all.
+* The `orbitingCenter` returns the `setPosition` in the case of orbiting units.
 * The `orbiting` array can also be omitted if oyu don't want to have a `steady` unit. All sub values are mandatory:
   * `distance` specifies the distance from the current position the orbiting operation will move the unit.
   * `angle` specifies the start-angle of the orbiting calculations.
