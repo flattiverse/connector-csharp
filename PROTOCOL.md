@@ -143,7 +143,7 @@ A full unit definition:
 }
 ```
 
-Additional parameters for `still` and `steady` units:
+Additional parameters for (`still` and) `steady` units - (a `still` unit becomes a `steady` unit when those parameters appear):
 
 ```json
 {
