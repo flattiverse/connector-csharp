@@ -6,15 +6,15 @@ namespace Flattiverse.Connector.Events
     /// This event informs of the disconnect of a player from the universeGroup.
     /// </summary>
     [FlattiverseEventIdentifier("playerRemoved")]
-    internal class RemovedPlayerEvent : PlayerEvent
+    public class RemovedPlayerEvent : PlayerEvent
     {
         internal RemovedPlayerEvent(JsonElement element) : base(element) { }
-
-        public override EventKind Kind => EventKind.PlayerRemoved;
 
         internal override void Process(UniverseGroup group)
         {
             group.players[ID] = null;
         }
+
+        public override EventKind Kind => EventKind.PlayerRemoved;
     }
 }

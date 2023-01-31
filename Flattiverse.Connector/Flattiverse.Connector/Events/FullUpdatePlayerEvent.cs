@@ -7,7 +7,7 @@ namespace Flattiverse.Connector.Events
     /// This event contains all information abaout a player.
     /// </summary>
     [FlattiverseEventIdentifier("playerFullUpdate")]
-    internal class FullUpdatePlayerEvent : PlayerEvent
+    public class FullUpdatePlayerEvent : PlayerEvent
     {
         public readonly Player Player;
 
@@ -16,11 +16,11 @@ namespace Flattiverse.Connector.Events
             Player = new Player(element);
         }
 
-        public override EventKind Kind => EventKind.PlayerFullUpdate;
-
         internal override void Process(UniverseGroup group)
         {
             group.players[ID] = Player;
         }
+
+        public override EventKind Kind => EventKind.PlayerFullUpdate;
     }
 }

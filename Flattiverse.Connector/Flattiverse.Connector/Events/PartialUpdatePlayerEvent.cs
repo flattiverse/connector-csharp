@@ -6,7 +6,7 @@ namespace Flattiverse.Connector.Events
     /// This event contains only mutable information about a player.
     /// </summary>
     [FlattiverseEventIdentifier("playerPartialUpdate")]
-    internal class PartialUpdatePlayerEvent : PlayerEvent
+    public class PartialUpdatePlayerEvent : PlayerEvent
     {
         internal JsonElement element;
 
@@ -15,11 +15,11 @@ namespace Flattiverse.Connector.Events
             this.element = element;
         }
 
-        public override EventKind Kind => EventKind.PlayerPartialUpdate;
-
         internal override void Process(UniverseGroup group)
         {
             group.players[ID].Update(element);
         }
+
+        public override EventKind Kind => EventKind.PlayerPartialUpdate;
     }
 }
