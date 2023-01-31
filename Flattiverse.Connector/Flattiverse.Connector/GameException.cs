@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Flattiverse.Connector
 {
     /// <summary>
-    /// An error int the game happened. Try harder!
+    /// An error in the game happened. Try harder!
     /// </summary>
     public class GameException : Exception
     {
@@ -38,6 +38,8 @@ namespace Flattiverse.Connector
                     return "[0xA2] At least one required JSON property doesn't exist.";
                 case 0xA3:
                     return "[0xA3] At least one required JSON property doesn't have the required kind.";
+                case 0xA4:
+                    return "[0xA4] At least one required JSON property has an invalid value.";
                 case 0xF0:
                     return "[0xF0] The web socket got terminated while waiting for the completion of the command. This usually indicates that you have a network connectivity issue somewhere between you and the server or that the server has been rebooted to reload some level settings.";
                 case 0xFF:
