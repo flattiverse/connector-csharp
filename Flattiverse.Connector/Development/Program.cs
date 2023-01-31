@@ -7,7 +7,15 @@ internal class Program
     {
         FlattiverseEvent @event;
 
-        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0123456789112345678921234567893123456789412345678951234567896123"))
+        string apiUser = "0123456789112345678921234567893123456789412345678951234567896123";
+        string apiAdmn = "9876342587963245879623458976234589762345ACBACBACABCEDFEDFDEFEDFE";
+        string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
+
+        string usedKey = apiUser;
+        //string usedKey = apiAdmn;
+        //string usedKey = apiSpec;
+
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", usedKey))
         {
             universeGroup.SendTrashToTheServerButDontWait();
 
