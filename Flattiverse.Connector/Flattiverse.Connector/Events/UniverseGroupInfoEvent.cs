@@ -78,21 +78,16 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out Spectators, "metrics", "spectators");
 
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
-            {
-                int maxID = 0;
-                List<Team> teamsList = new List<Team>();
+            {  // TOG: Überprüfe, was ich hie rgemacht habe. Aber wir haben maximal 16 Teams und das Array ist sokeine Verschwendung,
+               // bzw. rechtfertigt Deine Routine und die vielen Fallunterscheidungen nicht.
+                teams = new Team[16];
 
                 foreach (JsonElement teamObject in teamsArray.EnumerateArray())
                 {
                     Team team = new Team(teamObject);
-                    if (team.ID > maxID)
-                        maxID = team.ID;
-                    teamsList.Add(team);
-                }
 
-                teams = new Team[maxID + 1];
-                foreach (Team team in teamsList)
                     teams[team.ID] = team;
+                }
 
                 Teams = teams;
             }

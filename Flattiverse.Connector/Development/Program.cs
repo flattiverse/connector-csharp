@@ -11,13 +11,13 @@ internal class Program
         string apiAdmn = "9876342587963245879623458976234589762345ACBACBACABCEDFEDFDEFEDFE";
         string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
 
-        string usedKey = apiUser;
+        //string usedKey = apiUser;
         //string usedKey = apiAdmn;
-        //string usedKey = apiSpec;
+        string usedKey = apiSpec;
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", usedKey))
         {
-            universeGroup.SendTrashToTheServerButDontWait();
+            Console.WriteLine($"uG.Name = {universeGroup.Name}.");
 
             while (true)
             {

@@ -92,6 +92,7 @@ namespace Flattiverse.Connector.Network
             Query? query;
 
             ValueWebSocketReceiveResult result;
+            FlattiverseEvent @event;
 
             while (true)
             {
@@ -212,7 +213,11 @@ namespace Flattiverse.Connector.Network
                         foreach (JsonElement subElement in element.EnumerateArray())
                         {
                             if (subElement.ValueKind == JsonValueKind.Object)
-                                PushEvent(EventRouter.CreateFromJson(subElement));
+                            {
+                                @event = EventRouter.CreateFromJson(subElement);
+                                @event.Process(Group);
+                                PushEvent(@event);
+                            }
                             else
                                 PushEvent(new RawEvent(subElement));
                         }
