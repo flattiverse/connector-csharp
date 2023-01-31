@@ -11,15 +11,47 @@ internal class Program
         string apiAdmn = "9876342587963245879623458976234589762345ACBACBACABCEDFEDFDEFEDFE";
         string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
 
-        //string usedKey = apiUser;
+        string usedKey = apiUser;
         //string usedKey = apiAdmn;
-        string usedKey = apiSpec;
+        //string usedKey = apiSpec;
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", usedKey))
         {
             Console.WriteLine($"uG.Name = {universeGroup.Name}.");
 
-            while (true)
+            while (false)
+            {
+                @event = await universeGroup.NextEvent();
+
+                switch (@event)
+                {
+                    case RawEvent rawEvent:
+                        Console.WriteLine($"RAW Event: {rawEvent.RawData}");
+                        break;
+                    case FailureEvent failureEvent:
+                        Console.WriteLine($"Failure Event: {failureEvent.Message}");
+                        break;
+                    case UniverseGroupInfoEvent universeGroupInfoEvent:
+                        Console.WriteLine($"UniverseGroupInfo Event: {universeGroupInfoEvent.Name}");
+                        break;
+                    case FullUpdatePlayerEvent fullUpdatePlayerEvent:
+                        Console.WriteLine($"FullUpdatePlayerEvent Event: #{fullUpdatePlayerEvent.ID}");
+                        break;
+                    case PartialUpdatePlayerEvent partialUpdatePlayerEvent:
+                        Console.WriteLine($"PartialUpdatePlayerEvent Event: #{partialUpdatePlayerEvent.ID}");
+                        break;
+                    case RemovedPlayerEvent removedPlayerEvent:
+                        Console.WriteLine($"RemovedPlayerEvent Event: #{removedPlayerEvent.ID}");
+                        break;
+                }
+            }
+        }
+
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", usedKey))
+        {
+            Console.WriteLine($"uG.Name = {universeGroup.Name}.");
+
+            while (false)
             {
                 @event = await universeGroup.NextEvent();
 
