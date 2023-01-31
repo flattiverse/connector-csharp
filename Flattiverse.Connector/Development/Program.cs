@@ -34,6 +34,15 @@ internal class Program
                     case UniverseGroupInfoEvent universeGroupInfoEvent:
                         Console.WriteLine($"UniverseGroupInfo Event: {universeGroupInfoEvent.Name}");
                         break;
+                    case FullUpdatePlayerEvent fullUpdatePlayerEvent:
+                        Console.WriteLine($"FullUpdatePlayerEvent Event: #{fullUpdatePlayerEvent.ID}");
+                        break;
+                    case PartialUpdatePlayerEvent partialUpdatePlayerEvent:
+                        Console.WriteLine($"PartialUpdatePlayerEvent Event: #{partialUpdatePlayerEvent.ID}");
+                        break;
+                    case RemovedPlayerEvent removedPlayerEvent:
+                        Console.WriteLine($"RemovedPlayerEvent Event: #{removedPlayerEvent.ID}");
+                        break;
                 }
             }
         }
