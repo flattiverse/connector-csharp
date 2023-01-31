@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Flattiverse.Connector.Events
+﻿namespace Flattiverse.Connector.Events
 {
     /// <summary>
     /// Specifies the various event kinds for a better switch() experience.
@@ -26,6 +20,18 @@ namespace Flattiverse.Connector.Events
         /// You actually don't need to parse this event because it's also parsed by the connector and the results are
         /// presented in fields on the UniverseGroup.
         /// </summary>
-        UniverseGroupInfo
+        UniverseGroupInfo,
+        /// <summary>
+        /// This event contains all information abaout a player.
+        /// </summary>
+        PlayerFullUpdate,
+        /// <summary>
+        /// This event contains only mutable information about a player.
+        /// </summary>
+        PlayerPartialUpdate,
+        /// <summary>
+        /// This event informs of the disconnect of a player from the universeGroup.
+        /// </summary>
+        PlayerRemoved
     }
 }

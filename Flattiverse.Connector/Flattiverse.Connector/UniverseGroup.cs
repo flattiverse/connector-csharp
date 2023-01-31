@@ -12,7 +12,7 @@ namespace Flattiverse.Connector
         private readonly Connection connection;
 
         // players[0-63] are real players, players[64] is a substitute, if the server treats us as non player, like a spectator or admin.
-        private readonly Player[] players = new Player[65];
+        internal readonly Player[] players = new Player[65];
 
         /// <summary>
         /// This is the connected player.
