@@ -67,6 +67,28 @@ In the case of an invalid command being sent to the server, the websocket is clo
 - `closeStatus` is the reason for the socket termination.
 - `message` contains further information about the error that occurred.
 
+## List of HTTP error codes
+
+The following HTTP error codes are sent by the server if connecting to the universeGroup fails:
+
+### `HTTP/400`
+
+- The endpoint was called with anything other than a websocket.
+- There was a failure in the database.
+
+### `HTTP/401`
+
+- No auth parameter was given, or a malformed or nonexisting auth key was given. A proper auth parameter consists of string of 64 characters representing hex values.
+- A connection as a spectator was attempted, but the UniverseGroup does not allow spectators.
+
+### `HTTP/412`
+
+- A connection as a player or admin was attempted, but the associated account is still online with another connection. As disconnecting players will linger for a while, a connection may not be possible for a short time even if a previous connection has been closed or severed.
+
+### `HTTP/417`
+
+- The UniverseGroup is currently at capacity and no further connections are possible.
+
 ## List of general errors
 
 ### WebSocketCloseStatus.InvalidMessageType
