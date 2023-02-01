@@ -110,6 +110,27 @@ This closeStatus is sent when the command contained invalid data.
 
 ### WebSocketCloseStatus.ProtocolError
 
+## Vectors
+
+There are two kinds of vector information which are used in the commands:
+
+- x/y coordinates which are always absolute values. That means, the position of a scanned object is not relative to you, but absolute in the universe; also, movement vectors of scanned ships are also absolute and not relative to you.
+- angles indicating the rotation of an object, like the direction a ship is pointing to.
+
+(Y)
+|         , - ~ ~ ~ - ,
+|     , '      |(0°)    ' ,
+|   ,          |            ,
+|  ,           |             ,
+| ,            |              ,
+| ,            X--------(90°) ,
+| ,                           ,
+|  ,                         ,
+|   ,                       ,
+|     ,                  , '
+|       ' - , _ _ _ ,  '
++------------------------------- (X)
+
 ## List of commands
 
 The `command` and `id` values are not shown in the examples in this section.
