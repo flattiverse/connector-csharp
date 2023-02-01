@@ -21,6 +21,11 @@ namespace Flattiverse.Connector
             Code = error;
         }
 
+        internal GameException(int error, Exception innerException) : base(message(error, null), innerException)
+        {
+            Code = error;
+        }
+
         internal GameException(string info) : base(message(0xFF, info))
         {
             Code = 0xFF;
@@ -40,6 +45,16 @@ namespace Flattiverse.Connector
                     return "[0xA3] At least one required JSON property doesn't have the required kind.";
                 case 0xA4:
                     return "[0xA4] At least one required JSON property has an invalid value.";
+                case 0xC0:
+                    return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
+                case 0xC1:
+                    return "[0xC1] The specified auth key has been declined.";
+                case 0xC2:
+                    return "[0xC2] You are currently online. (You can only logon once with each account.) Please note: If your game just crashed: In such a case your account and ships are still lingering around so you have to wait round about 30 seconds before retrying.";
+                case 0xC3:
+                    return "[0xC3] This Universegroup seems to be full. Try another one.";
+                case 0xCF:
+                    return "[0xCF] Something went wrong while connecting but we don't know what and don't have any more infomration. You may try your luck with the inner exception.";
                 case 0xF0:
                     return "[0xF0] The web socket got terminated while waiting for the completion of the command. This usually indicates that you have a network connectivity issue somewhere between you and the server or that the server has been rebooted to reload some level settings.";
                 case 0xFF:

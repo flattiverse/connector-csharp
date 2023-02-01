@@ -1,7 +1,9 @@
 ﻿using Flattiverse.Connector.Events;
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Text;
 using System.Text.Json;
@@ -37,7 +39,40 @@ namespace Flattiverse.Connector.Network
 
             socket = new ClientWebSocket();
 
-            socket.ConnectAsync(parsedUri, CancellationToken.None).GetAwaiter().GetResult();
+            CultureInfo culture = new CultureInfo("de-DE");
+            CultureInfo.CurrentCulture = culture;
+
+            try
+            {
+                socket.ConnectAsync(parsedUri, CancellationToken.None).GetAwaiter().GetResult();
+            }
+            catch (Exception exception)
+            {
+                // Okay, so this is the purest bullshit of all time. We _have_ to parse the text of the exception to get any
+                // idea of what went wrong. Because the WebSocket won't export http status code for us nor the content body
+                // of the HTTP response.
+                //
+                // .NET 7 would support this, but we want to stay LTS for user libraries. :)
+                // Also it's quite hard to manually upgrade a HttpClient because the response doesn't have Content.ReadAsWebSocketAsync. XD
+                //
+                // I guess I'm too old for this.
+                //
+                // HOWEVER, we try to give the best information we can to the user. :)
+
+                switch (exception.Message.ToLower())
+                {
+                    case "unable to connect to the remote server":
+                        throw new GameException(0xC0);
+                    case "the server returned status code '401' when status code '101' was expected.":
+                        throw new GameException(0xC1);
+                    case "the server returned status code '412' when status code '101' was expected.":
+                        throw new GameException(0xC2);
+                    case "the server returned status code '417' when status code '101' was expected.":
+                        throw new GameException(0xC3);
+                    default:
+                        throw new GameException(0xCF, exception);
+                }
+            }
 
             ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
         }
@@ -57,7 +92,26 @@ namespace Flattiverse.Connector.Network
 
             ClientWebSocket socket = new ClientWebSocket();
 
-            await socket.ConnectAsync(parsedUri, CancellationToken.None).ConfigureAwait(false);
+            try
+            {
+                await socket.ConnectAsync(parsedUri, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                switch (exception.Message.ToLower())
+                {
+                    case "unable to connect to the remote server":
+                        throw new GameException(0xC0);
+                    case "the server returned status code '401' when status code '101' was expected.":
+                        throw new GameException(0xC1);
+                    case "the server returned status code '412' when status code '101' was expected.":
+                        throw new GameException(0xC2);
+                    case "the server returned status code '417' when status code '101' was expected.":
+                        throw new GameException(0xC3);
+                    default:
+                        throw new GameException(0xCF, exception);
+                }
+            }
 
             return new Connection(group, socket);
         }
