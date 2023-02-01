@@ -11,20 +11,15 @@ internal class Program
         string apiUser = "0123456789112345678921234567893123456789412345678951234567896123";
         string apiAdmn = "9876342587963245879623458976234589762345ACBACBACABCEDFEDFDEFEDFE";
 
-        string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
+        //Togo
+        string apiUser2 = "BABABABABABABABABBBBBBBBBBBBBBBBBBBBB319480573420958723458796345";
+        string apiAdmn2 = "BABABABABABABABABCCCCCCCCCCCCCCCCCCCC319480573420958723458796345";
 
+        string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
         string apiShit = "000000000000000000000000000000000000000000000000000000000000D3AD";
 
-        //Togo
-        //string apiUser = "BABABABABABABABABAAAAAAAAAAAAAAAAAAAA319480573420958723458796345";
-        //string apiAdmn = "BABABABABABABABABBBBBBBBBBBBBBBBBBBBB319480573420958723458796345";
-
-        //string usedKey = apiUser;
-        //string usedKey = apiAdmn;
-        //string usedKey = apiSpec;
-        string usedKey = apiShit;
-
-        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", usedKey))
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
+        using (UniverseGroup universeGroup2 = new UniverseGroup("ws://127.0.0.1", apiAdmn2))
         {
             Console.WriteLine($"uG.Name = {universeGroup.Name}.");
 
