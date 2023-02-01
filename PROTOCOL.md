@@ -117,19 +117,21 @@ There are two kinds of vector information which are used in the commands:
 - x/y coordinates which are always absolute values. That means, the position of a scanned object is not relative to you, but absolute in the universe; also, movement vectors of scanned ships are also absolute and not relative to you.
 - angles indicating the rotation of an object, like the direction a ship is pointing to.
 
+```
 (Y)
 |         , - ~ ~ ~ - ,
-|     , '      |(0°)    ' ,
+|     , '      |(0Â°)    ' ,
 |   ,          |            ,
 |  ,           |             ,
 | ,            |              ,
-| ,            X--------(90°) ,
+| ,            X--------(90Â°) ,
 | ,                           ,
 |  ,                         ,
 |   ,                       ,
 |     ,                  , '
 |       ' - , _ _ _ ,  '
 +------------------------------- (X)
+```
 
 ## List of commands
 
