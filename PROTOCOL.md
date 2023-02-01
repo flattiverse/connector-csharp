@@ -313,7 +313,7 @@ The meaning of the values are as follows:
   - `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
   - `particles` works like `energy` but for particles (a secondary form of energy).
 - `sections` specify the more complex sun behavior.
-  - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A sips center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
+  - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A ships center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
   - `energy` and `particles` work like described in the `corona` object above.
   - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `probability` (see next point). `activation` is optional if you don't want to use it. If used, at least probability and time must be set, the other values are optional.
      - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
@@ -327,3 +327,24 @@ The meaning of the values are as follows:
       - `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
       - `active`: The corona segment is currently active. See `frame` to know when this state will end.
     - `frame`: The current tick in the current `state`.
+
+### Planet, Moon, Meteoroid and Comet
+
+Planets, moons, meteoroids and comets work all the same: They are "stupid" units which are only distinguished because of look and feel visuals. All these units are `solid` and `masking` and can carry resources. As a map editor you should follow the following rules:
+
+* Planets (`planet`) usually carry the `iron` resource and with lesser priority `carbon` and `silicon`. Planets usually do carry resources.
+* Moons (`moon`) may carry `silicon` as a resource. Other resources are less common.
+* Meteoroids (`meteoroid`) may carry `ìron` and may carry `platinum` with a propability of < 1%.
+* Comets (`comet`) may carry `bismuth`.
+
+Just to give you a flat list, those are the available resources in flattiverse:
+
+* `iron`: Used for almost all structural changes on your ship.
+* `carbon` and `silicon`: Used for most technical (things which contain circuit boards, cpus, etc.) upgrades.
+* `platinum`: Used for most defensive technologies.
+* `bismuth`: Used for the last top tier tech.
+
+1.) Vernünftige Ressourcen finden, die In-Game Sinn machen: Es muss eine Rarität geben.
+2.) Verteilen auf diese Units.
+3.) Ihr könntet auch eine 5. Unit finden, noch.
+4.) JSON Struktur mit Erklärung schreiben.
