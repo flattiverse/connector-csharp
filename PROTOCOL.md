@@ -253,13 +253,13 @@ Reduced units will be sent to you when you just use the regular scan. You will o
 ```
 
 The `probableKind` information reduces units which are looking quite like the same into the same kinds. We have those groups, in which the first item will always be returned even if the unit is actually one of the other kinds:
-- `sun`.
-- `planet`, `moon`, `meteoroid` and `comet`.
-- `asteroid`, `trash`.
-- `playerUnit`, `aiUnit`.
+- `sun` and `blackhole`.
+- `planet`, `moon`, `meteoroid`, and `comet`.
+- `asteroid` and `trash`.
+- `playerUnit` and `aiUnit`.
 - `shot`.
 - `explosion`.
-- `resource`, `powerup`, `missionTarget` and `buoy`.
+- `resource`, `powerup`, `missionTarget`, and `buoy`.
 
 The `team` flag will only tell you if a unit has the `same` team, an `enemy` team or `none` (no) team. The `energyOutput` will specify the energy output of the unit. For suns this will be quite high, for example for ships without enabled afterburners it will be low.
 
@@ -329,38 +329,6 @@ The meaning of the values are as follows:
       - `active`: The corona segment is currently active. See `frame` to know when this state will end.
     - `frame`: The current tick in the current `state`.
 
-### Planet, Moon, Meteoroid and Comet
-
-Planets, moons, meteoroids and comets work all the same: They are "stupid" units which are only distinguished because of look and feel visuals. All these units are `solid` and `masking` and can carry resources. As a map editor you should follow the following rules:
-
-- Planets (`planet`) usually carry the `iron` resource and with lesser priority `carbon` and `silicon`. Planets usually do carry resources.
-- Moons (`moon`) may carry `silicon` as a resource. Other resources are less common.
-- Meteoroids (`meteoroid`) may carry `ìron` and may carry `platinum` with a propability of < 1%.
-- Comets (`comet`) may carry `gold`.
-
-Just to give you a flat list, those are the available resources in flattiverse:
-
-- `iron` (common): Used for almost all structural changes on your ship.
-- `platinum` (rare): Used to improve the performance of structural components.
-- `carbon` (common) and `silicon` (uncommon): Used for most electrical (things which contain circuit boards, cpus, etc.) upgrades.
-- `gold` (rare): Used to improve the performance of electrical systems.
-
-Those additional properties (in regards to unit or `solid`/`steady` unit can be found):
-
-```json
-{    
-    "resources":
-    {
-        "iron": 22.4,
-        "platinum": 2.2,
-        "carbon": 1.1,
-        "gold": 0.7
-    }
-}
-```
-
-`resources` child elements specify the corresponding extraction rate of the corresponding resource per tick.
-
 ### Black hole (`blackhole`)
 
 The black hole is also one of the first units ever in this game. A black hole usually moves you towards the center and has a high gravity. Like with the sun it can have a "corona" (which in this case is a "gravity well") or "gravity sections" like the "corona sections".
@@ -405,26 +373,57 @@ Black holes have two modes of operation, which could also be combined:
 
 The meaning of the values are as follows:
 
-TOG: Bitte den Rest der Sonne in Black Hole umschreiben.
-
 - `gravityWell` specifies the more simple gravityWell of a black hole and is optional:
-  - `radius` specifies the radius of the gravity and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
-  - `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
-- `sections` specify the more complex sun behavior.
-  - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A ships center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
-  - `energy` and `particles` work like described in the `corona` object above.
+  - `radius` specifies the radius of the gravityWell and is also counted from the middle of the black hole. A gravity well radius smaller than the black hole doesn't make much sense from a gameplay stand of view.
+  - `force` specifies the movement vector imparted on mobile units which remain inside the gravity well's radius with their center point.
+- `sections` specify the more complex black hole behavior.
+  - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial black hole section. A ships center must be in this section to be affected by the gravitational effect. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
+  - `force` works like described in the `gravityWell` object above.
   - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `probability` (see next point). `activation` is optional if you don't want to use it. If used, at least probability and time must be set, the other values are optional.
      - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
      - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
-     - `rampup`: Also optional. This ramps up the effects of `energy` and `particles` (from 0 to the set values).
+     - `rampup`: Also optional. This ramps up the effects of `force` (from 0 to the set values).
      - `time`: Not optional. The amount of ticks before this phase fades out again.
-     - `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
-  - `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
+     - `fade`: Like `upramp` but the opposite: The effects of `force` fade out (to 0). Also optional.
+  - `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the gravity well section currently is:
     - `state`: The state is one of:
-      - `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
-      - `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
-      - `active`: The corona segment is currently active. See `frame` to know when this state will end.
+      - `inactive`: The gravity well section is currently inactive and waiting for the random number generator to kick in.
+      - `foreshadowing`, `upramp` and `fade`: The gravity well segment is in the corresponding state. See `frame` to know when this state will end.
+      - `active`: The gravity well segment is currently active. See `frame` to know when this state will end.
     - `frame`: The current tick in the current `state`.
+
+
+### Planet, Moon, Meteoroid and Comet
+
+Planets, moons, meteoroids and comets work all the same: They are "stupid" units which are only distinguished because of look and feel visuals. All these units are `solid` and `masking` and can carry resources. As a map editor you should follow the following rules:
+
+- Planets (`planet`) usually carry the `iron` resource and with lesser priority `carbon` and `silicon`. Planets usually do carry resources.
+- Moons (`moon`) may carry `silicon` as a resource. Other resources are less common.
+- Meteoroids (`meteoroid`) may carry `ìron` and may carry `platinum` with a propability of < 1%.
+- Comets (`comet`) may carry `gold`.
+
+Just to give you a flat list, those are the available resources in flattiverse:
+
+- `iron` (common): Used for almost all structural changes on your ship.
+- `platinum` (rare): Used to improve the performance of structural components.
+- `carbon` (common) and `silicon` (uncommon): Used for most electrical (things which contain circuit boards, cpus, etc.) upgrades.
+- `gold` (rare): Used to improve the performance of electrical systems.
+
+Those additional properties (in regards to unit or `solid`/`steady` unit can be found):
+
+```json
+{    
+    "resources":
+    {
+        "iron": 22.4,
+        "platinum": 2.2,
+        "carbon": 1.1,
+        "gold": 0.7
+    }
+}
+```
+
+`resources` child elements specify the corresponding extraction rate of the corresponding resource per tick.
 
 ### PlayerUnit
 
