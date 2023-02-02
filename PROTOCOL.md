@@ -254,11 +254,12 @@ Reduced units will be sent to you when you just use the regular scan. You will o
 
 The `probableKind` information reduces units which are looking quite like the same into the same kinds. We have those groups, in which the first item will always be returned even if the unit is actually one of the other kinds:
 - `sun`.
-- `planet`, `moon`, `meteoroid`.
+- `planet`, `moon`, `meteoroid` and `comet`.
 - `asteroid`, `trash`.
 - `playerUnit`, `aiUnit`.
 - `shot`.
-- `resource`, `powerup`, `missionTarget`.
+- `explosion`.
+- `resource`, `powerup`, `missionTarget` and `buoy`.
 
 The `team` flag will only tell you if a unit has the `same` team, an `enemy` team or `none` (no) team. The `energyOutput` will specify the energy output of the unit. For suns this will be quite high, for example for ships without enabled afterburners it will be low.
 
@@ -344,18 +345,211 @@ Just to give you a flat list, those are the available resources in flattiverse:
 - `carbon` (common) and `silicon` (uncommon): Used for most electrical (things which contain circuit boards, cpus, etc.) upgrades.
 - `gold` (rare): Used to improve the performance of electrical systems.
 
+Those additional properties (in regards to unit or `solid`/`steady` unit can be found):
+
 ```json
 {    
     "resources":
+    {
+        "iron": 22.4,
+        "platinum": 2.2,
+        "carbon": 1.1,
+        "gold": 0.7
+    }
+}
+```
+
+`resources` child elements specify the corresponding extraction rate of the corresponding resource per tick.
+
+### Black hole (`blackhole`)
+
+The black hole is also one of the first units ever in this game. A black hole usually moves you towards the center and has a high gravity. Like with the sun it can have a "corona" (which in this case is a "gravity well") or "gravity sections" like the "corona sections".
+
+```json
+{
+    "gravityWell":
+    {
+        "radius": 777.4,
+        "force": 0.02
+    },
+    "sections":
     [
         {
-            "material": "silicon",
-            "extractionRate" : 22.4
-        },
-        {
-            "material": "platinum",
-            "extractionRate" : 0.9
+            "angleStart": 17.3,
+            "angleEnd": 68.2,
+            "distanceStart": 500.2,
+            "distanceEnd": 702.8,
+            "force": 0.02,
+            "activation":
+            {
+                "probability": 0.0025,
+                "foreshadowing": 60,
+                "upramp": 40,
+                "time": 120,
+                "fade": 80
+            },
+            "activationState":
+            {
+                "state": "upramp",
+                "frame": 13
+            }
         }
     ]
 }
 ```
+
+Black holes have two modes of operation, which could also be combined:
+
+- A regular black hole (like in the flattiverse versions before) suitable for beginners. Those black holes only have one `gravityWell` and are defined in the property `gravityWell`.
+- A "more complex black hole" (suitable for some advanced gameplay in the future). Those black holes have "gravity sections" and are defined in the array `sections`.
+
+The meaning of the values are as follows:
+
+TOG: Bitte den Rest der Sonne in Black Hole umschreiben.
+
+- `gravityWell` specifies the more simple gravityWell of a black hole and is optional:
+  - `radius` specifies the radius of the gravity and is also counted from the middle of the sun. A corona radius smaller than the sun doesn't make much sense from a gameplay stand of view.
+  - `energy` is optional (`null` or property doesn't exist). If `energy` is set it will load (or unload in case of a negative value) the energy of a ship offset with the `solarCells` a ship has.
+- `sections` specify the more complex sun behavior.
+  - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A ships center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
+  - `energy` and `particles` work like described in the `corona` object above.
+  - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `probability` (see next point). `activation` is optional if you don't want to use it. If used, at least probability and time must be set, the other values are optional.
+     - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
+     - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
+     - `rampup`: Also optional. This ramps up the effects of `energy` and `particles` (from 0 to the set values).
+     - `time`: Not optional. The amount of ticks before this phase fades out again.
+     - `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
+  - `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
+    - `state`: The state is one of:
+      - `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
+      - `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
+      - `active`: The corona segment is currently active. See `frame` to know when this state will end.
+    - `frame`: The current tick in the current `state`.
+
+### PlayerUnit
+
+The player unit is a player ship or base (or probe or drone or platform or whatever, it really just depends on the configuration). This unit is controlled by a player and therefore can't be edited by the map editor. It's undoubtly the most complex unit in the game - at least regarding it's in game configuration. Player units can be spawned by a player when he is calling `controllableRegister` and player units are of course `mobile` units.
+
+Player units are persistent units, so even if they get destroyed, they won't be removed from the game (but from the scan). Player units will be removed from the game after a player did disconnect or logoff properly or after calling `controllableUnregister`.
+
+A player units JSON will look like this:
+
+```json
+{
+    "turnRate": -7.2,
+    "systems":
+    {
+        "hull":
+        {
+            "level": 1,
+            "value": 37.1
+        },
+        "armor":
+        {
+            "level": 7,
+            "value": 2
+        },
+        "shield":
+        {
+            "level": 2,
+            "value": 16.2
+        },
+        "thruster":
+        {
+            "level": 1,
+            "value": 0.2
+        },
+        "nozzle":
+        {
+            "level": 3,
+            "value": -2.3
+        },
+        "scanner":
+        {
+            "level": 2,
+            "value": 6
+        },
+        "analyzer":
+        {
+            "level": 4,
+            "value": 2
+        },
+        "cellsEnergy":
+        {
+            "level": 4,
+            "value": 2.1
+        },
+        "cellsParticles":
+        {
+            "level": 4,
+            "value": 2.1
+        },
+        "batteryEnergy":
+        {
+            "level": 4,
+            "value": 6273.2
+        },
+        "batteryParticles":
+        {
+            "level": 4,
+            "value": 272.3
+        },
+        "weapon":
+        {
+            "levelLauncher": 2,
+            "levelPayloadDamage": 3,
+            "levelPayloadRadius": 3,
+            "levelFactory": 4,
+            "levelStorage": 5,
+            "ammunition": 7.2,
+        },
+        "cargo":
+        {
+            "levelIron": 3,
+            "valueIron": 16.2,
+            "levelCarbon": 2,
+            "valueCarbon": 0.1,
+            "levelSilicon": 4,
+            "valueSilicon": 0.2,
+            "levelPlatinum": 1,
+            "valuePlatinum": 0.11,
+            "levelGold": 7,
+            "valueGold": 22.1,
+            "levelSpecial": 1,
+            "contentSpecial":
+            [
+                "missionTarget"
+            ]
+        },
+        "extractor":
+        {
+            "levelIron": 1,
+            "valueIron": 1.1,
+            "levelCarbon": 1,
+            "valueCarbon": 1.1,
+            "levelSilicon": 1,
+            "valueSilicon": 1.2,
+            "levelPlatinum": 2,
+            "valuePlatinum": 1.11,
+            "levelGold": 2,
+            "valueGold": 1.1
+        }
+    }
+}
+```
+
+* `turnRate` specifies the speed of much quick the ship is turning currently. The `direction` will change by every tick of `turnRate`.
+* `systems` specify the various ship systems. Connectors for flattiverse need to implement some kind of mechanic to derive the limits for the corresponding system from the level. We will document here various maximums, however they will currently change quite quick.
+  * `hull`, `shield`, `thruster`, `nozzle`, `scanner`, `analyzer`, `cellsEnergy`, `cellsParticles`, `batteryEnergy`, `batteryParticles` specify "simple" systems which indicate the status of the corresponding system. Some examples: From the `hull`.`level` property you can derive the maximum hitpoints of the ships hull. (See next section.) From `hull`.`value` you can see the current status, in this case how many hitpoints the ships hull has. Another example would be `cellsParticles`. You can derive the collection speed of particles from `cellsParticles`.`level`. `value` is the current loading rate and therefore is 0 most of the time (eg. when not near a sun). All other components mentioned here work somehow like the same: From `level` you can derive the maximum capabilities or maximum values of the system.
+  * `armor` works like the other systems, however the `value` works in another way: `level` specifies how good the armors protection is while the value specifies how much of the protection is still available. The `armor` can be refilled with resources, so to say.
+  * `weapon` is a complex system and consists of the following sub systems, states:
+    * `levelLauncher`: Specifies the maximum speed of the launched projectile.
+    * `levelPayloadDamage`: Specifies the damage a projectiles explosion does.
+    * `levelPayloadRadius`: Specifies the radius of the resulting explosion.
+    * `levelFactory`: Specifies how quick shots are produced.
+    * `levelStorage`: Specifies how many produced shots can be stored.
+    * `ammunition`: Specifies the amount of shots ready. The number of 7.2 indicates 7 ready shots and an 8th shot in production finished by 20%.
+  * `cargo` specifies the cargo capabilities (`level`) and load (`value`) per resource. But there is a special system:
+    * `levelSpecial`: Specifies how huge the special cargo is.
+    * `contentSpecial`: This array holds strings describing all carried things in the special cargo. This is used for future game modes like "capture the flag".
+  * `extractor`: This complex system and the properties below this object specify the status of all extractor systems - one system per ressource. This follows the same patterns as before while the corresponding `value` is the extraction rate.
