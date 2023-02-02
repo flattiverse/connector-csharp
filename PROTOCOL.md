@@ -120,11 +120,11 @@ There are two kinds of vector information which are used in the commands:
 ```
 +------------------------------- (+X)
 |         , - ~ ~ ~ - ,
-|     , '      |(0°)    ' ,
+|     , '      |(0Â°)    ' ,
 |   ,          |            ,
 |  ,           |             ,
 | ,            |              ,
-| ,            X--------(90°) ,
+| ,            X--------(90Â°) ,
 | ,                           ,
 |  ,                         ,
 |   ,                       ,
@@ -145,7 +145,17 @@ The `command` and `id` values are not shown in the examples in this section.
 
 Returns the number in the player list this player is. If it's 0-63, then it's a real player, if it's 64, then it's an admin/spectator account.
 
-This command will only be answered by the server once all metadata has been transmitted to the player. As such, it should generally be used at the beginning.
+This command will only be answered by the server once all metadata has been transmitted to the player. As such, it should generally be used at the beginning before giving the control to the player.
+
+Returns: `integer`.
+
+#### `setUnit`
+
+Sets the unit to the specified settings. You need to specify the parameters `universe` (integer, id) and `unit` (json).
+
+The unit will be created or replaced (if possible). Replacing a non editable unit (name colission with a playership, etc.) will result in the corresponding `GameException`.
+
+Returns: Nothing (empty confirmation) or `GameException`.
 
 ## List of units and their definition
 
@@ -399,7 +409,7 @@ Planets, moons, meteoroids and comets work all the same: They are "stupid" units
 
 - Planets (`planet`) usually carry the `iron` resource and with lesser priority `carbon` and `silicon`. Planets usually do carry resources.
 - Moons (`moon`) may carry `silicon` as a resource. Other resources are less common.
-- Meteoroids (`meteoroid`) may carry `ìron` and may carry `platinum` with a propability of < 1%.
+- Meteoroids (`meteoroid`) may carry `Ã¬ron` and may carry `platinum` with a propability of < 1%.
 - Comets (`comet`) may carry `gold`.
 
 Just to give you a flat list, those are the available resources in flattiverse:
