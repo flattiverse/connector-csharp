@@ -336,11 +336,10 @@ Planets, moons, meteoroids and comets work all the same: They are "stupid" units
 - Moons (`moon`) may carry `silicon` as a resource. Other resources are less common.
 - Meteoroids (`meteoroid`) may carry `ìron` and may carry `platinum` with a propability of < 1%.
 - Comets (`comet`) may carry `gold`.
-- Anomaly (`anomaly`) may carry `silicon` or with lower probabiliby `platinum`.
 
 Just to give you a flat list, those are the available resources in flattiverse:
 
-- `iron` (commond): Used for almost all structural changes on your ship.
+- `iron` (common): Used for almost all structural changes on your ship.
 - `platinum` (rare): Used to improve the performance of structural components.
 - `carbon` (common) and `silicon` (uncommon): Used for most electrical (things which contain circuit boards, cpus, etc.) upgrades.
 - `gold` (rare): Used to improve the performance of electrical systems.
