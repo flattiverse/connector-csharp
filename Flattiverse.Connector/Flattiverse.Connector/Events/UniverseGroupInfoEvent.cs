@@ -78,8 +78,7 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out Spectators, "metrics", "spectators");
 
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
-            {  // TOG: Überprüfe, was ich hie rgemacht habe. Aber wir haben maximal 16 Teams und das Array ist sokeine Verschwendung,
-               // bzw. rechtfertigt Deine Routine und die vielen Fallunterscheidungen nicht.
+            {
                 teams = new Team[16];
 
                 foreach (JsonElement teamObject in teamsArray.EnumerateArray())
