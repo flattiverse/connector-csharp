@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector
 {
@@ -11,6 +7,20 @@ namespace Flattiverse.Connector
     /// </summary>
     public class Universe
     {
+        /// <summary>
+        /// The ID of the universe.
+        /// </summary>
+        public readonly int ID;
 
+        /// <summary>
+        /// The name of the universe.
+        /// </summary>
+        public readonly string Name;
+
+        public Universe(JsonElement element)
+        {
+            Utils.Traverse(element, out ID, "id");
+            Utils.Traverse(element, out Name, "name");
+        }
     }
 }

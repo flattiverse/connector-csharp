@@ -62,6 +62,12 @@ namespace Flattiverse.Connector.Events
 
         private Team[] teams;
 
+        /// <summary>
+        /// The universes in the UniverseGroup.
+        /// </summary>
+        public readonly IReadOnlyCollection<Universe> Universes;
+
+        private Universe[] universes;
 
         internal UniverseGroupInfoEvent(JsonElement element)
         {
@@ -78,18 +84,22 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out Spectators, "metrics", "spectators");
 
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
+            teams = new Team[16];
+            foreach (JsonElement teamObject in teamsArray.EnumerateArray())
             {
-                teams = new Team[16];
-
-                foreach (JsonElement teamObject in teamsArray.EnumerateArray())
-                {
-                    Team team = new Team(teamObject);
-
-                    teams[team.ID] = team;
-                }
-
-                Teams = teams;
+                Team team = new Team(teamObject);
+                teams[team.ID] = team;
             }
+            Teams = teams;
+
+            Utils.Traverse(element, out JsonElement universesArray, "universes");
+            universes = new Universe[64];
+            foreach (JsonElement universeObject in universesArray.EnumerateArray())
+            {
+                Universe universe = new Universe(universeObject);
+                universes[universe.ID] = universe;
+            }
+            Universes = universes;
         }
 
         internal override void Process(UniverseGroup group)
@@ -104,6 +114,7 @@ namespace Flattiverse.Connector.Events
             group.maxBasesPerTeam = MaxBasesPerTeam;
             group.spectators = Spectators;
             group.teams = teams;
+            group.universes = universes;
         }
 
         /// <summary>
