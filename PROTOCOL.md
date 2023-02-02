@@ -118,7 +118,7 @@ There are two kinds of vector information which are used in the commands:
 - angles indicating the rotation of an object, like the direction a ship is pointing to.
 
 ```
-(Y)
++------------------------------- (+X)
 |         , - ~ ~ ~ - ,
 |     , '      |(0°)    ' ,
 |   ,          |            ,
@@ -130,7 +130,7 @@ There are two kinds of vector information which are used in the commands:
 |   ,                       ,
 |     ,                  , '
 |       ' - , _ _ _ ,  '
-+------------------------------- (X)
+(+Y)
 ```
 
 ## List of commands
