@@ -31,6 +31,7 @@ namespace Flattiverse.Connector
         internal bool spectators;
 
         internal Team[] teams;
+        internal Universe[] universes;  // TOG: Universes werden nun auch vom Server übertragen, bitte einbauen.
 
         /// <summary>
         /// Connects to the specific UniverseGroup.
