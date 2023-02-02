@@ -393,7 +393,7 @@ The meaning of the values are as follows:
     - `frame`: The current tick in the current `state`.
 
 
-### Planet, Moon, Meteoroid and Comet
+### Planet (`planet`), Moon (`moon`), Meteoroid (`meteoroid`) and Comet (`comet`)
 
 Planets, moons, meteoroids and comets work all the same: They are "stupid" units which are only distinguished because of look and feel visuals. All these units are `solid` and `masking` and can carry resources. As a map editor you should follow the following rules:
 
@@ -418,6 +418,7 @@ Those additional properties (in regards to unit or `solid`/`steady` unit can be 
         "iron": 22.4,
         "platinum": 2.2,
         "carbon": 1.1,
+        "silicon": 4.1,
         "gold": 0.7
     }
 }
@@ -425,7 +426,7 @@ Those additional properties (in regards to unit or `solid`/`steady` unit can be 
 
 `resources` child elements specify the corresponding extraction rate of the corresponding resource per tick.
 
-### PlayerUnit
+### PlayerUnit (`playerUnit`)
 
 The player unit is a player ship or base (or probe or drone or platform or whatever, it really just depends on the configuration). This unit is controlled by a player and therefore can't be edited by the map editor. It's undoubtly the most complex unit in the game - at least regarding it's in game configuration. Player units can be spawned by a player when he is calling `controllableRegister` and player units are of course `mobile` units.
 
@@ -537,18 +538,50 @@ A player units JSON will look like this:
 }
 ```
 
-* `turnRate` specifies the speed of much quick the ship is turning currently. The `direction` will change by every tick of `turnRate`.
-* `systems` specify the various ship systems. Connectors for flattiverse need to implement some kind of mechanic to derive the limits for the corresponding system from the level. We will document here various maximums, however they will currently change quite quick.
-  * `hull`, `shield`, `thruster`, `nozzle`, `scanner`, `analyzer`, `cellsEnergy`, `cellsParticles`, `batteryEnergy`, `batteryParticles` specify "simple" systems which indicate the status of the corresponding system. Some examples: From the `hull`.`level` property you can derive the maximum hitpoints of the ships hull. (See next section.) From `hull`.`value` you can see the current status, in this case how many hitpoints the ships hull has. Another example would be `cellsParticles`. You can derive the collection speed of particles from `cellsParticles`.`level`. `value` is the current loading rate and therefore is 0 most of the time (eg. when not near a sun). All other components mentioned here work somehow like the same: From `level` you can derive the maximum capabilities or maximum values of the system.
-  * `armor` works like the other systems, however the `value` works in another way: `level` specifies how good the armors protection is while the value specifies how much of the protection is still available. The `armor` can be refilled with resources, so to say.
-  * `weapon` is a complex system and consists of the following sub systems, states:
-    * `levelLauncher`: Specifies the maximum speed of the launched projectile.
-    * `levelPayloadDamage`: Specifies the damage a projectiles explosion does.
-    * `levelPayloadRadius`: Specifies the radius of the resulting explosion.
-    * `levelFactory`: Specifies how quick shots are produced.
-    * `levelStorage`: Specifies how many produced shots can be stored.
-    * `ammunition`: Specifies the amount of shots ready. The number of 7.2 indicates 7 ready shots and an 8th shot in production finished by 20%.
-  * `cargo` specifies the cargo capabilities (`level`) and load (`value`) per resource. But there is a special system:
-    * `levelSpecial`: Specifies how huge the special cargo is.
-    * `contentSpecial`: This array holds strings describing all carried things in the special cargo. This is used for future game modes like "capture the flag".
-  * `extractor`: This complex system and the properties below this object specify the status of all extractor systems - one system per ressource. This follows the same patterns as before while the corresponding `value` is the extraction rate.
+- `turnRate` specifies the speed of much quick the ship is turning currently. The `direction` will change by every tick of `turnRate`.
+- `systems` specify the various ship systems. Connectors for flattiverse need to implement some kind of mechanic to derive the limits for the corresponding system from the level. We will document here various maximums, however they will currently change quite quick.
+  - `hull`, `shield`, `thruster`, `nozzle`, `scanner`, `analyzer`, `cellsEnergy`, `cellsParticles`, `batteryEnergy`, `batteryParticles` specify "simple" systems which indicate the status of the corresponding system. Some examples: From the `hull`.`level` property you can derive the maximum hitpoints of the ships hull. (See next section.) From `hull`.`value` you can see the current status, in this case how many hitpoints the ships hull has. Another example would be `cellsParticles`. You can derive the collection speed of particles from `cellsParticles`.`level`. `value` is the current loading rate and therefore is 0 most of the time (eg. when not near a sun). All other components mentioned here work somehow like the same: From `level` you can derive the maximum capabilities or maximum values of the system.
+  - `armor` works like the other systems, however the `value` works in another way: `level` specifies how good the armors protection is while the value specifies how much of the protection is still available. The `armor` can be refilled with resources, so to say.
+  - `weapon` is a complex system and consists of the following sub systems, states:
+    - `levelLauncher`: Specifies the maximum speed of the launched projectile.
+    - `levelPayloadDamage`: Specifies the damage a projectiles explosion does.
+    - `levelPayloadRadius`: Specifies the radius of the resulting explosion.
+    - `levelFactory`: Specifies how quick shots are produced.
+    - `levelStorage`: Specifies how many produced shots can be stored.
+    - `ammunition`: Specifies the amount of shots ready. The number of 7.2 indicates 7 ready shots and an 8th shot in production finished by 20%.
+  - `cargo` specifies the cargo capabilities (`level`) and load (`value`) per resource. But there is a special system:
+    - `levelSpecial`: Specifies how huge the special cargo is.
+    - `contentSpecial`: This array holds strings describing all carried things in the special cargo. This is used for future game modes like "capture the flag".
+  - `extractor`: This complex system and the properties below this object specify the status of all extractor systems - one system per ressource. This follows the same patterns as before while the corresponding `value` is the extraction rate.
+
+### Shot (`shot`)
+
+A shot is a projectile launched by a PlayerUnit. It will explode, resulting in a damage-dealing explosion, after a short while or when hitting another object.
+
+A shot has the following values:
+
+- `explosionDamage` specifies the damage the resulting explosion will deal.
+- `explosionRadius` specifies the radius of the resulting explosion.
+- `lifetime` specifies the time until the shot detonates, if it does not collide with another unit until then.
+
+```json
+{    
+    "explosionDamage": 11.5,
+    "explosionRadius": 40.1,
+    "lifetime": 29
+}
+```
+
+### Explosion (`explosion`)
+
+An explosion is the consequence of an exploding shot, or of another unit saying it's last goodbye in the form of a fiery ball of destruction.
+
+An explosion has only one value:
+
+- `damage` specifies the damage dealt by this explosion to all units caught in it's radius.
+
+```json
+{    
+    "damage": 16.2    
+}
+```
