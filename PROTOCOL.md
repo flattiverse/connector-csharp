@@ -120,11 +120,11 @@ There are two kinds of vector information which are used in the commands:
 ```
 (Y)
 |         , - ~ ~ ~ - ,
-|     , '      |(0Â°)    ' ,
+|     , '      |(0°)    ' ,
 |   ,          |            ,
 |  ,           |             ,
 | ,            |              ,
-| ,            X--------(90Â°) ,
+| ,            X--------(90°) ,
 | ,                           ,
 |  ,                         ,
 |   ,                       ,
@@ -352,7 +352,7 @@ Just to give you a flat list, those are the available resources in flattiverse:
         {
             "material": "silicon",
             "extractionRate" : 22.4
-        }
+        },
         {
             "material": "platinum",
             "extractionRate" : 0.9
