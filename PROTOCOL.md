@@ -149,11 +149,19 @@ This command will only be answered by the server once all metadata has been tran
 
 Returns: `integer`.
 
-#### `setUnit`
+#### `unitSet`
 
 Sets the unit to the specified settings. You need to specify the parameters `universe` (integer, id) and `unit` (string).
 
 The unit will be created or replaced (if possible). Replacing a non editable unit (name colission with a playership, etc.) will result in the corresponding `GameException`.
+
+Returns: Nothing (empty confirmation) or `GameException`.
+
+#### `unitRemove`
+
+Removes the unit from the universe. You need to specify the parameters `universe` (integer, id) and `unit` (string).
+
+Trying to remove a non editable or non existing unit will result in the corresponding `GameException`.
 
 Returns: Nothing (empty confirmation) or `GameException`.
 
