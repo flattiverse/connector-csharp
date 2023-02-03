@@ -165,6 +165,14 @@ Trying to remove a non editable or non existing unit will result in the correspo
 
 Returns: Nothing (empty confirmation) or `GameException`.
 
+#### `unitRemove`
+
+Retrieves a map-editable json of the unit from the universe. You need to specify the parameters `universe` (integer, id) and `unit` (string).
+
+Trying to retrieve a non editable or non existing unit will result in the corresponding `GameException`.
+
+Returns: The map-editable json data or `GameException`.
+
 ## List of units and their definition
 
 Some units may have changed in this version of flattiverse. So it is generally a good idea to read this section carefully. Please note that optional properties may be `null` or omitted. The server will always send you the most economical JSON it can generate (skipping unnecessary parts). The following JSON examples contain the best approximation of what values could do. So, if you see a number without decimal point there, you can assume an integer. If you see a decimal point it's most likely a double, and if values can get negative there will be an example with negative values.
