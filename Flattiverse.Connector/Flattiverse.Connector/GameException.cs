@@ -51,6 +51,8 @@ namespace Flattiverse.Connector
                     return "[0xA8] \"kind\" is missing.";
                 case 0xA9:
                     return "[0xA9] \"kind\" couldn't be resolved to a valid unit kind. (Can't resolve \"playerUnit\", \"shot\" or \"explosion\".)";
+                case 0xAA:
+                    return "[0xAA] Can't replace a non editable unit like \"playerunit\", \"shot\" or \"explosion\".";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:
