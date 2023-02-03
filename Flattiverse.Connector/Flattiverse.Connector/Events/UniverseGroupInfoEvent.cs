@@ -84,16 +84,21 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out Spectators, "metrics", "spectators");
 
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
+
             teams = new Team[16];
+
             foreach (JsonElement teamObject in teamsArray.EnumerateArray())
             {
                 Team team = new Team(teamObject);
                 teams[team.ID] = team;
             }
+
             Teams = teams;
 
             Utils.Traverse(element, out JsonElement universesArray, "universes");
-            universes = new Universe[64];
+
+            universes = new Universe[64]; 
+
             foreach (JsonElement universeObject in universesArray.EnumerateArray())
             {
                 Universe universe = new Universe(group, universeObject);
