@@ -18,7 +18,7 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly string Message;
 
-        internal FailureEvent(string message)
+        internal FailureEvent(string message) : base()
         {
             Message = message;
         }

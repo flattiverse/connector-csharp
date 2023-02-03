@@ -9,7 +9,7 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly string Name;
 
-        internal UnitEvent(JsonElement element)
+        internal UnitEvent(JsonElement element) : base()
         {
             Utils.Traverse(element, out Name, "name");
         }

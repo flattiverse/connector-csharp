@@ -11,13 +11,9 @@ namespace Flattiverse.Connector.Events
     {
         public readonly Player Player;
 
-        internal FullUpdatePlayerEvent(JsonElement element) : base(element)
+        internal FullUpdatePlayerEvent(UniverseGroup group, JsonElement element) : base(element)
         {
             Player = new Player(element);
-        }
-
-        internal override void Process(UniverseGroup group)
-        {
             group.players[ID] = Player;
         }
 

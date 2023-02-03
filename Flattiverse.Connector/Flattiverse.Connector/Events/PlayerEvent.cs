@@ -9,7 +9,7 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly int ID;
 
-        internal PlayerEvent(JsonElement element)
+        internal PlayerEvent(JsonElement element) : base()
         {
             Utils.Traverse(element, out ID, "id");
         }

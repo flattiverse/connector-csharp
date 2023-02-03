@@ -8,9 +8,7 @@ namespace Flattiverse.Connector.Events
     [FlattiverseEventIdentifier("unitRemoved")]
     public class RemovedUnitEvent : UnitEvent
     {
-        internal RemovedUnitEvent(JsonElement element) : base(element) { }
-
-        internal override void Process(UniverseGroup group)
+        internal RemovedUnitEvent(UniverseGroup group, JsonElement element) : base(element)
         {
 
         }

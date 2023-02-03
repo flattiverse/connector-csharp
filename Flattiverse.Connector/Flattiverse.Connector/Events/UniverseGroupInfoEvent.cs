@@ -68,9 +68,8 @@ namespace Flattiverse.Connector.Events
         public readonly IReadOnlyCollection<Universe> Universes;
 
         private Universe[] universes;
-
-        // TOG: Alle Konstruktoren für Events sehen jetzt so aus. (Group hinzugefügt, Process entfällt dadurch, Process überall löschen, bitte.)
-        internal UniverseGroupInfoEvent(UniverseGroup group, JsonElement element)
+        
+        internal UniverseGroupInfoEvent(UniverseGroup group, JsonElement element) : base()
         {
             Utils.Traverse(element, out Name, "name");
             Utils.Traverse(element, out Description, "description");
@@ -101,21 +100,6 @@ namespace Flattiverse.Connector.Events
                 universes[universe.ID] = universe;
             }
             Universes = universes;
-        }
-
-        internal override void Process(UniverseGroup group)
-        {
-            group.name = Name;
-            group.description = Description;
-            group.mode = Mode;
-            group.maxPlayers = MaxPlayers;
-            group.maxShipsPerPlayer = MaxShipsPerPlayer;
-            group.maxShipsPerTeam = MaxShipsPerTeam;
-            group.maxBasesPerPlayer = MaxBasesPerPlayer;
-            group.maxBasesPerTeam = MaxBasesPerTeam;
-            group.spectators = Spectators;
-            group.teams = teams;
-            group.universes = universes;
         }
 
         /// <summary>

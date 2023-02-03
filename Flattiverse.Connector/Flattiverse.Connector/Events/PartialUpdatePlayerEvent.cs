@@ -10,13 +10,9 @@ namespace Flattiverse.Connector.Events
     {
         internal JsonElement element;
 
-        internal PartialUpdatePlayerEvent(JsonElement element) : base(element)
+        internal PartialUpdatePlayerEvent(UniverseGroup group, JsonElement element) : base(element)
         {
             this.element = element;
-        }
-
-        internal override void Process(UniverseGroup group)
-        {
             group.players[ID].Update(element);
         }
 
