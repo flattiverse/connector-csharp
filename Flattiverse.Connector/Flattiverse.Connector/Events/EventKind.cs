@@ -36,6 +36,10 @@
         /// <summary>
         /// This event informs of the removal of a unit from the universeGroup.
         /// </summary>
-        UnitRemoved
+        UnitRemoved,
+        /// <summary>
+        /// This event informs of the addition of a unit to the universeGroup.
+        /// </summary>
+        UnitAdded
     }
 }
