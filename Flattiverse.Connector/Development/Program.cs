@@ -19,14 +19,14 @@ internal class Program
         string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
         string apiShit = "000000000000000000000000000000000000000000000000000000000000D3AD";
 
-        // TOG: Etwas aufräumen bitte, so das nur noch eine Connection hergestellt wird und wir eine Unit anlegen können.
+        //Unit
+        string unitSun = "{\"name\":\"Schnappi\",\"position\":{\"x\":200,\"y\":100},\"radius\":50,\"gravity\":500,\"kind\":\"sun\",\"corona\":10}";
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
-        using (UniverseGroup universeGroup2 = new UniverseGroup("ws://127.0.0.1", apiAdmn2))
         {
             Console.WriteLine($"uG.Name = {universeGroup.Name}.");
 
-            await universeGroup.GetUniverse("Training ground")!.SetUnit("TOG macht hier eine valide Unit rein.");
+            await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
 
             while (true)
             {

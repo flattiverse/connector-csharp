@@ -58,7 +58,12 @@ namespace Flattiverse.Connector
             }
         }
 
-        // TOG: XML-Doku
+        /// <summary>
+        /// Removes an unit from the universe.
+        /// </summary>
+        /// <param name="name">The name of the unit.</param>
+        /// <returns>Nothing, or a GameException.</returns>
+        /// <exception cref="GameException">Throws when trying to remove a non editable or non existing unit.</exception>
         public async Task RemoveUnit(string name)
         {
             if (!Utils.CheckName(name))
@@ -75,7 +80,12 @@ namespace Flattiverse.Connector
             }
         }
 
-        // TOG: XML-Doku
+        /// <summary>
+        /// Retrieves the json definition for the map editor of a unit from the universe.
+        /// </summary>
+        /// <param name="name">The name of the unit.</param>
+        /// <returns>The map editable json string.</returns>
+        /// <exception cref="GameException">Throws when trying to access a non editable unit.</exception>
         public async Task<string> GetUnitMapEditJson(string name)
         {
             if (!Utils.CheckName(name))

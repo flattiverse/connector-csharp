@@ -205,8 +205,76 @@ namespace Flattiverse.Connector
 
             return null;
         }
+        
+        /// <summary>
+        /// Tries to get the corresponding team.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <param name="team">The team or null, if not found.</param>
+        /// <returns>true, if the team has been found, false otherwise.</returns>
+        public bool TryGetTeam(string name, [NotNullWhen(returnValue: true)] out Team? team)
+        {
+            name = name.ToLower();
 
-        // TOG: Für Teams und später auch für controllables die selben Methoden wie jetzt für Universes einbauen. (Siehe darüber.)
+            foreach (Team t in teams)
+            {
+                if (t is null)
+                {
+                    team = null;
+                    return false;
+                }
+
+                if (t.Name.ToLower() == name)
+                {
+                    team = t;
+                    return true;
+                }
+            }
+
+            team = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding team.
+        /// </summary>
+        /// <param name="id">The id of the team.</param>
+        /// <param name="team">The universe or null, if not found.</param>
+        /// <returns>true, if the team has been found, false otherwise.</returns>
+        public bool TryGetTeam(int id, [NotNullWhen(returnValue: true)] out Team? team)
+        {
+            if (id < 0 || id >= 64)
+            {
+                team = null;
+                return false;
+            }
+
+            team = teams[id];
+            return team != null;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding team.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <returns>The team if found, null otherwise.</returns>
+        public Team? GetTeam(string name)
+        {
+            name = name.ToLower();
+
+            foreach (Team team in teams)
+            {
+                if (team is null)
+                    return null;
+
+                if (team.Name.ToLower() == name)
+                    return team;
+            }
+
+            return null;
+        }
+
+        // TOG: Später für controllables die selben Methoden wie jetzt für Universes und Teams einbauen. (Siehe darüber.)
 
         /// <summary>
         /// Will return the next received event from queue or wait until the event has been received.
