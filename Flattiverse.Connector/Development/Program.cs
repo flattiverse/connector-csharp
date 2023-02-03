@@ -20,7 +20,7 @@ internal class Program
         string apiShit = "000000000000000000000000000000000000000000000000000000000000D3AD";
 
         //Unit
-        string unitSun = "{\"name\":\"Schnappi\",\"position\":{\"x\":200,\"y\":100},\"radius\":50,\"gravity\":500,\"kind\":\"sun\",\"corona\":10}";
+        string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
         {
