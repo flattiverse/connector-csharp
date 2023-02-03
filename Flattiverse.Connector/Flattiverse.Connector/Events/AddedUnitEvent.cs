@@ -14,7 +14,7 @@ namespace Flattiverse.Connector.Events
         internal AddedUnitEvent(UniverseGroup group, JsonElement element) : base(element)
         {
             // TOG: Wirklich überall wollen wir entsprechend Failure Events senden, wenn etwas schief geht und es keine andere Möglichkeit des Reports gibt.
-            // In dem meisten Fällen muss der Rückgabewert von Utils.Traverse also überprüft werden.
+            // In den meisten Fällen muss der Rückgabewert von Utils.Traverse also überprüft werden.
             Utils.Traverse(element, out JsonElement unit, "unit");
 
             Unit = Unit.CreateFromJson(group, unit);
