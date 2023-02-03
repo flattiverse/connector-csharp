@@ -57,6 +57,8 @@ namespace Flattiverse.Connector
                     return "[0xB0] The parameter you did specify was either null or didn't contain proper content.";
                 case 0xB1:
                     return "[0xB1] The parameter you did specify exceeded the maximum size.";
+                case 0xB2:
+                    return "[0xB2] You dishonored the naming criteria of units. Only allowed characters are: space, dot, minus, underscore, a-z, A-Z and unicode characters between 192-214, 216-246 and 248-687.";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:
