@@ -87,7 +87,7 @@ namespace Flattiverse.Connector.Units
             Movement = Vector.Null;
         }
 
-        internal static Unit CreateFromJson(JsonElement element)
+        internal static Unit CreateFromJson(UniverseGroup group, JsonElement element)
         {
             string kind;
 
@@ -99,7 +99,7 @@ namespace Flattiverse.Connector.Units
             if (!routes.TryGetValue(kind, out constructorInfo))
                 throw new GameException(0xA9);
 
-            return (Unit)constructorInfo.Invoke(new object[] { element });
+            return (Unit)constructorInfo.Invoke(new object[] { group, element });
         }
 
         internal Unit(UniverseGroup group, JsonElement element)
