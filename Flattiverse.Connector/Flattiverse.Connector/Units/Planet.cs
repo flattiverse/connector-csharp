@@ -21,7 +21,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal Planet(JsonElement element) : base(element)
+        internal Planet(UniverseGroup group, JsonElement element) : base(group, element)
         {
         }
 

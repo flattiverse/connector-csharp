@@ -23,7 +23,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal Explosion(JsonElement element) : base(element)
+        internal Explosion(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out Damage, "damage");
         }

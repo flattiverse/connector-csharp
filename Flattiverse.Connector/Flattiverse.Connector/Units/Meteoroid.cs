@@ -21,7 +21,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal Meteoroid(JsonElement element) : base(element)
+        internal Meteoroid(UniverseGroup group, JsonElement element) : base(group, element)
         {
         }
 

@@ -39,7 +39,7 @@ namespace Flattiverse.Connector.Units
 
         private static Dictionary<string, ConstructorInfo> InitializeEventRoutes()
         {
-            Type[] jsonElement = new Type[] { typeof(JsonElement) };
+            Type[] jsonElement = new Type[] { typeof(UniverseGroup), typeof(JsonElement) };
 
             Dictionary<string, ConstructorInfo> routes = new Dictionary<string, ConstructorInfo>();
 
@@ -102,7 +102,7 @@ namespace Flattiverse.Connector.Units
             return (Unit)constructorInfo.Invoke(new object[] { element });
         }
 
-        internal Unit(JsonElement element)
+        internal Unit(UniverseGroup group, JsonElement element)
         {
             if (!Utils.Traverse(element, out Name, "name") || !Utils.Traverse(element, out Radius, "setRadius") || !Utils.Traverse(element, out Position, "setPosition"))
                 throw new GameException(0xA0);

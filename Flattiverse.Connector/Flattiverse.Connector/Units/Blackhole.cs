@@ -25,7 +25,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal Blackhole(JsonElement element) : base(element)
+        internal Blackhole(UniverseGroup group, JsonElement element) : base(group, element)
         {
             if (Utils.Traverse(element, out JsonElement gravityWell, "gravityWell"))
             {

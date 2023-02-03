@@ -25,7 +25,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal Sun(JsonElement element) : base(element)
+        internal Sun(UniverseGroup group, JsonElement element) : base(group, element)
         {
             if (Utils.Traverse(element, out JsonElement corona, "corona"))
             {

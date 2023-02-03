@@ -20,7 +20,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal MobileUnit(JsonElement element) : base(element)
+        internal MobileUnit(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Mobility = Mobility.Mobile;
         }

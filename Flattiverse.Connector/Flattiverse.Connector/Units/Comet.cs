@@ -21,7 +21,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal Comet(JsonElement element) : base(element)
+        internal Comet(UniverseGroup group, JsonElement element) : base(group, element)
         {
         }
 

@@ -24,7 +24,7 @@ namespace Flattiverse.Connector.Units
         {
         }
 
-        internal SteadyUnit(JsonElement element) : base(element)
+        internal SteadyUnit(UniverseGroup group, JsonElement element) : base(group, element)
         {
             if (Utils.Traverse(element, out JsonElement orbiting, "orbiting"))
             {
