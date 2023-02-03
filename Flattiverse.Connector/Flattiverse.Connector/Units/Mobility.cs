@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Flattiverse.Connector.Units
+﻿namespace Flattiverse.Connector.Units
 {
-    internal class Mobility
+    public enum Mobility
     {
+        Still = 0,
+        Steady,
+        Mobile
     }
 }
