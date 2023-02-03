@@ -9,7 +9,7 @@ namespace Flattiverse.Connector
     /// </summary>
     public class UniverseGroup : IDisposable
     {
-        private readonly Connection connection;
+        internal readonly Connection connection;
 
         // players[0-63] are real players, players[64] is a substitute, if the server treats us as non player, like a spectator or admin.
         internal readonly Player[] players = new Player[65];

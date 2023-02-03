@@ -52,6 +52,11 @@ namespace Flattiverse.Connector.Network
             Writer.WriteNumber(name, value);
         }
 
+        public void Write(string name, int value)
+        {
+            Writer.WriteNumber(name, value);
+        }
+
         public async Task Send()
         {
             if (query == null)
