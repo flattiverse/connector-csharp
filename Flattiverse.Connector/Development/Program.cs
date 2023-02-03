@@ -1,5 +1,6 @@
 ﻿using Flattiverse.Connector;
 using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Units;
 using System.Globalization;
 
 internal class Program
@@ -24,6 +25,9 @@ internal class Program
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
         {
+            await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
+            await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
             await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
 
             while (true)

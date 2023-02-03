@@ -9,7 +9,7 @@ namespace Flattiverse.Connector
 {
     public class Vector
     {
-        public static readonly Vector Null = new Vector();
+        public static Vector Null => new Vector();
 
         private static double tolerance = 0.0125;
 
@@ -32,6 +32,7 @@ namespace Flattiverse.Connector
             X = x;
             Y = y;
         }
+
         public Vector(JsonElement json)
         {
             double x;
@@ -62,6 +63,46 @@ namespace Flattiverse.Connector
             X = x;
             Y = y;
 
+        }
+
+        /// <summary>
+        /// Tries to parse a json Element to a Vector.
+        /// </summary>
+        /// <param name="data">The json data.</param>
+        /// <exception cref="ArgumentException"></exception>
+        internal static bool TryParse(JsonElement json, out Vector vector)
+        {
+            double x;
+            double y;
+
+            JsonElement subElement;
+
+            if (!json.TryGetProperty("x", out subElement))
+            {
+                vector = new Vector();
+                return false;
+            }
+
+            if (!subElement.TryGetDouble(out x))
+            {
+                vector = new Vector();
+                return false;
+            }
+
+            if (!json.TryGetProperty("y", out subElement))
+            {
+                vector = new Vector();
+                return false;
+            }
+
+            if (!subElement.TryGetDouble(out y))
+            {
+                vector = new Vector();
+                return false;
+            }
+
+            vector = new Vector(x, y);
+            return true;
         }
 
         /// <summary>

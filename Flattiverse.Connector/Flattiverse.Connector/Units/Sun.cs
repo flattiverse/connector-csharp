@@ -1,12 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Units
 {
-    internal class Sun
+    [UnitIdentifier("sun")]
+    public class Sun : SteadyUnit
     {
+        public Corona? Corona;
+
+        public List<CoronaSection>? Sections;
+
+        public Sun(string name, Vector position, Vector movement) : base(name, position, movement)
+        {
+        }
+
+        public Sun(string name, Vector position) : base(name, position)
+        {
+        }
+
+        public Sun(string name) : base(name)
+        {
+        }
+
+        public Sun() : base()
+        {
+        }
+
+        internal Sun(JsonElement element) : base(element)
+        {
+            if (Utils.Traverse(element, out JsonElement corona, "corona"))
+            {
+                if (corona.ValueKind != JsonValueKind.Object)
+                    throw new GameException(0xA3);
+
+                Corona = new Corona(corona);
+            }
+
+            if (Utils.Traverse(element, out JsonElement sections, "sections"))
+            {
+                if (sections.ValueKind != JsonValueKind.Array)
+                    throw new GameException(0xA3);
+
+                foreach (JsonElement section in sections.EnumerateArray())
+                {
+                    if (section.ValueKind != JsonValueKind.Object)
+                        throw new GameException(0xA3);
+
+                    if (Sections == null)
+                        Sections = new List<CoronaSection>();
+
+                    Sections.Add(new CoronaSection(section));
+                }
+            }
+        }
+
+        public override UnitKind Kind => UnitKind.Sun;
     }
 }

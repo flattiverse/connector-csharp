@@ -1,12 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Units
 {
-    internal class Shot
+    [UnitIdentifier("shot")]
+    public class Shot : SteadyUnit
     {
+        public double ExplosionDamage;
+        public double ExplosionRadius;
+        public int LifeTime;
+
+        public Shot(string name, Vector position, Vector movement) : base(name, position, movement)
+        {
+        }
+
+        public Shot(string name, Vector position) : base(name, position)
+        {
+        }
+
+        public Shot(string name) : base(name)
+        {
+        }
+
+        public Shot() : base()
+        {
+        }
+
+        internal Shot(JsonElement element) : base(element)
+        {
+            Utils.Traverse(element, out ExplosionDamage, "explosionDamage");
+            Utils.Traverse(element, out ExplosionRadius, "explosionRadius");
+            Utils.Traverse(element, out LifeTime, "lifetime");
+        }
+
+        public override UnitKind Kind => UnitKind.Shot;
     }
 }

@@ -302,5 +302,44 @@ namespace Flattiverse.Connector
 
             return true;
         }
+
+        public static bool Traverse(JsonElement element, out Vector vector, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            vector = new Vector();
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            vector = new Vector();
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            vector = new Vector();
+                            return false;
+                        }
+                        break;
+                    default:
+                        vector = new Vector();
+                        return false;
+                }
+            }
+
+            return Vector.TryParse(element, out vector);
+        }
     }
 }

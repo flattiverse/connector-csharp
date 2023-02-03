@@ -1,12 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Units
 {
-    internal class Planet
+    [UnitIdentifier("planet")]
+    public class Planet : SteadyUnit
     {
+        public Planet(string name, Vector position, Vector movement) : base(name, position, movement)
+        {
+        }
+
+        public Planet(string name, Vector position) : base(name, position)
+        {
+        }
+
+        public Planet(string name) : base(name)
+        {
+        }
+
+        public Planet() : base()
+        {
+        }
+
+        internal Planet(JsonElement element) : base(element)
+        {
+        }
+
+        public override UnitKind Kind => UnitKind.Planet;
     }
 }

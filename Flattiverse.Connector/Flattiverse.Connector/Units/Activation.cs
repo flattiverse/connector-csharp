@@ -4,11 +4,11 @@ namespace Flattiverse.Connector.Units
 {
     public class Activation
     {
-        public readonly double Probability;
-        public readonly int Foreshadowing;
-        public readonly int Upramp;
-        public readonly int Time;
-        public readonly int Fade;
+        public double Probability;
+        public int Foreshadowing;
+        public int Upramp;
+        public int Time;
+        public int Fade;
 
         public Activation(JsonElement element)
         {
