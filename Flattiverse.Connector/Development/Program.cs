@@ -48,6 +48,9 @@ internal class Program
                     case RemovedPlayerEvent removedPlayerEvent:
                         Console.WriteLine($"RemovedPlayerEvent Event: #{removedPlayerEvent.ID}");
                         break;
+                    case RemovedUnitEvent removedUnitEvent:
+                        Console.WriteLine($"RemovedUnitEvent Event: {removedUnitEvent.Name}");
+                        break;
                 }
             }
         }

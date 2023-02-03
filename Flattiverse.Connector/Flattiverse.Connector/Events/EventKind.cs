@@ -32,6 +32,10 @@
         /// <summary>
         /// This event informs of the disconnect of a player from the universeGroup.
         /// </summary>
-        PlayerRemoved
+        PlayerRemoved,
+        /// <summary>
+        /// This event informs of the removal of a unit from the universeGroup.
+        /// </summary>
+        UnitRemoved
     }
 }
