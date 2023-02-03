@@ -35,6 +35,8 @@ namespace Flattiverse.Connector
         {
             switch (code)
             {
+                case 0x02:
+                    return "[0x02] The specified unit doesn't exist.";
                 case 0x05:
                     return "[0x05] The command you tried to access can't be access with your player kind. (Tried to access admin commands as player or vice versa, etc.)";
                 case 0xA0:

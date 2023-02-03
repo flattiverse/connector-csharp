@@ -47,7 +47,7 @@ namespace Flattiverse.Connector
             if (definition.Length > 2048)
                 throw new GameException(0xB1);
 
-            using (Query query = Group.connection.Query("setUnit"))
+            using (Query query = Group.connection.Query("unitSet"))
             {
                 query.Write("universe", ID);
                 query.Write("unit", definition);
@@ -55,6 +55,40 @@ namespace Flattiverse.Connector
                 await query.Send().ConfigureAwait(false);
 
                 await query.Wait().ConfigureAwait(false);
+            }
+        }
+
+        // TOG: XML-Doku
+        public async Task RemoveUnit(string name)
+        {
+            if (!Utils.CheckName(name))
+                throw new GameException(0x02);
+
+            using (Query query = Group.connection.Query("unitRemove"))
+            {
+                query.Write("universe", ID);
+                query.Write("unit", name);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
+        // TOG: XML-Doku
+        public async Task<string> GetUnitMapEditJson(string name)
+        {
+            if (!Utils.CheckName(name))
+                throw new GameException(0x02);
+
+            using (Query query = Group.connection.Query("unitGet"))
+            {
+                query.Write("universe", ID);
+                query.Write("unit", name);
+
+                await query.Send().ConfigureAwait(false);
+
+                return await query.ReceiveString().ConfigureAwait(false);
             }
         }
     }
