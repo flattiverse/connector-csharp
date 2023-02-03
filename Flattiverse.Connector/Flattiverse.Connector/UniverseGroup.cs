@@ -10,18 +10,15 @@ namespace Flattiverse.Connector
     /// </summary>
     public class UniverseGroup : IDisposable
     {
-        internal readonly Connection connection;
+        internal Connection connection;
 
         // players[0-63] are real players, players[64] is a substitute, if the server treats us as non player, like a spectator or admin.
         internal readonly Player[] players = new Player[65];
 
-        /// <summary>
-        /// This is the connected player.
-        /// </summary>
-        public readonly Player Player;
+        private Player player;
 
-        internal string name;
-        internal string description;
+        internal string name = "Unknown";
+        internal string description = "Unknown";
         internal GameMode mode;
 
         internal int maxPlayers;
@@ -31,8 +28,8 @@ namespace Flattiverse.Connector
         internal int maxBasesPerTeam;
         internal bool spectators;
 
-        internal Team[] teams;
-        internal Universe[] universes;
+        internal Team[] teams = new Team[16];
+        internal Universe[] universes = new Universe[64];
 
         /// <summary>
         /// Connects to the specific UniverseGroup.
@@ -47,22 +44,20 @@ namespace Flattiverse.Connector
             {
                 query.Send().GetAwaiter().GetResult();
 
-                Player = players[query.ReceiveInteger().GetAwaiter().GetResult()];
+                player = players[query.ReceiveInteger().GetAwaiter().GetResult()];
             }
-
-            name = "Unknown";
-            description = "Unknown";
-            teams = new Team[16];
         }
 
-        private UniverseGroup(Connection connection, int playerId)
+#pragma warning disable CS8618 // Wird versprochenerweise direkt initialisiert, bevor ein Benutzer etwas damit machen kann. :D Da es aber eine API ist wollen wir dem Endnutzer die beste Erfahrung geben. :)
+        private UniverseGroup()
+        {
+        }
+#pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
+
+        internal void setupPlayer(Connection connection, int playerId)
         {
             this.connection = connection;
-            Player = players[playerId];
-
-            name = "Unknown";
-            description = "Unknown";
-            teams = new Team[16];
+            player = players[playerId];
         }
 
         /// <summary>
@@ -71,17 +66,25 @@ namespace Flattiverse.Connector
         /// <param name="uri">The URI of the Universegroup.</param>
         /// <param name="auth">The auth key for UniverseGroup access.</param>
         /// <returns>The connected UniverseGroup.</returns>
-        public async Task<UniverseGroup> NewAsyncUniverseGroup(string uri, string auth)
+        public static async Task<UniverseGroup> NewAsyncUniverseGroup(string uri, string auth)
         {
-            Connection connection = await Connection.NewAsyncConnection(this, uri, auth).ConfigureAwait(false);
+            UniverseGroup universeGroup = new UniverseGroup();
+            Connection connection = await Connection.NewAsyncConnection(universeGroup, uri, auth).ConfigureAwait(false);
 
             using (Query query = connection.Query("whoami"))
             {
                 await query.Send().ConfigureAwait(false);
 
-                return new UniverseGroup(connection, await query.ReceiveInteger().ConfigureAwait(false));
+                universeGroup.setupPlayer(connection, await query.ReceiveInteger().ConfigureAwait(false));
             }
+
+            return universeGroup;
         }
+
+        /// <summary>
+        /// This is the connected player.
+        /// </summary>
+        public Player Player => player;
 
         /// <summary>
         /// The name of the UniverseGroup.

@@ -24,8 +24,6 @@ internal class Program
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
         {
-            Console.WriteLine($"uG.Name = {universeGroup.Name}.");
-
             await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
 
             while (true)
@@ -54,6 +52,9 @@ internal class Program
                         break;
                     case RemovedUnitEvent removedUnitEvent:
                         Console.WriteLine($"RemovedUnitEvent Event: {removedUnitEvent.Name}");
+                        break;
+                    case AddedUnitEvent addedUnitEvent:
+                        Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Name}");  // TOG: Hier muss die Unit rauskommen und es hat eigentlich keinen Namen.
                         break;
                 }
             }
