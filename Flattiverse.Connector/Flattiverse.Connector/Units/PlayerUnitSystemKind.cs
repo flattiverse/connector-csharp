@@ -12,6 +12,23 @@
         CellsEnergy,
         CellsParticles,
         BatteryEnergy,
-        BatteryParticles
+        BatteryParticles,
+        WeaponLauncher,
+        WeaponPayloadDamage,
+        WeaponPayloadRadius,
+        WeaponFactory,
+        WeaponStorage,
+        WeaponAmmunition,
+        CargoIron,
+        CargoCarbon,
+        CargoSilicon,
+        CargoPlatinum,
+        CargoGold,
+        CargoSpecial,
+        ExtractorIron,
+        ExtractorCarbon,
+        ExtractorSilicon,
+        ExtractorPlatinum,
+        ExtractorGold
     }
 }
