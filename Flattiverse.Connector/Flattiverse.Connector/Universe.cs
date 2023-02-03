@@ -1,5 +1,6 @@
 ﻿using Flattiverse.Connector.Accounts;
 using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 using System.Text.Json;
 
 namespace Flattiverse.Connector
@@ -42,6 +43,9 @@ namespace Flattiverse.Connector
         {
             if (string.IsNullOrEmpty(definition))
                 throw new GameException(0xB0);
+
+            if (definition.Length > 2048)
+                throw new GameException(0xB1);
 
             using (Query query = Group.connection.Query("setUnit"))
             {

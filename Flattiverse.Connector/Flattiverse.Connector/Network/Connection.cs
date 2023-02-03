@@ -268,8 +268,7 @@ namespace Flattiverse.Connector.Network
                         {
                             if (subElement.ValueKind == JsonValueKind.Object)
                             {
-                                @event = EventRouter.CreateFromJson(subElement);
-                                @event.Process(Group);
+                                @event = EventRouter.CreateFromJson(Group, subElement);
                                 PushEvent(@event);
                             }
                             else

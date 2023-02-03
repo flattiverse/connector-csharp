@@ -24,6 +24,8 @@ internal class Program
         {
             Console.WriteLine($"uG.Name = {universeGroup.Name}.");
 
+            
+
             while (true)
             {
                 @event = await universeGroup.NextEvent();

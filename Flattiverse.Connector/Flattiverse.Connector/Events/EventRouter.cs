@@ -15,7 +15,7 @@ namespace Flattiverse.Connector.Events
 
         private static Dictionary<string, ConstructorInfo> InitializeEventRoutes()
         {
-            Type[] jsonElement = new Type[] { typeof(JsonElement) };
+            Type[] jsonElement = new Type[] { typeof(UniverseGroup), typeof(JsonElement) };
 
             Dictionary<string, ConstructorInfo> routes = new Dictionary<string, ConstructorInfo>();
 
@@ -35,7 +35,7 @@ namespace Flattiverse.Connector.Events
             return routes;
         }
 
-        public static FlattiverseEvent CreateFromJson(JsonElement element)
+        public static FlattiverseEvent CreateFromJson(UniverseGroup group, JsonElement element)
         {
             string kind;
 
@@ -49,7 +49,7 @@ namespace Flattiverse.Connector.Events
 
             try
             {
-                return (FlattiverseEvent)constructorInfo.Invoke(new object[] { element });
+                return (FlattiverseEvent)constructorInfo.Invoke(new object[] { group, element });
             }
             catch {  }
 

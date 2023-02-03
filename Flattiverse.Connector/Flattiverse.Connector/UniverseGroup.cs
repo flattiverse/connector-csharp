@@ -1,6 +1,7 @@
 ﻿using Flattiverse.Connector.Accounts;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Flattiverse.Connector
 {
@@ -131,6 +132,81 @@ namespace Flattiverse.Connector
         /// The teams in the UniverseGroup.
         /// </summary>
         public IReadOnlyCollection<Team> Teams => teams;
+
+        /// <summary>
+        /// The universes of the universegroup.
+        /// </summary>
+        public IReadOnlyCollection<Universe> Universes => universes;
+
+        /// <summary>
+        /// Tries to get the corresponding universe.
+        /// </summary>
+        /// <param name="name">The name of the universe.</param>
+        /// <param name="universe">The universe or null, if not found.</param>
+        /// <returns>true, if the universe has been found, false otherwise.</returns>
+        public bool TryGetUniverse(string name, [NotNullWhen(returnValue: true)] out Universe? universe)
+        {
+            name = name.ToLower();
+
+            foreach (Universe u in universes)
+            {
+                if (u is null)
+                {
+                    universe = null;
+                    return false;
+                }
+
+                if (u.Name.ToLower() == name)
+                {
+                    universe = u;
+                    return true;
+                }
+            }
+
+            universe = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding universe.
+        /// </summary>
+        /// <param name="id">The id of the universe.</param>
+        /// <param name="universe">The universe or null, if not found.</param>
+        /// <returns>true, if the universe has been found, false otherwise.</returns>
+        public bool TryGetUniverse(int id, [NotNullWhen(returnValue: true)] out Universe? universe)
+        {
+            if (id < 0 || id >= 64)
+            {
+                universe = null;
+                return false;
+            }
+
+            universe = universes[id];
+            return universe != null;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding universe.
+        /// </summary>
+        /// <param name="name">The name of the universe.</param>
+        /// <returns>The universe if found, null otherwise.</returns>
+        public Universe? GetUniverse(string name)
+        {
+            name = name.ToLower();
+
+            foreach (Universe universe in universes)
+            {
+                if (universe is null)
+                    return null;
+
+                if (universe.Name.ToLower() == name)
+                    return universe;
+            }
+
+            return null;
+        }
+
+        // TOG: Für Teams und später auch für controllables die selben Methoden wie jetzt für Universes einbauen. (Siehe darüber.)
 
         /// <summary>
         /// Will return the next received event from queue or wait until the event has been received.

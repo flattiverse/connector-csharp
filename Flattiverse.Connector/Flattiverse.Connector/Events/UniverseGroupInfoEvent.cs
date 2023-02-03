@@ -69,7 +69,8 @@ namespace Flattiverse.Connector.Events
 
         private Universe[] universes;
 
-        internal UniverseGroupInfoEvent(JsonElement element)
+        // TOG: Alle Konstruktoren für Events sehen jetzt so aus. (Group hinzugefügt, Process entfällt dadurch, Process überall löschen, bitte.)
+        internal UniverseGroupInfoEvent(UniverseGroup group, JsonElement element)
         {
             Utils.Traverse(element, out Name, "name");
             Utils.Traverse(element, out Description, "description");
@@ -96,7 +97,7 @@ namespace Flattiverse.Connector.Events
             universes = new Universe[64];
             foreach (JsonElement universeObject in universesArray.EnumerateArray())
             {
-                Universe universe = new Universe(universeObject);
+                Universe universe = new Universe(group, universeObject);
                 universes[universe.ID] = universe;
             }
             Universes = universes;

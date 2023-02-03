@@ -55,6 +55,8 @@ namespace Flattiverse.Connector
                     return "[0xAA] Can't replace a non editable unit like \"playerunit\", \"shot\" or \"explosion\".";
                 case 0xB0:
                     return "[0xB0] The parameter you did specify was either null or didn't contain proper content.";
+                case 0xB1:
+                    return "[0xB1] The parameter you did specify exceeded the maximum size.";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:
