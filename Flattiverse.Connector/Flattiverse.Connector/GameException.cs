@@ -35,6 +35,8 @@ namespace Flattiverse.Connector
         {
             switch (code)
             {
+                case 0x05:
+                    return "[0x05] The command you tried to access can't be access with your player kind. (Tried to access admin commands as player or vice versa, etc.)";
                 case 0xA0:
                     return "[0xA0] Your JSON defintion is missing some mandatory base value like name or radius.";
                 case 0xA1:
@@ -45,6 +47,10 @@ namespace Flattiverse.Connector
                     return "[0xA3] At least one required JSON property doesn't have the required kind.";
                 case 0xA4:
                     return "[0xA4] At least one required JSON property has an invalid value.";
+                case 0xA8:
+                    return "[0xA8] \"kind\" is missing.";
+                case 0xA9:
+                    return "[0xA9] \"kind\" couldn't be resolved to a valid unit kind. (Can't resolve \"playerUnit\", \"shot\" or \"explosion\".)";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:

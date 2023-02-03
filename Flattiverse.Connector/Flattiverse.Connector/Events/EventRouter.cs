@@ -11,7 +11,7 @@ namespace Flattiverse.Connector.Events
 {
     static class EventRouter
     {
-        private static Dictionary<string, ConstructorInfo> routes = InitializeEventRoutes();
+        private static readonly Dictionary<string, ConstructorInfo> routes = InitializeEventRoutes();
 
         private static Dictionary<string, ConstructorInfo> InitializeEventRoutes()
         {
@@ -51,10 +51,9 @@ namespace Flattiverse.Connector.Events
             {
                 return (FlattiverseEvent)constructorInfo.Invoke(new object[] { element });
             }
-            catch
-            {
-                return new RawEvent(element);
-            }
+            catch {  }
+
+            return new RawEvent(element);
         }
     }
 }
