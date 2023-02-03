@@ -165,7 +165,7 @@ Trying to remove a non editable or non existing unit will result in the correspo
 
 Returns: Nothing (empty confirmation) or `GameException`.
 
-#### `unitRemove`
+#### `unitGet`
 
 Retrieves a map-editable json of the unit from the universe. You need to specify the parameters `universe` (integer, id) and `unit` (string).
 
