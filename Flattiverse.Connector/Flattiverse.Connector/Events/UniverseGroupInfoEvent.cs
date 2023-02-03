@@ -105,6 +105,18 @@ namespace Flattiverse.Connector.Events
                 universes[universe.ID] = universe;
             }
             Universes = universes;
+
+            group.name = Name;
+            group.description = Description;
+            group.mode = Mode;
+            group.maxPlayers = MaxPlayers;
+            group.maxShipsPerPlayer = MaxShipsPerPlayer;
+            group.maxShipsPerTeam = MaxShipsPerTeam;
+            group.maxBasesPerPlayer = MaxBasesPerPlayer;
+            group.maxBasesPerTeam = MaxBasesPerTeam;
+            group.spectators = Spectators;
+            group.teams = teams;
+            group.universes = universes;
         }
 
         /// <summary>
