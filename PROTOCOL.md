@@ -151,7 +151,7 @@ Returns: `integer`.
 
 #### `setUnit`
 
-Sets the unit to the specified settings. You need to specify the parameters `universe` (integer, id) and `unit` (json).
+Sets the unit to the specified settings. You need to specify the parameters `universe` (integer, id) and `unit` (string).
 
 The unit will be created or replaced (if possible). Replacing a non editable unit (name colission with a playership, etc.) will result in the corresponding `GameException`.
 
