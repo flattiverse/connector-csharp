@@ -25,10 +25,12 @@ internal class Program
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
         {
-            await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
-            string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
-            await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
-            await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            //string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
+            //await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
+            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
+            Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems = await universeGroup.GetSystems();
 
             while (true)
             {

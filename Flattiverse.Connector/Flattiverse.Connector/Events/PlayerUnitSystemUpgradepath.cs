@@ -1,4 +1,5 @@
-﻿using System.Reflection.Emit;
+﻿using Flattiverse.Connector.Units;
+using System.Reflection.Emit;
 using System.Text.Json;
 
 namespace Flattiverse.Connector.Events
@@ -36,12 +37,13 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out Value1, "value1");
             Utils.Traverse(element, out Value2, "value2");
 
-            if (Utils.Traverse(element, out JsonElement dependency, "dependency"))
+            if (Utils.Traverse(element, out string system, "requiredSystem"))
             {
-                if (dependency.ValueKind != JsonValueKind.Object)
-                    throw new InvalidDataException($"Couldn't parse dependency: \"{dependency}\".");
+                if (!Enum.TryParse(system, true, out PlayerUnitSystemKind kind))
+                    throw new InvalidDataException($"Couldn't parse requiredSystem: \"{system}\".");
+                Utils.Traverse(element, out int level, "requiredLevel");
 
-                RequiredComponent = new PlayerUnitSystemIdentifier(dependency);
+                RequiredComponent = new PlayerUnitSystemIdentifier(kind, level);
             }
         }
     }

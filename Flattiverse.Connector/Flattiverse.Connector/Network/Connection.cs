@@ -12,7 +12,7 @@ namespace Flattiverse.Connector.Network
 {
     class Connection : IDisposable
     {
-        private static readonly JsonDocumentOptions options = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 6 };
+        internal static readonly JsonDocumentOptions options = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 6 };
         private readonly ClientWebSocket socket;
 
         private readonly object syncQuery = new object();

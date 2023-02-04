@@ -3,6 +3,9 @@ using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Flattiverse.Connector
 {
@@ -332,6 +335,104 @@ namespace Flattiverse.Connector
                 return system;
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Retrieves the json definition of all systems in the universegroup.
+        /// </summary>
+        /// <returns>All systems.</returns>
+        public async Task<Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>> GetSystems()
+        {
+            using (Query query = connection.Query("systemList"))
+            {
+                await query.Send().ConfigureAwait(false);
+
+                systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
+
+                JsonElement element = await query.ReceiveJson().ConfigureAwait(false);
+                if (element.ValueKind == JsonValueKind.Array)
+                    foreach (JsonElement systemObject in element.EnumerateArray())
+                    {
+                        systems.Add(new PlayerUnitSystemIdentifier(systemObject), new PlayerUnitSystemUpgradepath(systemObject));
+                    }
+
+                return systems;
+            }
+        }
+
+        /// <summary>
+        /// Removes the system from the universegroup.
+        /// </summary>
+        /// <param name="identifier">The system identifier.</param>
+        public async Task RemoveSystem(PlayerUnitSystemIdentifier identifier)
+        {
+            using (Query query = connection.Query("systemRemove"))
+            {
+                query.Write("system", identifier.Kind.ToString());
+                query.Write("level", identifier.Level);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Sets the system in the universegroup.
+        /// </summary>
+        /// <param name="identifier">The system identifier.</param>
+        /// <param name="system">The system upgrade path.</param>
+        public async Task SetSystem(PlayerUnitSystemIdentifier identifier, PlayerUnitSystemUpgradepath system)
+        {
+            if (system.RequiredComponent is null)
+            {
+                using (Query query = connection.Query("systemSet"))
+                {
+                    query.Write("system", identifier.Kind.ToString());
+                    query.Write("level", identifier.Level);
+                    query.Write("energy", system.Energy);
+                    query.Write("particles", system.Particles);
+                    query.Write("iron", system.Iron);
+                    query.Write("carbon", system.Carbon);
+                    query.Write("silicon", system.Silicon);
+                    query.Write("platinum", system.Platinum);
+                    query.Write("gold", system.Gold);
+                    query.Write("time", system.Time);
+                    query.Write("value0", system.Value0);
+                    query.Write("value1", system.Value1);
+                    query.Write("value2", system.Value2);
+
+                    await query.Send().ConfigureAwait(false);
+
+                    await query.Wait().ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                using (Query query = connection.Query("systemSetRequired"))
+                {
+                    query.Write("system", identifier.Kind.ToString());
+                    query.Write("level", identifier.Level);
+                    query.Write("energy", system.Energy);
+                    query.Write("particles", system.Particles);
+                    query.Write("iron", system.Iron);
+                    query.Write("carbon", system.Carbon);
+                    query.Write("silicon", system.Silicon);
+                    query.Write("platinum", system.Platinum);
+                    query.Write("gold", system.Gold);
+                    query.Write("time", system.Time);
+                    query.Write("value0", system.Value0);
+                    query.Write("value1", system.Value1);
+                    query.Write("value2", system.Value2);
+                    system.RequiredComponent?.write(query);
+
+                    await query.Send().ConfigureAwait(false);
+
+                    await query.Wait().ConfigureAwait(false);
+                }
+            }
         }
 
         // TOG: Später für controllables die selben Methoden wie jetzt für Universes und Teams einbauen. (Siehe darüber.)

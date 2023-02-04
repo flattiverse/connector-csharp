@@ -129,6 +129,18 @@ namespace Flattiverse.Connector.Network
             return s;
         }
 
+        public async Task<JsonElement> ReceiveJson()
+        {
+            await tcs.Task.ConfigureAwait(false);
+
+            JsonElement element;
+
+            if (!Utils.Traverse(result.RootElement, out element, "result"))
+                throw new GameException("Required result as Json, but there either was no result or it wasn't parsable as Json.");
+
+            return element;
+        }
+
         public async Task Wait()
         {
             await tcs.Task.ConfigureAwait(false);
