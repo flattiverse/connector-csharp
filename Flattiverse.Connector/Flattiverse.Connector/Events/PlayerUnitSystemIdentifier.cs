@@ -17,6 +17,12 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out Level, "level");
         }
 
+        public PlayerUnitSystemIdentifier(PlayerUnitSystemKind kind, int level)
+        {
+            Kind = kind;
+            Level = level;
+        }
+
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj is null || obj is not PlayerUnitSystemIdentifier)

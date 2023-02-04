@@ -1,6 +1,7 @@
 ﻿using Flattiverse.Connector.Accounts;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Flattiverse.Connector
@@ -143,6 +144,11 @@ namespace Flattiverse.Connector
         public IReadOnlyCollection<Universe> Universes => universes;
 
         /// <summary>
+        /// The system upgrade paths of the universegroup.
+        /// </summary>
+        public IReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> Systems => systems;
+
+        /// <summary>
         /// Tries to get the corresponding universe.
         /// </summary>
         /// <param name="name">The name of the universe.</param>
@@ -274,6 +280,56 @@ namespace Flattiverse.Connector
                 if (team.Name.ToLower() == name)
                     return team;
             }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding system.
+        /// </summary>
+        /// <param name="kind">The system kind of the system.</param>
+        /// <param name="level">The system level of the system.</param>
+        /// <param name="system">The system or null, if not found.</param>
+        /// <returns>true, if the system has been found, false otherwise.</returns>
+        public bool TryGetSystem(PlayerUnitSystemKind kind, int level, [NotNullWhen(returnValue: true)] out PlayerUnitSystemUpgradepath? system)
+        {
+            return systems.TryGetValue(new PlayerUnitSystemIdentifier(kind, level), out system);
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding system.
+        /// </summary>
+        /// <param name="identifier">The systemidentifier associated with the upgrade path.</param>
+        /// <param name="system">The system or null, if not found.</param>
+        /// <returns>true, if the system has been found, false otherwise.</returns>
+        public bool TryGetSystem(PlayerUnitSystemIdentifier identifier, [NotNullWhen(returnValue: true)] out PlayerUnitSystemUpgradepath? system)
+        {
+            return systems.TryGetValue(identifier, out system);
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding system.
+        /// </summary>
+        /// <param name="kind">The system kind of the system.</param>
+        /// <param name="level">The system level of the system.</param>
+        /// <returns>The system if found, null otherwise.</returns>
+        public PlayerUnitSystemUpgradepath? GetSystem(PlayerUnitSystemKind kind, int level)
+        {
+            if (systems.TryGetValue(new PlayerUnitSystemIdentifier(kind, level), out PlayerUnitSystemUpgradepath system))
+                return system;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding system.
+        /// </summary>
+        /// <param name="identifier">The systemidentifier associated with the upgrade path.</param>
+        /// <returns>The system if found, null otherwise.</returns>
+        public PlayerUnitSystemUpgradepath? GetSystem(PlayerUnitSystemIdentifier identifier)
+        {
+            if (systems.TryGetValue(identifier, out PlayerUnitSystemUpgradepath system))
+                return system;
 
             return null;
         }
