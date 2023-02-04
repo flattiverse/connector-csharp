@@ -28,12 +28,12 @@ internal class Program
             //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
             //string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
             //await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
-            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
             //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
 
             // TOG: Bitte einzelne Parameter daraus machen. Aus beiden Funktionen. Sind dann 2 Überladungen.
             //await universeGroup.SetSystem(new PlayerUnitSystemIdentifier(PlayerUnitSystemKind.Analyzer, 0), new PlayerUnitSystemUpgradepath(0, 0, 15, 30, 30, 0, 0, 250, 0, 0, 0));
-            await universeGroup.RemoveSystem(new PlayerUnitSystemIdentifier(PlayerUnitSystemKind.Analyzer, 0));
+            //await universeGroup.RemoveSystem(new PlayerUnitSystemIdentifier(PlayerUnitSystemKind.Analyzer, 0));
 
             foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
                 Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
@@ -66,7 +66,7 @@ internal class Program
                         Console.WriteLine($"RemovedUnitEvent Event: {removedUnitEvent.Name}");
                         break;
                     case AddedUnitEvent addedUnitEvent:
-                        Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Name}");  // TOG: Hier muss die Unit rauskommen und es hat eigentlich keinen Namen.
+                        Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Unit.Name}");  // TOG: Hier muss die Unit rauskommen und es hat eigentlich keinen Namen.
                         break;
                 }
             }
