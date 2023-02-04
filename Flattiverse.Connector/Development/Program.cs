@@ -30,7 +30,12 @@ internal class Program
             //await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
             //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
             //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
-            Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems = await universeGroup.GetSystems();
+
+            // TOG: Bitte einzelne Parameter daraus machen. Aus beiden Funktionen. Sind dann 2 Überladungen.
+            await universeGroup.SetSystem(new PlayerUnitSystemIdentifier(PlayerUnitSystemKind.Analyzer, 1), new PlayerUnitSystemUpgradepath(/*TOG*/));
+
+            foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
+                Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
 
             while (true)
             {
