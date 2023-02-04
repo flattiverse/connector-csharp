@@ -1,5 +1,4 @@
 ﻿using Flattiverse.Connector.Units;
-using System.Reflection.Emit;
 using System.Text.Json;
 
 namespace Flattiverse.Connector.Events
@@ -45,6 +44,38 @@ namespace Flattiverse.Connector.Events
 
                 RequiredComponent = new PlayerUnitSystemIdentifier(kind, level);
             }
+        }
+
+        public PlayerUnitSystemUpgradepath(double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2)
+        {
+            Energy = energy;
+            Particles = particles;
+            Iron = iron;
+            Carbon = carbon;
+            Silicon = silicon;
+            Platinum = platinum;
+            Gold = gold;
+            Time = time;
+            Value0 = value0;
+            Value1 = value1;
+            Value2 = value2;
+        }
+
+        public PlayerUnitSystemUpgradepath(double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, PlayerUnitSystemIdentifier? requiredComponent)
+        {
+            Energy = energy;
+            Particles = particles;
+            Iron = iron;
+            Carbon = carbon;
+            Silicon = silicon;
+            Platinum = platinum;
+            Gold = gold;
+            Time = time;
+            Value0 = value0;
+            Value1 = value1;
+            Value2 = value2;
+
+            RequiredComponent = requiredComponent;
         }
     }
 }
