@@ -1,0 +1,596 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Flattiverse.Connector</name>
+    </assembly>
+    <members>
+        <member name="T:Flattiverse.Connector.Events.AddedUnitEvent">
+            <summary>
+            This event informs of the addition of a unit to the universeGroup.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.EventKind">
+            <summary>
+            Specifies the various event kinds for a better switch() experience.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.RAW">
+            <summary>
+            A Fallback event for debugging purposes, if the event sent from the server is unknown to the connector.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.Failure">
+            <summary>
+            This event indicates some critical out-of-game failure like a problem with the
+            data-transport, etc.. Consider upgrading the connector if this happens and it
+            is not due to a lost connection.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.UniverseGroupInfo">
+            <summary>
+            This event notifies about the meta informations a UniverseGroup has, like Name, Description, Teams, Rules...
+            You actually don't need to parse this event because it's also parsed by the connector and the results are
+            presented in fields on the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.PlayerFullUpdate">
+            <summary>
+            This event contains all information abaout a player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.PlayerPartialUpdate">
+            <summary>
+            This event contains only mutable information about a player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.PlayerRemoved">
+            <summary>
+            This event informs of the disconnect of a player from the universeGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.UnitRemoved">
+            <summary>
+            This event informs of the removal of a unit from the universeGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.UnitAdded">
+            <summary>
+            This event informs of the addition of a unit to the universeGroup.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.FailureEvent">
+            <summary>
+            This event indicates some critical out-of-game failure like a problem with the
+            data-transport, etc.. Consider upgrading the connector if this happens and it
+            is not due to a lost connection.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.FailureEvent.Message">
+            <summary>
+            The message which indicates the issue happened.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Events.FailureEvent.Kind">
+            <summary>
+            Specifies the kind of the event for a better switch() experience.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.FlattiverseEvent">
+            <summary>
+            The base class for FlattiverseEvents.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.FlattiverseEvent.Stamp">
+            <summary>
+            The timestamp when this event has been received or generated.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Events.FlattiverseEvent.Kind">
+            <summary>
+            Specifies the kind of the event for a better switch() experience.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.FullUpdatePlayerEvent">
+            <summary>
+            This event contains all information abaout a player.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.PartialUpdatePlayerEvent">
+            <summary>
+            This event contains only mutable information about a player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.PlayerEvent.ID">
+            <summary>
+            The ID of the player, representing his slot in the universegroup's player array.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.RawEvent">
+            <summary>
+            A Fallback event for debugging purposes, if the event sent from the server is unknown to the connector.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.RawEvent.RawData">
+            <summary>
+            RAW data this event consists of.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Events.RawEvent.Kind">
+            <summary>
+            Specifies the kind of the event for a better switch() experience.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.RemovedPlayerEvent">
+            <summary>
+            This event informs of the disconnect of a player from the universeGroup.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.RemovedUnitEvent">
+            <summary>
+            This event informs of the removal of a unit from the universeGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.RemovedUnitEvent.Name">
+            <summary>
+            The name of the unit, representing his slot in the universegroup's player array.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.UniverseGroupInfoEvent">
+            <summary>
+            This event notifies about the meta informations a UniverseGroup has, like Name, Description, Teams, Rules...
+            You actually don't need to parse this event because it's also parsed by the connector and the results are
+            presented in fields on the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Name">
+            <summary>
+            The name of the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Description">
+            <summary>
+            The Descrition of the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Mode">
+            <summary>
+            The GameMode of the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.MaxPlayers">
+            <summary>
+            The amount of players together in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.MaxShipsPerPlayer">
+            <summary>
+            The amount of ships a player can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.MaxShipsPerTeam">
+            <summary>
+            The amount of ships a team can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.MaxBasesPerPlayer">
+            <summary>
+            The amount of bases a player can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.MaxBasesPerTeam">
+            <summary>
+            The amount of bases a team can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Spectators">
+            <summary>
+            True, if joining this universe as a spectator is allowed.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Teams">
+            <summary>
+            The teams in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Universes">
+            <summary>
+            The universes in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Systems">
+            <summary>
+            The system upgrade paths in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Kind">
+            <summary>
+            Specifies the kind of the event for a better switch() experience.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.GameException">
+            <summary>
+            An error in the game happened. Try harder!
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.GameException.Code">
+            <summary>
+            The error code number of the exception.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.Network.Connection.close(System.Net.WebSockets.WebSocketCloseStatus,System.String)">
+            <summary>
+            Does whatever required to close the connection as properly as possible.
+            </summary>
+            <param name="status">The status with what we close the connection.</param>
+            <param name="message">The message to send to the endpoint.</param>
+            <returns>true, if the close has been executed "until the end", false if we wait for confirmation.</returns>
+        </member>
+        <member name="T:Flattiverse.Connector.Accounts.Player">
+            <summary>
+            Specifies a player which is currently connected to the UniverseGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Accounts.Player.ID">
+            <summary>
+            The internal ID of the player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Accounts.Player.Name">
+            <summary>
+            The name of the player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Accounts.Player.playerKind">
+            <summary>
+            The kind of the player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Accounts.Player.Admin">
+            <summary>
+            Whether the player is an admin.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Accounts.Player.Rank">
+            <summary>
+            The rank of the player.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Accounts.Player.Kills">
+            <summary>
+            All-Time-Kills of the player.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Accounts.Player.Deaths">
+            <summary>
+            All-Time-Deaths of the player.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Accounts.Player.Collisions">
+            <summary>
+            All-Time-Collisions of the player.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Accounts.Player.PVPScore">
+            <summary>
+            The ELO ranking of the player.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Accounts.Player.Ping">
+            <summary>
+            The ping of the player.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Players.PlayerKind">
+            <summary>
+            States the kind of player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Players.PlayerKind.Player">
+            <summary>
+            The player is a player participating in the game and also blocking a player slot.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Players.PlayerKind.Spectator">
+            <summary>
+            The player is a spectator which used the Api-Key 0x0000000000000000000000000000000000000000000000000000000000000000.
+            This is only allowed in universe groups which allow spectators.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Players.PlayerKind.Admin">
+            <summary>
+            The player is an admin. Admins can't participate in the game but they can alter gamestates via admin commands.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Team">
+            <summary>
+            This is a team of Players in a UniverseGroup. Players of the same Team are not necessarily friends, depending on the GameMode.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Team.ID">
+            <summary>
+            The ID of the team.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Team.Name">
+            <summary>
+            The name of the team.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Team.R">
+            <summary>
+            The red value of the team's color.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Team.G">
+            <summary>
+            The green value of the team's color.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Team.B">
+            <summary>
+            The blue value of the team's color.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Units.Unit">
+            <summary>
+            TOG: Überall XML-Kommentare.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Meteoroid">
+            <summary>
+            TOG: Überall XML-Kommentare.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Universe">
+            <summary>
+            Represents an universe within your universe group.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Universe.ID">
+            <summary>
+            The ID of the universe.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Universe.Name">
+            <summary>
+            The name of the universe.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Universe.Group">
+            <summary>
+            The UniverseGroup this object belongs to.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.Universe.SetUnit(System.String)">
+            <summary>
+            Creates or updates a unit in the map of this universe group. The unit will be overwritten if the unit already
+            exists (same name) and the colliding unit isn't a non editable unit like a player unit, shot or explosion.
+            </summary>
+            <param name="definition">The JSON formatted definition of the unit to create. Please refer to PROCOTOL.md for further information.</param>
+            <remarks>This method is only accessible if you are an administrator.</remarks>
+        </member>
+        <member name="M:Flattiverse.Connector.Universe.RemoveUnit(System.String)">
+            <summary>
+            Removes an unit from the universe.
+            </summary>
+            <param name="name">The name of the unit.</param>
+            <returns>Nothing, or a GameException.</returns>
+            <exception cref="T:Flattiverse.Connector.GameException">Throws when trying to remove a non editable or non existing unit.</exception>
+        </member>
+        <member name="M:Flattiverse.Connector.Universe.GetUnitMapEditJson(System.String)">
+            <summary>
+            Retrieves the json definition for the map editor of a unit from the universe.
+            </summary>
+            <param name="name">The name of the unit.</param>
+            <returns>The map editable json string.</returns>
+            <exception cref="T:Flattiverse.Connector.GameException">Throws when trying to access a non editable unit.</exception>
+        </member>
+        <member name="T:Flattiverse.Connector.UniverseGroup">
+            <summary>
+            Represents the main class. The UniverseGroup you connect to is managed by an instance of this class.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.#ctor(System.String,System.String)">
+            <summary>
+            Connects to the specific UniverseGroup.
+            </summary>
+            <param name="uri">The URI of the Universegroup.</param>
+            <param name="auth">The auth key for UniverseGroup access.</param>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.NewAsyncUniverseGroup(System.String,System.String)">
+            <summary>
+            Connects to the specific UniverseGroup asynchonously.
+            </summary>
+            <param name="uri">The URI of the Universegroup.</param>
+            <param name="auth">The auth key for UniverseGroup access.</param>
+            <returns>The connected UniverseGroup.</returns>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Player">
+            <summary>
+            This is the connected player.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Name">
+            <summary>
+            The name of the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Description">
+            <summary>
+            The description of the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Mode">
+            <summary>
+            The GameMode of the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.MaxPlayers">
+            <summary>
+            The amount of players allowed to play simultaneously.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.MaxShipsPerPlayer">
+            <summary>
+            The amount of ships a player can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.MaxShipsPerTeam">
+            <summary>
+            The amount of ships a team can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.MaxBasesPerPlayer">
+            <summary>
+            The amount of bases a player can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.MaxBasesPerTeam">
+            <summary>
+            The amount of bBases a team can have in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Spectators">
+            <summary>
+            True, if joining this universe as a spectator is allowed.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Teams">
+            <summary>
+            The teams in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Universes">
+            <summary>
+            The universes of the universegroup.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Systems">
+            <summary>
+            The system upgrade paths of the universegroup.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetUniverse(System.String,Flattiverse.Connector.Universe@)">
+            <summary>
+            Tries to get the corresponding universe.
+            </summary>
+            <param name="name">The name of the universe.</param>
+            <param name="universe">The universe or null, if not found.</param>
+            <returns>true, if the universe has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetUniverse(System.Int32,Flattiverse.Connector.Universe@)">
+            <summary>
+            Tries to get the corresponding universe.
+            </summary>
+            <param name="id">The id of the universe.</param>
+            <param name="universe">The universe or null, if not found.</param>
+            <returns>true, if the universe has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetUniverse(System.String)">
+            <summary>
+            Tries to get the corresponding universe.
+            </summary>
+            <param name="name">The name of the universe.</param>
+            <returns>The universe if found, null otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetTeam(System.String,Flattiverse.Connector.Team@)">
+            <summary>
+            Tries to get the corresponding team.
+            </summary>
+            <param name="name">The name of the team.</param>
+            <param name="team">The team or null, if not found.</param>
+            <returns>true, if the team has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetTeam(System.Int32,Flattiverse.Connector.Team@)">
+            <summary>
+            Tries to get the corresponding team.
+            </summary>
+            <param name="id">The id of the team.</param>
+            <param name="team">The universe or null, if not found.</param>
+            <returns>true, if the team has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetTeam(System.String)">
+            <summary>
+            Tries to get the corresponding team.
+            </summary>
+            <param name="name">The name of the team.</param>
+            <returns>The team if found, null otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32,Flattiverse.Connector.Events.PlayerUnitSystemUpgradepath@)">
+            <summary>
+            Tries to get the corresponding system.
+            </summary>
+            <param name="kind">The system kind of the system.</param>
+            <param name="level">The system level of the system.</param>
+            <param name="system">The system or null, if not found.</param>
+            <returns>true, if the system has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Events.PlayerUnitSystemIdentifier,Flattiverse.Connector.Events.PlayerUnitSystemUpgradepath@)">
+            <summary>
+            Tries to get the corresponding system.
+            </summary>
+            <param name="identifier">The systemidentifier associated with the upgrade path.</param>
+            <param name="system">The system or null, if not found.</param>
+            <returns>true, if the system has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32)">
+            <summary>
+            Tries to get the corresponding system.
+            </summary>
+            <param name="kind">The system kind of the system.</param>
+            <param name="level">The system level of the system.</param>
+            <returns>The system if found, null otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystem(Flattiverse.Connector.Events.PlayerUnitSystemIdentifier)">
+            <summary>
+            Tries to get the corresponding system.
+            </summary>
+            <param name="identifier">The systemidentifier associated with the upgrade path.</param>
+            <returns>The system if found, null otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystems">
+            <summary>
+            Retrieves the json definition of all systems in the universegroup.
+            </summary>
+            <returns>All systems.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.RemoveSystem(Flattiverse.Connector.Events.PlayerUnitSystemIdentifier)">
+            <summary>
+            Removes the system from the universegroup.
+            </summary>
+            <param name="identifier">The system identifier.</param>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.NextEvent">
+            <summary>
+            Will return the next received event from queue or wait until the event has been received.
+            </summary>
+            <returns>The corresponding FlattiverseEvenet.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.Dispose">
+            <summary>
+            Empties all resources.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.Utils.CheckName(System.String)">
+            <summary>
+            Checks the name.
+            </summary>
+            <param name="name">The name to check.</param>
+            <returns>truw if the name is proper, false if the name doesn't pass the check.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.Vector.TryParse(System.Text.Json.JsonElement,Flattiverse.Connector.Vector@)">
+            <summary>
+            Tries to parse a json Element to a Vector.
+            </summary>
+            <param name="data">The json data.</param>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:Flattiverse.Connector.Vector.validateJson(System.Text.Json.JsonElement)">
+            <summary>
+            throws Exception on invalid json Element
+            </summary>
+            <param name="data"></param>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+    </members>
+</doc>

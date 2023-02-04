@@ -3,6 +3,7 @@ using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -378,60 +379,55 @@ namespace Flattiverse.Connector
             }
         }
 
-
-        /// <summary>
-        /// Sets the system in the universegroup.
-        /// </summary>
-        /// <param name="identifier">The system identifier.</param>
-        /// <param name="system">The system upgrade path.</param>
-        public async Task SetSystem(PlayerUnitSystemIdentifier identifier, PlayerUnitSystemUpgradepath system)
+        // TOG: XML-Kommentar machen.
+        public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2)
         {
-            if (system.RequiredComponent is null)
+            using (Query query = connection.Query("systemSet"))
             {
-                using (Query query = connection.Query("systemSet"))
-                {
-                    query.Write("system", identifier.Kind.ToString());
-                    query.Write("level", identifier.Level);
-                    query.Write("energy", system.Energy);
-                    query.Write("particles", system.Particles);
-                    query.Write("iron", system.Iron);
-                    query.Write("carbon", system.Carbon);
-                    query.Write("silicon", system.Silicon);
-                    query.Write("platinum", system.Platinum);
-                    query.Write("gold", system.Gold);
-                    query.Write("time", system.Time);
-                    query.Write("value0", system.Value0);
-                    query.Write("value1", system.Value1);
-                    query.Write("value2", system.Value2);
+                query.Write("system", kind.ToString());
+                query.Write("level", level);
+                query.Write("energy", energy);
+                query.Write("particles", particles);
+                query.Write("iron", iron);
+                query.Write("carbon", carbon);
+                query.Write("silicon", silicon);
+                query.Write("platinum", platinum);
+                query.Write("gold", gold);
+                query.Write("time", time);
+                query.Write("value0", value0);
+                query.Write("value1", value1);
+                query.Write("value2", value2);
 
-                    await query.Send().ConfigureAwait(false);
+                await query.Send().ConfigureAwait(false);
 
-                    await query.Wait().ConfigureAwait(false);
-                }
+                await query.Wait().ConfigureAwait(false);
             }
-            else
+        }
+
+        // TOG: XML-Kommentar machen.
+        public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, PlayerUnitSystemKind requiredKind, int requiredLevel)
+        {
+            using (Query query = connection.Query("systemSetRequired"))
             {
-                using (Query query = connection.Query("systemSetRequired"))
-                {
-                    query.Write("system", identifier.Kind.ToString());
-                    query.Write("level", identifier.Level);
-                    query.Write("energy", system.Energy);
-                    query.Write("particles", system.Particles);
-                    query.Write("iron", system.Iron);
-                    query.Write("carbon", system.Carbon);
-                    query.Write("silicon", system.Silicon);
-                    query.Write("platinum", system.Platinum);
-                    query.Write("gold", system.Gold);
-                    query.Write("time", system.Time);
-                    query.Write("value0", system.Value0);
-                    query.Write("value1", system.Value1);
-                    query.Write("value2", system.Value2);
-                    system.RequiredComponent?.write(query);
+                query.Write("system", kind.ToString());
+                query.Write("level", level);
+                query.Write("energy", energy);
+                query.Write("particles", particles);
+                query.Write("iron", iron);
+                query.Write("carbon", carbon);
+                query.Write("silicon", silicon);
+                query.Write("platinum", platinum);
+                query.Write("gold", gold);
+                query.Write("time", time);
+                query.Write("value0", value0);
+                query.Write("value1", value1);
+                query.Write("value2", value2);
+                query.Write("requiredSystem", requiredKind.ToString());
+                query.Write("requiredLevel", requiredLevel);
 
-                    await query.Send().ConfigureAwait(false);
+                await query.Send().ConfigureAwait(false);
 
-                    await query.Wait().ConfigureAwait(false);
-                }
+                await query.Wait().ConfigureAwait(false);
             }
         }
 

@@ -38,11 +38,5 @@ namespace Flattiverse.Connector.Events
         {
             return ((int)Kind) << 23 | Level;
         }
-
-        internal void write(Query query)
-        {
-            query.Write("requiredSystem", Kind.ToString());
-            query.Write("requiredLevel", Level);
-        }
     }
 }
