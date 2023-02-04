@@ -33,6 +33,7 @@ internal class Program
 
             // TOG: Bitte einzelne Parameter daraus machen. Aus beiden Funktionen. Sind dann 2 Überladungen.
             //await universeGroup.SetSystem(new PlayerUnitSystemIdentifier(PlayerUnitSystemKind.Analyzer, 0), new PlayerUnitSystemUpgradepath(0, 0, 15, 30, 30, 0, 0, 250, 0, 0, 0));
+            await universeGroup.RemoveSystem(new PlayerUnitSystemIdentifier(PlayerUnitSystemKind.Analyzer, 0));
 
             foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
                 Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
