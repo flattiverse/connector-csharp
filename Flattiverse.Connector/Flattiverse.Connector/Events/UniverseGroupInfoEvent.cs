@@ -68,7 +68,14 @@ namespace Flattiverse.Connector.Events
         public readonly IReadOnlyCollection<Universe> Universes;
 
         private Universe[] universes;
-        
+
+        /// <summary>
+        /// The system upgrade paths in the UniverseGroup.
+        /// </summary>
+        public readonly IReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> Systems;
+
+        private Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems;
+
         internal UniverseGroupInfoEvent(UniverseGroup group, JsonElement element) : base()
         {
             Utils.Traverse(element, out Name, "name");
@@ -97,14 +104,27 @@ namespace Flattiverse.Connector.Events
 
             Utils.Traverse(element, out JsonElement universesArray, "universes");
 
-            universes = new Universe[64]; 
+            universes = new Universe[64];
 
             foreach (JsonElement universeObject in universesArray.EnumerateArray())
             {
                 Universe universe = new Universe(group, universeObject);
                 universes[universe.ID] = universe;
             }
+
             Universes = universes;
+
+            systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
+
+            if (Utils.Traverse(element, out JsonElement systemsArray, "systems"))
+            {
+                foreach (JsonElement systemObject in systemsArray.EnumerateArray())
+                {
+                    systems.Add(new PlayerUnitSystemIdentifier(systemObject), new PlayerUnitSystemUpgradepath(systemObject));
+                }
+            }
+
+            Systems = systems;
 
             group.name = Name;
             group.description = Description;
@@ -117,6 +137,7 @@ namespace Flattiverse.Connector.Events
             group.spectators = Spectators;
             group.teams = teams;
             group.universes = universes;
+            group.systems = systems;
         }
 
         /// <summary>

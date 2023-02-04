@@ -1,6 +1,6 @@
 ﻿namespace Flattiverse.Connector.Units
 {
-    enum PlayerUnitSystemKind
+    public enum PlayerUnitSystemKind
     {
         Hull,
         Shield,

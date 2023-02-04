@@ -30,6 +30,7 @@ namespace Flattiverse.Connector
 
         internal Team[] teams = new Team[16];
         internal Universe[] universes = new Universe[64];
+        internal Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
 
         /// <summary>
         /// Connects to the specific UniverseGroup.
@@ -208,7 +209,7 @@ namespace Flattiverse.Connector
 
             return null;
         }
-        
+
         /// <summary>
         /// Tries to get the corresponding team.
         /// </summary>
