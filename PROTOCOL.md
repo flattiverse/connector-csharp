@@ -192,6 +192,39 @@ Trying to retrieve a non editable or non existing unit will result in the corres
 
 Returns: The map-editable json data or `GameException`.
 
+### `regionSet`
+
+Sets the `Region` to the specified settings in the universe. You need to specify the parameters `universe` (integer, id), `id` (integer, id, 0-255), `teams` (integer, bitmask for 16 teams), `name` (string, can be empty), `left` `top` `right` `bottom` (double), and `startLocation` `safeZone` `slowRestore` (bool).
+
+The region will be created or replaced.
+
+Returns: Nothing (empty confirmation) or `GameException`.
+
+### `regionRemove`
+
+Removes the `Region` from the universe. You need to specify the parameters `universe` (integer, id), and `id` (integer, id, 0-255).
+
+Returns: Nothing (empty confirmation) or `GameException`.
+
+### `regionRemove`
+
+Removes the `Region` from the universe. You need to specify the parameters `universe` (integer, id), and `id` (integer, id, 0-255).
+
+Returns: Nothing (empty confirmation) or `GameException`.
+
+### `systemSet` and `systemSetRequired`
+
+tbd
+
+### `systemRemove`
+
+tbd
+
+### `systemList`
+
+tbd
+
+
 ## List of units and their definition
 
 Some units may have changed in this version of flattiverse. So it is generally a good idea to read this section carefully. Please note that optional properties may be `null` or omitted. The server will always send you the most economical JSON it can generate (skipping unnecessary parts). The following JSON examples contain the best approximation of what values could do. So, if you see a number without decimal point there, you can assume an integer. If you see a decimal point it's most likely a double, and if values can get negative there will be an example with negative values.
@@ -369,9 +402,9 @@ The meaning of the values are as follows:
     - `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
   - `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
     - `state`: The state is one of:
-    - `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
-    - `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
-    - `active`: The corona segment is currently active. See `frame` to know when this state will end.
+      - `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
+      - `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
+      - `active`: The corona segment is currently active. See `frame` to know when this state will end.
     - `frame`: The current tick in the current `state`.
 
 ### Black hole (`blackhole`)
@@ -425,17 +458,17 @@ The meaning of the values are as follows:
   - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial black hole section. A ships center must be in this section to be affected by the gravitational effect. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
   - `force` works like described in the `gravityWell` object above.
   - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `probability` (see next point). `activation` is optional if you don't want to use it. If used, at least probability and time must be set, the other values are optional.
-   - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
-   - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
-   - `rampup`: Also optional. This ramps up the effects of `force` (from 0 to the set values).
-   - `time`: Not optional. The amount of ticks before this phase fades out again.
-   - `fade`: Like `upramp` but the opposite: The effects of `force` fade out (to 0). Also optional.
+    - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
+    - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
+    - `rampup`: Also optional. This ramps up the effects of `force` (from 0 to the set values).
+    - `time`: Not optional. The amount of ticks before this phase fades out again.
+    - `fade`: Like `upramp` but the opposite: The effects of `force` fade out (to 0). Also optional.
   - `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the gravity well section currently is:
-   - `state`: The state is one of:
-    - `inactive`: The gravity well section is currently inactive and waiting for the random number generator to kick in.
-    - `foreshadowing`, `upramp` and `fade`: The gravity well segment is in the corresponding state. See `frame` to know when this state will end.
-    - `active`: The gravity well segment is currently active. See `frame` to know when this state will end.
-   - `frame`: The current tick in the current `state`.
+    - `state`: The state is one of:
+      - `inactive`: The gravity well section is currently inactive and waiting for the random number generator to kick in.
+      - `foreshadowing`, `upramp` and `fade`: The gravity well segment is in the corresponding state. See `frame` to know when this state will end.
+      - `active`: The gravity well segment is currently active. See `frame` to know when this state will end.
+    - `frame`: The current tick in the current `state`.
 
 
 ### Planet (`planet`), Moon (`moon`), Meteoroid (`meteoroid`) and Comet (`comet`)
