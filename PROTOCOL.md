@@ -192,7 +192,7 @@ Trying to retrieve a non editable or non existing unit will result in the corres
 
 Returns: The map-editable json data or `GameException`.
 
-### `regionSet`
+#### `regionSet`
 
 Sets the `Region` to the specified settings in the universe. You need to specify the parameters `universe` (integer, id), `id` (integer, id, 0-255), `teams` (integer, bitmask for 16 teams), `name` (string, can be empty), `left` `top` `right` `bottom` (double), and `startLocation` `safeZone` `slowRestore` (bool).
 
@@ -200,27 +200,27 @@ The region will be created or replaced.
 
 Returns: Nothing (empty confirmation) or `GameException`.
 
-### `regionRemove`
+#### `regionRemove`
 
 Removes the `Region` from the universe. You need to specify the parameters `universe` (integer, id), and `id` (integer, id, 0-255).
 
 Returns: Nothing (empty confirmation) or `GameException`.
 
-### `regionRemove`
+#### `regionRemove`
 
 Removes the `Region` from the universe. You need to specify the parameters `universe` (integer, id), and `id` (integer, id, 0-255).
 
 Returns: Nothing (empty confirmation) or `GameException`.
 
-### `systemSet` and `systemSetRequired`
+#### `systemSet` and `systemSetRequired`
 
 tbd
 
-### `systemRemove`
+#### `systemRemove`
 
 tbd
 
-### `systemList`
+#### `systemList`
 
 tbd
 
