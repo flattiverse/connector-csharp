@@ -104,20 +104,14 @@ namespace Flattiverse.Connector.Units
 
         internal Unit(UniverseGroup group, JsonElement element)
         {
-            if (!Utils.Traverse(element, out Name, "name") || !Utils.Traverse(element, out Radius, "setRadius") || !Utils.Traverse(element, out Position, "setPosition"))
+            if (!Utils.Traverse(element, out Name, "name") || !Utils.Traverse(element, out Radius, "radius") || !Utils.Traverse(element, out Position, "position"))
                 throw new GameException(0xA0);
 
             Utils.Traverse(element, out Gravity, "gravity");
             Utils.Traverse(element, out Movement, "movement");
 
-            if (Utils.Traverse(element, out int teamID, "team"))
-            {
-                throw new NotImplementedException("tog");
-                //if (UniverseGroup.Teams.Length <= teamID || UniverseGroup.This.Teams[teamID] == null)
-                //    throw new GameException(0xA4);
-
-                //team = UniverseGroup.This.Teams[teamID];
-            }
+            if (Utils.Traverse(element, out int teamID, "team") && teamID >= 0 && teamID < 16)
+                Team = group.teams[teamID];
         }
     }
 }

@@ -163,6 +163,8 @@ namespace Flattiverse.Connector.Network
                     return;
                 }
 
+                //Console.WriteLine($"\nRECVd: {Encoding.UTF8.GetString(recv, 0, result.Count)}\n");
+
                 switch (socket.State)
                 {
                     case WebSocketState.CloseReceived:
