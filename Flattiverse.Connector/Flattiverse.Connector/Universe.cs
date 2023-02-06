@@ -81,6 +81,100 @@ namespace Flattiverse.Connector
         }
 
         /// <summary>
+        /// Retrieves the json definition of all systems in the universegroup.
+        /// </summary>
+        /// <returns>All systems.</returns>
+        public async Task<List<GameRegion>> GetRegions()
+        {
+            using (Query query = Group.connection.Query("regionList"))
+            {
+                query.Write("universe", ID);
+
+                await query.Send().ConfigureAwait(false);
+
+                List<GameRegion> regions = new List<GameRegion>();
+                JsonElement element = await query.ReceiveJson().ConfigureAwait(false);
+                if (element.ValueKind == JsonValueKind.Array)
+                    foreach (JsonElement regionObject in element.EnumerateArray())
+                    {
+                        regions.Add(new GameRegion(regionObject));
+                    }
+
+                return regions;
+            }
+        }
+
+        /// <summary>
+        /// Creates or updates a region in the map of this universe group. The region will be overwritten if the region already
+        /// exists (same id).
+        /// </summary>
+        /// <param name="definition">The JSON formatted definition of the region to create. Please refer to PROCOTOL.md for further information.</param>
+        /// <remarks>This method is only accessible if you are an administrator.</remarks>
+        public async Task SetRegion(int id, int teams, string name, double left, double top, double right, double bottom, bool startLocation, bool safeZone, bool slowRestore)
+        {
+            if (name is null)
+            {
+                using (Query query = Group.connection.Query("regionSetUnnamed"))
+                {
+                    query.Write("universe", ID);
+                    query.Write("regionId", id);
+                    query.Write("teams", teams);
+                    query.Write("left", left);
+                    query.Write("top", top);
+                    query.Write("right", right);
+                    query.Write("bottom", bottom);
+                    query.Write("startLocation", startLocation);
+                    query.Write("safeZone", safeZone);
+                    query.Write("slowRestore", slowRestore);
+
+                    await query.Send().ConfigureAwait(false);
+
+                    await query.Wait().ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                using (Query query = Group.connection.Query("regionSet"))
+                {
+                    query.Write("universe", ID);
+                    query.Write("regionId", id);
+                    query.Write("teams", teams);
+                    query.Write("name", name);
+                    query.Write("left", left);
+                    query.Write("top", top);
+                    query.Write("right", right);
+                    query.Write("bottom", bottom);
+                    query.Write("startLocation", startLocation);
+                    query.Write("safeZone", safeZone);
+                    query.Write("slowRestore", slowRestore);
+
+                    await query.Send().ConfigureAwait(false);
+
+                    await query.Wait().ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes an unit from the universe.
+        /// </summary>
+        /// <param name="name">The name of the unit.</param>
+        /// <returns>Nothing, or a GameException.</returns>
+        /// <exception cref="GameException">Throws when trying to remove a non editable or non existing unit.</exception>
+        public async Task RemoveRegion(int id)
+        {
+            using (Query query = Group.connection.Query("regionRemove"))
+            {
+                query.Write("universe", ID);
+                query.Write("regionId", id);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
         /// Retrieves the json definition for the map editor of a unit from the universe.
         /// </summary>
         /// <param name="name">The name of the unit.</param>
