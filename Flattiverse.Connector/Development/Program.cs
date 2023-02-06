@@ -1,7 +1,6 @@
 ﻿using Flattiverse.Connector;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Units;
-using System.Globalization;
 
 internal class Program
 {
@@ -15,6 +14,14 @@ internal class Program
         string apiUser2 = "BABABABABABABABABBBBBBBBBBBBBBBBBBBBB319480573420958723458796345";
         string apiAdmn2 = "BABABABABABABABABCCCCCCCCCCCCCCCCCCCC319480573420958723458796345";
 
+        //Harald
+        string apiUser3 = "CDCDCDCDCDCDC34587652345CABCABACBACBA319480573420958723458796345";
+        string apiAdmn3 = "FEFEFEFE2873654324876EFEFEFEF23454325319480573420958723458796345";
+
+        //Micha
+        string apiUser4 = "555555555555FEBFEBDASASDASD1356723423419480573420958723458796345";
+        string apiAdmn4 = "555555555555FEBFEBDASASDASD1356234234719480573420958723458796345";
+
         string apiSpec = "0000000000000000000000000000000000000000000000000000000000000000";
         string apiShit = "000000000000000000000000000000000000000000000000000000000000D3AD";
 
@@ -24,12 +31,24 @@ internal class Program
         //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
         using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
         {
+            foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
+                Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
+
+            //await universeGroup.GetUniverse("Training ground")!.SetRegion(3, 0, null, 1000, 1000, 1100, 1100, false, false, false);
+            //await universeGroup.GetUniverse("Training ground")!.SetRegion(4, 0, "Test", 2000, 2000, 2100, 2100, false, false, false);
+            //await universeGroup.GetUniverse("Training ground")!.RemoveRegion(3);
+            //await universeGroup.GetUniverse("Training ground")!.RemoveRegion(4);
+
+
+            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            //string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
+            //await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
             //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
 
-            //Console.WriteLine($" !!! {await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi")}");
 
+            //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
             //foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
-            //    Console.WriteLine($" * {kvp.Key.Kind} {kvp.Key.Level}");
+            //    Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
 
             while (true)
                 switch (await universeGroup.NextEvent())
