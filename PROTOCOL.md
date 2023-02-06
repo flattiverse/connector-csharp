@@ -362,17 +362,17 @@ The meaning of the values are as follows:
   - `angleStart`, `angleEnd`, 'distanceStart' and `distanceEnd` specify the radial sun section. A ships center must be in this section for the loading process to work. The angle ist counted from start to end. 330 to 30 will give you a 60 degree section from -30 to +30 degrees.
   - `energy` and `particles` work like described in the `corona` object above.
   - `activation` is another property which specifies a more dynamic availability behavior: A section must be activated by `probability` (see next point). `activation` is optional if you don't want to use it. If used, at least probability and time must be set, the other values are optional.
-   - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
-   - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
-   - `rampup`: Also optional. This ramps up the effects of `energy` and `particles` (from 0 to the set values).
-   - `time`: Not optional. The amount of ticks before this phase fades out again.
-   - `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
+    - `probability`: If a section is disabled a random number generator is checked each tick against this number. (RNG < `probability` starts the sequence.)
+    - `foreshadowing`: If the random number generator has triggered then we wait this amount of ticks before we activate the section. But we show this to the player if he is scanning the unit actively. This is optional, if you want to not use this pahse.
+    - `rampup`: Also optional. This ramps up the effects of `energy` and `particles` (from 0 to the set values).
+    - `time`: Not optional. The amount of ticks before this phase fades out again.
+    - `fade`: Like `upramp` but the opposite: The effects of `energy` and `particles` fade out (to 0). Also optional.
   - `activationState` is a in game state and therefore not part of the map editor JSON. It specifies in thich state the corona section currently is:
-   - `state`: The state is one of:
+    - `state`: The state is one of:
     - `inactive`: The corona section is currently inactive and waiting for the random number generator to kick in.
     - `foreshadowing`, `upramp` and `fade`: The corona segment is in the corresponding state. See `frame` to know when this state will end.
     - `active`: The corona segment is currently active. See `frame` to know when this state will end.
-   - `frame`: The current tick in the current `state`.
+    - `frame`: The current tick in the current `state`.
 
 ### Black hole (`blackhole`)
 
