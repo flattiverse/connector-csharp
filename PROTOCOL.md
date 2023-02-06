@@ -514,6 +514,8 @@ A player units JSON will look like this:
 
 ```json
 {
+    "account": 2,
+    "controllable": 3,
     "turnRate": -7.2,
     "systems":
     {
@@ -643,7 +645,7 @@ A shot has the following values:
 - `lifetime` specifies the time until the shot detonates, if it does not collide with another unit until then.
 
 ```json
-{    
+{
     "explosionDamage": 11.5,
     "explosionRadius": 40.1,
     "lifetime": 29
