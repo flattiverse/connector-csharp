@@ -377,6 +377,28 @@
             <returns>Nothing, or a GameException.</returns>
             <exception cref="T:Flattiverse.Connector.GameException">Throws when trying to remove a non editable or non existing unit.</exception>
         </member>
+        <member name="M:Flattiverse.Connector.Universe.GetRegions">
+            <summary>
+            Retrieves the json definition of all systems in the universegroup.
+            </summary>
+            <returns>All systems.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.Universe.SetRegion(System.Int32,System.Int32,System.String,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Creates or updates a region in the map of this universe group. The region will be overwritten if the region already
+            exists (same id).
+            </summary>
+            <param name="definition">The JSON formatted definition of the region to create. Please refer to PROCOTOL.md for further information.</param>
+            <remarks>This method is only accessible if you are an administrator.</remarks>
+        </member>
+        <member name="M:Flattiverse.Connector.Universe.RemoveRegion(System.Int32)">
+            <summary>
+            Removes an unit from the universe.
+            </summary>
+            <param name="name">The name of the unit.</param>
+            <returns>Nothing, or a GameException.</returns>
+            <exception cref="T:Flattiverse.Connector.GameException">Throws when trying to remove a non editable or non existing unit.</exception>
+        </member>
         <member name="M:Flattiverse.Connector.Universe.GetUnitMapEditJson(System.String)">
             <summary>
             Retrieves the json definition for the map editor of a unit from the universe.

@@ -19,12 +19,17 @@ internal class Program
         string apiShit = "000000000000000000000000000000000000000000000000000000000000D3AD";
 
         //Unit
-        string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
+        //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
         //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
-        using (UniverseGroup universeGroup = new UniverseGroup("ws://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
+        using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
         {
-            await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+
+            //Console.WriteLine($" !!! {await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi")}");
+
+            //foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
+            //    Console.WriteLine($" * {kvp.Key.Kind} {kvp.Key.Level}");
 
             while (true)
                 switch (await universeGroup.NextEvent())
