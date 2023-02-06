@@ -194,7 +194,7 @@ Returns: The map-editable json data or `GameException`.
 
 #### `regionSet`
 
-Sets the `Region` to the specified settings in the universe. You need to specify the parameters `universe` (integer, id), `regionId` (integer, id, 0-255), `teams` (integer, bitmask for 16 teams), `name` (string, can be empty), `left` `top` `right` `bottom` (double), and `startLocation` `safeZone` `slowRestore` (int, 1 or 0).
+Sets the `Region` to the specified settings in the universe. You need to specify the parameters `universe` (integer, id), `regionId` (integer, id, 0-255), `teams` (integer, bitmask for 16 teams), `name` (string, can be empty), `left` `top` `right` `bottom` (double), and `startLocation` `safeZone` `slowRestore` (boolean).
 
 The region will be created or replaced.
 
