@@ -379,7 +379,23 @@ namespace Flattiverse.Connector
             }
         }
 
-        // TOG: XML-Kommentar machen.
+        /// <summary>
+        /// Sets or adds the system. Systems with level 0 will be default systems a ship starts with. Systems which start at level 1 will have to be built by you.
+        /// </summary>
+        /// <param name="kind">The kind of the system.</param>
+        /// <param name="level">The level of the system that this entry describes.</param>
+        /// <param name="energy">The energy cost of building this system in a ship.</param>
+        /// <param name="particles">The energy cost of building this system in a ship.</param>
+        /// <param name="iron">The iron cost of building this system in a ship.</param>
+        /// <param name="carbon">The cabron cost of building this system in a ship.</param>
+        /// <param name="silicon">The silicon cost of building this system in a ship.</param>
+        /// <param name="platinum">The platinum cost of building this system in a ship.</param>
+        /// <param name="gold">The gold cost of building this system in a ship.</param>
+        /// <param name="time">The time it takes to build this system.</param>
+        /// <param name="value0">The first effecting value this system has.</param>
+        /// <param name="value1">The second effecting value this system has.</param>
+        /// <param name="value2">The third effecting value this system has.</param>
+        /// <returns>Nothing, or throws an error.</returns>
         public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2)
         {
             using (Query query = connection.Query("systemSet"))
@@ -404,7 +420,25 @@ namespace Flattiverse.Connector
             }
         }
 
-        // TOG: XML-Kommentar machen.
+        /// <summary>
+        /// Sets or adds the system. Systems with level 0 will be default systems a ship starts with. Systems which start at level 1 will have to be built by you.
+        /// </summary>
+        /// <param name="kind">The kind of the system.</param>
+        /// <param name="level">The level of the system that this entry describes.</param>
+        /// <param name="energy">The energy cost of building this system in a ship.</param>
+        /// <param name="particles">The energy cost of building this system in a ship.</param>
+        /// <param name="iron">The iron cost of building this system in a ship.</param>
+        /// <param name="carbon">The cabron cost of building this system in a ship.</param>
+        /// <param name="silicon">The silicon cost of building this system in a ship.</param>
+        /// <param name="platinum">The platinum cost of building this system in a ship.</param>
+        /// <param name="gold">The gold cost of building this system in a ship.</param>
+        /// <param name="time">The time it takes to build this system.</param>
+        /// <param name="value0">The first effecting value this system has.</param>
+        /// <param name="value1">The second effecting value this system has.</param>
+        /// <param name="value2">The third effecting value this system has.</param>
+        /// <param name="requiredKind">The kind of the system which needs to be present in order to build this system.</param>
+        /// <param name="requiredLevel">The level of the system which needs to be present in order to build this system.</param>
+        /// <returns>Nothing, or throws an error.</returns>
         public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, PlayerUnitSystemKind requiredKind, int requiredLevel)
         {
             using (Query query = connection.Query("systemSetRequired"))
