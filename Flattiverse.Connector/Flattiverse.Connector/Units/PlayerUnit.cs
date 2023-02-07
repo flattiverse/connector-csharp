@@ -1,9 +1,17 @@
-﻿using System.Text.Json;
+﻿using System.Security.Principal;
+using System.Text.Json;
 
 namespace Flattiverse.Connector.Units
 {
     public class PlayerUnit : MobileUnit
     {
+        //public Account Account;
+        public int Controllable;
+
+        public double TurnRate;
+
+        public Dictionary<PlayerUnitSystemKind, PlayerUnitSystem> Systems;
+
 
         public PlayerUnit()
         {
@@ -23,7 +31,7 @@ namespace Flattiverse.Connector.Units
 
         internal PlayerUnit(UniverseGroup group, JsonElement element) : base(group, element)
         {
-            
+
         }
 
         public override UnitKind Kind => UnitKind.PlayerUnit;

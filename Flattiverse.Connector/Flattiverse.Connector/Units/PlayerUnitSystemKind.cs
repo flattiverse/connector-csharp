@@ -18,7 +18,6 @@
         WeaponPayloadRadius,
         WeaponFactory,
         WeaponStorage,
-        WeaponAmmunition,
         CargoIron,
         CargoCarbon,
         CargoSilicon,

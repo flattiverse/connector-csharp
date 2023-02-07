@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Flattiverse.Connector.Units
+﻿namespace Flattiverse.Connector.Units
 {
-    internal class PlayerUnitSystem
+    public class PlayerUnitSystem
     {
+        public int Level;
+        public double Value;
+
+        public int MaxLevel;
+
+        public PlayerUnitSystemKind kind;
     }
 }
