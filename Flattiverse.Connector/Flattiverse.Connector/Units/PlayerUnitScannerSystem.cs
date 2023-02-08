@@ -10,14 +10,6 @@ namespace Flattiverse.Connector.Units
 
         public PlayerUnitScannerSystem(JsonElement element) : base(element)
         {
-            if (!Utils.Traverse(element, out MaxRange, "maxRange"))
-                throw new GameException(0xA1);
-
-            if (!Utils.Traverse(element, out MaxAngle, "maxAngle"))
-                throw new GameException(0xA1);
-
-            if (!Utils.Traverse(element, out EnergyUsagePerSurfaceUnit, "energyUsagePerSurfaceUnit"))
-                throw new GameException(0xA1);
         }
     }
 }

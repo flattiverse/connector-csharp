@@ -8,8 +8,6 @@ namespace Flattiverse.Connector.Units
 
         public PlayerUnitRegularSystem(JsonElement element) : base(element)
         {
-            if (!Utils.Traverse(element, out MaxValue, "maxValue"))
-                throw new GameException(0xA1);
         }
     }
 }

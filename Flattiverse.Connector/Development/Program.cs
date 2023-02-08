@@ -31,8 +31,8 @@ internal class Program
         //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
         using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
         {
-            foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
-                Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
+            //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
+            //    Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
 
             //await universeGroup.GetUniverse("Training ground")!.SetRegion(3, 0, null, 1000, 1000, 1100, 1100, false, false, false);
             //await universeGroup.GetUniverse("Training ground")!.SetRegion(4, 0, "Test", 2000, 2000, 2100, 2100, false, false, false);
