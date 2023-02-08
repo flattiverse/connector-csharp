@@ -574,45 +574,85 @@ A player units JSON will look like this:
             "level": 4,
             "value": 272.3
         },
-        "weapon":
+        "weaponLauncher":
         {
-            "levelLauncher": 2,
-            "levelPayloadDamage": 3,
-            "levelPayloadRadius": 3,
-            "levelFactory": 4,
-            "levelStorage": 5,
-            "ammunition": 7.2,
+            "level": 1,
+            "value": 1.5
         },
-        "cargo":
+        "weaponPayloadDamage":
         {
-            "levelIron": 3,
-            "valueIron": 16.2,
-            "levelCarbon": 2,
-            "valueCarbon": 0.1,
-            "levelSilicon": 4,
-            "valueSilicon": 0.2,
-            "levelPlatinum": 1,
-            "valuePlatinum": 0.11,
-            "levelGold": 7,
-            "valueGold": 22.1,
-            "levelSpecial": 1,
-            "contentSpecial":
-            [
-                "missionTarget"
-            ]
+            "level": 1,
+            "value": 1.5
         },
-        "extractor":
+        "weaponPayloadRadius":
         {
-            "levelIron": 1,
-            "valueIron": 1.1,
-            "levelCarbon": 1,
-            "valueCarbon": 1.1,
-            "levelSilicon": 1,
-            "valueSilicon": 1.2,
-            "levelPlatinum": 2,
-            "valuePlatinum": 1.11,
-            "levelGold": 2,
-            "valueGold": 1.1
+            "level": 1,
+            "value": 1.5
+        },
+        "weaponFactory":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "weaponStorage":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "cargoIron":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "cargoCarbon":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "cargoSilicon":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "cargoPlatinum":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "cargoGold":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "cargoSpecial":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "extractorIron":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "extractorCarbon":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "extractorSilicon":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "extractorPlatinum":
+        {
+            "level": 1,
+            "value": 1.5
+        },
+        "extractorGold":
+        {
+            "level": 1,
+            "value": 1.5
         }
     }
 }
@@ -622,17 +662,14 @@ A player units JSON will look like this:
 - `systems` specify the various ship systems. Connectors for flattiverse need to implement some kind of mechanic to derive the limits for the corresponding system from the level. We will document here various maximums, however they will currently change quite quick.
   - `hull`, `shield`, `thruster`, `nozzle`, `scanner`, `analyzer`, `cellsEnergy`, `cellsParticles`, `batteryEnergy`, `batteryParticles` specify "simple" systems which indicate the status of the corresponding system. Some examples: From the `hull`.`level` property you can derive the maximum hitpoints of the ships hull. (See next section.) From `hull`.`value` you can see the current status, in this case how many hitpoints the ships hull has. Another example would be `cellsParticles`. You can derive the collection speed of particles from `cellsParticles`.`level`. `value` is the current loading rate and therefore is 0 most of the time (eg. when not near a sun). All other components mentioned here work somehow like the same: From `level` you can derive the maximum capabilities or maximum values of the system.
   - `armor` works like the other systems, however the `value` works in another way: `level` specifies how good the armors protection is while the value specifies how much of the protection is still available. The `armor` can be refilled with resources, so to say.
-  - `weapon` is a complex system and consists of the following sub systems, states:
-    - `levelLauncher`: Specifies the maximum speed of the launched projectile.
-    - `levelPayloadDamage`: Specifies the damage a projectiles explosion does.
-    - `levelPayloadRadius`: Specifies the radius of the resulting explosion.
-    - `levelFactory`: Specifies how quick shots are produced.
-    - `levelStorage`: Specifies how many produced shots can be stored.
-    - `ammunition`: Specifies the amount of shots ready. The number of 7.2 indicates 7 ready shots and an 8th shot in production finished by 20%.
-  - `cargo` specifies the cargo capabilities (`level`) and load (`value`) per resource. But there is a special system:
-    - `levelSpecial`: Specifies how huge the special cargo is.
-    - `contentSpecial`: This array holds strings describing all carried things in the special cargo. This is used for future game modes like "capture the flag".
-  - `extractor`: This complex system and the properties below this object specify the status of all extractor systems - one system per ressource. This follows the same patterns as before while the corresponding `value` is the extraction rate.
+  - The ship's weapon is a complex system and consists of the following systems, states:
+    - `weaponLauncher`: Specifies the maximum speed of the launched projectile.
+    - `weaponlPayloadDamage`: Specifies the damage a projectiles explosion does.
+    - `weaponPayloadRadius`: Specifies the radius of the resulting explosion.
+    - `weaponFactory`: Specifies how quick shots are produced.
+    - `weaponStorage`: Specifies how many produced shots can be stored.
+  - The ship's cargo systems (`cargoIron`,`cargoCarbon`,`carboSilicon`,`carboPlatinum`,`cargoGold`) specifiy the cargo capabilities (`level`) and load (`value`) per resource. Iin addition to the 5 extractable resource kinds there is also a sixth cargo kind `cargoSpecial`.
+  - The ship's extractor systems (`extractorIron`,`extractorCarbon`,`extractorSilicon`,`extractorPlatinum`,`extractorGold`) specify the status of all extracting capabilites per ressource. This follows the same patterns as before while the corresponding `value` is the extraction rate.
 
 ### Shot (`shot`)
 
