@@ -7,8 +7,10 @@ namespace Flattiverse.Connector.Units
         public double IronUsage;
         public double PlatinumUsage;
 
-        public PlayerUnitArmorSystem(JsonElement element) : base(element)
+        public PlayerUnitArmorSystem(UniverseGroup group, PlayerUnitSystemKind kind, JsonElement element) : base(group, kind, element)
         {
+            IronUsage = system.Value1;
+            PlatinumUsage = system.Value2;
         }
     }
 }

@@ -11,13 +11,16 @@ namespace Flattiverse.Connector.Units
 
         public PlayerUnitSystemKind Kind;
 
-        public PlayerUnitSystem(JsonElement element)
+        internal readonly PlayerUnitSystemUpgradepath system;
+
+        public PlayerUnitSystem(UniverseGroup group, PlayerUnitSystemKind kind, JsonElement element)
         {
             if (!Utils.Traverse(element, out Level, "level"))
-                throw new GameException(0xA1);
+                group.connection.PushFailureEvent($"Couldn't read level in PlayerUnit for system {kind}."); //Tog überall gescheite exceptions
 
-            if (!Utils.Traverse(element, out Value, "value"))
-                throw new GameException(0xA1);
+            Utils.Traverse(element, out Value, "value");
+
+            group.TryGetSystem(kind, Level, out system);
         }
     }
 }

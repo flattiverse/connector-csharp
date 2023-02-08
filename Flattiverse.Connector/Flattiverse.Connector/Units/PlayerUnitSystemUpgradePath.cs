@@ -1,5 +1,4 @@
-﻿using Flattiverse.Connector.Events;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Units
 {

@@ -55,6 +55,8 @@ namespace Flattiverse.Connector
                     return "[0xA9] \"kind\" couldn't be resolved to a valid unit kind. (Can't resolve \"playerUnit\", \"shot\" or \"explosion\".)";
                 case 0xAA:
                     return "[0xAA] Can't replace a non editable unit like \"playerunit\", \"shot\" or \"explosion\".";
+                case 0xAB:
+                    return "[0xAB] Tried to access an upgradepath or system which does not exist.";
                 case 0xB0:
                     return "[0xB0] The parameter you did specify was either null or didn't contain proper content.";
                 case 0xB1:

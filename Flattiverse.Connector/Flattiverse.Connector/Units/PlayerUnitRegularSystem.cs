@@ -6,8 +6,9 @@ namespace Flattiverse.Connector.Units
     {
         public double MaxValue;
 
-        public PlayerUnitRegularSystem(JsonElement element) : base(element)
+        public PlayerUnitRegularSystem(UniverseGroup group, PlayerUnitSystemKind kind, JsonElement element) : base(group, kind, element)
         {
+            MaxValue = system.Value0;
         }
     }
 }

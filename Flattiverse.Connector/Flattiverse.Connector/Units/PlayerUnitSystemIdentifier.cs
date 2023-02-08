@@ -1,9 +1,7 @@
-﻿using Flattiverse.Connector.Network;
-using Flattiverse.Connector.Units;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-namespace Flattiverse.Connector.Events
+namespace Flattiverse.Connector.Units
 {
     public struct PlayerUnitSystemIdentifier
     {
@@ -36,7 +34,7 @@ namespace Flattiverse.Connector.Events
 
         public override int GetHashCode()
         {
-            return ((int)Kind) << 23 | Level;
+            return (int)Kind << 23 | Level;
         }
     }
 }

@@ -7,8 +7,10 @@ namespace Flattiverse.Connector.Units
         public double EnergyUsage;
         public double ParticlesUsage;
 
-        public PlayerUnitEnergyConsumingSystem(JsonElement element) : base(element)
+        public PlayerUnitEnergyConsumingSystem(UniverseGroup group, PlayerUnitSystemKind kind, JsonElement element) : base(group, kind, element)
         {
+            EnergyUsage = system.Value1;
+            ParticlesUsage = system.Value2;
         }
     }
 }
