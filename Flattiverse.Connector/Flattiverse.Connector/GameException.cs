@@ -79,6 +79,10 @@ namespace Flattiverse.Connector
                     return "[0xC2] You are currently online. (You can only logon once with each account.) Please note: If your game just crashed: In such a case your account and ships are still lingering around so you have to wait round about 30 seconds before retrying.";
                 case 0xC3:
                     return "[0xC3] This Universegroup seems to be full. Try another one.";
+                case 0xC4:
+                    return "[0xC4] The specified team doesn't exist.";
+                case 0xC5:
+                    return "[0xC5] Your connector is outdated and incompatible: Please update the connector.";
                 case 0xCF:
                     return "[0xCF] Something went wrong while connecting but we don't know what and don't have any more infomration. You may try your luck with the inner exception.";
                 case 0xF0:
