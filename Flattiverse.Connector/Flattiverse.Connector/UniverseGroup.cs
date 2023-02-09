@@ -35,7 +35,10 @@ namespace Flattiverse.Connector
 
         internal Team[] teams = new Team[16];
         internal Universe[] universes = new Universe[64];
+        internal Controllable[] controllables = new Controllable[32];
         internal Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
+
+        private readonly object syncControllables = new object();
 
         /// <summary>
         /// Connects to the specific UniverseGroup.
@@ -286,6 +289,63 @@ namespace Flattiverse.Connector
             }
 
             return null;
+        }
+
+        // TOG: Wir brauchen eine weitere Einstellung für die UniversenGruppe: "RegisterShipLimit". In der Datenbank sollte das ein TinyInt oder so sein, in C# dann ein int. Der Wert
+        // muss auch an den Connector übertragen werden und gibt an, ob man NewShip aufrufen kann. (Hat ein Spieler mehr Schiffe + 1 als RegisterShipLimit wird der Aufruf verweigert,
+        // also ist RegisterShipLimit schlägt der Aufruf für das 3. Schiff fehl.) Sinn ist es dass mehr Schiffe als diese Grenze In-Game gebaut werden müssen anstatt so erzeugt zu werden.
+
+        /// <summary>
+        /// Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
+        /// by the rules of the UniverseGroup. (See RegisterShipLimit.)
+        /// </summary>
+        /// <param name="name">The name of the ship to be created.</param>
+        /// <returns>A controllable object that gives control over the ship.</returns>
+        /// <exception cref="GameException">Thrown if the name is already in use or if the ship or RegisterShip limits are exceeded.</exception>
+        /// <remarks>This will create a DEAD ship. To bring it to life, you need to call the Continue() method on the ship. Typically, you would call NewShip() followed by Continue()
+        /// on the controllable.</remarks>
+        public async Task<Controllable> NewShip(string name)
+        {
+            if (!Utils.CheckName(name))
+                throw new GameException(0xB2);
+
+            Controllable? controllable = null;
+
+            int controllableCount = 0;
+            int firstAvailableSlot = -1;
+
+            lock (syncControllables)
+            {
+                for (int position = 0; position < controllables.Length; position++)
+                    if (controllables[position] is not null)
+                        controllableCount++;
+                    else if (firstAvailableSlot == -1)
+                        firstAvailableSlot = position;
+
+                // TOG: Wenn Wert implementiert: Auskommentieren: if (controllableCount >= registerShipLimit)
+                //     throw new GameException(0x11);
+
+                if (controllableCount >= maxShipsPerPlayer)
+                    throw new GameException(0x10);
+
+                if (firstAvailableSlot == -1)
+                    throw new GameException(0xB2);
+
+                controllable = new Controllable(name, firstAvailableSlot);
+                controllables[firstAvailableSlot] = controllable;
+            }
+
+            using (Query query = connection.Query("controllableNew"))
+            {
+                query.Write("id", firstAvailableSlot);
+                query.Write("name", name);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+
+            return controllable;
         }
 
         /// <summary>

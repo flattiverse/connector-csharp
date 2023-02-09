@@ -39,6 +39,12 @@ namespace Flattiverse.Connector
                     return "[0x02] The specified unit doesn't exist.";
                 case 0x05:
                     return "[0x05] The command you tried to access can't be access with your player kind. (Tried to access admin commands as player or vice versa, etc.)";
+                case 0x10:
+                    return "[0x10] You exceedet the amount of allowed ships per player for this UniverseGroup.";
+                case 0x11:
+                    return "[0x11] You exceedet the amount of non built units for this UniverseGroup.";
+                case 0x12:
+                    return "[0x12] You exceedet the amount of allowed ships per team for this UniverseGroup.";
                 case 0xA0:
                     return "[0xA0] Your JSON defintion is missing some mandatory base value like name or radius.";
                 case 0xA1:
@@ -63,6 +69,8 @@ namespace Flattiverse.Connector
                     return "[0xB1] The parameter you did specify exceeded the maximum size.";
                 case 0xB2:
                     return "[0xB2] You dishonored the naming criteria of units. Only allowed characters are: space, dot, minus, underscore, a-z, A-Z and unicode characters between 192-214, 216-246 and 248-687.";
+                case 0xB3:
+                    return "[0xB3] The requested slot is not free.";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:
