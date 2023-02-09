@@ -58,6 +58,18 @@ namespace Flattiverse.Connector
             }
         }
 
+        public UniverseGroup(string uri, string auth, string team)
+        {
+            connection = new Connection(this, uri, auth, team);
+
+            using (Query query = connection.Query("whoami"))
+            {
+                query.Send().GetAwaiter().GetResult();
+
+                player = players[query.ReceiveInteger().GetAwaiter().GetResult()];
+            }
+        }
+
 #pragma warning disable CS8618 // Wird versprochenerweise direkt initialisiert, bevor ein Benutzer etwas damit machen kann. :D Da es aber eine API ist wollen wir dem Endnutzer die beste Erfahrung geben. :)
         private UniverseGroup()
         {
@@ -80,6 +92,21 @@ namespace Flattiverse.Connector
         {
             UniverseGroup universeGroup = new UniverseGroup();
             Connection connection = await Connection.NewAsyncConnection(universeGroup, uri, auth).ConfigureAwait(false);
+
+            using (Query query = connection.Query("whoami"))
+            {
+                await query.Send().ConfigureAwait(false);
+
+                universeGroup.setupPlayer(connection, await query.ReceiveInteger().ConfigureAwait(false));
+            }
+
+            return universeGroup;
+        }
+
+        public static async Task<UniverseGroup> NewAsyncUniverseGroup(string uri, string auth, string team)
+        {
+            UniverseGroup universeGroup = new UniverseGroup();
+            Connection connection = await Connection.NewAsyncConnection(universeGroup, uri, auth, team).ConfigureAwait(false);
 
             using (Query query = connection.Query("whoami"))
             {

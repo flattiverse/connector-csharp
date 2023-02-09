@@ -35,7 +35,7 @@ namespace Flattiverse.Connector.Network
         {
             Group = group;
 
-            Uri parsedUri = new Uri($"{uri}?auth={auth}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0");
 
             socket = new ClientWebSocket();
 
@@ -69,6 +69,49 @@ namespace Flattiverse.Connector.Network
                         throw new GameException(0xC2);
                     case "the server returned status code '417' when status code '101' was expected.":
                         throw new GameException(0xC3);
+                    case "the server returned status code '415' when status code '101' was expected.":
+                        throw new GameException(0xC4);
+                    case "the server returned status code '409' when status code '101' was expected.":
+                        throw new GameException(0xC5);
+                    default:
+                        throw new GameException(0xCF, exception);
+                }
+            }
+
+            ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
+        }
+
+        public Connection(UniverseGroup group, string uri, string auth, string team)
+        {
+            Group = group;
+
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0&team={team}");
+
+            socket = new ClientWebSocket();
+
+            CultureInfo culture = new CultureInfo("de-DE");
+            CultureInfo.CurrentCulture = culture;
+
+            try
+            {
+                socket.ConnectAsync(parsedUri, CancellationToken.None).GetAwaiter().GetResult();
+            }
+            catch (Exception exception)
+            {
+                switch (exception.Message.ToLower())
+                {
+                    case "unable to connect to the remote server":
+                        throw new GameException(0xC0);
+                    case "the server returned status code '401' when status code '101' was expected.":
+                        throw new GameException(0xC1);
+                    case "the server returned status code '412' when status code '101' was expected.":
+                        throw new GameException(0xC2);
+                    case "the server returned status code '417' when status code '101' was expected.":
+                        throw new GameException(0xC3);
+                    case "the server returned status code '415' when status code '101' was expected.":
+                        throw new GameException(0xC4);
+                    case "the server returned status code '409' when status code '101' was expected.":
+                        throw new GameException(0xC5);
                     default:
                         throw new GameException(0xCF, exception);
                 }
@@ -88,7 +131,41 @@ namespace Flattiverse.Connector.Network
 
         public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth)
         {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0");
+
+            ClientWebSocket socket = new ClientWebSocket();
+
+            try
+            {
+                await socket.ConnectAsync(parsedUri, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                switch (exception.Message.ToLower())
+                {
+                    case "unable to connect to the remote server":
+                        throw new GameException(0xC0);
+                    case "the server returned status code '401' when status code '101' was expected.":
+                        throw new GameException(0xC1);
+                    case "the server returned status code '412' when status code '101' was expected.":
+                        throw new GameException(0xC2);
+                    case "the server returned status code '417' when status code '101' was expected.":
+                        throw new GameException(0xC3);
+                    case "the server returned status code '415' when status code '101' was expected.":
+                        throw new GameException(0xC4);
+                    case "the server returned status code '409' when status code '101' was expected.":
+                        throw new GameException(0xC5);
+                    default:
+                        throw new GameException(0xCF, exception);
+                }
+            }
+
+            return new Connection(group, socket);
+        }
+
+        public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth, string team)
+        {
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0&team={team}");
 
             ClientWebSocket socket = new ClientWebSocket();
 
