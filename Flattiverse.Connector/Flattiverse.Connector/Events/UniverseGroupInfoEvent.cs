@@ -57,6 +57,11 @@ namespace Flattiverse.Connector.Events
         public readonly bool Spectators;
 
         /// <summary>
+        /// The amount of ships that you can register in the UniverseGroup.
+        /// </summary>
+        public readonly int RegisterShipLimit;
+
+        /// <summary>
         /// The teams in the UniverseGroup.
         /// </summary>
         public readonly IReadOnlyCollection<Team> Teams;
@@ -90,6 +95,7 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out MaxBasesPerPlayer, "metrics", "maxBasesPerPlayer");
             Utils.Traverse(element, out MaxBasesPerTeam, "metrics", "maxBasesPerTeam");
             Utils.Traverse(element, out Spectators, "metrics", "spectators");
+            Utils.Traverse(element, out RegisterShipLimit, "metrics", "registerShipLimit");
 
             Utils.Traverse(element, out JsonElement teamsArray, "teams");
 
@@ -136,6 +142,7 @@ namespace Flattiverse.Connector.Events
             group.maxBasesPerPlayer = MaxBasesPerPlayer;
             group.maxBasesPerTeam = MaxBasesPerTeam;
             group.spectators = Spectators;
+            group.registerShipLimit = RegisterShipLimit;
             group.teams = teams;
             group.universes = universes;
             group.systems = systems;

@@ -32,6 +32,7 @@ namespace Flattiverse.Connector
         internal int maxBasesPerPlayer;
         internal int maxBasesPerTeam;
         internal bool spectators;
+        internal int registerShipLimit;
 
         internal Team[] teams = new Team[16];
         internal Universe[] universes = new Universe[64];
@@ -139,6 +140,11 @@ namespace Flattiverse.Connector
         /// True, if joining this universe as a spectator is allowed.
         /// </summary>
         public bool Spectators => spectators;
+
+        /// <summary>
+        /// The amount of ships that you can register in the UniverseGroup.
+        /// </summary>
+        public int RegisterShipLimit => registerShipLimit;
 
         /// <summary>
         /// The teams in the UniverseGroup.
@@ -322,8 +328,8 @@ namespace Flattiverse.Connector
                     else if (firstAvailableSlot == -1)
                         firstAvailableSlot = position;
 
-                // TOG: Wenn Wert implementiert: Auskommentieren: if (controllableCount >= registerShipLimit)
-                //     throw new GameException(0x11);
+                if (controllableCount >= registerShipLimit)
+                    throw new GameException(0x11);
 
                 if (controllableCount >= maxShipsPerPlayer)
                     throw new GameException(0x10);
