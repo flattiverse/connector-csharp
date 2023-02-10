@@ -8,6 +8,8 @@ namespace Flattiverse.Connector.Units
     {
         public int Level;
         public double Value;
+        public double AreaIncrease;
+        public double WeightIncrease;
 
         public int MaxLevel;
 
@@ -22,7 +24,12 @@ namespace Flattiverse.Connector.Units
 
             Utils.Traverse(element, out Value, "value");
 
-            group.TryGetSystem(kind, Level, out system);
+            if (!group.TryGetSystem(kind, Level, out system))
+                group.connection.PushFailureEvent($"Couldn't get UpgradePath in PlayerUnit for system {kind}.");
+
+            AreaIncrease = system!.AreaIncrease;
+            WeightIncrease = system!.WeightIncrease;
+
         }
 
         internal static bool TryGetStartSystem(UniverseGroup universeGroup, PlayerUnitSystemKind kind, [NotNullWhen(returnValue: true)] out PlayerUnitSystem? system)
@@ -69,6 +76,9 @@ namespace Flattiverse.Connector.Units
 
             Kind = path.Kind;
             Level = path.Level;
+
+            AreaIncrease = path.AreaIncrease;
+            WeightIncrease = path.WeightIncrease;
         }
     }
 }
