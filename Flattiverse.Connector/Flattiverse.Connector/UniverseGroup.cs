@@ -367,7 +367,7 @@ namespace Flattiverse.Connector
 
             using (Query query = connection.Query("controllableNew"))
             {
-                query.Write("id", firstAvailableSlot);
+                query.Write("controllable", firstAvailableSlot);
                 query.Write("name", name);
 
                 await query.Send().ConfigureAwait(false);

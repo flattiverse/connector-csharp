@@ -28,7 +28,7 @@ internal class Program
         //Unit
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
-        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiUser))
         //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
         {
             //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
@@ -93,6 +93,9 @@ internal class Program
                     case AddedUnitEvent addedUnitEvent:
                         Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Unit.Name}");
                         break;
+                    //case TickProcessedEvent tickProcessedEvent:
+                    //    Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
+                    //    break;
                 }
         }
     }
