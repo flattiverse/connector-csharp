@@ -45,6 +45,12 @@ namespace Flattiverse.Connector
                     return "[0x11] You exceedet the amount of non built units for this UniverseGroup.";
                 case 0x12:
                     return "[0x12] You exceedet the amount of allowed ships per team for this UniverseGroup.";
+                case 0x20:
+                    return "[0x20] You need to die before you can use Continue().";
+                case 0x21:
+                    return "[0x21] All start locations are currently overcrowded. Try again, later.";
+                case 0x22:
+                    return "[0x22] You need to Continue() before suiciding.";
                 case 0xA0:
                     return "[0xA0] Your JSON defintion is missing some mandatory base value like name or radius.";
                 case 0xA1:
@@ -71,6 +77,8 @@ namespace Flattiverse.Connector
                     return "[0xB2] You dishonored the naming criteria of units. Only allowed characters are: space, dot, minus, underscore, a-z, A-Z and unicode characters between 192-214, 216-246 and 248-687.";
                 case 0xB3:
                     return "[0xB3] The requested slot is not free.";
+                case 0xB4:
+                    return "[0xB4] The name is already in use, either by another player's ship or by an unit in one of the universes.";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:

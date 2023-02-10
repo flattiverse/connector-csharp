@@ -54,6 +54,14 @@ internal class Program
             {
                 Controllable c = await universeGroup.NewShip("huihui");
 
+                Thread.Sleep(1000);
+
+                await c.Continue();
+
+                Thread.Sleep(1000);
+
+                await c.Kill();
+
                 while (true)
                     await Task.Delay(100);
             });

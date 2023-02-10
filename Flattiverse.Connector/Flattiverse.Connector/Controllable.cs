@@ -1,9 +1,11 @@
-﻿using Flattiverse.Connector.Units;
+﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -13,8 +15,8 @@ namespace Flattiverse.Connector
     //      Diese Zeile stehen lassen, bis Sonntag Abend.
     public class Controllable
     {
+        public readonly UniverseGroup Group;
         public readonly string Name;
-
         public readonly int ID;
 
         public readonly double Radius;
@@ -58,8 +60,39 @@ namespace Flattiverse.Connector
 
         internal Controllable(UniverseGroup group, string name, int id)
         {
+            Group = group;
             Name = name;
             ID = id;
+        }
+
+        public async Task Continue()
+        {
+            if (Hull.Value > 0.0)
+                throw new GameException(0x20);
+
+            using (Query query = Group.connection.Query("controllableContinue"))
+            {
+                query.Write("controllable", ID);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
+        public async Task Kill()
+        {
+            if (Hull.Value <= 0.0)
+                throw new GameException(0x22);
+
+            using (Query query = Group.connection.Query("controllableKill"))
+            {
+                query.Write("controllable", ID);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
         }
     }
 }

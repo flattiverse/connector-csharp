@@ -361,7 +361,7 @@ namespace Flattiverse.Connector
                 if (firstAvailableSlot == -1)
                     throw new GameException(0xB2);
 
-                controllable = new Controllable(name, firstAvailableSlot);
+                controllable = new Controllable(this, name, firstAvailableSlot);
                 controllables[firstAvailableSlot] = controllable;
             }
 
