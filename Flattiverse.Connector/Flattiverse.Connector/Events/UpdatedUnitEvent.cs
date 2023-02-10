@@ -11,7 +11,7 @@ namespace Flattiverse.Connector.Events
     {
         public readonly Unit Unit;
 
-        internal UpdatedUnitEvent(UniverseGroup group, JsonElement element) : base(element)
+        internal UpdatedUnitEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out JsonElement unit, "unit");
 

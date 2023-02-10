@@ -1,11 +1,14 @@
 ﻿using System.Text.Json;
-
 namespace Flattiverse.Connector.Events
 {
     public class UnitEvent : FlattiverseEvent
     {
-        internal UnitEvent(JsonElement element) : base()
+        public readonly Universe Universe;
+
+        internal UnitEvent(UniverseGroup group, JsonElement element) : base()
         {
+            Utils.Traverse(element, out int universe, "universe");
+            Universe = group.universes[universe];
         }
     }
 }

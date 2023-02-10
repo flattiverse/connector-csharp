@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly string Name;
 
-        internal RemovedUnitEvent(UniverseGroup group, JsonElement element) : base(element)
+        internal RemovedUnitEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out Name, "name");
         }
