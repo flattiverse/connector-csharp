@@ -361,15 +361,24 @@ namespace Flattiverse.Connector.Network
                                         {
                                             PlayerUnit unit = (PlayerUnit)addedUnitEvent.Unit;
 
-                                            // MALUK: Wenn der THomas das korrigiert hat, dann Referenz-Vergleich.
-                                            if (unit.Player == Group.Player.ID)
+                                            if (unit.Player == Group.Player && Group.controllables[unit.Controllable] is not null)
+                                                Group.controllables[unit.Controllable].update(addedUnitEvent.Universe, unit);
+                                        }
+                                        break;
+                                    case UpdatedUnitEvent updatedUnitEvent:
+                                        if (updatedUnitEvent.Unit.Kind == Units.UnitKind.PlayerUnit)
+                                        {
+                                            PlayerUnit unit = (PlayerUnit)updatedUnitEvent.Unit;
+
+                                            if (unit.Player == Group.Player && Group.controllables[unit.Controllable] is not null)
+                                                Group.controllables[unit.Controllable].update(updatedUnitEvent.Universe, unit);
                                         }
                                         break;
                                     case RemovedUnitEvent removedUnitEvent:
+                                        if (removedUnitEvent.Player == Group.Player && removedUnitEvent.Controllable >= 0 && Group.controllables[removedUnitEvent.Controllable] is not null)
+                                            Group.controllables[removedUnitEvent.Controllable].update();
                                         break;
                                 }
-
-                                if (@event.Kind == EventKind.UnitAdded && (AddedUnitEvent))
 
                                 PushEvent(@event);
                             }
