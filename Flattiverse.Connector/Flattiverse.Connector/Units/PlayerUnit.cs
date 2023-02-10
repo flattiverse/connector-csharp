@@ -74,85 +74,85 @@ namespace Flattiverse.Connector.Units
                 switch (kind)
                 {
                     case PlayerUnitSystemKind.Hull:
-                        Hull = new PlayerUnitRegularSystem(group, kind, element);
+                        Hull = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.Shield:
-                        Shield = new PlayerUnitRegularSystem(group, kind, element);
+                        Shield = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.Armor:
-                        Armor = new PlayerUnitArmorSystem(group, kind, element);
+                        Armor = new PlayerUnitArmorSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.Thruster:
-                        Thruster = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        Thruster = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.Nozzle:
-                        Nozzle = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        Nozzle = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.Scanner:
-                        Scanner = new PlayerUnitScannerSystem(group, kind, element);
+                        Scanner = new PlayerUnitScannerSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.Analyzer:
-                        Analyzer = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        Analyzer = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CellsEnergy:
-                        CellsEnergy = new PlayerUnitRegularSystem(group, kind, element);
+                        CellsEnergy = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CellsParticles:
-                        CellsParticles = new PlayerUnitRegularSystem(group, kind, element);
+                        CellsParticles = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.BatteryEnergy:
-                        BatteryEnergy = new PlayerUnitRegularSystem(group, kind, element);
+                        BatteryEnergy = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.BatteryParticles:
-                        BatteryParticles = new PlayerUnitRegularSystem(group, kind, element);
+                        BatteryParticles = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponLauncher:
-                        WeaponLauncher = new PlayerUnitRegularSystem(group, kind, element);
+                        WeaponLauncher = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponPayloadDamage:
-                        WeaponPayloadDamage = new PlayerUnitRegularSystem(group, kind, element);
+                        WeaponPayloadDamage = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponPayloadRadius:
-                        WeaponPayloadRadius = new PlayerUnitRegularSystem(group, kind, element);
+                        WeaponPayloadRadius = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponFactory:
-                        WeaponFactory = new PlayerUnitRegularSystem(group, kind, element);
+                        WeaponFactory = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponStorage:
-                        WeaponStorage = new PlayerUnitRegularSystem(group, kind, element);
+                        WeaponStorage = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CargoIron:
-                        CargoIron = new PlayerUnitRegularSystem(group, kind, element);
+                        CargoIron = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CargoCarbon:
-                        CargoCarbon = new PlayerUnitRegularSystem(group, kind, element);
+                        CargoCarbon = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CargoSilicon:
-                        CargoSilicon = new PlayerUnitRegularSystem(group, kind, element);
+                        CargoSilicon = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CargoPlatinum:
-                        CargoPlatinum = new PlayerUnitRegularSystem(group, kind, element);
+                        CargoPlatinum = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CargoGold:
-                        CargoGold = new PlayerUnitRegularSystem(group, kind, element);
+                        CargoGold = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.CargoSpecial:
-                        CargoSpecial = new PlayerUnitRegularSystem(group, kind, element);
+                        CargoSpecial = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.ExtractorIron:
-                        ExtractorIron = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        ExtractorIron = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.ExtractorCarbon:
-                        ExtractorCarbon = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        ExtractorCarbon = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.ExtractorSilicon:
-                        ExtractorSilicon = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        ExtractorSilicon = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.ExtractorPlatinum:
-                        ExtractorPlatinum = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        ExtractorPlatinum = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.ExtractorGold:
-                        ExtractorGold = new PlayerUnitEnergyConsumingSystem(group, kind, element);
+                        ExtractorGold = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     default:
                         group.connection.PushFailureEvent($"PlayerUnitSystemKind {system.Name} is not implemented.");
