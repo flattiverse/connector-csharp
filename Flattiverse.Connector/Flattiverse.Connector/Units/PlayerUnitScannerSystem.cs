@@ -8,6 +8,13 @@ namespace Flattiverse.Connector.Units
         public double MaxAngle;
         public double EnergyUsagePerSurfaceUnit;
 
+        public PlayerUnitScannerSystem(UniverseGroup universeGroup, PlayerUnitSystemUpgradepath path) : base(universeGroup, path)
+        {
+            MaxRange = path.Value0;
+            MaxAngle = path.Value1;
+            EnergyUsagePerSurfaceUnit = path.Value2;
+        }
+
         public PlayerUnitScannerSystem(UniverseGroup group, PlayerUnitSystemKind kind, JsonElement element) : base(group, kind, element)
         {
             MaxRange = system.Value0;

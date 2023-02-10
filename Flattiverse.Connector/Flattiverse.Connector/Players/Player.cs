@@ -53,6 +53,7 @@ namespace Flattiverse.Connector.Accounts
             Utils.Traverse(element, out kills, "kills");
             Utils.Traverse(element, out rank, "rank");
             Utils.Traverse(element, out string playerKind, "playerKind");
+            //Team
             Enum.TryParse(playerKind, true, out this.playerKind);
         }
 

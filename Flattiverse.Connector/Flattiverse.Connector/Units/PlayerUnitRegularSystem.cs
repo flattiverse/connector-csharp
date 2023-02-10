@@ -6,6 +6,11 @@ namespace Flattiverse.Connector.Units
     {
         public double MaxValue;
 
+        public PlayerUnitRegularSystem(UniverseGroup universeGroup, PlayerUnitSystemUpgradepath path) : base(universeGroup, path)
+        {
+            MaxValue = path.Value0;
+        }
+
         public PlayerUnitRegularSystem(UniverseGroup group, PlayerUnitSystemKind kind, JsonElement element) : base(group, kind, element)
         {
             MaxValue = system.Value0;
