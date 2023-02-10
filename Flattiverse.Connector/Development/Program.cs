@@ -28,8 +28,8 @@ internal class Program
         //Unit
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
-        //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
-        using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiAdmn))
+        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
         {
             //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
             //    Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
@@ -49,6 +49,14 @@ internal class Program
             //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
             //foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
             //    Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
+
+            ThreadPool.QueueUserWorkItem(async delegate
+            {
+                Controllable c = await universeGroup.NewShip("huihui");
+
+                while (true)
+                    await Task.Delay(100);
+            });
 
             while (true)
                 switch (await universeGroup.NextEvent())
