@@ -2,6 +2,7 @@
 
 namespace Flattiverse.Connector.Units
 {
+    [UnitIdentifier("playerUnit")]
     public class PlayerUnit : MobileUnit
     {
         public int Player;
