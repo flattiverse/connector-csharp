@@ -229,6 +229,18 @@ namespace Flattiverse.Connector
                 }
         }
 
+        internal void update()
+        {
+            hull.Value = 0.0;
+        }
+
+        internal void update(Universe universe, PlayerUnit playerUnit)
+        {
+            hull.Value = playerUnit.Hull.Value;
+
+            // TOG: Hier müssen im Prinzip alle Werte übernommen werden, wann immer ein Update kommt.
+        }
+
         public async Task Continue()
         {
             if (hull.Value > 0.0)

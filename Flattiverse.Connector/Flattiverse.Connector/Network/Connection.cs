@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Units;
 using System;
 using System.Buffers;
 using System.Globalization;
@@ -352,6 +353,24 @@ namespace Flattiverse.Connector.Network
                             if (subElement.ValueKind == JsonValueKind.Object)
                             {
                                 @event = EventRouter.CreateFromJson(Group, subElement);
+
+                                switch (@event)
+                                {
+                                    case AddedUnitEvent addedUnitEvent:
+                                        if (addedUnitEvent.Unit.Kind == Units.UnitKind.PlayerUnit)
+                                        {
+                                            PlayerUnit unit = (PlayerUnit)addedUnitEvent.Unit;
+
+                                            // MALUK: Wenn der THomas das korrigiert hat, dann Referenz-Vergleich.
+                                            if (unit.Player == Group.Player.ID)
+                                        }
+                                        break;
+                                    case RemovedUnitEvent removedUnitEvent:
+                                        break;
+                                }
+
+                                if (@event.Kind == EventKind.UnitAdded && (AddedUnitEvent))
+
                                 PushEvent(@event);
                             }
                             else
