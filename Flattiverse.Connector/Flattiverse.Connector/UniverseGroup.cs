@@ -3,10 +3,7 @@ using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Emit;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Flattiverse.Connector
 {
@@ -488,8 +485,10 @@ namespace Flattiverse.Connector
         /// <param name="value0">The first effecting value this system has.</param>
         /// <param name="value1">The second effecting value this system has.</param>
         /// <param name="value2">The third effecting value this system has.</param>
+        /// <param name="areaIncrease">The increase in area of the ship using this system.</param>
+        /// <param name="weightIncrease">The increase in weight of the ship using this system.</param>
         /// <returns>Nothing, or throws an error.</returns>
-        public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2)
+        public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, double areaIncrease, double weightIncrease)
         {
             using (Query query = connection.Query("systemSet"))
             {
@@ -506,6 +505,8 @@ namespace Flattiverse.Connector
                 query.Write("value0", value0);
                 query.Write("value1", value1);
                 query.Write("value2", value2);
+                query.Write("areaIncrease", areaIncrease);
+                query.Write("weightIncrease", weightIncrease);
 
                 await query.Send().ConfigureAwait(false);
 
@@ -529,10 +530,12 @@ namespace Flattiverse.Connector
         /// <param name="value0">The first effecting value this system has.</param>
         /// <param name="value1">The second effecting value this system has.</param>
         /// <param name="value2">The third effecting value this system has.</param>
+        /// <param name="areaIncrease">The increase in area of the ship using this system.</param>
+        /// <param name="weightIncrease">The increase in weight of the ship using this system.</param>
         /// <param name="requiredKind">The kind of the system which needs to be present in order to build this system.</param>
         /// <param name="requiredLevel">The level of the system which needs to be present in order to build this system.</param>
         /// <returns>Nothing, or throws an error.</returns>
-        public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, PlayerUnitSystemKind requiredKind, int requiredLevel)
+        public async Task SetSystem(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, double areaIncrease, double weightIncrease, PlayerUnitSystemKind requiredKind, int requiredLevel)
         {
             using (Query query = connection.Query("systemSetRequired"))
             {
@@ -549,6 +552,8 @@ namespace Flattiverse.Connector
                 query.Write("value0", value0);
                 query.Write("value1", value1);
                 query.Write("value2", value2);
+                query.Write("areaIncrease", areaIncrease);
+                query.Write("weightIncrease", weightIncrease);
                 query.Write("requiredSystem", requiredKind.ToString());
                 query.Write("requiredLevel", requiredLevel);
 

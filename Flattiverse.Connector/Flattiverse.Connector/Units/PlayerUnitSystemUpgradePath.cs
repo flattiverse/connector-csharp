@@ -24,6 +24,9 @@ namespace Flattiverse.Connector.Units
         public readonly double Value1;
         public readonly double Value2;
 
+        public readonly double AreaIncrease;
+        public readonly double WeightIncrease;
+
         public PlayerUnitSystemUpgradepath(JsonElement element)
         {
             Utils.Traverse(element, out string system, "system");
@@ -43,6 +46,8 @@ namespace Flattiverse.Connector.Units
             Utils.Traverse(element, out Value0, "value0");
             Utils.Traverse(element, out Value1, "value1");
             Utils.Traverse(element, out Value2, "value2");
+            Utils.Traverse(element, out AreaIncrease, "areaIncrease");
+            Utils.Traverse(element, out WeightIncrease, "weightIncrease");
 
             if (Utils.Traverse(element, out string requiredSystem, "requiredSystem"))
             {
@@ -54,7 +59,7 @@ namespace Flattiverse.Connector.Units
             }
         }
 
-        public PlayerUnitSystemUpgradepath(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2)
+        public PlayerUnitSystemUpgradepath(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, double areaIncrease, double weightIncrease)
         {
             Kind = kind;
             Level = level;
@@ -69,9 +74,11 @@ namespace Flattiverse.Connector.Units
             Value0 = value0;
             Value1 = value1;
             Value2 = value2;
+            AreaIncrease = areaIncrease;
+            WeightIncrease = weightIncrease;
         }
 
-        public PlayerUnitSystemUpgradepath(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, PlayerUnitSystemIdentifier? requiredComponent)
+        public PlayerUnitSystemUpgradepath(PlayerUnitSystemKind kind, int level, double energy, double particles, double iron, double carbon, double silicon, double platinum, double gold, int time, double value0, double value1, double value2, double areaIncrease, double weightIncrease, PlayerUnitSystemIdentifier? requiredComponent)
         {
             Kind = kind;
             Level = level;
@@ -86,6 +93,8 @@ namespace Flattiverse.Connector.Units
             Value0 = value0;
             Value1 = value1;
             Value2 = value2;
+            AreaIncrease = areaIncrease;
+            WeightIncrease = weightIncrease;
 
             RequiredComponent = requiredComponent;
         }
