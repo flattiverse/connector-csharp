@@ -1,13 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Flattiverse.Connector
 {
@@ -19,49 +11,130 @@ namespace Flattiverse.Connector
         public readonly string Name;
         public readonly int ID;
 
-        public readonly double Radius;
-        public readonly Vector Position;
-        public readonly Vector Movement;
-        public readonly double Direction;
-        public readonly Team? Team;
-        public readonly double Gravity;
-        public readonly double EnergyOutput;
-        public readonly bool IsAlive;
-        public readonly double TurnRate;
+        private double radius;
+        private Vector position;
+        private Vector movement;
+        private double direction;
+        private Team? team;
+        private double gravity;
+        private double energyOutput;
+        private bool isAlive;
+        private double turnRate;
 
-        public readonly PlayerUnitSystem Hull;
-        public readonly PlayerUnitSystem CellsEnergy;
-        public readonly PlayerUnitSystem BatteryEnergy;
-        public readonly PlayerUnitSystem Thruster;
-        public readonly PlayerUnitSystem Nozzle;
-        public readonly PlayerUnitSystem Scanner;
-        public readonly PlayerUnitSystem? Armor;
-        public readonly PlayerUnitSystem? Shield;
-        public readonly PlayerUnitSystem? Analyzer;
-        public readonly PlayerUnitSystem? CellsParticles;
-        public readonly PlayerUnitSystem? BatteryParticles;
-        public readonly PlayerUnitSystem? WeaponLauncher;
-        public readonly PlayerUnitSystem? WeaponPayloadDamage;
-        public readonly PlayerUnitSystem? WeaponPayloadRadius;
-        public readonly PlayerUnitSystem? WeaponFactory;
-        public readonly PlayerUnitSystem? WeaponStorage;
-        public readonly PlayerUnitSystem? CargoIron;
-        public readonly PlayerUnitSystem? CargoCarbon;
-        public readonly PlayerUnitSystem? CargoSilicon;
-        public readonly PlayerUnitSystem? CargoPlatinum;
-        public readonly PlayerUnitSystem? CargoGold;
-        public readonly PlayerUnitSystem? CargoSpecial;
-        public readonly PlayerUnitSystem? ExtractorIron;
-        public readonly PlayerUnitSystem? ExtractorCarbon;
-        public readonly PlayerUnitSystem? ExtractorSilicon;
-        public readonly PlayerUnitSystem? ExtractorPlatinum;
-        public readonly PlayerUnitSystem? ExtractorGold;
+        private PlayerUnitSystem hull;
+        private PlayerUnitSystem cellsEnergy;
+        private PlayerUnitSystem batteryEnergy;
+        private PlayerUnitSystem thruster;
+        private PlayerUnitSystem nozzle;
+        private PlayerUnitSystem scanner;
+        private PlayerUnitSystem? armor;
+        private PlayerUnitSystem? shield;
+        private PlayerUnitSystem? analyzer;
+        private PlayerUnitSystem? cellsParticles;
+        private PlayerUnitSystem? batteryParticles;
+        private PlayerUnitSystem? weaponLauncher;
+        private PlayerUnitSystem? weaponPayloadDamage;
+        private PlayerUnitSystem? weaponPayloadRadius;
+        private PlayerUnitSystem? weaponFactory;
+        private PlayerUnitSystem? weaponStorage;
+        private PlayerUnitSystem? cargoIron;
+        private PlayerUnitSystem? cargoCarbon;
+        private PlayerUnitSystem? cargoSilicon;
+        private PlayerUnitSystem? cargoPlatinum;
+        private PlayerUnitSystem? cargoGold;
+        private PlayerUnitSystem? cargoSpecial;
+        private PlayerUnitSystem? extractorIron;
+        private PlayerUnitSystem? extractorCarbon;
+        private PlayerUnitSystem? extractorSilicon;
+        private PlayerUnitSystem? extractorPlatinum;
+        private PlayerUnitSystem? extractorGold;
 
-        internal Controllable(UniverseGroup group, string name, int id/*, double radius, Vector position, Vector movement, double direction, Team? team, double gravity, */)
+        public double Radius => radius;
+
+        public Vector Position => position;
+
+        public Vector Movement => movement;
+
+        public double Direction => direction;
+
+        public Team? Team => team;
+
+        public double Gravity => gravity;
+
+        public double EnergyOutput => energyOutput;
+
+        public bool IsAlive => isAlive;
+
+        public double TurnRate => turnRate;
+
+        public PlayerUnitSystem Hull => hull;
+
+        public PlayerUnitSystem CellsEnergy => cellsEnergy;
+
+        public PlayerUnitSystem BatteryEnergy => batteryEnergy;
+
+        public PlayerUnitSystem Thruster => thruster;
+
+        public PlayerUnitSystem Nozzle => nozzle;
+
+        public PlayerUnitSystem Scanner => scanner;
+
+        public PlayerUnitSystem? Armor => armor;
+
+        public PlayerUnitSystem? Shield => shield;
+
+        public PlayerUnitSystem? Analyzer => analyzer;
+
+        public PlayerUnitSystem? CellsParticles => cellsParticles;
+
+        public PlayerUnitSystem? BatteryParticles => batteryParticles;
+
+        public PlayerUnitSystem? WeaponLauncher => weaponLauncher;
+
+        public PlayerUnitSystem? WeaponPayloadDamage => weaponPayloadDamage;
+
+        public PlayerUnitSystem? WeaponPayloadRadius => weaponPayloadRadius;
+
+        public PlayerUnitSystem? WeaponFactory => weaponFactory;
+
+        public PlayerUnitSystem? WeaponStorage => weaponStorage;
+
+        public PlayerUnitSystem? CargoIron => cargoIron;
+
+        public PlayerUnitSystem? CargoCarbon => cargoCarbon;
+
+        public PlayerUnitSystem? CargoSilicon => cargoSilicon;
+
+        public PlayerUnitSystem? CargoPlatinum => cargoPlatinum;
+
+        public PlayerUnitSystem? CargoGold => cargoGold;
+
+        public PlayerUnitSystem? CargoSpecial => cargoSpecial;
+
+        public PlayerUnitSystem? ExtractorIron => extractorIron;
+
+        public PlayerUnitSystem? ExtractorCarbon => extractorCarbon;
+
+        public PlayerUnitSystem? ExtractorSilicon => extractorSilicon;
+
+        public PlayerUnitSystem? ExtractorPlatinum => extractorPlatinum;
+
+        public PlayerUnitSystem? ExtractorGold => extractorGold;
+
+        internal Controllable(UniverseGroup group, string name, int id/*, double radius, Vector position, Vector movement, double direction, Team? team, double gravity, double energyOutput, double turnRate*/)
         {
             Group = group;
             Name = name;
             ID = id;
+
+            //this.radius = radius;
+            //this.position = position;
+            //this.movement = movement;
+            //this.direction = direction;
+            //this.team = team;
+            //this.gravity = gravity;
+            //this.energyOutput = energyOutput;
+            //this.turnRate = turnRate;
 
             foreach (PlayerUnitSystemKind kind in Enum.GetValues(typeof(PlayerUnitSystemKind)))
                 if (PlayerUnitSystem.TryGetStartSystem(group, kind, out PlayerUnitSystem? system))
@@ -69,85 +142,85 @@ namespace Flattiverse.Connector
                     switch (kind)
                     {
                         case PlayerUnitSystemKind.Hull:
-                            Hull = system;
+                            hull = system;
                             break;
                         case PlayerUnitSystemKind.Shield:
-                            Shield = system;
+                            shield = system;
                             break;
                         case PlayerUnitSystemKind.Armor:
-                            Armor = system;
+                            armor = system;
                             break;
                         case PlayerUnitSystemKind.Thruster:
-                            Thruster = system;
+                            thruster = system;
                             break;
                         case PlayerUnitSystemKind.Nozzle:
-                            Nozzle = system;
+                            nozzle = system;
                             break;
                         case PlayerUnitSystemKind.Scanner:
-                            Scanner = system;
+                            scanner = system;
                             break;
                         case PlayerUnitSystemKind.Analyzer:
-                            Analyzer = system;
+                            analyzer = system;
                             break;
                         case PlayerUnitSystemKind.CellsEnergy:
-                            CellsEnergy = system;
+                            cellsEnergy = system;
                             break;
                         case PlayerUnitSystemKind.CellsParticles:
-                            CellsParticles = system;
+                            cellsParticles = system;
                             break;
                         case PlayerUnitSystemKind.BatteryEnergy:
-                            BatteryEnergy = system;
+                            batteryEnergy = system;
                             break;
                         case PlayerUnitSystemKind.BatteryParticles:
-                            BatteryParticles = system;
+                            batteryParticles = system;
                             break;
                         case PlayerUnitSystemKind.WeaponLauncher:
-                            WeaponLauncher = system;
+                            weaponLauncher = system;
                             break;
                         case PlayerUnitSystemKind.WeaponPayloadDamage:
-                            WeaponPayloadDamage = system;
+                            weaponPayloadDamage = system;
                             break;
                         case PlayerUnitSystemKind.WeaponPayloadRadius:
-                            WeaponPayloadRadius = system;
+                            weaponPayloadRadius = system;
                             break;
                         case PlayerUnitSystemKind.WeaponFactory:
-                            WeaponFactory = system;
+                            weaponFactory = system;
                             break;
                         case PlayerUnitSystemKind.WeaponStorage:
-                            WeaponStorage = system;
+                            weaponStorage = system;
                             break;
                         case PlayerUnitSystemKind.CargoIron:
-                            CargoIron = system;
+                            cargoIron = system;
                             break;
                         case PlayerUnitSystemKind.CargoCarbon:
-                            CargoCarbon = system;
+                            cargoCarbon = system;
                             break;
                         case PlayerUnitSystemKind.CargoSilicon:
-                            CargoSilicon = system;
+                            cargoSilicon = system;
                             break;
                         case PlayerUnitSystemKind.CargoPlatinum:
-                            CargoPlatinum = system;
+                            cargoPlatinum = system;
                             break;
                         case PlayerUnitSystemKind.CargoGold:
-                            CargoGold = system;
+                            cargoGold = system;
                             break;
                         case PlayerUnitSystemKind.CargoSpecial:
-                            CargoSpecial = system;
+                            cargoSpecial = system;
                             break;
                         case PlayerUnitSystemKind.ExtractorIron:
-                            ExtractorIron = system;
+                            extractorIron = system;
                             break;
                         case PlayerUnitSystemKind.ExtractorCarbon:
-                            ExtractorCarbon = system;
+                            extractorCarbon = system;
                             break;
                         case PlayerUnitSystemKind.ExtractorSilicon:
-                            ExtractorSilicon = system;
+                            extractorSilicon = system;
                             break;
                         case PlayerUnitSystemKind.ExtractorPlatinum:
-                            ExtractorPlatinum = system;
+                            extractorPlatinum = system;
                             break;
                         case PlayerUnitSystemKind.ExtractorGold:
-                            ExtractorGold = system;
+                            extractorGold = system;
                             break;
                         default:
                             group.connection.PushFailureEvent($"PlayerUnitSystemKind {kind} is not implemented.");
@@ -158,7 +231,7 @@ namespace Flattiverse.Connector
 
         public async Task Continue()
         {
-            if (Hull.Value > 0.0)
+            if (hull.Value > 0.0)
                 throw new GameException(0x20);
 
             using (Query query = Group.connection.Query("controllableContinue"))
@@ -173,7 +246,7 @@ namespace Flattiverse.Connector
 
         public async Task Kill()
         {
-            if (Hull.Value <= 0.0)
+            if (hull.Value <= 0.0)
                 throw new GameException(0x22);
 
             using (Query query = Group.connection.Query("controllableKill"))
