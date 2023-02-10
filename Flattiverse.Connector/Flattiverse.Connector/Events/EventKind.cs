@@ -40,6 +40,10 @@
         /// <summary>
         /// This event informs of the addition of a unit to the universeGroup.
         /// </summary>
-        UnitAdded
+        UnitAdded,
+        /// <summary>
+        /// This event informs of the completion of a tick in the universeGroup.
+        /// </summary>
+        TickProcessed
     }
 }
