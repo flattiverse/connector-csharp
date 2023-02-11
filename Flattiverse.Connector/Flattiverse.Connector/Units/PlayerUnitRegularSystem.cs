@@ -15,5 +15,11 @@ namespace Flattiverse.Connector.Units
         {
             MaxValue = system.Value0;
         }
+
+        //internal override void Update(PlayerUnitSystem system)
+        //{
+        //    MaxValue = ((PlayerUnitRegularSystem)system).MaxValue;
+        //    base.Update(system);
+        //}
     }
 }

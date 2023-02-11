@@ -236,9 +236,50 @@ namespace Flattiverse.Connector
 
         internal void update(Universe universe, PlayerUnit playerUnit)
         {
-            hull.Value = playerUnit.Hull.Value;
+            hull = playerUnit.Hull;
+            cellsEnergy = playerUnit.CellsEnergy;
+            batteryEnergy = playerUnit.BatteryEnergy;
+            thruster = playerUnit.Thruster;
+            nozzle = playerUnit.Nozzle;
+            scanner = playerUnit.Scanner;
+            armor = playerUnit.Armor;
+            shield = playerUnit.Shield;
+            analyzer = playerUnit.Analyzer;
+            cellsParticles = playerUnit.CellsParticles;
+            batteryParticles = playerUnit.BatteryParticles;
+            weaponLauncher = playerUnit.WeaponLauncher;
+            weaponPayloadDamage = playerUnit.WeaponPayloadDamage;
+            weaponPayloadRadius = playerUnit.WeaponPayloadRadius;
+            weaponFactory = playerUnit.WeaponFactory;
+            weaponStorage = playerUnit.WeaponStorage;
+            cargoIron = playerUnit.CargoIron;
+            cargoCarbon = playerUnit.CargoCarbon;
+            cargoSilicon = playerUnit.CargoSilicon;
+            cargoPlatinum = playerUnit.CargoPlatinum;
+            cargoGold = playerUnit.CargoGold;
+            cargoSpecial = playerUnit.CargoSpecial;
+            extractorIron = playerUnit.ExtractorIron;
+            extractorCarbon = playerUnit.ExtractorCarbon;
+            extractorSilicon = playerUnit.ExtractorSilicon;
+            extractorPlatinum = playerUnit.ExtractorPlatinum;
+            extractorGold = playerUnit.ExtractorGold;
 
-            // TOG: Hier müssen im Prinzip alle Werte übernommen werden, wann immer ein Update kommt.
+            //Evtl. muss es so gemacht werden...
+
+            //if (playerUnit.Hull is not null) hull.Update(playerUnit.Hull);
+            //if (playerUnit.CellsEnergy is not null) cellsEnergy.Update(playerUnit.CellsEnergy);
+            //if (playerUnit.BatteryEnergy is not null) batteryEnergy.Update(playerUnit.BatteryEnergy);
+            //if (playerUnit.Thruster is not null) thruster.Update(playerUnit.Thruster);
+            //if (playerUnit.Nozzle is not null) nozzle.Update(playerUnit.Nozzle);
+            //if (playerUnit.Scanner is not null) scanner.Update(playerUnit.Scanner);
+
+            //if (playerUnit.Armor is not null)
+            //    if (armor is not null)
+            //        armor.Update(playerUnit.Armor);
+            //    else
+            //        armor = new PlayerUnitArmorSystem(playerUnit.Armor);
+
+            //etc...
         }
 
         public async Task Continue()

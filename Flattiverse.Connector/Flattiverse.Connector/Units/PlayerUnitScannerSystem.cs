@@ -21,5 +21,13 @@ namespace Flattiverse.Connector.Units
             MaxAngle = system.Value1;
             EnergyUsagePerSurfaceUnit = system.Value2;
         }
+
+        //internal override void Update(PlayerUnitSystem system)
+        //{
+        //    MaxRange = ((PlayerUnitScannerSystem)system).MaxRange;
+        //    MaxAngle = ((PlayerUnitScannerSystem)system).MaxAngle;
+        //    EnergyUsagePerSurfaceUnit = ((PlayerUnitScannerSystem)system).EnergyUsagePerSurfaceUnit;
+        //    base.Update(system);
+        //}
     }
 }

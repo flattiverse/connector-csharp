@@ -18,5 +18,12 @@ namespace Flattiverse.Connector.Units
             EnergyUsage = system.Value1;
             ParticlesUsage = system.Value2;
         }
+
+        //internal override void Update(PlayerUnitSystem system)
+        //{
+        //    EnergyUsage = ((PlayerUnitEnergyConsumingSystem)system).EnergyUsage;
+        //    ParticlesUsage = ((PlayerUnitEnergyConsumingSystem)system).ParticlesUsage;
+        //    base.Update(system);
+        //}
     }
 }

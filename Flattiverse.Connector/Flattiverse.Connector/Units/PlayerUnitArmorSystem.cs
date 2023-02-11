@@ -18,5 +18,12 @@ namespace Flattiverse.Connector.Units
             IronUsage = system.Value1;
             PlatinumUsage = system.Value2;
         }
+
+        //internal override void Update(PlayerUnitSystem system)
+        //{
+        //    IronUsage = ((PlayerUnitArmorSystem)system).IronUsage;
+        //    PlatinumUsage = ((PlayerUnitArmorSystem)system).PlatinumUsage;
+        //    base.Update(system);
+        //}
     }
 }

@@ -68,6 +68,14 @@ namespace Flattiverse.Connector.Units
             return true;
         }
 
+        //internal virtual void Update(PlayerUnitSystem system)
+        //{
+        //    Level = system.Level;
+        //    Value = system.Value;
+        //    AreaIncrease = system.AreaIncrease;
+        //    WeightIncrease = system.WeightIncrease;
+        //}
+
         internal PlayerUnitSystem(UniverseGroup universeGroup, PlayerUnitSystemUpgradepath path)
         {
             for (int level = 1; level < 32; level++)
