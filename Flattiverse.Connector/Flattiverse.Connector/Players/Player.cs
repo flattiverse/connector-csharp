@@ -35,7 +35,9 @@ namespace Flattiverse.Connector.Accounts
         /// </summary>
         public readonly bool Admin;
 
-        // TOG: Player müssen ihr Team übertragen, in dem sie sind. Das Team muss dieser Variable zugeordnet werden, was ich hier mache ich jetzt erst Mal nur ein Workaround.
+        /// <summary>
+        /// The team the player is in.
+        /// </summary>
         public readonly Team Team;
 
         public readonly UniverseGroup Group;
@@ -45,15 +47,12 @@ namespace Flattiverse.Connector.Accounts
         private long kills;
         private long deaths;
         private long collisions;
-        
+
         private TimeSpan ping;
 
         internal Player(UniverseGroup group, JsonElement element)
         {
             Group = group;
-
-            // TOG: Siehe Kommentar oben.
-            Team = group.teams[0];
 
             Utils.Traverse(element, out ID, "id");
             Utils.Traverse(element, out Name, "name");
@@ -64,7 +63,8 @@ namespace Flattiverse.Connector.Accounts
             Utils.Traverse(element, out kills, "kills");
             Utils.Traverse(element, out rank, "rank");
             Utils.Traverse(element, out string playerKind, "playerKind");
-            //Team
+            Utils.Traverse(element, out int teamID, "team");
+            Team = group.teams[teamID];
             Enum.TryParse(playerKind, true, out this.playerKind);
         }
 
