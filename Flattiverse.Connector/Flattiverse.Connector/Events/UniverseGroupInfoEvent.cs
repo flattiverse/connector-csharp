@@ -103,7 +103,7 @@ namespace Flattiverse.Connector.Events
 
             foreach (JsonElement teamObject in teamsArray.EnumerateArray())
             {
-                Team team = new Team(teamObject);
+                Team team = new Team(group, teamObject);
                 teams[team.ID] = team;
             }
 

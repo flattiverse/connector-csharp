@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Players;
+﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Players;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -34,6 +35,11 @@ namespace Flattiverse.Connector.Accounts
         /// </summary>
         public readonly bool Admin;
 
+        // TOG: Player müssen ihr Team übertragen, in dem sie sind. Das Team muss dieser Variable zugeordnet werden, was ich hier mache ich jetzt erst Mal nur ein Workaround.
+        public readonly Team Team;
+
+        public readonly UniverseGroup Group;
+
         private double pvpScore;
         private int rank;
         private long kills;
@@ -42,8 +48,13 @@ namespace Flattiverse.Connector.Accounts
         
         private TimeSpan ping;
 
-        internal Player(JsonElement element)
+        internal Player(UniverseGroup group, JsonElement element)
         {
+            Group = group;
+
+            // TOG: Siehe Kommentar oben.
+            Team = group.teams[0];
+
             Utils.Traverse(element, out ID, "id");
             Utils.Traverse(element, out Name, "name");
             Utils.Traverse(element, out Admin, "admin");
@@ -95,5 +106,22 @@ namespace Flattiverse.Connector.Accounts
         /// The ping of the player.
         /// </summary>
         public TimeSpan Ping => ping;
+
+        public async Task Chat(string message)
+        {
+            if (!Utils.CheckMessage(message))
+                throw new GameException(0xB5);
+
+            using (Query query = Group.connection.Query("chatUnicast"))
+            {
+                query.Write("player", ID);
+
+                query.Write("message", message);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
     }
 }

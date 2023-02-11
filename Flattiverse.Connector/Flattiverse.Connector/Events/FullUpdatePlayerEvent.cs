@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Events
 
         internal FullUpdatePlayerEvent(UniverseGroup group, JsonElement element) : base(element)
         {
-            Player = new Player(element);
+            Player = new Player(group, element);
             group.players[ID] = Player;
         }
 

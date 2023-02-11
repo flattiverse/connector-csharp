@@ -563,6 +563,21 @@ namespace Flattiverse.Connector
             }
         }
 
+        public async Task Chat(string message)
+        {
+            if (!Utils.CheckMessage(message))
+                throw new GameException(0xB5);
+
+            using (Query query = connection.Query("chatMulticast"))
+            {
+                query.Write("message", message);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
         // TOG: Später für controllables die selben Methoden wie jetzt für Universes und Teams einbauen. (Siehe darüber.)
 
         /// <summary>

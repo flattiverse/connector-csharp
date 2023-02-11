@@ -51,6 +51,37 @@ namespace Flattiverse.Connector
             return true;
         }
 
+        public static bool CheckMessage(string? message)
+        {
+            if (message is null || message.Length < 1 || message.Length > 256)
+                return false;
+
+            if (message.StartsWith(' ') || message.EndsWith(' '))
+                return false;
+
+            foreach (char c in message)
+            {
+                if (c >= ' ' && c <= '~')
+                    continue;
+
+                if (c >= 192 && c <= 214)
+                    continue;
+
+                if (c >= 216 && c <= 246)
+                    continue;
+
+                if (c >= 248 && c <= 687)
+                    continue;
+
+                if (c == '€' || c == '‚' || c == '„' || c == '…' || c == '‰' || c == '‹' || c == '›' || c == '™' || c == '•' || c == '¢' || c == '£' || c == '¡' || c == '¤' || c == '¥' || c == '©' || c == '®' || c == '±' || c == '²' || c == '³' || c == 'µ' || c == '¿' || c == '«' || c == '»')
+                    continue;
+
+                return false;
+            }
+
+            return true;
+        }
+
         public static char[] GenerateAllAllowedOneByteUtf8CharsWithoutSpace()
         {
             List<char> allowedChars = new List<char> { '.', '-', '_' };

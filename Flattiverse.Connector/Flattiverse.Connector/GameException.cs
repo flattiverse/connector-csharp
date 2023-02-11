@@ -37,6 +37,8 @@ namespace Flattiverse.Connector
             {
                 case 0x02:
                     return "[0x02] The specified unit doesn't exist.";
+                case 0x03:
+                    return "[0x03] The specified Player doesn't exist.";
                 case 0x05:
                     return "[0x05] The command you tried to access can't be access with your player kind. (Tried to access admin commands as player or vice versa, etc.)";
                 case 0x10:
@@ -79,6 +81,8 @@ namespace Flattiverse.Connector
                     return "[0xB3] The requested slot is not free.";
                 case 0xB4:
                     return "[0xB4] The name is already in use, either by another player's ship or by an unit in one of the universes.";
+                case 0xB5:
+                    return "[0xB5] Messages must be between 1 and 256 characters long and can't contain control characters. ";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:

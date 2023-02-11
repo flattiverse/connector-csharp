@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flattiverse.Connector.Network;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -35,13 +36,34 @@ namespace Flattiverse.Connector
         /// </summary>
         public readonly double B;
 
-        public Team(JsonElement element)
+        public readonly UniverseGroup Group;
+
+        public Team(UniverseGroup group, JsonElement element)
         {
+            Group = group;
+
             Utils.Traverse(element, out ID, "id");
             Utils.Traverse(element, out Name, "name");
             Utils.Traverse(element, out R, "r");
             Utils.Traverse(element, out G, "g");
             Utils.Traverse(element, out B, "b");
+        }
+
+        public async Task Chat(string message)
+        {
+            if (!Utils.CheckMessage(message))
+                throw new GameException(0xB5);
+
+            using (Query query = Group.connection.Query("chatTeamcast"))
+            {
+                query.Write("team", ID);
+
+                query.Write("message", message);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
         }
     }
 }

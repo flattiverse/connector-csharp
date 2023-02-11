@@ -52,18 +52,22 @@ internal class Program
 
             ThreadPool.QueueUserWorkItem(async delegate
             {
-                Controllable c = await universeGroup.NewShip("huihui");
+                //Controllable c = await universeGroup.NewShip("huihui");
 
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
 
-                await c.Continue();
+                //await c.Continue();
 
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
 
-                await c.Kill();
+                //await c.Kill();
 
-                while (true)
-                    await Task.Delay(100);
+                //while (true)
+                //    await Task.Delay(100);
+
+                await universeGroup.Chat("MultiCast Message. :)");
+                await universeGroup.Player.Team.Chat("TeamCast Message. :)");
+                await universeGroup.Player.Chat("UniCast Message. :)");
             });
 
             while (true)
@@ -96,6 +100,15 @@ internal class Program
                     //case TickProcessedEvent tickProcessedEvent:
                     //    Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
                     //    break;
+                    case ChatUnicastEvent chatUnicastEvent:
+                        Console.WriteLine($"ChatUnicastEvent Event: {chatUnicastEvent.Source.Name}: \"{chatUnicastEvent.Message}\"");
+                        break;
+                    case ChatTeamcastEvent chatTeamcastEvent:
+                        Console.WriteLine($"ChatTeamcastEvent Event: {chatTeamcastEvent.Source.Name}: \"{chatTeamcastEvent.Message}\"");
+                        break;
+                    case ChatMulticastEvent chatMulticastEvent:
+                        Console.WriteLine($"ChatMulticastEvent Event: {chatMulticastEvent.Source.Name}: \"{chatMulticastEvent.Message}\"");
+                        break;
                 }
         }
     }
