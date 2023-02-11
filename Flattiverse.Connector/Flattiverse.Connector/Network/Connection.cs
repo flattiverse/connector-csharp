@@ -357,7 +357,7 @@ namespace Flattiverse.Connector.Network
                                 switch (@event)
                                 {
                                     case AddedUnitEvent addedUnitEvent:
-                                        if (addedUnitEvent.Unit.Kind == Units.UnitKind.PlayerUnit)
+                                        if (addedUnitEvent.Unit.Kind == UnitKind.PlayerUnit)
                                         {
                                             PlayerUnit unit = (PlayerUnit)addedUnitEvent.Unit;
 
@@ -366,7 +366,7 @@ namespace Flattiverse.Connector.Network
                                         }
                                         break;
                                     case UpdatedUnitEvent updatedUnitEvent:
-                                        if (updatedUnitEvent.Unit.Kind == Units.UnitKind.PlayerUnit)
+                                        if (updatedUnitEvent.Unit.Kind == UnitKind.PlayerUnit)
                                         {
                                             PlayerUnit unit = (PlayerUnit)updatedUnitEvent.Unit;
 

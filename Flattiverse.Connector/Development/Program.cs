@@ -28,8 +28,8 @@ internal class Program
         //Unit
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
-        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiUser))
-        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiAdmn))
+        //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiUser))
+        using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiUser))
         {
             //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
             //    Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");

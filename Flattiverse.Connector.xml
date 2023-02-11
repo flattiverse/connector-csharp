@@ -9,6 +9,31 @@
             This event informs of the addition of a unit to the universeGroup.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Events.ChatEvent.Source">
+            <summary>
+            The player that sent the message.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.ChatEvent.Message">
+            <summary>
+            The chat message received.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.ChatMulticastEvent">
+            <summary>
+            This event informs of the disconnect of a player from the universeGroup.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.ChatTeamcastEvent">
+            <summary>
+            This event informs of the disconnect of a player from the universeGroup.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.ChatUnicastEvent">
+            <summary>
+            This event informs of the disconnect of a player from the universeGroup.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.EventKind">
             <summary>
             Specifies the various event kinds for a better switch() experience.
@@ -56,6 +81,31 @@
         <member name="F:Flattiverse.Connector.Events.EventKind.UnitAdded">
             <summary>
             This event informs of the addition of a unit to the universeGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.UnitUpdated">
+            <summary>
+            This event informs of the update of a unit in the universeGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.TickProcessed">
+            <summary>
+            This event informs of the completion of a tick in the universeGroup.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ChatUnicast">
+            <summary>
+            This event informs of a chatmessage to a player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ChatTeamcast">
+            <summary>
+            This event informs of a chatmessage to a team.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ChatMulticast">
+            <summary>
+            This event informs of a chatmessage to everyone.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.FailureEvent">
@@ -135,6 +185,21 @@
             The name of the unit, representing his slot in the universegroup's player array.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Events.RemovedUnitEvent.Player">
+            <summary>
+            The player that controls the unit, if applicable.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.RemovedUnitEvent.Controllable">
+            <summary>
+            The controllable of the player, if applicable.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.TickProcessedEvent">
+            <summary>
+            This event informs of the completion of a tick in the universeGroup.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.UniverseGroupInfoEvent">
             <summary>
             This event notifies about the meta informations a UniverseGroup has, like Name, Description, Teams, Rules...
@@ -187,6 +252,11 @@
             True, if joining this universe as a spectator is allowed.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.RegisterShipLimit">
+            <summary>
+            The amount of ships that you can register in the UniverseGroup.
+            </summary>
+        </member>
         <member name="F:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Teams">
             <summary>
             The teams in the UniverseGroup.
@@ -205,6 +275,11 @@
         <member name="P:Flattiverse.Connector.Events.UniverseGroupInfoEvent.Kind">
             <summary>
             Specifies the kind of the event for a better switch() experience.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.UpdatedUnitEvent">
+            <summary>
+            This event informs of the update of a unit in the universeGroup.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.GameException">
@@ -333,12 +408,158 @@
         </member>
         <member name="T:Flattiverse.Connector.Units.Unit">
             <summary>
-            TOG: Überall XML-Kommentare.
+            A unit in the universe.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Name">
+            <summary>
+            The name of the unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Radius">
+            <summary>
+            The radius of the unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Position">
+            <summary>
+            The absolute position of the unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Movement">
+            <summary>
+            The movement vector of the unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Direction">
+            <summary>
+            The direction the unit is facing towerds.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Team">
+            <summary>
+            The team this unit belongs to, if any.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Gravity">
+            <summary>
+            The gravity exercised by this unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.Mobility">
+            <summary>
+            The mobility status of this unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.EnergyOutput">
+            <summary>
+            The energy output of this unit.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.IsMasking">
+            <summary>
+            Whether this unit is masking.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.Unit.IsSolid">
+            <summary>
+            Whether this unit is solid.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Units.Unit.MapEditable">
+            <summary>
+            Wheter it is possible to edit this unit via admin commands.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Units.Unit.Kind">
+            <summary>
+            The kind of this unit.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.Units.Unit.#ctor(System.String,Flattiverse.Connector.Vector,Flattiverse.Connector.Vector)">
+            <summary>
+            Create a new unit.
+            </summary>
+            <param name="name">The name of the unit.</param>
+            <param name="position">The position of the unit.</param>
+            <param name="movement">The movement of the unit.</param>
+        </member>
+        <member name="M:Flattiverse.Connector.Units.Unit.#ctor(System.String,Flattiverse.Connector.Vector)">
+            <summary>
+            Create a new unit which has no initial movement.
+            </summary>
+            <param name="name">The name of the unit.</param>
+            <param name="position">The position of the unit.</param>
+        </member>
+        <member name="M:Flattiverse.Connector.Units.Unit.#ctor(System.String)">
+            <summary>
+            Creates a new unit which has no initial movement or position.
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:Flattiverse.Connector.Units.Unit.#ctor">
+            <summary>
+            Create a new "Unnamed" unit which has no initial movement or position.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Sun">
+            <summary>
+            A sun, which may have a corona or corona sections.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Planet">
+            <summary>
+            A planet.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Moon">
+            <summary>
+            A moon.
             </summary>
         </member>
         <member name="F:Flattiverse.Connector.Units.UnitKind.Meteoroid">
             <summary>
-            TOG: Überall XML-Kommentare.
+            A meteoroid.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Comet">
+            <summary>
+            A comet.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Asteroid">
+            <summary>
+            An asteroid.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Buoy">
+            <summary>
+            A buoy, which may contain a message.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.MissionTarget">
+            <summary>
+            A missiontarget, which you may have to shoot.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.PlayerUnit">
+            <summary>
+            A playerunit. May be friendly. Or not.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Shot">
+            <summary>
+            A shot. Better not touch.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Explosion">
+            <summary>
+            An explosion. Hope you are far away.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.BlackHole">
+            <summary>
+            A black hole, which may have an gravitational well or gravitational well sections.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Universe">
@@ -477,6 +698,11 @@
             True, if joining this universe as a spectator is allowed.
             </summary>
         </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.RegisterShipLimit">
+            <summary>
+            The amount of ships that you can register in the UniverseGroup.
+            </summary>
+        </member>
         <member name="P:Flattiverse.Connector.UniverseGroup.Teams">
             <summary>
             The teams in the UniverseGroup.
@@ -538,7 +764,18 @@
             <param name="name">The name of the team.</param>
             <returns>The team if found, null otherwise.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32,Flattiverse.Connector.Events.PlayerUnitSystemUpgradepath@)">
+        <member name="M:Flattiverse.Connector.UniverseGroup.NewShip(System.String)">
+            <summary>
+            Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
+            by the rules of the UniverseGroup. (See RegisterShipLimit.)
+            </summary>
+            <param name="name">The name of the ship to be created.</param>
+            <returns>A controllable object that gives control over the ship.</returns>
+            <exception cref="T:Flattiverse.Connector.GameException">Thrown if the name is already in use or if the ship or RegisterShip limits are exceeded.</exception>
+            <remarks>This will create a DEAD ship. To bring it to life, you need to call the Continue() method on the ship. Typically, you would call NewShip() followed by Continue()
+            on the controllable.</remarks>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32,Flattiverse.Connector.Units.PlayerUnitSystemUpgradepath@)">
             <summary>
             Tries to get the corresponding system.
             </summary>
@@ -547,7 +784,7 @@
             <param name="system">The system or null, if not found.</param>
             <returns>true, if the system has been found, false otherwise.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Events.PlayerUnitSystemIdentifier,Flattiverse.Connector.Events.PlayerUnitSystemUpgradepath@)">
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Units.PlayerUnitSystemIdentifier,Flattiverse.Connector.Units.PlayerUnitSystemUpgradepath@)">
             <summary>
             Tries to get the corresponding system.
             </summary>
@@ -563,7 +800,7 @@
             <param name="level">The system level of the system.</param>
             <returns>The system if found, null otherwise.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystem(Flattiverse.Connector.Events.PlayerUnitSystemIdentifier)">
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystem(Flattiverse.Connector.Units.PlayerUnitSystemIdentifier)">
             <summary>
             Tries to get the corresponding system.
             </summary>
@@ -576,11 +813,55 @@
             </summary>
             <returns>All systems.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.RemoveSystem(Flattiverse.Connector.Events.PlayerUnitSystemIdentifier)">
+        <member name="M:Flattiverse.Connector.UniverseGroup.RemoveSystem(Flattiverse.Connector.Units.PlayerUnitSystemIdentifier)">
             <summary>
             Removes the system from the universegroup.
             </summary>
             <param name="identifier">The system identifier.</param>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.SetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Sets or adds the system. Systems with level 0 will be default systems a ship starts with. Systems which start at level 1 will have to be built by you.
+            </summary>
+            <param name="kind">The kind of the system.</param>
+            <param name="level">The level of the system that this entry describes.</param>
+            <param name="energy">The energy cost of building this system in a ship.</param>
+            <param name="particles">The energy cost of building this system in a ship.</param>
+            <param name="iron">The iron cost of building this system in a ship.</param>
+            <param name="carbon">The cabron cost of building this system in a ship.</param>
+            <param name="silicon">The silicon cost of building this system in a ship.</param>
+            <param name="platinum">The platinum cost of building this system in a ship.</param>
+            <param name="gold">The gold cost of building this system in a ship.</param>
+            <param name="time">The time it takes to build this system.</param>
+            <param name="value0">The first effecting value this system has.</param>
+            <param name="value1">The second effecting value this system has.</param>
+            <param name="value2">The third effecting value this system has.</param>
+            <param name="areaIncrease">The increase in area of the ship using this system.</param>
+            <param name="weightIncrease">The increase in weight of the ship using this system.</param>
+            <returns>Nothing, or throws an error.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.SetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32)">
+            <summary>
+            Sets or adds the system. Systems with level 0 will be default systems a ship starts with. Systems which start at level 1 will have to be built by you.
+            </summary>
+            <param name="kind">The kind of the system.</param>
+            <param name="level">The level of the system that this entry describes.</param>
+            <param name="energy">The energy cost of building this system in a ship.</param>
+            <param name="particles">The energy cost of building this system in a ship.</param>
+            <param name="iron">The iron cost of building this system in a ship.</param>
+            <param name="carbon">The cabron cost of building this system in a ship.</param>
+            <param name="silicon">The silicon cost of building this system in a ship.</param>
+            <param name="platinum">The platinum cost of building this system in a ship.</param>
+            <param name="gold">The gold cost of building this system in a ship.</param>
+            <param name="time">The time it takes to build this system.</param>
+            <param name="value0">The first effecting value this system has.</param>
+            <param name="value1">The second effecting value this system has.</param>
+            <param name="value2">The third effecting value this system has.</param>
+            <param name="areaIncrease">The increase in area of the ship using this system.</param>
+            <param name="weightIncrease">The increase in weight of the ship using this system.</param>
+            <param name="requiredKind">The kind of the system which needs to be present in order to build this system.</param>
+            <param name="requiredLevel">The level of the system which needs to be present in order to build this system.</param>
+            <returns>Nothing, or throws an error.</returns>
         </member>
         <member name="M:Flattiverse.Connector.UniverseGroup.NextEvent">
             <summary>
