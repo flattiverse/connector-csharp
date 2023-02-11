@@ -321,9 +321,75 @@ namespace Flattiverse.Connector
             return null;
         }
 
-        // TOG: Wir brauchen eine weitere Einstellung für die UniversenGruppe: "RegisterShipLimit". In der Datenbank sollte das ein TinyInt oder so sein, in C# dann ein int. Der Wert
-        // muss auch an den Connector übertragen werden und gibt an, ob man NewShip aufrufen kann. (Hat ein Spieler mehr Schiffe + 1 als RegisterShipLimit wird der Aufruf verweigert,
-        // also ist RegisterShipLimit schlägt der Aufruf für das 3. Schiff fehl.) Sinn ist es dass mehr Schiffe als diese Grenze In-Game gebaut werden müssen anstatt so erzeugt zu werden.
+        /// <summary>
+        /// Tries to get the corresponding controllable.
+        /// </summary>
+        /// <param name="name">The name of the controllable.</param>
+        /// <param name="controllable">The controllable or null, if not found.</param>
+        /// <returns>true, if the controllable has been found, false otherwise.</returns>
+        public bool TryGetControllable(string name, [NotNullWhen(returnValue: true)] out Controllable? controllable)
+        {
+            name = name.ToLower();
+
+            foreach (Controllable c in controllables)
+            {
+                //Maluk: Kann es Lücken geben?
+                //if (c is null)
+                //{
+                //    controllable = null;
+                //    return false;
+                //}
+
+                if (c.Name.ToLower() == name)
+                {
+                    controllable = c;
+                    return true;
+                }
+            }
+
+            controllable = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding controllable.
+        /// </summary>
+        /// <param name="id">The id of the controllable.</param>
+        /// <param name="controllable">The controllable or null, if not found.</param>
+        /// <returns>true, if the controllable has been found, false otherwise.</returns>
+        public bool TryGetControllable(int id, [NotNullWhen(returnValue: true)] out Controllable? controllable)
+        {
+            if (id < 0 || id >= 32)
+            {
+                controllable = null;
+                return false;
+            }
+
+            controllable = controllables[id];
+            return controllable != null;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding controllable.
+        /// </summary>
+        /// <param name="name">The name of the controllable.</param>
+        /// <returns>The controllable if found, null otherwise.</returns>
+        public Controllable? GetControllable(string name)
+        {
+            name = name.ToLower();
+
+            foreach (Controllable controllable in controllables)
+            {
+                //Maluk: Kann es Lücken geben?
+                //if (controllable is null)
+                //    return null;
+
+                if (controllable.Name.ToLower() == name)
+                    return controllable;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
@@ -577,8 +643,6 @@ namespace Flattiverse.Connector
                 await query.Wait().ConfigureAwait(false);
             }
         }
-
-        // TOG: Später für controllables die selben Methoden wie jetzt für Universes und Teams einbauen. (Siehe darüber.)
 
         /// <summary>
         /// Will return the next received event from queue or wait until the event has been received.
