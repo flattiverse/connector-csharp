@@ -48,6 +48,18 @@
         /// <summary>
         /// This event informs of the completion of a tick in the universeGroup.
         /// </summary>
-        TickProcessed
+        TickProcessed,
+        /// <summary>
+        /// This event informs of a chatmessage to a player.
+        /// </summary>
+        ChatUnicast,
+        /// <summary>
+        /// This event informs of a chatmessage to a team.
+        /// </summary>
+        ChatTeamcast,
+        /// <summary>
+        /// This event informs of a chatmessage to everyone.
+        /// </summary>
+        ChatMulticast
     }
 }
