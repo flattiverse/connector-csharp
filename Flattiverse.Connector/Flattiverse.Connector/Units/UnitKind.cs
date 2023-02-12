@@ -55,6 +55,10 @@ namespace Flattiverse.Connector.Units
         /// <summary>
         /// A black hole, which may have an gravitational well or gravitational well sections.
         /// </summary>
-        BlackHole
+        BlackHole,
+        /// <summary>
+        /// A unit that has not been properly identified yet. Use the analyzer system to find out the actual kind.
+        /// </summary>
+        Reduced
     }
 }
