@@ -421,11 +421,8 @@ namespace Flattiverse.Connector
                 if (controllableCount >= registerShipLimit)
                     throw new GameException(0x11);
 
-                if (controllableCount >= maxShipsPerPlayer)
+                if (controllableCount >= maxShipsPerPlayer || firstAvailableSlot == -1)
                     throw new GameException(0x10);
-
-                if (firstAvailableSlot == -1)
-                    throw new GameException(0xB2);
 
                 controllable = new Controllable(this, name, firstAvailableSlot);
                 controllables[firstAvailableSlot] = controllable;
