@@ -20,12 +20,12 @@ namespace Flattiverse.Connector.Units
         public PlayerUnitSystem Hull;
         public PlayerUnitSystem CellsEnergy;
         public PlayerUnitSystem BatteryEnergy;
-        public PlayerUnitSystem Thruster;
-        public PlayerUnitSystem Nozzle;
-        public PlayerUnitSystem Scanner;
-        public PlayerUnitSystem? Armor;
+        public PlayerUnitEnergyConsumingSystem Thruster;
+        public PlayerUnitEnergyConsumingSystem Nozzle;
+        public PlayerUnitScannerSystem Scanner;
+        public PlayerUnitArmorSystem? Armor;
         public PlayerUnitSystem? Shield;
-        public PlayerUnitSystem? Analyzer;
+        public PlayerUnitEnergyConsumingSystem? Analyzer;
         public PlayerUnitSystem? CellsParticles;
         public PlayerUnitSystem? BatteryParticles;
         public PlayerUnitSystem? WeaponLauncher;
@@ -39,11 +39,11 @@ namespace Flattiverse.Connector.Units
         public PlayerUnitSystem? CargoPlatinum;
         public PlayerUnitSystem? CargoGold;
         public PlayerUnitSystem? CargoSpecial;
-        public PlayerUnitSystem? ExtractorIron;
-        public PlayerUnitSystem? ExtractorCarbon;
-        public PlayerUnitSystem? ExtractorSilicon;
-        public PlayerUnitSystem? ExtractorPlatinum;
-        public PlayerUnitSystem? ExtractorGold;
+        public PlayerUnitEnergyConsumingSystem? ExtractorIron;
+        public PlayerUnitEnergyConsumingSystem? ExtractorCarbon;
+        public PlayerUnitEnergyConsumingSystem? ExtractorSilicon;
+        public PlayerUnitEnergyConsumingSystem? ExtractorPlatinum;
+        public PlayerUnitEnergyConsumingSystem? ExtractorGold;
 
         public PlayerUnit()
         {

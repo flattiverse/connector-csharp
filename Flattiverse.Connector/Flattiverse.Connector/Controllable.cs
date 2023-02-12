@@ -24,12 +24,12 @@ namespace Flattiverse.Connector
         private PlayerUnitSystem hull;
         private PlayerUnitSystem cellsEnergy;
         private PlayerUnitSystem batteryEnergy;
-        private PlayerUnitSystem thruster;
-        private PlayerUnitSystem nozzle;
-        private PlayerUnitSystem scanner;
-        private PlayerUnitSystem? armor;
+        private PlayerUnitEnergyConsumingSystem thruster;
+        private PlayerUnitEnergyConsumingSystem nozzle;
+        private PlayerUnitScannerSystem scanner;
+        private PlayerUnitArmorSystem? armor;
         private PlayerUnitSystem? shield;
-        private PlayerUnitSystem? analyzer;
+        private PlayerUnitEnergyConsumingSystem? analyzer;
         private PlayerUnitSystem? cellsParticles;
         private PlayerUnitSystem? batteryParticles;
         private PlayerUnitSystem? weaponLauncher;
@@ -43,11 +43,11 @@ namespace Flattiverse.Connector
         private PlayerUnitSystem? cargoPlatinum;
         private PlayerUnitSystem? cargoGold;
         private PlayerUnitSystem? cargoSpecial;
-        private PlayerUnitSystem? extractorIron;
-        private PlayerUnitSystem? extractorCarbon;
-        private PlayerUnitSystem? extractorSilicon;
-        private PlayerUnitSystem? extractorPlatinum;
-        private PlayerUnitSystem? extractorGold;
+        private PlayerUnitEnergyConsumingSystem? extractorIron;
+        private PlayerUnitEnergyConsumingSystem? extractorCarbon;
+        private PlayerUnitEnergyConsumingSystem? extractorSilicon;
+        private PlayerUnitEnergyConsumingSystem? extractorPlatinum;
+        private PlayerUnitEnergyConsumingSystem? extractorGold;
 
         public double Radius => radius;
 
@@ -73,17 +73,17 @@ namespace Flattiverse.Connector
 
         public PlayerUnitSystem BatteryEnergy => batteryEnergy;
 
-        public PlayerUnitSystem Thruster => thruster;
+        public PlayerUnitEnergyConsumingSystem Thruster => thruster;
 
-        public PlayerUnitSystem Nozzle => nozzle;
+        public PlayerUnitEnergyConsumingSystem Nozzle => nozzle;
 
-        public PlayerUnitSystem Scanner => scanner;
+        public PlayerUnitScannerSystem Scanner => scanner;
 
-        public PlayerUnitSystem? Armor => armor;
+        public PlayerUnitArmorSystem? Armor => armor;
 
         public PlayerUnitSystem? Shield => shield;
 
-        public PlayerUnitSystem? Analyzer => analyzer;
+        public PlayerUnitEnergyConsumingSystem? Analyzer => analyzer;
 
         public PlayerUnitSystem? CellsParticles => cellsParticles;
 
@@ -111,15 +111,15 @@ namespace Flattiverse.Connector
 
         public PlayerUnitSystem? CargoSpecial => cargoSpecial;
 
-        public PlayerUnitSystem? ExtractorIron => extractorIron;
+        public PlayerUnitEnergyConsumingSystem? ExtractorIron => extractorIron;
 
-        public PlayerUnitSystem? ExtractorCarbon => extractorCarbon;
+        public PlayerUnitEnergyConsumingSystem? ExtractorCarbon => extractorCarbon;
 
-        public PlayerUnitSystem? ExtractorSilicon => extractorSilicon;
+        public PlayerUnitEnergyConsumingSystem? ExtractorSilicon => extractorSilicon;
 
-        public PlayerUnitSystem? ExtractorPlatinum => extractorPlatinum;
+        public PlayerUnitEnergyConsumingSystem? ExtractorPlatinum => extractorPlatinum;
 
-        public PlayerUnitSystem? ExtractorGold => extractorGold;
+        public PlayerUnitEnergyConsumingSystem? ExtractorGold => extractorGold;
 
         internal Controllable(UniverseGroup group, string name, int id/*, double radius, Vector position, Vector movement, double direction, Team? team, double gravity, double energyOutput, double turnRate*/)
         {
@@ -148,19 +148,19 @@ namespace Flattiverse.Connector
                             shield = system;
                             break;
                         case PlayerUnitSystemKind.Armor:
-                            armor = system;
+                            armor = (PlayerUnitArmorSystem)system;
                             break;
                         case PlayerUnitSystemKind.Thruster:
-                            thruster = system;
+                            thruster = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.Nozzle:
-                            nozzle = system;
+                            nozzle = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.Scanner:
-                            scanner = system;
+                            scanner = (PlayerUnitScannerSystem)system;
                             break;
                         case PlayerUnitSystemKind.Analyzer:
-                            analyzer = system;
+                            analyzer = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.CellsEnergy:
                             cellsEnergy = system;
@@ -208,19 +208,19 @@ namespace Flattiverse.Connector
                             cargoSpecial = system;
                             break;
                         case PlayerUnitSystemKind.ExtractorIron:
-                            extractorIron = system;
+                            extractorIron = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.ExtractorCarbon:
-                            extractorCarbon = system;
+                            extractorCarbon = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.ExtractorSilicon:
-                            extractorSilicon = system;
+                            extractorSilicon = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.ExtractorPlatinum:
-                            extractorPlatinum = system;
+                            extractorPlatinum = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.ExtractorGold:
-                            extractorGold = system;
+                            extractorGold = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         default:
                             group.connection.PushFailureEvent($"PlayerUnitSystemKind {kind} is not implemented.");
