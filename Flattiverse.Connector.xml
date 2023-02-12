@@ -325,6 +325,11 @@
             Whether the player is an admin.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Accounts.Player.Team">
+            <summary>
+            The team the player is in.
+            </summary>
+        </member>
         <member name="P:Flattiverse.Connector.Accounts.Player.Rank">
             <summary>
             The rank of the player.
@@ -562,6 +567,11 @@
             A black hole, which may have an gravitational well or gravitational well sections.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Units.UnitKind.Reduced">
+            <summary>
+            A unit that has not been properly identified yet. Use the analyzer system to find out the actual kind.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Universe">
             <summary>
             Represents an universe within your universe group.
@@ -763,6 +773,29 @@
             </summary>
             <param name="name">The name of the team.</param>
             <returns>The team if found, null otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetControllable(System.String,Flattiverse.Connector.Controllable@)">
+            <summary>
+            Tries to get the corresponding controllable.
+            </summary>
+            <param name="name">The name of the controllable.</param>
+            <param name="controllable">The controllable or null, if not found.</param>
+            <returns>true, if the controllable has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetControllable(System.Int32,Flattiverse.Connector.Controllable@)">
+            <summary>
+            Tries to get the corresponding controllable.
+            </summary>
+            <param name="id">The id of the controllable.</param>
+            <param name="controllable">The controllable or null, if not found.</param>
+            <returns>true, if the controllable has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.GetControllable(System.String)">
+            <summary>
+            Tries to get the corresponding controllable.
+            </summary>
+            <param name="name">The name of the controllable.</param>
+            <returns>The controllable if found, null otherwise.</returns>
         </member>
         <member name="M:Flattiverse.Connector.UniverseGroup.NewShip(System.String)">
             <summary>

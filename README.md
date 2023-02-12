@@ -9,6 +9,7 @@ This connector is compatible to .NET 6. Current downloads:
 
 # The current status
 
+* 2k23.02.11: Fifth release, r296: Scanning should now be implemented correctly.
 * 2k23.02.11: Fourth release, r284: Chat-Messages.
 * 2k23.02.11: Third release: You can register, continue and kill a ship.
 * 2k23.02.06: Second release especially for Jascha so he can put regions into the map editor.
