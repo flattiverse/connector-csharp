@@ -10,6 +10,12 @@ namespace Flattiverse.Connector.Units
         public int Controllable;
 
         public double TurnRate;
+        public double RequestedScanDirection;
+        public double RequestedScanWidth;
+        public double RequestedScanRange;
+        public double ScanDirection;
+        public double ScanWidth;
+        public double ScanRange;
 
         public PlayerUnitSystem Hull;
         public PlayerUnitSystem CellsEnergy;
@@ -64,6 +70,12 @@ namespace Flattiverse.Connector.Units
                 Player = group.players[playerId];
             Utils.Traverse(element, out Controllable, "controllable");
             Utils.Traverse(element, out TurnRate, "turnRate");
+            Utils.Traverse(element, out RequestedScanDirection, "requestedScanDirection"); 
+            Utils.Traverse(element, out RequestedScanWidth, "requestedScanWidth"); 
+            Utils.Traverse(element, out RequestedScanRange, "requestedScanRange"); 
+            Utils.Traverse(element, out ScanDirection, "scanDirection"); 
+            Utils.Traverse(element, out ScanWidth, "scanWidth"); 
+            Utils.Traverse(element, out ScanRange, "scanRange"); 
 
             Utils.Traverse(element, out JsonElement systems, "systems");
             foreach (JsonProperty system in systems.EnumerateObject())
