@@ -52,7 +52,9 @@ namespace Flattiverse.Connector
                 case 0x21:
                     return "[0x21] All start locations are currently overcrowded. Try again, later.";
                 case 0x22:
-                    return "[0x22] You need to Continue() before suiciding.";
+                    return "[0x22] You need to Continue() before doing this.";
+                case 0x23:
+                    return "[0x23] This system doesn't support those values.";
                 case 0xA0:
                     return "[0xA0] Your JSON defintion is missing some mandatory base value like name or radius.";
                 case 0xA1:
@@ -82,7 +84,9 @@ namespace Flattiverse.Connector
                 case 0xB4:
                     return "[0xB4] The name is already in use, either by another player's ship or by an unit in one of the universes.";
                 case 0xB5:
-                    return "[0xB5] Messages must be between 1 and 256 characters long and can't contain control characters. ";
+                    return "[0xB5] Messages must be between 1 and 256 characters long and can't contain control characters.";
+                case 0xB6:
+                    return "[0xB6] doubles can't be NaN or positive/negative infinity.";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:

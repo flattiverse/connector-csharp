@@ -28,8 +28,8 @@ internal class Program
         //Unit
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
-        //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiUser))
-        using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiUser))
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", apiUser))
+        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiUser))
         {
             //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
             //    Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
@@ -52,22 +52,18 @@ internal class Program
 
             ThreadPool.QueueUserWorkItem(async delegate
             {
-                //Controllable c = await universeGroup.NewShip("huihui");
+                Controllable c = await universeGroup.NewShip("huihui");
 
-                //Thread.Sleep(1000);
+                Thread.Sleep(1000);
 
-                //await c.Continue();
+                await c.Continue();
 
-                //Thread.Sleep(1000);
+                Thread.Sleep(1000);
 
-                //await c.Kill();
+                await c.SetScanner(270, 300, 60, true);
 
-                //while (true)
-                //    await Task.Delay(100);
-
-                await universeGroup.Chat("MultiCast Message. :)");
-                await universeGroup.Player.Team.Chat("TeamCast Message. :)");
-                await universeGroup.Player.Chat("UniCast Message. :)");
+                while (true)
+                    await Task.Delay(100);
             });
 
             while (true)

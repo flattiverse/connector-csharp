@@ -311,5 +311,76 @@ namespace Flattiverse.Connector
                 await query.Wait().ConfigureAwait(false);
             }
         }
+
+        public async Task SetNozzle(double value)
+        {
+            if (hull.Value <= 0.0)
+                throw new GameException(0x22);
+
+            if (double.IsNaN(value) || double.IsInfinity(value))
+                throw new GameException(0xB6);
+
+            // TOG: Bei Nozzle muss auch der Maximum-Value überprüft werden können. Oder hast Du das im Client vergessen? Ich mache hier mal Temporär einfach 5.
+            if (value < -5.1 || value > 5.1)
+                throw new GameException(0x23);
+
+            if (value < -5.0)
+                value = -5.0;
+
+            if (value > 5.0)
+                value = 5.0;
+
+            using (Query query = Group.connection.Query("controllableNozzle"))
+            {
+                query.Write("controllable", ID);
+
+                query.Write("nozzle", value);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
+        public async Task SetScanner(double direction, double length, double width, bool enabled = true)
+        {
+            if (hull.Value <= 0.0)
+                throw new GameException(0x22);
+
+            if (double.IsNaN(direction) || double.IsInfinity(direction) || double.IsNaN(length) || double.IsInfinity(length) || double.IsNaN(width) || double.IsInfinity(width))
+                throw new GameException(0xB6);
+
+            direction = (direction + 3600.0) % 360.0;
+
+            // TOG: Hier bitte bei mir melden.
+            if (direction < 0 || length > 300.1 || length < 59.9 || width < 19.9 || width > 60.1)
+                throw new GameException(0x23);
+
+            if (length > 300.0)
+                length = 300.0;
+
+            if (length < 60.0)
+                length = 60.0;
+
+            if (width < 20.0)
+                width = 20.0;
+
+            if (width > 60.0)
+                width = 60.0;
+
+            using (Query query = Group.connection.Query("controllableScanner"))
+            {
+                query.Write("controllable", ID);
+
+                query.Write("direction", direction);
+                query.Write("length", length);
+                query.Write("width", width);
+                query.Write("enabled", enabled);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
     }
 }
