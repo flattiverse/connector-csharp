@@ -237,7 +237,11 @@ namespace Flattiverse.Connector.Network
 
                 try
                 {
-                    result = await socket.ReceiveAsync(recvMemory, CancellationToken.None);
+                    Console.WriteLine(" **** WAIT DATA.");
+
+                    result = await socket.ReceiveAsync(recvMemory, CancellationToken.None).ConfigureAwait(false);
+
+                    Console.WriteLine($" **** {Encoding.UTF8.GetString(recv.AsSpan(0, result.Count))}");
                 }
                 catch (Exception exception)
                 {
@@ -256,8 +260,8 @@ namespace Flattiverse.Connector.Network
 
                         try
                         {
-                            await syncSend.WaitAsync();
-                            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good bye.", CancellationToken.None);
+                            await syncSend.WaitAsync().ConfigureAwait(false);
+                            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good bye.", CancellationToken.None).ConfigureAwait(false);
                         }
                         catch { }
                         finally
