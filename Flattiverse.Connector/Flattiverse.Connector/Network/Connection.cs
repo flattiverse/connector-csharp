@@ -237,11 +237,7 @@ namespace Flattiverse.Connector.Network
 
                 try
                 {
-                    Console.WriteLine(" **** WAIT DATA.");
-
                     result = await socket.ReceiveAsync(recvMemory, CancellationToken.None).ConfigureAwait(false);
-
-                    Console.WriteLine($" **** {Encoding.UTF8.GetString(recv.AsSpan(0, result.Count))}");
                 }
                 catch (Exception exception)
                 {

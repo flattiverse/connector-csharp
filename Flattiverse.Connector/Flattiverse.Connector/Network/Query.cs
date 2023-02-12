@@ -84,18 +84,18 @@ namespace Flattiverse.Connector.Network
 
             result = document;
 
-            tcs.SetResult();
+            ThreadPool.QueueUserWorkItem(delegate { tcs.SetResult(); });
         }
 
         public void Answer(byte[] data, int error)
         {
             answer = data;
-            tcs.SetException(new GameException(error));
+            ThreadPool.QueueUserWorkItem(delegate { tcs.SetException(new GameException(error)); });
         }
 
         public void Answer(int error)
         {
-            tcs.SetException(new GameException(error));
+            ThreadPool.QueueUserWorkItem(delegate { tcs.SetException(new GameException(error)); });
         }
 
         public async Task<double> ReceiveDouble()

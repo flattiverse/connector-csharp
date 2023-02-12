@@ -60,17 +60,29 @@ internal class Program
 
                 while (true)
                 {
-                    Thread.Sleep(15000);
+                    Thread.Sleep(5000);
 
-                    Console.WriteLine("Scan now: 270.");
+                    Console.WriteLine("Scan now: 270°.");
 
                     await c.SetScanner(270, 300, 60, true);
 
                     Thread.Sleep(5000);
 
-                    Console.WriteLine("Scan now: 0.");
+                    Console.WriteLine("Scan now: 0°.");
 
                     await c.SetScanner(0, 300, 60, true);
+
+                    Thread.Sleep(5000);
+
+                    Console.WriteLine("Scan now: 90°.");
+
+                    await c.SetScanner(90, 300, 60, true);
+
+                    Thread.Sleep(5000);
+
+                    Console.WriteLine("Scan now: 180°.");
+
+                    await c.SetScanner(180, 300, 60, true);
                 }
             });
 
@@ -101,9 +113,9 @@ internal class Program
                     case AddedUnitEvent addedUnitEvent:
                         Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Unit.Name}");
                         break;
-                    case TickProcessedEvent tickProcessedEvent:
-                        Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
-                        break;
+                    //case TickProcessedEvent tickProcessedEvent:
+                    //    Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
+                    //    break;
                     case ChatUnicastEvent chatUnicastEvent:
                         Console.WriteLine($"ChatUnicastEvent Event: {chatUnicastEvent.Source.Name}: \"{chatUnicastEvent.Message}\"");
                         break;
