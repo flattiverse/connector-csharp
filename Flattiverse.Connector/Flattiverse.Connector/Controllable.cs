@@ -320,8 +320,7 @@ namespace Flattiverse.Connector
             if (double.IsNaN(value) || double.IsInfinity(value))
                 throw new GameException(0xB6);
 
-            // TOG: Bei Nozzle muss auch der Maximum-Value überprüft werden können. Oder hast Du das im Client vergessen? Ich mache hier mal Temporär einfach 5.
-            if (value < -5.1 || value > 5.1)
+            if (value < -Nozzle.MaxValue || value > Nozzle.MaxValue)
                 throw new GameException(0x23);
 
             if (value < -5.0)
