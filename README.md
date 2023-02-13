@@ -2,6 +2,10 @@
 
 This is the Flattiverse reference connector for the websocket protocol. You can use this to derive own connectors in other (or even the C#) programming language(s). If you want to participate by creating a connector for another programming language, read [PROTOCOL.md](PROTOCOL.md).
 
+You may find API keys in this repository which most likely are outdated meanwhile. Go to [https://www.flattiverse.com](https://www.flattiverse.com), register an account and generate your own API key.
+
+We are currently live with this version. If you find or suspect any bugs don't hesitate to contact [@GhostTyper](https://t.me/GhostTyper) on Telegram.
+
 This connector is compatible to .NET 6. Current downloads:
 
 * [Flattiverse.Connector.dll](Flattiverse.Connector.dll) - The Connector.
@@ -9,7 +13,8 @@ This connector is compatible to .NET 6. Current downloads:
 
 # The current status
 
-* 2k23.02.11: Fifth release, r296: Scanning should now be implemented correctly.
+* 2k23.02.13: 6th release, r299: Thruster should now also be implemented correctly.
+* 2k23.02.12: Fifth release, r296: Scanning should now be implemented correctly.
 * 2k23.02.11: Fourth release, r284: Chat-Messages.
 * 2k23.02.11: Third release: You can register, continue and kill a ship.
 * 2k23.02.06: Second release especially for Jascha so he can put regions into the map editor.

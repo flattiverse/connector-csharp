@@ -6,6 +6,8 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
+        // Those Keys may be invalid meanwhile. If so, please register an account at flattiverse.com.
+
         //Matz
         string apiUser = "0123456789112345678921234567893123456789412345678951234567896123";
         string apiAdmn = "9876342587963245879623458976234589762345ACBACBACABCEDFEDFDEFEDFE";
@@ -62,6 +64,8 @@ internal class Program
                 {
                     Thread.Sleep(5000);
 
+                    await c.SetThruster(0.15);
+
                     Console.WriteLine("Scan now: 270°.");
 
                     await c.SetScanner(270, 300, 60, true);
@@ -112,6 +116,12 @@ internal class Program
                         break;
                     case AddedUnitEvent addedUnitEvent:
                         Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Unit.Name}");
+                        break;
+                    case UpdatedUnitEvent updatedUnitEvent:
+                        if (updatedUnitEvent.Unit is PlayerUnit)
+                            Console.WriteLine($"  -> {updatedUnitEvent.Unit.Name} now at: {updatedUnitEvent.Unit.Position} with movement: {updatedUnitEvent.Unit.Movement}: energy={((PlayerUnit)updatedUnitEvent.Unit).BatteryEnergy.Value}, thrust={((PlayerUnit)updatedUnitEvent.Unit).Thruster.Value}, direction={((PlayerUnit)updatedUnitEvent.Unit).Direction}");
+                        else
+                            Console.WriteLine($"UpdatedUnitEvent Event: {updatedUnitEvent.Unit.Name} now at: {updatedUnitEvent.Unit.Position} with movement: {updatedUnitEvent.Unit.Movement}");
                         break;
                     //case TickProcessedEvent tickProcessedEvent:
                     //    Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");

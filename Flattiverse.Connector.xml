@@ -4,6 +4,206 @@
         <name>Flattiverse.Connector</name>
     </assembly>
     <members>
+        <member name="T:Flattiverse.Connector.Controllable">
+            <summary>
+            A controllable that you control.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Controllable.Group">
+            <summary>
+            The universegroup your controllable is in.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Controllable.Name">
+            <summary>
+            The name of your controllable.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Controllable.ID">
+            <summary>
+            The ID of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Radius">
+            <summary>
+            The radius of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Position">
+            <summary>
+            The position of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Movement">
+            <summary>
+            The movement of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Direction">
+            <summary>
+            The direction of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Team">
+            <summary>
+            If you have joined a team, the team of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Gravity">
+            <summary>
+            The gravity that your controllable is exercising on other mobile units.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.EnergyOutput">
+            <summary>
+            The current energy output of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.IsAlive">
+            <summary>
+            Whether your controllable is still alive.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.TurnRate">
+            <summary>
+            The rate at which your controllable is turning.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Hull">
+            <summary>
+            The hull of your controllable, keeping you away from the cold void of space.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CellsEnergy">
+            <summary>
+            The energy cell of your controllable, used for recharging your energy levels.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.BatteryEnergy">
+            <summary>
+            The energy battery of your controllable, used for storing energy.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Thruster">
+            <summary>
+            The thruster of your controllable, used to propel your controllabe through the universe.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Nozzle">
+            <summary>
+            The nozzle of your controllable, used to make you spin all around.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Scanner">
+            <summary>
+            The scanner of your controllable, used to detect objects in the vicinity.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Armor">
+            <summary>
+            The armor of your controllable, used to reduce damage from malicious influences.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Shield">
+            <summary>
+            The shield of your controllable, used to avoid damage altogether.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.Analyzer">
+            <summary>
+            The analyzer of your controllable, used to identify objects.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CellsParticles">
+            <summary>
+            The particle cells of your controllable, used for recharging your particle levels.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.BatteryParticles">
+            <summary>
+            The particle battery of your controllable, used for storing particles.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.WeaponLauncher">
+            <summary>
+            The weapon launcher of your controllable, used to do the pew pew.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.WeaponPayloadDamage">
+            <summary>
+            The damage of your controllable's weapons.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.WeaponPayloadRadius">
+            <summary>
+            The radius of your controllable's weapons' explosions.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.WeaponFactory">
+            <summary>
+            The weapon factory of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.WeaponStorage">
+            <summary>
+            The storage capacity of your controllable for weapons.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CargoIron">
+            <summary>
+            The storage capacity of iron in your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CargoCarbon">
+            <summary>
+            The storage capacity of carbon in your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CargoSilicon">
+            <summary>
+            The storage capacity of silicon in your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CargoPlatinum">
+            <summary>
+            The storage capacity of platinum in your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CargoGold">
+            <summary>
+            The capacity for gold in your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.CargoSpecial">
+            <summary>
+            The special storage capacity of your controllable.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ExtractorIron">
+            <summary>
+            The extraction capabilities of your controllable for iron.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ExtractorCarbon">
+            <summary>
+            The extraction capabilities of your controllable for carbon.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ExtractorSilicon">
+            <summary>
+            The extraction capabilities of your controllable for silicon.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ExtractorPlatinum">
+            <summary>
+            The extraction capabilities of your controllable for platinum.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ExtractorGold">
+            <summary>
+            The extraction capabilities of your controllable for gold.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.AddedUnitEvent">
             <summary>
             This event informs of the addition of a unit to the universeGroup.
@@ -21,17 +221,17 @@
         </member>
         <member name="T:Flattiverse.Connector.Events.ChatMulticastEvent">
             <summary>
-            This event informs of the disconnect of a player from the universeGroup.
+            This event informs of a chatmessage to everyone.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.ChatTeamcastEvent">
             <summary>
-            This event informs of the disconnect of a player from the universeGroup.
+            This event informs of a chatmessage to a team.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.ChatUnicastEvent">
             <summary>
-            This event informs of the disconnect of a player from the universeGroup.
+            This event informs of a chatmessage to a player.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.EventKind">
@@ -106,6 +306,11 @@
         <member name="F:Flattiverse.Connector.Events.EventKind.ChatMulticast">
             <summary>
             This event informs of a chatmessage to everyone.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ControllableUpdated">
+            <summary>
+            This event informs of an update of one of your controllables.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.FailureEvent">

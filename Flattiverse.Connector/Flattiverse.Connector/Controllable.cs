@@ -577,6 +577,32 @@ namespace Flattiverse.Connector
             }
         }
 
+        public async Task SetThruster(double value)
+        {
+            if (hull.Value <= 0.0)
+                throw new GameException(0x22);
+
+            if (double.IsNaN(value) || double.IsInfinity(value))
+                throw new GameException(0xB6);
+
+            if (value < 0.0 || value > Thruster.MaxValue * 1.05)
+                throw new GameException(0x23);
+
+            if (value > Thruster.MaxValue)
+                value = Thruster.MaxValue;
+
+            using (Query query = Group.connection.Query("controllableThruster"))
+            {
+                query.Write("controllable", ID);
+
+                query.Write("thrust", value);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
         public async Task SetScanner(double direction, double length, double width, bool enabled = true)
         {
             if (hull.Value <= 0.0)

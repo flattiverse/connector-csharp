@@ -316,7 +316,7 @@ namespace Flattiverse.Connector
             else if (double.IsNaN(X))
                 sb.Append("NAN");
             else
-                sb.Append(X.ToString("F"));
+                sb.Append(X.ToString("+0000.000;-0000.000;00000.000"));
 
             sb.Append('/');
 
@@ -327,7 +327,7 @@ namespace Flattiverse.Connector
             else if (double.IsNaN(Y))
                 sb.Append("NAN");
             else
-                sb.Append(Y.ToString("F"));
+                sb.Append(Y.ToString("+0000.000;-0000.000;00000.000"));
 
             return sb.ToString();
         }

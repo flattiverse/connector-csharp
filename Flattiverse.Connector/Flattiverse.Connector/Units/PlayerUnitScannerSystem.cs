@@ -2,6 +2,9 @@
 
 namespace Flattiverse.Connector.Units
 {
+    // TOG: Können wir in das Scanner-System bitte auch Values und ein Bool für Activated einabuen? Oder siehst Du da ein Problem?
+    // Also, dass wir später hier Werte wie scanDirection und requestedScanDirection übertragen?
+    // Auf lange Sicht hätte ich sowieso gerne alle Werte des Schiffs einfach in Systeme verpackt.
     public class PlayerUnitScannerSystem : PlayerUnitSystem
     {
         public double MaxRange;
