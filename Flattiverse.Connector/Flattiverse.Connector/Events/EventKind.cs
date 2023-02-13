@@ -60,6 +60,10 @@
         /// <summary>
         /// This event informs of a chatmessage to everyone.
         /// </summary>
-        ChatMulticast
+        ChatMulticast,
+        /// <summary>
+        /// This event informs of an update of one of your controllables.
+        /// </summary>
+        ControllableUpdated
     }
 }

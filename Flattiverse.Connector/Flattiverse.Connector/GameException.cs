@@ -42,11 +42,11 @@ namespace Flattiverse.Connector
                 case 0x05:
                     return "[0x05] The command you tried to access can't be access with your player kind. (Tried to access admin commands as player or vice versa, etc.)";
                 case 0x10:
-                    return "[0x10] You exceedet the amount of allowed ships per player for this UniverseGroup.";
+                    return "[0x10] You exceeded the amount of allowed ships per player for this UniverseGroup.";
                 case 0x11:
-                    return "[0x11] You exceedet the amount of non built units for this UniverseGroup.";
+                    return "[0x11] You exceeded the amount of non built units for this UniverseGroup.";
                 case 0x12:
-                    return "[0x12] You exceedet the amount of allowed ships per team for this UniverseGroup.";
+                    return "[0x12] You exceeded the amount of allowed ships per team for this UniverseGroup.";
                 case 0x20:
                     return "[0x20] You need to die before you can use Continue().";
                 case 0x21:
@@ -56,9 +56,9 @@ namespace Flattiverse.Connector
                 case 0x23:
                     return "[0x23] This system doesn't support those values.";
                 case 0xA0:
-                    return "[0xA0] Your JSON defintion is missing some mandatory base value like name or radius.";
+                    return "[0xA0] Your JSON definition is missing some mandatory base value like name or radius.";
                 case 0xA1:
-                    return "[0xA1] Your JSON defintion is missing some mandatory non-base value.";
+                    return "[0xA1] Your JSON definition is missing some mandatory non-base value.";
                 case 0xA2:
                     return "[0xA2] At least one required JSON property doesn't exist.";
                 case 0xA3:

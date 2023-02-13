@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events
 {
     /// <summary>
-    /// This event informs of the disconnect of a player from the universeGroup.
+    /// This event informs of a chatmessage to everyone.
     /// </summary>
     [FlattiverseEventIdentifier("chatMulticast")]
     public class ChatMulticastEvent : ChatEvent
