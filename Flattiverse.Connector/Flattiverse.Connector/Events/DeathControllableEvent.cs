@@ -10,8 +10,8 @@ namespace Flattiverse.Connector.Events
     public class DeathControllableEvent : UnitEvent
     {
         public readonly Controllable Controllable;
-        public readonly UnitKind CauserKind;
-        public readonly string CauserName;
+        public readonly UnitKind? CauserKind;
+        public readonly string? CauserName;
         public readonly DeathReason Reason;
 
 
@@ -21,11 +21,17 @@ namespace Flattiverse.Connector.Events
             if (!group.TryGetControllable(controllableID, out Controllable))
                 group.connection.PushFailureEvent($"Couldn't get the controllable with the id {controllableID}.");
 
-            Utils.Traverse(element, out CauserName, "causerName");
+            if (!Utils.Traverse(element, out CauserName, "causerName"))
+                CauserName = null;
 
-            Utils.Traverse(element, out string causerKind, "causerKind");
-            if (!Enum.TryParse(causerKind, true, out CauserKind))
-                group.connection.PushFailureEvent($"Couldn't parse causerKind {causerKind}.");
+            if (Utils.Traverse(element, out string causerKind, "causerKind"))
+            {
+                if (!Enum.TryParse(causerKind, true, out UnitKind causerKindEnum))
+                    group.connection.PushFailureEvent($"Couldn't parse causerKind {causerKind}.");
+                CauserKind = causerKindEnum;
+            }
+            else
+                CauserKind = null;
 
             Utils.Traverse(element, out string reason, "reason");
             if (!Enum.TryParse(reason, true, out Reason))
