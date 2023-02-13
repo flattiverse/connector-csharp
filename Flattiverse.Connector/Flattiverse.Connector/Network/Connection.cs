@@ -361,8 +361,8 @@ namespace Flattiverse.Connector.Network
                                         {
                                             PlayerUnit unit = (PlayerUnit)addedUnitEvent.Unit;
 
-                                            if (unit.Player == Group.Player && Group.controllables[unit.Controllable] is not null)
-                                                Group.controllables[unit.Controllable].update(addedUnitEvent.Universe, unit);
+                                            if (unit.Player == Group.Player && Group.controllablesId[unit.Controllable] is not null)
+                                                Group.controllablesId[unit.Controllable].update(addedUnitEvent.Universe, unit);
                                         }
                                         break;
                                     case UpdatedUnitEvent updatedUnitEvent:
@@ -370,13 +370,13 @@ namespace Flattiverse.Connector.Network
                                         {
                                             PlayerUnit unit = (PlayerUnit)updatedUnitEvent.Unit;
 
-                                            if (unit.Player == Group.Player && Group.controllables[unit.Controllable] is not null)
-                                                Group.controllables[unit.Controllable].update(updatedUnitEvent.Universe, unit);
+                                            if (unit.Player == Group.Player && Group.controllablesId[unit.Controllable] is not null)
+                                                Group.controllablesId[unit.Controllable].update(updatedUnitEvent.Universe, unit);
                                         }
                                         break;
                                     case RemovedUnitEvent removedUnitEvent:
-                                        if (removedUnitEvent.Player == Group.Player && removedUnitEvent.Controllable >= 0 && Group.controllables[removedUnitEvent.Controllable] is not null)
-                                            Group.controllables[removedUnitEvent.Controllable].update();
+                                        if (removedUnitEvent.Player == Group.Player && removedUnitEvent.Controllable >= 0 && Group.controllablesId[removedUnitEvent.Controllable] is not null)
+                                            Group.controllablesId[removedUnitEvent.Controllable].update();
                                         break;
                                 }
 

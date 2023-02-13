@@ -73,7 +73,7 @@ namespace Flattiverse.Connector.Events
         /// </summary>
         public readonly IReadOnlyCollection<Universe> Universes;
 
-        private Universe[] universes;
+        private Universe?[] universes;
 
         /// <summary>
         /// The system upgrade paths in the UniverseGroup.
@@ -143,9 +143,25 @@ namespace Flattiverse.Connector.Events
             group.maxBasesPerTeam = MaxBasesPerTeam;
             group.spectators = Spectators;
             group.registerShipLimit = RegisterShipLimit;
-            group.teams = teams;
-            group.universes = universes;
+            group.teamsId = teams;
+            group.universesId = universes;
             group.systems = systems;
+
+            List<Universe> finalUniverses = new List<Universe>();
+
+            foreach (Universe? universe in universes)
+                if (universe is not null)
+                    finalUniverses.Add(universe);
+
+            group.universes = new System.Collections.ObjectModel.ReadOnlyCollection<Universe>(finalUniverses);
+
+            List<Team> finalTeams = new List<Team>();
+
+            foreach (Team? team in teams)
+                if (team is not null)
+                    finalTeams.Add(team);
+
+            group.teams = new System.Collections.ObjectModel.ReadOnlyCollection<Team>(finalTeams);
         }
 
         /// <summary>

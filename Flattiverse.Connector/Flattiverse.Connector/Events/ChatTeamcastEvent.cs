@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Events
         internal ChatTeamcastEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out int teamID, "destination");
-            Team = group.teams[teamID];
+            Team = group.teamsId[teamID];
         }
 
         public override EventKind Kind => EventKind.ChatTeamcast;

@@ -64,7 +64,7 @@ namespace Flattiverse.Connector.Accounts
             Utils.Traverse(element, out rank, "rank");
             Utils.Traverse(element, out string playerKind, "playerKind");
             Utils.Traverse(element, out int teamID, "team");
-            Team = group.teams[teamID];
+            Team = group.teamsId[teamID];
             Enum.TryParse(playerKind, true, out this.playerKind);
         }
 

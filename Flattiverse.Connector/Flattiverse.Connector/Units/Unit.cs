@@ -168,7 +168,7 @@ namespace Flattiverse.Connector.Units
             Utils.Traverse(element, out Movement, "movement");
 
             if (Utils.Traverse(element, out int teamID, "team") && teamID >= 0 && teamID < 16)
-                Team = group.teams[teamID];
+                Team = group.teamsId[teamID];
         }
     }
 }

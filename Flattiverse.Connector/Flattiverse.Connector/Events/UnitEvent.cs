@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Events
         internal UnitEvent(UniverseGroup group, JsonElement element) : base()
         {
             Utils.Traverse(element, out int universe, "universe");
-            Universe = group.universes[universe];
+            Universe = group.universesId[universe];
         }
     }
 }

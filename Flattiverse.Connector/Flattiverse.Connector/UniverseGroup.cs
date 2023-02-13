@@ -2,6 +2,7 @@
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
@@ -31,10 +32,13 @@ namespace Flattiverse.Connector
         internal bool spectators;
         internal int registerShipLimit;
 
-        internal Team[] teams = new Team[16];
-        internal Universe[] universes = new Universe[64];
-        internal Controllable[] controllables = new Controllable[32];
+        internal Team[] teamsId = new Team[16];
+        internal Universe?[] universesId = new Universe?[64];
+        internal Controllable?[] controllablesId = new Controllable?[32];
         internal Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
+
+        internal ReadOnlyCollection<Team> teams;
+        internal ReadOnlyCollection<Universe> universes;
 
         private readonly object syncControllables = new object();
 
@@ -173,12 +177,29 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The teams in the UniverseGroup.
         /// </summary>
-        public IReadOnlyCollection<Team> Teams => teams;
+        public IReadOnlyCollection<Team> Teams => teamsId;
 
         /// <summary>
         /// The universes of the universegroup.
         /// </summary>
         public IReadOnlyCollection<Universe> Universes => universes;
+
+        /// <summary>
+        /// The controllables you currently own. Try to avoid this method as it creates copies of internal lists.
+        /// </summary>
+        public IReadOnlyCollection<Controllable> Controllables
+        {
+            get
+            {
+                List<Controllable> controllables = new List<Controllable>();
+
+                foreach (Controllable? controllable in controllables)
+                    if (controllable is not null)
+                        controllables.Add(controllable);
+
+                return new ReadOnlyCollection<Controllable>(controllables);
+            }
+        }
 
         /// <summary>
         /// The system upgrade paths of the universegroup.
@@ -195,7 +216,7 @@ namespace Flattiverse.Connector
         {
             name = name.ToLower();
 
-            foreach (Universe u in universes)
+            foreach (Universe u in universesId)
             {
                 if (u is null)
                 {
@@ -228,7 +249,7 @@ namespace Flattiverse.Connector
                 return false;
             }
 
-            universe = universes[id];
+            universe = universesId[id];
             return universe != null;
         }
 
@@ -241,7 +262,7 @@ namespace Flattiverse.Connector
         {
             name = name.ToLower();
 
-            foreach (Universe universe in universes)
+            foreach (Universe universe in universesId)
             {
                 if (universe is null)
                     return null;
@@ -263,7 +284,7 @@ namespace Flattiverse.Connector
         {
             name = name.ToLower();
 
-            foreach (Team t in teams)
+            foreach (Team t in teamsId)
             {
                 if (t is null)
                 {
@@ -296,7 +317,7 @@ namespace Flattiverse.Connector
                 return false;
             }
 
-            team = teams[id];
+            team = teamsId[id];
             return team != null;
         }
 
@@ -309,7 +330,7 @@ namespace Flattiverse.Connector
         {
             name = name.ToLower();
 
-            foreach (Team team in teams)
+            foreach (Team team in teamsId)
             {
                 if (team is null)
                     return null;
@@ -331,7 +352,7 @@ namespace Flattiverse.Connector
         {
             name = name.ToLower();
 
-            foreach (Controllable c in controllables)
+            foreach (Controllable c in controllablesId)
             {
                 //Maluk: Kann es Lücken geben?
                 //if (c is null)
@@ -365,7 +386,7 @@ namespace Flattiverse.Connector
                 return false;
             }
 
-            controllable = controllables[id];
+            controllable = controllablesId[id];
             return controllable != null;
         }
 
@@ -378,7 +399,7 @@ namespace Flattiverse.Connector
         {
             name = name.ToLower();
 
-            foreach (Controllable controllable in controllables)
+            foreach (Controllable controllable in controllablesId)
             {
                 //Maluk: Kann es Lücken geben?
                 //if (controllable is null)
@@ -412,8 +433,8 @@ namespace Flattiverse.Connector
 
             lock (syncControllables)
             {
-                for (int position = 0; position < controllables.Length; position++)
-                    if (controllables[position] is not null)
+                for (int position = 0; position < controllablesId.Length; position++)
+                    if (controllablesId[position] is not null)
                         controllableCount++;
                     else if (firstAvailableSlot == -1)
                         firstAvailableSlot = position;
@@ -425,7 +446,7 @@ namespace Flattiverse.Connector
                     throw new GameException(0x10);
 
                 controllable = new Controllable(this, name, firstAvailableSlot);
-                controllables[firstAvailableSlot] = controllable;
+                controllablesId[firstAvailableSlot] = controllable;
             }
 
             using (Query query = connection.Query("controllableNew"))
