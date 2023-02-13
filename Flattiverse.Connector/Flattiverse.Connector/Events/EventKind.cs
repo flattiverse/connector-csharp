@@ -64,6 +64,10 @@
         /// <summary>
         /// This event informs of an update of one of your controllables.
         /// </summary>
-        ControllableUpdated
+        ControllableUpdated,
+        /// <summary>
+        /// This event informs of the untimely demise of one of your controllables.
+        /// </summary>
+        ControllableDeath
     }
 }
