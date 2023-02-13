@@ -36,7 +36,7 @@ namespace Flattiverse.Connector.Network
         {
             Group = group;
 
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1");
 
             socket = new ClientWebSocket();
 
@@ -86,7 +86,7 @@ namespace Flattiverse.Connector.Network
         {
             Group = group;
 
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0&team={team}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1&team={team}");
 
             socket = new ClientWebSocket();
 
@@ -132,7 +132,7 @@ namespace Flattiverse.Connector.Network
 
         public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth)
         {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1");
 
             ClientWebSocket socket = new ClientWebSocket();
 
@@ -166,7 +166,7 @@ namespace Flattiverse.Connector.Network
 
         public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth, string team)
         {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=0&team={team}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1&team={team}");
 
             ClientWebSocket socket = new ClientWebSocket();
 

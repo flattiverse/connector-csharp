@@ -87,6 +87,8 @@ namespace Flattiverse.Connector
                     return "[0xB5] Messages must be between 1 and 256 characters long and can't contain control characters.";
                 case 0xB6:
                     return "[0xB6] doubles can't be NaN or positive/negative infinity.";
+                case 0xB7:
+                    return "[0xB7] You triggered the flood control. Please wait a little bit before sending the next message.";
                 case 0xC0:
                     return "[0xC0] We couldn't connect to the specified endpoint. Maybe a typo?";
                 case 0xC1:
