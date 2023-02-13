@@ -125,7 +125,7 @@ namespace Flattiverse.Connector
         public PlayerUnitSystem CellsEnergy => cellsEnergy;
 
         /// <summary>
-        /// The energy battery your controllable, used for storing energy.
+        /// The energy battery of your controllable, used for storing energy.
         /// </summary>
         public PlayerUnitSystem BatteryEnergy => batteryEnergy;
 
@@ -135,12 +135,12 @@ namespace Flattiverse.Connector
         public PlayerUnitEnergyConsumingSystem Thruster => thruster;
 
         /// <summary>
-        /// The nozzle of your controllable, used make you spin all around.
+        /// The nozzle of your controllable, used to make you spin all around.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem Nozzle => nozzle;
 
         /// <summary>
-        /// The scanner of your controllable, used to detect objects in the vincinity.
+        /// The scanner of your controllable, used to detect objects in the vicinity.
         /// </summary>
         public PlayerUnitScannerSystem Scanner => scanner;
 
@@ -150,27 +150,27 @@ namespace Flattiverse.Connector
         public PlayerUnitArmorSystem? Armor => armor;
 
         /// <summary>
-        /// The shield of your controllable, used to avoid damage alltogether.
+        /// The shield of your controllable, used to avoid damage altogether.
         /// </summary>
         public PlayerUnitSystem? Shield => shield;
 
         /// <summary>
-        /// The analayzer of your controllable, used to identify objects.
+        /// The analyzer of your controllable, used to identify objects.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? Analyzer => analyzer;
 
         /// <summary>
-        /// The particle cells, used for recharging your particle levels.
+        /// The particle cells of your controllable, used for recharging your particle levels.
         /// </summary>
         public PlayerUnitSystem? CellsParticles => cellsParticles;
 
         /// <summary>
-        /// The particle battery, used for storing particles.
+        /// The particle battery of your controllable, used for storing particles.
         /// </summary>
         public PlayerUnitSystem? BatteryParticles => batteryParticles;
 
         /// <summary>
-        /// The weapon launcher.
+        /// The weapon launcher of your controllable, used to do the pew pew.
         /// </summary>
         public PlayerUnitSystem? WeaponLauncher => weaponLauncher;
 
@@ -190,27 +190,27 @@ namespace Flattiverse.Connector
         public PlayerUnitSystem? WeaponFactory => weaponFactory;
 
         /// <summary>
-        /// The storage ability of your controllable for weapons.
+        /// The storage capacity of your controllable for weapons.
         /// </summary>
         public PlayerUnitSystem? WeaponStorage => weaponStorage;
 
         /// <summary>
-        /// The capacity for iron in your controllable.
+        /// The storage capacity of iron in your controllable.
         /// </summary>
         public PlayerUnitSystem? CargoIron => cargoIron;
 
         /// <summary>
-        /// The capacity for carbon in your controllable.
+        /// The storage capacity of carbon in your controllable.
         /// </summary>
         public PlayerUnitSystem? CargoCarbon => cargoCarbon;
 
         /// <summary>
-        /// The capacity for silicon in your controllable.
+        /// The storage capacity of silicon in your controllable.
         /// </summary>
         public PlayerUnitSystem? CargoSilicon => cargoSilicon;
 
         /// <summary>
-        /// The capacity for platinum in your controllable.
+        /// The storage capacity of platinum in your controllable.
         /// </summary>
         public PlayerUnitSystem? CargoPlatinum => cargoPlatinum;
 
@@ -220,32 +220,32 @@ namespace Flattiverse.Connector
         public PlayerUnitSystem? CargoGold => cargoGold;
 
         /// <summary>
-        /// The special storage capability of your controllable.
+        /// The special storage capacity of your controllable.
         /// </summary>
         public PlayerUnitSystem? CargoSpecial => cargoSpecial;
 
         /// <summary>
-        /// The extracting capabilities of your controllable for iron.
+        /// The extraction capabilities of your controllable for iron.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? ExtractorIron => extractorIron;
 
         /// <summary>
-        /// The extracting capabilities of your controllable for carbon.
+        /// The extraction capabilities of your controllable for carbon.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? ExtractorCarbon => extractorCarbon;
 
         /// <summary>
-        /// The extracting capabilities of your controllable for silicon.
+        /// The extraction capabilities of your controllable for silicon.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? ExtractorSilicon => extractorSilicon;
 
         /// <summary>
-        /// The extracting capabilities of your controllable for platinum.
+        /// The extraction capabilities of your controllable for platinum.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? ExtractorPlatinum => extractorPlatinum;
 
         /// <summary>
-        /// The extracting capabilities of your controllable for gold.
+        /// The extraction capabilities of your controllable for gold.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? ExtractorGold => extractorGold;
 
