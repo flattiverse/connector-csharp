@@ -251,6 +251,13 @@ namespace Flattiverse.Connector
 
         internal void update(UniverseGroup group, JsonElement element)
         {
+            Utils.Traverse(element, out movement, "movement");
+            Utils.Traverse(element, out position, "position");
+
+            Utils.Traverse(element, out radius, "radius");
+            Utils.Traverse(element, out gravity, "gravity");
+            Utils.Traverse(element, out energyOutput, "energyOutput");
+
             Utils.Traverse(element, out turnRate, "turnRate");
             Utils.Traverse(element, out requestedScanDirection, "requestedScanDirection");
             Utils.Traverse(element, out requestedScanWidth, "requestedScanWidth");
