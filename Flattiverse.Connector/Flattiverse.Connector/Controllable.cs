@@ -39,28 +39,28 @@ namespace Flattiverse.Connector
         private double scanWidth;
         private double scanRange;
 
-        private PlayerUnitSystem hull;
-        private PlayerUnitSystem cellsEnergy;
-        private PlayerUnitSystem batteryEnergy;
+        private PlayerUnitRegularSystem hull;
+        private PlayerUnitRegularSystem cellsEnergy;
+        private PlayerUnitRegularSystem batteryEnergy;
         private PlayerUnitEnergyConsumingSystem thruster;
         private PlayerUnitEnergyConsumingSystem nozzle;
         private PlayerUnitScannerSystem scanner;
         private PlayerUnitArmorSystem? armor;
-        private PlayerUnitSystem? shield;
+        private PlayerUnitRegularSystem? shield;
         private PlayerUnitEnergyConsumingSystem? analyzer;
-        private PlayerUnitSystem? cellsParticles;
-        private PlayerUnitSystem? batteryParticles;
-        private PlayerUnitSystem? weaponLauncher;
-        private PlayerUnitSystem? weaponPayloadDamage;
-        private PlayerUnitSystem? weaponPayloadRadius;
-        private PlayerUnitSystem? weaponFactory;
-        private PlayerUnitSystem? weaponStorage;
-        private PlayerUnitSystem? cargoIron;
-        private PlayerUnitSystem? cargoCarbon;
-        private PlayerUnitSystem? cargoSilicon;
-        private PlayerUnitSystem? cargoPlatinum;
-        private PlayerUnitSystem? cargoGold;
-        private PlayerUnitSystem? cargoSpecial;
+        private PlayerUnitRegularSystem? cellsParticles;
+        private PlayerUnitRegularSystem? batteryParticles;
+        private PlayerUnitRegularSystem? weaponLauncher;
+        private PlayerUnitRegularSystem? weaponPayloadDamage;
+        private PlayerUnitRegularSystem? weaponPayloadRadius;
+        private PlayerUnitRegularSystem? weaponFactory;
+        private PlayerUnitRegularSystem? weaponStorage;
+        private PlayerUnitRegularSystem? cargoIron;
+        private PlayerUnitRegularSystem? cargoCarbon;
+        private PlayerUnitRegularSystem? cargoSilicon;
+        private PlayerUnitRegularSystem? cargoPlatinum;
+        private PlayerUnitRegularSystem? cargoGold;
+        private PlayerUnitRegularSystem? cargoSpecial;
         private PlayerUnitEnergyConsumingSystem? extractorIron;
         private PlayerUnitEnergyConsumingSystem? extractorCarbon;
         private PlayerUnitEnergyConsumingSystem? extractorSilicon;
@@ -117,17 +117,17 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The hull of your controllable, keeping you away from the cold void of space.
         /// </summary>
-        public PlayerUnitSystem Hull => hull;
+        public PlayerUnitRegularSystem Hull => hull;
 
         /// <summary>
         /// The energy cell of your controllable, used for recharging your energy levels.
         /// </summary>
-        public PlayerUnitSystem CellsEnergy => cellsEnergy;
+        public PlayerUnitRegularSystem CellsEnergy => cellsEnergy;
 
         /// <summary>
         /// The energy battery of your controllable, used for storing energy.
         /// </summary>
-        public PlayerUnitSystem BatteryEnergy => batteryEnergy;
+        public PlayerUnitRegularSystem BatteryEnergy => batteryEnergy;
 
         /// <summary>
         /// The thruster of your controllable, used to propel your controllabe through the universe.
@@ -152,7 +152,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The shield of your controllable, used to avoid damage altogether.
         /// </summary>
-        public PlayerUnitSystem? Shield => shield;
+        public PlayerUnitRegularSystem? Shield => shield;
 
         /// <summary>
         /// The analyzer of your controllable, used to identify objects.
@@ -162,67 +162,67 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The particle cells of your controllable, used for recharging your particle levels.
         /// </summary>
-        public PlayerUnitSystem? CellsParticles => cellsParticles;
+        public PlayerUnitRegularSystem? CellsParticles => cellsParticles;
 
         /// <summary>
         /// The particle battery of your controllable, used for storing particles.
         /// </summary>
-        public PlayerUnitSystem? BatteryParticles => batteryParticles;
+        public PlayerUnitRegularSystem? BatteryParticles => batteryParticles;
 
         /// <summary>
         /// The weapon launcher of your controllable, used to do the pew pew.
         /// </summary>
-        public PlayerUnitSystem? WeaponLauncher => weaponLauncher;
+        public PlayerUnitRegularSystem? WeaponLauncher => weaponLauncher;
 
         /// <summary>
         /// The damage of your controllable's weapons.
         /// </summary>
-        public PlayerUnitSystem? WeaponPayloadDamage => weaponPayloadDamage;
+        public PlayerUnitRegularSystem? WeaponPayloadDamage => weaponPayloadDamage;
 
         /// <summary>
         /// The radius of your controllable's weapons' explosions.
         /// </summary>
-        public PlayerUnitSystem? WeaponPayloadRadius => weaponPayloadRadius;
+        public PlayerUnitRegularSystem? WeaponPayloadRadius => weaponPayloadRadius;
 
         /// <summary>
         /// The weapon factory of your controllable.
         /// </summary>
-        public PlayerUnitSystem? WeaponFactory => weaponFactory;
+        public PlayerUnitRegularSystem? WeaponFactory => weaponFactory;
 
         /// <summary>
         /// The storage capacity of your controllable for weapons.
         /// </summary>
-        public PlayerUnitSystem? WeaponStorage => weaponStorage;
+        public PlayerUnitRegularSystem? WeaponStorage => weaponStorage;
 
         /// <summary>
         /// The storage capacity of iron in your controllable.
         /// </summary>
-        public PlayerUnitSystem? CargoIron => cargoIron;
+        public PlayerUnitRegularSystem? CargoIron => cargoIron;
 
         /// <summary>
         /// The storage capacity of carbon in your controllable.
         /// </summary>
-        public PlayerUnitSystem? CargoCarbon => cargoCarbon;
+        public PlayerUnitRegularSystem? CargoCarbon => cargoCarbon;
 
         /// <summary>
         /// The storage capacity of silicon in your controllable.
         /// </summary>
-        public PlayerUnitSystem? CargoSilicon => cargoSilicon;
+        public PlayerUnitRegularSystem? CargoSilicon => cargoSilicon;
 
         /// <summary>
         /// The storage capacity of platinum in your controllable.
         /// </summary>
-        public PlayerUnitSystem? CargoPlatinum => cargoPlatinum;
+        public PlayerUnitRegularSystem? CargoPlatinum => cargoPlatinum;
 
         /// <summary>
         /// The capacity for gold in your controllable.
         /// </summary>
-        public PlayerUnitSystem? CargoGold => cargoGold;
+        public PlayerUnitRegularSystem? CargoGold => cargoGold;
 
         /// <summary>
         /// The special storage capacity of your controllable.
         /// </summary>
-        public PlayerUnitSystem? CargoSpecial => cargoSpecial;
+        public PlayerUnitRegularSystem? CargoSpecial => cargoSpecial;
 
         /// <summary>
         /// The extraction capabilities of your controllable for iron.
@@ -392,10 +392,10 @@ namespace Flattiverse.Connector
                     switch (kind)
                     {
                         case PlayerUnitSystemKind.Hull:
-                            hull = system;
+                            hull = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.Shield:
-                            shield = system;
+                            shield = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.Armor:
                             armor = (PlayerUnitArmorSystem)system;
@@ -413,49 +413,49 @@ namespace Flattiverse.Connector
                             analyzer = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.CellsEnergy:
-                            cellsEnergy = system;
+                            cellsEnergy = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CellsParticles:
-                            cellsParticles = system;
+                            cellsParticles = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.BatteryEnergy:
-                            batteryEnergy = system;
+                            batteryEnergy = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.BatteryParticles:
-                            batteryParticles = system;
+                            batteryParticles = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponLauncher:
-                            weaponLauncher = system;
+                            weaponLauncher = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponPayloadDamage:
-                            weaponPayloadDamage = system;
+                            weaponPayloadDamage = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponPayloadRadius:
-                            weaponPayloadRadius = system;
+                            weaponPayloadRadius = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponFactory:
-                            weaponFactory = system;
+                            weaponFactory = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponStorage:
-                            weaponStorage = system;
+                            weaponStorage = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CargoIron:
-                            cargoIron = system;
+                            cargoIron = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CargoCarbon:
-                            cargoCarbon = system;
+                            cargoCarbon = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CargoSilicon:
-                            cargoSilicon = system;
+                            cargoSilicon = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CargoPlatinum:
-                            cargoPlatinum = system;
+                            cargoPlatinum = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CargoGold:
-                            cargoGold = system;
+                            cargoGold = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.CargoSpecial:
-                            cargoSpecial = system;
+                            cargoSpecial = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.ExtractorIron:
                             extractorIron = (PlayerUnitEnergyConsumingSystem)system;

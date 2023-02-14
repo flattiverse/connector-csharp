@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Events
         internal FullUpdateControllableEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out JsonElement controllable, "controllable");
-            Utils.Traverse(controllable, out int controllableID, "controllableID");
+            Utils.Traverse(element, out int controllableID, "controllableID");
 
             // TOG: Hie rbitte eine zwischenvariable machen, die auch tatsächlich null sein kann. Sonst ist Dein Controllable? ziemlich sus.
             if (!group.TryGetControllable(controllableID, out Controllable))

@@ -36,7 +36,7 @@ namespace Flattiverse.Connector.Units
         {
             PlayerUnitSystemUpgradepath? systemUpgradepath;
 
-            if (!universeGroup.Systems.TryGetValue(new PlayerUnitSystemIdentifier(kind, 0), out systemUpgradepath))
+            if (!universeGroup.systemDefinitions.TryGetValue(new PlayerUnitSystemIdentifier(kind, 0), out systemUpgradepath))
             {
                 system = null;
                 return false;
@@ -79,7 +79,7 @@ namespace Flattiverse.Connector.Units
         internal PlayerUnitSystem(UniverseGroup universeGroup, PlayerUnitSystemUpgradepath path)
         {
             for (int level = 1; level < 32; level++)
-                if (!universeGroup.Systems.TryGetValue(new PlayerUnitSystemIdentifier(path.Kind, level), out _))
+                if (!universeGroup.systemDefinitions.TryGetValue(new PlayerUnitSystemIdentifier(path.Kind, level), out _))
                     MaxLevel = level - 1;
 
             Kind = path.Kind;

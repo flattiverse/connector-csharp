@@ -10,6 +10,15 @@ namespace Flattiverse.Connector.Units
         public int Time;
         public int Fade;
 
+        public Activation(double probability, int foreshadowing, int upramp, int time, int fade)
+        {
+            Probability = probability;
+            Foreshadowing = foreshadowing;
+            Upramp = upramp;
+            Time = time;
+            Fade = fade;
+        }
+
         public Activation(JsonElement element)
         {
             Utils.Traverse(element, out Probability, "probability");

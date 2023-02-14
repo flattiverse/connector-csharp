@@ -173,47 +173,18 @@ namespace Flattiverse.Connector
         /// </summary>
         public int RegisterShipLimit => registerShipLimit;
 
-        /// <summary>
-        /// The teams in the UniverseGroup.
-        /// </summary>
-        public IReadOnlyCollection<Team> Teams => teamsId;
-
+        #region Universes
         /// <summary>
         /// The universes of the universegroup.
         /// </summary>
         public IReadOnlyCollection<Universe> Universes => universes;
 
-        /// <summary>
-        /// The players which are active currently in the UniverseGroup. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumeratePlayers().
-        /// </summary>
-        public IReadOnlyCollection<Player> Players
+        public IEnumerable<Universe> EnumerateUniverses()
         {
-            get
-            {
-                List<Player> players = new List<Player>();
-
-                foreach (Player? player in playersId)
-                    if (player is not null)
-                        players.Add(player);
-
-                return new ReadOnlyCollection<Player>(players);
-            }
+            foreach (Universe? universe in universesId)
+                if (universe is not null)
+                    yield return universe;
         }
-
-        /// <summary>
-        /// Enumerates over the players which are currently connected to the UniverseGroup.
-        /// </summary>
-        public IEnumerable<Player> EnumeratePlayers()
-        {
-            foreach (Player? player in playersId)
-                if (player is not null)
-                    yield return player;
-        }
-
-        /// <summary>
-        /// The system upgrade paths of the universegroup.
-        /// </summary>
-        public IReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> Systems => systemDefinitions;
 
         /// <summary>
         /// Tries to get the corresponding universe.
@@ -261,236 +232,21 @@ namespace Flattiverse.Connector
             universe = universesId[id];
             return universe != null;
         }
+        #endregion
+
+        #region Systems
+        /// <summary>
+        /// The system upgrade paths of the universegroup.
+        /// </summary>
+        public IReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> Systems => systemDefinitions;
 
         /// <summary>
-        /// Tries to get the corresponding universe.
+        /// Enumerates over the systems in this universe group.
         /// </summary>
-        /// <param name="name">The name of the universe.</param>
-        /// <returns>The universe if found, null otherwise.</returns>
-        public Universe? GetUniverse(string name)
+        public IEnumerable<KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>> EnumerateSystems()
         {
-            name = name.ToLower();
-
-            foreach (Universe universe in universesId)
-            {
-                if (universe is null)
-                    return null;
-
-                if (universe.Name.ToLower() == name)
-                    return universe;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Tries to get the corresponding team.
-        /// </summary>
-        /// <param name="name">The name of the team.</param>
-        /// <param name="team">The team or null, if not found.</param>
-        /// <returns>true, if the team has been found, false otherwise.</returns>
-        public bool TryGetTeam(string name, [NotNullWhen(returnValue: true)] out Team? team)
-        {
-            name = name.ToLower();
-
-            foreach (Team t in teamsId)
-            {
-                if (t is null)
-                {
-                    team = null;
-                    return false;
-                }
-
-                if (t.Name.ToLower() == name)
-                {
-                    team = t;
-                    return true;
-                }
-            }
-
-            team = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to get the corresponding team.
-        /// </summary>
-        /// <param name="id">The id of the team.</param>
-        /// <param name="team">The universe or null, if not found.</param>
-        /// <returns>true, if the team has been found, false otherwise.</returns>
-        public bool TryGetTeam(int id, [NotNullWhen(returnValue: true)] out Team? team)
-        {
-            if (id < 0 || id >= 16)
-            {
-                team = null;
-                return false;
-            }
-
-            team = teamsId[id];
-            return team is not null;
-        }
-
-        /// <summary>
-        /// Tries to get the corresponding team. Does a case-sensitive search first, case insensitive afterwards.
-        /// </summary>
-        /// <param name="name">The name of the team.</param>
-        /// <returns>The team if found, null otherwise.</returns>
-        public Team? GetTeam(string name)
-        {
-            foreach (Team team in teams)
-                if (team.Name == name)
-                    return team;
-
-            name = name.ToLower();
-
-            foreach (Team team in teams)
-                if (team.Name.ToLower() == name)
-                    return team;
-
-            return null;
-        }
-
-        /// <summary>
-        /// Tries to get the corresponding controllable. First does a case-sensitive search, then a case-insensitive search.
-        /// </summary>
-        /// <param name="name">The name of the controllable.</param>
-        /// <param name="controllable">The controllable or null, if not found.</param>
-        /// <returns>true, if the controllable has been found, false otherwise.</returns>
-        public bool TryGetControllable(string name, [NotNullWhen(returnValue: true)] out Controllable? controllable)
-        {
-            foreach (Controllable? c in controllablesId)
-                if (c is not null && c.Name == name)
-                {
-                    controllable = c;
-                    return true;
-                }
-
-            name = name.ToLower();
-
-            foreach (Controllable? c in controllablesId)
-                if (c is not null && c.Name.ToLower() == name)
-                {
-                    controllable = c;
-                    return true;
-                }
-
-            controllable = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Tries to get the corresponding controllable.
-        /// </summary>
-        /// <param name="id">The id of the controllable.</param>
-        /// <param name="controllable">The controllable or null, if not found.</param>
-        /// <returns>true, if the controllable has been found, false otherwise.</returns>
-        public bool TryGetControllable(int id, [NotNullWhen(returnValue: true)] out Controllable? controllable)
-        {
-            if (id < 0 || id >= 32)
-            {
-                controllable = null;
-                return false;
-            }
-
-            controllable = controllablesId[id];
-            return controllable is not null;
-        }
-
-        /// <summary>
-        /// Tries to get the corresponding controllable by name. First searches case sensitive, then case insensitive.
-        /// </summary>
-        /// <param name="name">The name of the controllable.</param>
-        /// <returns>The controllable if found, null otherwise.</returns>
-        public Controllable? GetControllable(string name)
-        {
-            foreach (Controllable? controllable in controllablesId)
-                if (controllable is not null && controllable.Name == name)
-                    return controllable;
-
-            name = name.ToLower();
-
-            foreach (Controllable? controllable in controllablesId)
-                if (controllable is not null && controllable.Name.ToLower() == name)
-                    return controllable;
-
-            return null;
-        }
-
-        /// <summary>
-        /// The controllables you currently own. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumerateControllables().
-        /// </summary>
-        public IReadOnlyCollection<Controllable> Controllables
-        {
-            get
-            {
-                List<Controllable> controllables = new List<Controllable>();
-
-                foreach (Controllable? controllable in controllablesId)
-                    if (controllable is not null)
-                        controllables.Add(controllable);
-
-                return new ReadOnlyCollection<Controllable>(controllables);
-            }
-        }
-
-        /// <summary>
-        /// Enumerates over the controllables which are currently registered by the player.
-        /// </summary>
-        public IEnumerable<Controllable> EnumnerateControllables()
-        {
-            foreach (Controllable? controllable in controllablesId)
-                if (controllable is not null)
-                    yield return controllable;
-        }
-
-        /// <summary>
-        /// Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
-        /// by the rules of the UniverseGroup. (See RegisterShipLimit.)
-        /// </summary>
-        /// <param name="name">The name of the ship to be created.</param>
-        /// <returns>A controllable object that gives control over the ship.</returns>
-        /// <exception cref="GameException">Thrown if the name is already in use or if the ship or RegisterShip limits are exceeded.</exception>
-        /// <remarks>This will create a DEAD ship. To bring it to life, you need to call the Continue() method on the ship. Typically, you would call NewShip() followed by Continue()
-        /// on the controllable.</remarks>
-        public async Task<Controllable> NewShip(string name)
-        {
-            if (!Utils.CheckName(name))
-                throw new GameException(0xB2);
-
-            Controllable? controllable = null;
-
-            int controllableCount = 0;
-            int firstAvailableSlot = -1;
-
-            lock (syncControllables)
-            {
-                for (int position = 0; position < controllablesId.Length; position++)
-                    if (controllablesId[position] is not null)
-                        controllableCount++;
-                    else if (firstAvailableSlot == -1)
-                        firstAvailableSlot = position;
-
-                if (controllableCount >= registerShipLimit)
-                    throw new GameException(0x11);
-
-                if (controllableCount >= maxShipsPerPlayer || firstAvailableSlot == -1)
-                    throw new GameException(0x10);
-
-                controllable = new Controllable(this, name, firstAvailableSlot);
-                controllablesId[firstAvailableSlot] = controllable;
-            }
-
-            using (Query query = connection.Query("controllableNew"))
-            {
-                query.Write("controllable", firstAvailableSlot);
-                query.Write("name", name);
-
-                await query.Send().ConfigureAwait(false);
-
-                await query.Wait().ConfigureAwait(false);
-            }
-
-            return controllable;
+            foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> system in systemDefinitions)
+                yield return system;
         }
 
         /// <summary>
@@ -515,11 +271,6 @@ namespace Flattiverse.Connector
         {
             return systemDefinitions.TryGetValue(identifier, out system);
         }
-
-        /// <summary>
-        /// All system definitions currently used in this universe group.
-        /// </summary>
-        public ReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> SystemDefinitions => new ReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>(systemDefinitions);
 
         /// <summary>
         /// Queries the json definition of all systems in the universegroup from the server.
@@ -653,6 +404,273 @@ namespace Flattiverse.Connector
 
                 await query.Wait().ConfigureAwait(false);
             }
+        }
+        #endregion
+
+        #region Players
+        /// <summary>
+        /// The players which are active currently in the UniverseGroup. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumeratePlayers().
+        /// </summary>
+        public IReadOnlyCollection<Player> Players
+        {
+            get
+            {
+                List<Player> players = new List<Player>();
+
+                foreach (Player? player in playersId)
+                    if (player is not null)
+                        players.Add(player);
+
+                return new ReadOnlyCollection<Player>(players);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates over the players which are currently connected to the UniverseGroup.
+        /// </summary>
+        public IEnumerable<Player> EnumeratePlayers()
+        {
+            foreach (Player? player in playersId)
+                if (player is not null)
+                    yield return player;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding player.
+        /// </summary>
+        /// <param name="name">The name of the player.</param>
+        /// <param name="player">The player or null, if not found.</param>
+        /// <returns>true, if the player has been found, false otherwise.</returns>
+        public bool TryGetPlayer(string name, [NotNullWhen(returnValue: true)] out Player? player)
+        {
+            name = name.ToLower();
+
+            foreach (Player p in playersId)
+            {
+                if (p is null)
+                {
+                    player = null;
+                    return false;
+                }
+
+                if (p.Name.ToLower() == name)
+                {
+                    player = p;
+                    return true;
+                }
+            }
+
+            player = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding player.
+        /// </summary>
+        /// <param name="id">The id of the player.</param>
+        /// <param name="player">The player or null, if not found.</param>
+        /// <returns>true, if the player has been found, false otherwise.</returns>
+        public bool TryGetPlayer(int id, [NotNullWhen(returnValue: true)] out Player? player)
+        {
+            if (id < 0 || id >= 16)
+            {
+                player = null;
+                return false;
+            }
+
+            player = playersId[id];
+            return player is not null;
+        }
+        #endregion
+
+        #region Controllables
+        /// <summary>
+        /// The controllables you currently own. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumerateControllables().
+        /// </summary>
+        public IReadOnlyCollection<Controllable> Controllables
+        {
+            get
+            {
+                List<Controllable> controllables = new List<Controllable>();
+
+                foreach (Controllable? controllable in controllablesId)
+                    if (controllable is not null)
+                        controllables.Add(controllable);
+
+                return new ReadOnlyCollection<Controllable>(controllables);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates over the controllables which are currently registered by the player.
+        /// </summary>
+        public IEnumerable<Controllable> EnumerateControllables()
+        {
+            foreach (Controllable? controllable in controllablesId)
+                if (controllable is not null)
+                    yield return controllable;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding controllable. First does a case-sensitive search, then a case-insensitive search.
+        /// </summary>
+        /// <param name="name">The name of the controllable.</param>
+        /// <param name="controllable">The controllable or null, if not found.</param>
+        /// <returns>true, if the controllable has been found, false otherwise.</returns>
+        public bool TryGetControllable(string name, [NotNullWhen(returnValue: true)] out Controllable? controllable)
+        {
+            foreach (Controllable? c in controllablesId)
+                if (c is not null && c.Name == name)
+                {
+                    controllable = c;
+                    return true;
+                }
+
+            name = name.ToLower();
+
+            foreach (Controllable? c in controllablesId)
+                if (c is not null && c.Name.ToLower() == name)
+                {
+                    controllable = c;
+                    return true;
+                }
+
+            controllable = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding controllable.
+        /// </summary>
+        /// <param name="id">The id of the controllable.</param>
+        /// <param name="controllable">The controllable or null, if not found.</param>
+        /// <returns>true, if the controllable has been found, false otherwise.</returns>
+        public bool TryGetControllable(int id, [NotNullWhen(returnValue: true)] out Controllable? controllable)
+        {
+            if (id < 0 || id >= 32)
+            {
+                controllable = null;
+                return false;
+            }
+
+            controllable = controllablesId[id];
+            return controllable is not null;
+        }
+        #endregion
+
+        #region Teams
+        /// <summary>
+        /// The teams in the UniverseGroup.
+        /// </summary>
+        public IReadOnlyCollection<Team> Teams => teamsId;
+
+        /// <summary>
+        /// Enumerates over the teams which are available in the universe group.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Team> EnumerateTeams()
+        {
+            foreach (Team? team in teamsId)
+                if (team is not null)
+                    yield return team;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding team.
+        /// </summary>
+        /// <param name="name">The name of the team.</param>
+        /// <param name="team">The team or null, if not found.</param>
+        /// <returns>true, if the team has been found, false otherwise.</returns>
+        public bool TryGetTeam(string name, [NotNullWhen(returnValue: true)] out Team? team)
+        {
+            name = name.ToLower();
+
+            foreach (Team t in teamsId)
+            {
+                if (t is null)
+                {
+                    team = null;
+                    return false;
+                }
+
+                if (t.Name.ToLower() == name)
+                {
+                    team = t;
+                    return true;
+                }
+            }
+
+            team = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the corresponding team.
+        /// </summary>
+        /// <param name="id">The id of the team.</param>
+        /// <param name="team">The team or null, if not found.</param>
+        /// <returns>true, if the team has been found, false otherwise.</returns>
+        public bool TryGetTeam(int id, [NotNullWhen(returnValue: true)] out Team? team)
+        {
+            if (id < 0 || id >= 16)
+            {
+                team = null;
+                return false;
+            }
+
+            team = teamsId[id];
+            return team is not null;
+        }
+        #endregion
+
+        /// <summary>
+        /// Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
+        /// by the rules of the UniverseGroup. (See RegisterShipLimit.)
+        /// </summary>
+        /// <param name="name">The name of the ship to be created.</param>
+        /// <returns>A controllable object that gives control over the ship.</returns>
+        /// <exception cref="GameException">Thrown if the name is already in use or if the ship or RegisterShip limits are exceeded.</exception>
+        /// <remarks>This will create a DEAD ship. To bring it to life, you need to call the Continue() method on the ship. Typically, you would call NewShip() followed by Continue()
+        /// on the controllable.</remarks>
+        public async Task<Controllable> NewShip(string name)
+        {
+            if (!Utils.CheckName(name))
+                throw new GameException(0xB2);
+
+            Controllable? controllable = null;
+
+            int controllableCount = 0;
+            int firstAvailableSlot = -1;
+
+            lock (syncControllables)
+            {
+                for (int position = 0; position < controllablesId.Length; position++)
+                    if (controllablesId[position] is not null)
+                        controllableCount++;
+                    else if (firstAvailableSlot == -1)
+                        firstAvailableSlot = position;
+
+                if (controllableCount >= registerShipLimit)
+                    throw new GameException(0x11);
+
+                if (controllableCount >= maxShipsPerPlayer || firstAvailableSlot == -1)
+                    throw new GameException(0x10);
+
+                controllable = new Controllable(this, name, firstAvailableSlot);
+                controllablesId[firstAvailableSlot] = controllable;
+            }
+
+            using (Query query = connection.Query("controllableNew"))
+            {
+                query.Write("controllable", firstAvailableSlot);
+                query.Write("name", name);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+
+            return controllable;
         }
 
         public async Task Chat(string message)

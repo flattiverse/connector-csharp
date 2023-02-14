@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Events
 {
@@ -23,10 +18,9 @@ namespace Flattiverse.Connector.Events
                 return;
             }
 
-            // TOG: Hier ein Beispiel, wie das Controllable "informiert" werden kann.
             Controllable.updateUnregistered();
         }
 
-        public override EventKind Kind => EventKind.ControllableDeath;
+        public override EventKind Kind => EventKind.ControllableUnregistered;
     }
 }

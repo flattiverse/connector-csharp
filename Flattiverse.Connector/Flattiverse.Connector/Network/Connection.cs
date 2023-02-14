@@ -338,7 +338,7 @@ namespace Flattiverse.Connector.Network
 
                             queries.Remove(id);
                         }
-                        
+
                         query.Answer(recv, code);
                         break;
                     case "events":
@@ -351,38 +351,7 @@ namespace Flattiverse.Connector.Network
                         foreach (JsonElement subElement in element.EnumerateArray())
                         {
                             if (subElement.ValueKind == JsonValueKind.Object)
-                            {
-                                @event = EventRouter.CreateFromJson(Group, subElement);
-
-                                // TOG: Dieser ganze Shit muss durch Controllable-Events passieren.
-                                switch (@event)
-                                {
-                                    case AddedUnitEvent addedUnitEvent:
-                                        if (addedUnitEvent.Unit.Kind == UnitKind.PlayerUnit)
-                                        {
-                                            PlayerUnit unit = (PlayerUnit)addedUnitEvent.Unit;
-
-                                            if (unit.Player == Group.Player && Group.controllablesId[unit.Controllable] is not null)
-                                                Group.controllablesId[unit.Controllable].update(addedUnitEvent.Universe, unit);
-                                        }
-                                        break;
-                                    case UpdatedUnitEvent updatedUnitEvent:
-                                        if (updatedUnitEvent.Unit.Kind == UnitKind.PlayerUnit)
-                                        {
-                                            PlayerUnit unit = (PlayerUnit)updatedUnitEvent.Unit;
-
-                                            if (unit.Player == Group.Player && Group.controllablesId[unit.Controllable] is not null)
-                                                Group.controllablesId[unit.Controllable].update(updatedUnitEvent.Universe, unit);
-                                        }
-                                        break;
-                                    case RemovedUnitEvent removedUnitEvent:
-                                        if (removedUnitEvent.Player == Group.Player && removedUnitEvent.Controllable >= 0 && Group.controllablesId[removedUnitEvent.Controllable] is not null)
-                                            Group.controllablesId[removedUnitEvent.Controllable].update();
-                                        break;
-                                }
-
-                                PushEvent(@event);
-                            }
+                                PushEvent(EventRouter.CreateFromJson(Group, subElement));
                             else
                                 PushEvent(new RawEvent(subElement));
                         }
@@ -411,20 +380,20 @@ namespace Flattiverse.Connector.Network
                     {
                         socket.Dispose();
                     }
-                    catch {  }
+                    catch { }
                     return true;
                 case WebSocketState.CloseReceived:
                     try
                     {
                         await socket.CloseAsync(status, message, CancellationToken.None);
                     }
-                    catch {  }
+                    catch { }
 
                     try
                     {
                         socket.Dispose();
                     }
-                    catch {  }
+                    catch { }
                     return true;
                 case WebSocketState.Open:
                     try
@@ -439,7 +408,7 @@ namespace Flattiverse.Connector.Network
                         {
                             socket.Dispose();
                         }
-                        catch {  }
+                        catch { }
                     }
                     return true;
             }

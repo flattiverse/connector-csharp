@@ -8,6 +8,13 @@ namespace Flattiverse.Connector.Units
         public double Energy;
         public double Particles;
 
+        public Corona(double radius, double energy, double particles)
+        {
+            Radius = radius;
+            Energy = energy;
+            Particles = particles;
+        }
+
         public Corona(JsonElement element)
         {
             if (!Utils.Traverse(element, out Radius, "radius"))

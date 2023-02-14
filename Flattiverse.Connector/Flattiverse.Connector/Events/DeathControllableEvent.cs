@@ -17,10 +17,7 @@ namespace Flattiverse.Connector.Events
         internal DeathControllableEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out int controllableID, "controllableID");
-
-            if (!group.TryGetControllable(controllableID, out Controllable))
-                group.connection.PushFailureEvent($"Couldn't get the controllable with the id {controllableID}.");
-
+            
             if (!Utils.Traverse(element, out CauserName, "causerName"))
                 CauserName = null;
 
@@ -37,7 +34,14 @@ namespace Flattiverse.Connector.Events
             if (!Enum.TryParse(reason, true, out Reason))
                 group.connection.PushFailureEvent($"Couldn't parse reason {reason}.");
 
-            // TOG: Hier irgendwo also auch das Controllable über seinen tot informieren.
+            if (!group.TryGetControllable(controllableID, out Controllable))
+            {
+                group.connection.PushFailureEvent($"Couldn't get the controllable with the id {controllableID}.");
+
+                return;
+            }
+
+            Controllable.update();
         }
 
         public override EventKind Kind => EventKind.ControllableDeath;

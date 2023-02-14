@@ -32,7 +32,7 @@ namespace Flattiverse.Connector.Units
         public Vector Movement;
 
         /// <summary>
-        /// The direction the unit is facing towerds.
+        /// The direction the unit is facing towards.
         /// </summary>
         public double Direction;
 

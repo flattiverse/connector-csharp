@@ -16,6 +16,19 @@ namespace Flattiverse.Connector.Units
         public ActivationState State;
         public int Frame;
 
+        public CoronaSection(double angleStart, double angleEnd, double distanceStart, double distanceEnd, double energy, double particles, Activation activation, ActivationState state, int frame)
+        {
+            AngleStart = angleStart;
+            AngleEnd = angleEnd;
+            DistanceStart = distanceStart;
+            DistanceEnd = distanceEnd;
+            Energy = energy;
+            Particles = particles;
+            Activation = activation;
+            State = state;
+            Frame = frame;
+        }
+
         public CoronaSection(JsonElement element)
         {
             if (!Utils.Traverse(element, out AngleStart, "angleStart") ||
