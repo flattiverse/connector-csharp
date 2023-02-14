@@ -1,11 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Flattiverse.Connector
 {
@@ -27,7 +21,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The kind of the player.
         /// </summary>
-        public readonly PlayerKind playerKind;
+        public readonly PlayerKind PlayerKind;
 
         /// <summary>
         /// Whether the player is an admin.
@@ -64,7 +58,7 @@ namespace Flattiverse.Connector
             Utils.Traverse(element, out string playerKind, "playerKind");
             Utils.Traverse(element, out int teamID, "team");
             Team = group.teamsId[teamID];
-            Enum.TryParse(playerKind, true, out this.playerKind);
+            Enum.TryParse(playerKind, true, out this.PlayerKind);
         }
 
         internal void Update(JsonElement element)
