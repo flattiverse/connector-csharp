@@ -265,6 +265,7 @@ namespace Flattiverse.Connector
             Utils.Traverse(element, out gravity, "gravity");
             Utils.Traverse(element, out energyOutput, "energyOutput");
 
+            Utils.Traverse(element, out direction, "direction");
             Utils.Traverse(element, out turnRate, "turnRate");
             Utils.Traverse(element, out requestedScanDirection, "requestedScanDirection");
             Utils.Traverse(element, out requestedScanWidth, "requestedScanWidth");
@@ -479,7 +480,6 @@ namespace Flattiverse.Connector
                 }
         }
 
-        // TOG: Dies muss durch das DeathControllableEvent angetriggert werden, nicht mehr durch das
         internal void update()
         {
             hull.Value = 0.0;

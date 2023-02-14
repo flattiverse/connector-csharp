@@ -67,6 +67,8 @@ namespace Flattiverse.Connector.Units
                 group.connection.PushFailureEvent($"Tried to instantiate a PlayerUnit for a player that does not exist in the universe.");
             else
                 Player = group.playersId[playerId];
+
+            Utils.Traverse(element, out Direction, "direction");
             Utils.Traverse(element, out Controllable, "controllable");
             Utils.Traverse(element, out TurnRate, "turnRate");
             Utils.Traverse(element, out RequestedScanDirection, "requestedScanDirection"); 
