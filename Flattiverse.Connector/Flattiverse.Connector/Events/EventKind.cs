@@ -68,6 +68,10 @@
         /// <summary>
         /// This event informs of the untimely demise of one of your controllables.
         /// </summary>
-        ControllableDeath
+        ControllableDeath,
+        /// <summary>
+        /// Notifies about the successful unregister of one of your controllables.
+        /// </summary>
+        ControllableUnregistered
     }
 }

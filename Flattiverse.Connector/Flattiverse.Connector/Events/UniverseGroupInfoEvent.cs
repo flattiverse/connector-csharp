@@ -145,7 +145,7 @@ namespace Flattiverse.Connector.Events
             group.registerShipLimit = RegisterShipLimit;
             group.teamsId = teams;
             group.universesId = universes;
-            group.systems = systems;
+            group.systemDefinitions = systems;
 
             List<Universe> finalUniverses = new List<Universe>();
 

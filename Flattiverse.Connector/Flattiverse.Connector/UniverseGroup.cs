@@ -1,5 +1,4 @@
-﻿using Flattiverse.Connector.Accounts;
-using Flattiverse.Connector.Events;
+﻿using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 using System.Collections.ObjectModel;
@@ -16,7 +15,7 @@ namespace Flattiverse.Connector
         internal Connection connection;
 
         // players[0-63] are real players, players[64] is a substitute, if the server treats us as non player, like a spectator or admin.
-        internal readonly Player[] players = new Player[65];
+        internal readonly Player[] playersId = new Player[65];
 
         private Player player;
 
@@ -35,7 +34,7 @@ namespace Flattiverse.Connector
         internal Team[] teamsId = new Team[16];
         internal Universe?[] universesId = new Universe?[64];
         internal Controllable?[] controllablesId = new Controllable?[32];
-        internal Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
+        internal Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> systemDefinitions = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
 
         internal ReadOnlyCollection<Team> teams;
         internal ReadOnlyCollection<Universe> universes;
@@ -55,7 +54,7 @@ namespace Flattiverse.Connector
             {
                 query.Send().GetAwaiter().GetResult();
 
-                player = players[query.ReceiveInteger().GetAwaiter().GetResult()];
+                player = playersId[query.ReceiveInteger().GetAwaiter().GetResult()];
             }
         }
 
@@ -67,7 +66,7 @@ namespace Flattiverse.Connector
             {
                 query.Send().GetAwaiter().GetResult();
 
-                player = players[query.ReceiveInteger().GetAwaiter().GetResult()];
+                player = playersId[query.ReceiveInteger().GetAwaiter().GetResult()];
             }
         }
 
@@ -80,7 +79,7 @@ namespace Flattiverse.Connector
         internal void setupPlayer(Connection connection, int playerId)
         {
             this.connection = connection;
-            player = players[playerId];
+            player = playersId[playerId];
         }
 
         /// <summary>
@@ -185,26 +184,36 @@ namespace Flattiverse.Connector
         public IReadOnlyCollection<Universe> Universes => universes;
 
         /// <summary>
-        /// The controllables you currently own. Try to avoid this method as it creates copies of internal lists.
+        /// The players which are active currently in the UniverseGroup. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumeratePlayers().
         /// </summary>
-        public IReadOnlyCollection<Controllable> Controllables
+        public IReadOnlyCollection<Player> Players
         {
             get
             {
-                List<Controllable> controllables = new List<Controllable>();
+                List<Player> players = new List<Player>();
 
-                foreach (Controllable? controllable in controllables)
-                    if (controllable is not null)
-                        controllables.Add(controllable);
+                foreach (Player? player in playersId)
+                    if (player is not null)
+                        players.Add(player);
 
-                return new ReadOnlyCollection<Controllable>(controllables);
+                return new ReadOnlyCollection<Player>(players);
             }
+        }
+
+        /// <summary>
+        /// Enumerates over the players which are currently connected to the UniverseGroup.
+        /// </summary>
+        public IEnumerable<Player> EnumeratePlayers()
+        {
+            foreach (Player? player in playersId)
+                if (player is not null)
+                    yield return player;
         }
 
         /// <summary>
         /// The system upgrade paths of the universegroup.
         /// </summary>
-        public IReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> Systems => systems;
+        public IReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> Systems => systemDefinitions;
 
         /// <summary>
         /// Tries to get the corresponding universe.
@@ -311,62 +320,59 @@ namespace Flattiverse.Connector
         /// <returns>true, if the team has been found, false otherwise.</returns>
         public bool TryGetTeam(int id, [NotNullWhen(returnValue: true)] out Team? team)
         {
-            if (id < 0 || id >= 64)
+            if (id < 0 || id >= 16)
             {
                 team = null;
                 return false;
             }
 
             team = teamsId[id];
-            return team != null;
+            return team is not null;
         }
 
         /// <summary>
-        /// Tries to get the corresponding team.
+        /// Tries to get the corresponding team. Does a case-sensitive search first, case insensitive afterwards.
         /// </summary>
         /// <param name="name">The name of the team.</param>
         /// <returns>The team if found, null otherwise.</returns>
         public Team? GetTeam(string name)
         {
+            foreach (Team team in teams)
+                if (team.Name == name)
+                    return team;
+
             name = name.ToLower();
 
-            foreach (Team team in teamsId)
-            {
-                if (team is null)
-                    return null;
-
+            foreach (Team team in teams)
                 if (team.Name.ToLower() == name)
                     return team;
-            }
 
             return null;
         }
 
         /// <summary>
-        /// Tries to get the corresponding controllable.
+        /// Tries to get the corresponding controllable. First does a case-sensitive search, then a case-insensitive search.
         /// </summary>
         /// <param name="name">The name of the controllable.</param>
         /// <param name="controllable">The controllable or null, if not found.</param>
         /// <returns>true, if the controllable has been found, false otherwise.</returns>
         public bool TryGetControllable(string name, [NotNullWhen(returnValue: true)] out Controllable? controllable)
         {
-            name = name.ToLower();
-
-            foreach (Controllable c in controllablesId)
-            {
-                //Maluk: Kann es Lücken geben?
-                //if (c is null)
-                //{
-                //    controllable = null;
-                //    return false;
-                //}
-
-                if (c.Name.ToLower() == name)
+            foreach (Controllable? c in controllablesId)
+                if (c is not null && c.Name == name)
                 {
                     controllable = c;
                     return true;
                 }
-            }
+
+            name = name.ToLower();
+
+            foreach (Controllable? c in controllablesId)
+                if (c is not null && c.Name.ToLower() == name)
+                {
+                    controllable = c;
+                    return true;
+                }
 
             controllable = null;
             return false;
@@ -387,29 +393,54 @@ namespace Flattiverse.Connector
             }
 
             controllable = controllablesId[id];
-            return controllable != null;
+            return controllable is not null;
         }
 
         /// <summary>
-        /// Tries to get the corresponding controllable.
+        /// Tries to get the corresponding controllable by name. First searches case sensitive, then case insensitive.
         /// </summary>
         /// <param name="name">The name of the controllable.</param>
         /// <returns>The controllable if found, null otherwise.</returns>
         public Controllable? GetControllable(string name)
         {
+            foreach (Controllable? controllable in controllablesId)
+                if (controllable is not null && controllable.Name == name)
+                    return controllable;
+
             name = name.ToLower();
 
-            foreach (Controllable controllable in controllablesId)
-            {
-                //Maluk: Kann es Lücken geben?
-                //if (controllable is null)
-                //    return null;
-
-                if (controllable.Name.ToLower() == name)
+            foreach (Controllable? controllable in controllablesId)
+                if (controllable is not null && controllable.Name.ToLower() == name)
                     return controllable;
-            }
 
             return null;
+        }
+
+        /// <summary>
+        /// The controllables you currently own. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumerateControllables().
+        /// </summary>
+        public IReadOnlyCollection<Controllable> Controllables
+        {
+            get
+            {
+                List<Controllable> controllables = new List<Controllable>();
+
+                foreach (Controllable? controllable in controllablesId)
+                    if (controllable is not null)
+                        controllables.Add(controllable);
+
+                return new ReadOnlyCollection<Controllable>(controllables);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates over the controllables which are currently registered by the player.
+        /// </summary>
+        public IEnumerable<Controllable> EnumnerateControllables()
+        {
+            foreach (Controllable? controllable in controllablesId)
+                if (controllable is not null)
+                    yield return controllable;
         }
 
         /// <summary>
@@ -471,7 +502,7 @@ namespace Flattiverse.Connector
         /// <returns>true, if the system has been found, false otherwise.</returns>
         public bool TryGetSystem(PlayerUnitSystemKind kind, int level, [NotNullWhen(returnValue: true)] out PlayerUnitSystemUpgradepath? system)
         {
-            return systems.TryGetValue(new PlayerUnitSystemIdentifier(kind, level), out system);
+            return systemDefinitions.TryGetValue(new PlayerUnitSystemIdentifier(kind, level), out system);
         }
 
         /// <summary>
@@ -482,39 +513,16 @@ namespace Flattiverse.Connector
         /// <returns>true, if the system has been found, false otherwise.</returns>
         public bool TryGetSystem(PlayerUnitSystemIdentifier identifier, [NotNullWhen(returnValue: true)] out PlayerUnitSystemUpgradepath? system)
         {
-            return systems.TryGetValue(identifier, out system);
+            return systemDefinitions.TryGetValue(identifier, out system);
         }
 
         /// <summary>
-        /// Tries to get the corresponding system.
+        /// All system definitions currently used in this universe group.
         /// </summary>
-        /// <param name="kind">The system kind of the system.</param>
-        /// <param name="level">The system level of the system.</param>
-        /// <returns>The system if found, null otherwise.</returns>
-        public PlayerUnitSystemUpgradepath? GetSystem(PlayerUnitSystemKind kind, int level)
-        {
-            if (systems.TryGetValue(new PlayerUnitSystemIdentifier(kind, level), out PlayerUnitSystemUpgradepath system))
-                return system;
-
-            return null;
-        }
+        public ReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> SystemDefinitions => new ReadOnlyDictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>(systemDefinitions);
 
         /// <summary>
-        /// Tries to get the corresponding system.
-        /// </summary>
-        /// <param name="identifier">The systemidentifier associated with the upgrade path.</param>
-        /// <returns>The system if found, null otherwise.</returns>
-        public PlayerUnitSystemUpgradepath? GetSystem(PlayerUnitSystemIdentifier identifier)
-        {
-            if (systems.TryGetValue(identifier, out PlayerUnitSystemUpgradepath system))
-                return system;
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Retrieves the json definition of all systems in the universegroup.
+        /// Queries the json definition of all systems in the universegroup from the server.
         /// </summary>
         /// <returns>All systems.</returns>
         public async Task<Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>> GetSystems()
@@ -523,16 +531,16 @@ namespace Flattiverse.Connector
             {
                 await query.Send().ConfigureAwait(false);
 
-                systems = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
+                systemDefinitions = new Dictionary<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath>();
 
                 JsonElement element = await query.ReceiveJson().ConfigureAwait(false);
                 if (element.ValueKind == JsonValueKind.Array)
                     foreach (JsonElement systemObject in element.EnumerateArray())
                     {
-                        systems.Add(new PlayerUnitSystemIdentifier(systemObject), new PlayerUnitSystemUpgradepath(systemObject));
+                        systemDefinitions.Add(new PlayerUnitSystemIdentifier(systemObject), new PlayerUnitSystemUpgradepath(systemObject));
                     }
 
-                return systems;
+                return systemDefinitions;
             }
         }
 

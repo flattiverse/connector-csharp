@@ -1,5 +1,4 @@
-﻿using Flattiverse.Connector.Accounts;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Events
 {
@@ -19,7 +18,7 @@ namespace Flattiverse.Connector.Events
         {
             Utils.Traverse(element, out Message, "message");
             Utils.Traverse(element, out int playerID, "source");
-            Source = group.players[playerID];
+            Source = group.playersId[playerID];
         }
     }
 }

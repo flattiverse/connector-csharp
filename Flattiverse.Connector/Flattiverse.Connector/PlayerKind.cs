@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Flattiverse.Connector.Players
+namespace Flattiverse.Connector
 {
     /// <summary>
     /// States the kind of player.

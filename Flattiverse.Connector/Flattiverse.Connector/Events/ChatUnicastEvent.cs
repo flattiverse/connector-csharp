@@ -1,5 +1,4 @@
-﻿using Flattiverse.Connector.Accounts;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Events
 {
@@ -13,7 +12,7 @@ namespace Flattiverse.Connector.Events
         internal ChatUnicastEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out int playerID, "destination");
-            Destination = group.players[playerID];
+            Destination = group.playersId[playerID];
         }
 
         public override EventKind Kind => EventKind.ChatUnicast;

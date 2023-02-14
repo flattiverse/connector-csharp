@@ -354,6 +354,7 @@ namespace Flattiverse.Connector.Network
                             {
                                 @event = EventRouter.CreateFromJson(Group, subElement);
 
+                                // TOG: Dieser ganze Shit muss durch Controllable-Events passieren.
                                 switch (@event)
                                 {
                                     case AddedUnitEvent addedUnitEvent:

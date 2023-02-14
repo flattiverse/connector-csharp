@@ -4,6 +4,7 @@
     {
         Collision,
         Shelling,
-        OutOfBounds
+        OutOfBounds,
+        Unregistered
     }
 }

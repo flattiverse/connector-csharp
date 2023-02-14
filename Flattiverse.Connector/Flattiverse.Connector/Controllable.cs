@@ -1,5 +1,4 @@
-﻿using Flattiverse.Connector.Accounts;
-using Flattiverse.Connector.Network;
+﻿using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 using System.Text.Json;
 
@@ -29,10 +28,9 @@ namespace Flattiverse.Connector
         private Vector position;
         private Vector movement;
         private double direction;
-        private Team? team;
+        private Team team;
         private double gravity;
         private double energyOutput;
-        private bool isAlive;
         private double turnRate;
         private double requestedScanDirection;
         private double requestedScanWidth;
@@ -69,6 +67,8 @@ namespace Flattiverse.Connector
         private PlayerUnitEnergyConsumingSystem? extractorPlatinum;
         private PlayerUnitEnergyConsumingSystem? extractorGold;
 
+        private bool active;
+
         /// <summary>
         /// The radius of your controllable.
         /// </summary>
@@ -92,7 +92,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// If you have joined a team, the team of your controllable.
         /// </summary>
-        public Team? Team => team;
+        public Team Team => team;
 
         /// <summary>
         /// The gravity that your controllable is exercising on other mobile units.
@@ -107,7 +107,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// Whether your controllable is still alive.
         /// </summary>
-        public bool IsAlive => isAlive;
+        public bool IsAlive => hull.Value > 0.0;
 
         /// <summary>
         /// The rate at which your controllable is turning.
@@ -248,6 +248,13 @@ namespace Flattiverse.Connector
         /// The extraction capabilities of your controllable for gold.
         /// </summary>
         public PlayerUnitEnergyConsumingSystem? ExtractorGold => extractorGold;
+
+        /// <summary>
+        /// Indictaes, if the controllable is active (registered to the game) or not. If this value is false, you already triggered
+        /// the deregistration of the controllable or the server forced the deregistration due to a tournament start, server shutdown
+        /// or due to disconnection of the player.
+        /// </summary>
+        public bool Active => active;
 
         internal void update(UniverseGroup group, JsonElement element)
         {
@@ -472,6 +479,7 @@ namespace Flattiverse.Connector
                 }
         }
 
+        // TOG: Dies muss durch das DeathControllableEvent angetriggert werden, nicht mehr durch das
         internal void update()
         {
             hull.Value = 0.0;
@@ -651,6 +659,13 @@ namespace Flattiverse.Connector
 
                 await query.Wait().ConfigureAwait(false);
             }
+        }
+
+        internal void updateUnregistered()
+        {
+            active = false;
+
+            hull.Value = 0;
         }
     }
 }

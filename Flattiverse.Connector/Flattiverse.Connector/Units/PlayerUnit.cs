@@ -1,5 +1,4 @@
-﻿using Flattiverse.Connector.Accounts;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Flattiverse.Connector.Units
 {
@@ -64,10 +63,10 @@ namespace Flattiverse.Connector.Units
         internal PlayerUnit(UniverseGroup group, JsonElement element) : base(group, element)
         {
             Utils.Traverse(element, out int playerId, "player");
-            if (group.players[playerId] is null)
+            if (group.playersId[playerId] is null)
                 group.connection.PushFailureEvent($"Tried to instantiate a PlayerUnit for a player that does not exist in the universe.");
             else
-                Player = group.players[playerId];
+                Player = group.playersId[playerId];
             Utils.Traverse(element, out Controllable, "controllable");
             Utils.Traverse(element, out TurnRate, "turnRate");
             Utils.Traverse(element, out RequestedScanDirection, "requestedScanDirection"); 

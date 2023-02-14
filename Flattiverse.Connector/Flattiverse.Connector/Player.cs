@@ -1,5 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using Flattiverse.Connector.Players;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Flattiverse.Connector.Accounts
+namespace Flattiverse.Connector
 {
     /// <summary>
     /// Specifies a player which is currently connected to the UniverseGroup.

@@ -10,63 +10,67 @@ internal class Program
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
         using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
-        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/beginnersGround.ws", apiUser))
+        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/mission1.ws", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
         {
-            //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
-            //    Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
+            Thread.Sleep(1000);
 
-            //await universeGroup.GetUniverse("Training ground")!.SetRegion(3, 0, null, 1000, 1000, 1100, 1100, false, false, false);
-            //await universeGroup.GetUniverse("Training ground")!.SetRegion(4, 0, "Test", 2000, 2000, 2100, 2100, false, false, false);
-            //await universeGroup.GetUniverse("Training ground")!.RemoveRegion(3);
-            //await universeGroup.GetUniverse("Training ground")!.RemoveRegion(4);
+                //foreach (GameRegion region in await universeGroup.GetUniverse("Training ground")!.GetRegions())
+                //    Console.WriteLine($" * {region.ID}\\{region.Name ?? "<unnamed>"}");
 
-
-            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
-            //string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
-            //await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
-            //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+                //await universeGroup.GetUniverse("Training ground")!.SetRegion(3, 0, null, 1000, 1000, 1100, 1100, false, false, false);
+                //await universeGroup.GetUniverse("Training ground")!.SetRegion(4, 0, "Test", 2000, 2000, 2100, 2100, false, false, false);
+                //await universeGroup.GetUniverse("Training ground")!.RemoveRegion(3);
+                //await universeGroup.GetUniverse("Training ground")!.RemoveRegion(4);
 
 
-            //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
-            //foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
-            //    Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
+                //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+                //string unitJson = await universeGroup.GetUniverse("Training ground")!.GetUnitMapEditJson("Schnappi");
+                //await universeGroup.GetUniverse("Training ground")!.RemoveUnit("Schnappi");
+                //await universeGroup.GetUniverse("Training ground")!.SetUnit(unitSun);
+
+
+                //PlayerUnitSystemUpgradepath? path = universeGroup.GetSystem(PlayerUnitSystemKind.Armor, 1);
+                //foreach (KeyValuePair<PlayerUnitSystemIdentifier, PlayerUnitSystemUpgradepath> kvp in await universeGroup.GetSystems())
+                //    Console.WriteLine($" * {kvp.Key.Kind}\\{kvp.Key.Level}");
+
+                Controllable c = await universeGroup.NewShip("huihui");
 
             ThreadPool.QueueUserWorkItem(async delegate
             {
-                Controllable c = await universeGroup.NewShip("huihui");
+                
 
                 Thread.Sleep(1000);
 
                 await c.Continue();
 
-                while (true)
-                {
-                    Thread.Sleep(5000);
+                //while (true)
+                //{
+                //    Thread.Sleep(5000);
 
-                    //await c.SetThruster(0.15);
+                //    //await c.SetThruster(0.15);
 
-                    Console.WriteLine("Scan now: 270°.");
+                //    Console.WriteLine("Scan now: 270°.");
 
-                    await c.SetScanner(270, 300, 60, true);
+                //    await c.SetScanner(270, 300, 60, true);
 
-                    Thread.Sleep(5000);
+                //    Thread.Sleep(5000);
 
-                    Console.WriteLine("Scan now: 0°.");
+                //    Console.WriteLine("Scan now: 0°.");
 
-                    await c.SetScanner(0, 300, 60, true);
+                //    await c.SetScanner(0, 300, 60, true);
 
-                    Thread.Sleep(5000);
+                //    Thread.Sleep(5000);
 
-                    Console.WriteLine("Scan now: 90°.");
+                //    Console.WriteLine("Scan now: 90°.");
 
-                    await c.SetScanner(90, 300, 60, true);
+                //    await c.SetScanner(90, 300, 60, true);
 
-                    Thread.Sleep(5000);
+                //    Thread.Sleep(5000);
 
-                    Console.WriteLine("Scan now: 180°.");
+                //    Console.WriteLine("Scan now: 180°.");
 
-                    await c.SetScanner(180, 300, 60, true);
-                }
+                //    await c.SetScanner(180, 300, 60, true);
+                //}
             });
 
             while (true)
@@ -102,9 +106,16 @@ internal class Program
                         //else
                         //    Console.WriteLine($"UpdatedUnitEvent Event: {updatedUnitEvent.Unit.Name} now at: {updatedUnitEvent.Unit.Position} with movement: {updatedUnitEvent.Unit.Movement}");
                         break;
-                    //case TickProcessedEvent tickProcessedEvent:
-                    //    Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
-                    //    break;
+                    case TickProcessedEvent tickProcessedEvent:
+                        //Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
+                        Console.WriteLine($" * P={c.Position} M={c.Movement}");
+                        break;
+                    case DeathControllableEvent deathControllableEvent:
+                        Console.WriteLine($"DeathControllableEvent Event: {deathControllableEvent.CauserKind}: \"{deathControllableEvent.CauserName}\"");
+                        break;
+                    case UnregisteredControllableEvent unregisteredControllableEvent:
+                        Console.WriteLine($"DeathControllableEvent Event: {unregisteredControllableEvent.Controllable}.");
+                        break;
                     case ChatUnicastEvent chatUnicastEvent:
                         Console.WriteLine($"ChatUnicastEvent Event: {chatUnicastEvent.Source.Name}: \"{chatUnicastEvent.Message}\"");
                         break;

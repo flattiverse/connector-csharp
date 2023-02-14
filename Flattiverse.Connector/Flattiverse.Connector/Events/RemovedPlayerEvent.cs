@@ -10,7 +10,7 @@ namespace Flattiverse.Connector.Events
     {
         internal RemovedPlayerEvent(UniverseGroup group, JsonElement element) : base(element) 
         {
-            group.players[ID] = null;
+            group.playersId[ID] = null;
         }
 
         public override EventKind Kind => EventKind.PlayerRemoved;

@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Events
         internal PartialUpdatePlayerEvent(UniverseGroup group, JsonElement element) : base(element)
         {
             this.element = element;
-            group.players[ID].Update(element);
+            group.playersId[ID].Update(element);
         }
 
         public override EventKind Kind => EventKind.PlayerPartialUpdate;
