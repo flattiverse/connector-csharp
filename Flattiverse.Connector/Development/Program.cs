@@ -9,8 +9,8 @@ internal class Program
         //Unit
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
-        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
-        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/mission1.ws", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
+        //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
+        using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/mission1.ws", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
         {
             Thread.Sleep(1000);
 

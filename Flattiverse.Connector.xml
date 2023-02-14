@@ -204,6 +204,13 @@
             The extraction capabilities of your controllable for gold.
             </summary>
         </member>
+        <member name="P:Flattiverse.Connector.Controllable.Active">
+            <summary>
+            Indictaes, if the controllable is active (registered to the game) or not. If this value is false, you already triggered
+            the deregistration of the controllable or the server forced the deregistration due to a tournament start, server shutdown
+            or due to disconnection of the player.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.AddedUnitEvent">
             <summary>
             This event informs of the addition of a unit to the universeGroup.
@@ -232,6 +239,11 @@
         <member name="T:Flattiverse.Connector.Events.ChatUnicastEvent">
             <summary>
             This event informs of a chatmessage to a player.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.DeathControllableEvent">
+            <summary>
+            This event informs of the untimely demise of a controllable in the universeGroup.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.EventKind">
@@ -313,6 +325,16 @@
             This event informs of an update of one of your controllables.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ControllableDeath">
+            <summary>
+            This event informs of the untimely demise of one of your controllables.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ControllableUnregistered">
+            <summary>
+            Notifies about the successful unregister of one of your controllables.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.FailureEvent">
             <summary>
             This event indicates some critical out-of-game failure like a problem with the
@@ -343,6 +365,11 @@
         <member name="P:Flattiverse.Connector.Events.FlattiverseEvent.Kind">
             <summary>
             Specifies the kind of the event for a better switch() experience.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.FullUpdateControllableEvent">
+            <summary>
+            This event informs of the update of a controllable in the universeGroup.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.FullUpdatePlayerEvent">
@@ -505,83 +532,83 @@
             <param name="message">The message to send to the endpoint.</param>
             <returns>true, if the close has been executed "until the end", false if we wait for confirmation.</returns>
         </member>
-        <member name="T:Flattiverse.Connector.Accounts.Player">
+        <member name="T:Flattiverse.Connector.Player">
             <summary>
             Specifies a player which is currently connected to the UniverseGroup.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Accounts.Player.ID">
+        <member name="F:Flattiverse.Connector.Player.ID">
             <summary>
             The internal ID of the player.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Accounts.Player.Name">
+        <member name="F:Flattiverse.Connector.Player.Name">
             <summary>
             The name of the player.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Accounts.Player.playerKind">
+        <member name="F:Flattiverse.Connector.Player.playerKind">
             <summary>
             The kind of the player.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Accounts.Player.Admin">
+        <member name="F:Flattiverse.Connector.Player.Admin">
             <summary>
             Whether the player is an admin.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Accounts.Player.Team">
+        <member name="F:Flattiverse.Connector.Player.Team">
             <summary>
             The team the player is in.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.Accounts.Player.Rank">
+        <member name="P:Flattiverse.Connector.Player.Rank">
             <summary>
             The rank of the player.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.Accounts.Player.Kills">
+        <member name="P:Flattiverse.Connector.Player.Kills">
             <summary>
             All-Time-Kills of the player.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.Accounts.Player.Deaths">
+        <member name="P:Flattiverse.Connector.Player.Deaths">
             <summary>
             All-Time-Deaths of the player.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.Accounts.Player.Collisions">
+        <member name="P:Flattiverse.Connector.Player.Collisions">
             <summary>
             All-Time-Collisions of the player.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.Accounts.Player.PVPScore">
+        <member name="P:Flattiverse.Connector.Player.PVPScore">
             <summary>
             The ELO ranking of the player.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.Accounts.Player.Ping">
+        <member name="P:Flattiverse.Connector.Player.Ping">
             <summary>
             The ping of the player.
             </summary>
         </member>
-        <member name="T:Flattiverse.Connector.Players.PlayerKind">
+        <member name="T:Flattiverse.Connector.PlayerKind">
             <summary>
             States the kind of player.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Players.PlayerKind.Player">
+        <member name="F:Flattiverse.Connector.PlayerKind.Player">
             <summary>
             The player is a player participating in the game and also blocking a player slot.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Players.PlayerKind.Spectator">
+        <member name="F:Flattiverse.Connector.PlayerKind.Spectator">
             <summary>
             The player is a spectator which used the Api-Key 0x0000000000000000000000000000000000000000000000000000000000000000.
             This is only allowed in universe groups which allow spectators.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Players.PlayerKind.Admin">
+        <member name="F:Flattiverse.Connector.PlayerKind.Admin">
             <summary>
             The player is an admin. Admins can't participate in the game but they can alter gamestates via admin commands.
             </summary>
@@ -643,7 +670,7 @@
         </member>
         <member name="F:Flattiverse.Connector.Units.Unit.Direction">
             <summary>
-            The direction the unit is facing towerds.
+            The direction the unit is facing towards.
             </summary>
         </member>
         <member name="F:Flattiverse.Connector.Units.Unit.Team">
@@ -918,19 +945,9 @@
             The amount of ships that you can register in the UniverseGroup.
             </summary>
         </member>
-        <member name="P:Flattiverse.Connector.UniverseGroup.Teams">
-            <summary>
-            The teams in the UniverseGroup.
-            </summary>
-        </member>
         <member name="P:Flattiverse.Connector.UniverseGroup.Universes">
             <summary>
             The universes of the universegroup.
-            </summary>
-        </member>
-        <member name="P:Flattiverse.Connector.UniverseGroup.Systems">
-            <summary>
-            The system upgrade paths of the universegroup.
             </summary>
         </member>
         <member name="M:Flattiverse.Connector.UniverseGroup.TryGetUniverse(System.String,Flattiverse.Connector.Universe@)">
@@ -949,69 +966,15 @@
             <param name="universe">The universe or null, if not found.</param>
             <returns>true, if the universe has been found, false otherwise.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.GetUniverse(System.String)">
+        <member name="P:Flattiverse.Connector.UniverseGroup.Systems">
             <summary>
-            Tries to get the corresponding universe.
+            The system upgrade paths of the universegroup.
             </summary>
-            <param name="name">The name of the universe.</param>
-            <returns>The universe if found, null otherwise.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetTeam(System.String,Flattiverse.Connector.Team@)">
+        <member name="M:Flattiverse.Connector.UniverseGroup.EnumerateSystems">
             <summary>
-            Tries to get the corresponding team.
+            Enumerates over the systems in this universe group.
             </summary>
-            <param name="name">The name of the team.</param>
-            <param name="team">The team or null, if not found.</param>
-            <returns>true, if the team has been found, false otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetTeam(System.Int32,Flattiverse.Connector.Team@)">
-            <summary>
-            Tries to get the corresponding team.
-            </summary>
-            <param name="id">The id of the team.</param>
-            <param name="team">The universe or null, if not found.</param>
-            <returns>true, if the team has been found, false otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.GetTeam(System.String)">
-            <summary>
-            Tries to get the corresponding team.
-            </summary>
-            <param name="name">The name of the team.</param>
-            <returns>The team if found, null otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetControllable(System.String,Flattiverse.Connector.Controllable@)">
-            <summary>
-            Tries to get the corresponding controllable.
-            </summary>
-            <param name="name">The name of the controllable.</param>
-            <param name="controllable">The controllable or null, if not found.</param>
-            <returns>true, if the controllable has been found, false otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetControllable(System.Int32,Flattiverse.Connector.Controllable@)">
-            <summary>
-            Tries to get the corresponding controllable.
-            </summary>
-            <param name="id">The id of the controllable.</param>
-            <param name="controllable">The controllable or null, if not found.</param>
-            <returns>true, if the controllable has been found, false otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.GetControllable(System.String)">
-            <summary>
-            Tries to get the corresponding controllable.
-            </summary>
-            <param name="name">The name of the controllable.</param>
-            <returns>The controllable if found, null otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.NewShip(System.String)">
-            <summary>
-            Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
-            by the rules of the UniverseGroup. (See RegisterShipLimit.)
-            </summary>
-            <param name="name">The name of the ship to be created.</param>
-            <returns>A controllable object that gives control over the ship.</returns>
-            <exception cref="T:Flattiverse.Connector.GameException">Thrown if the name is already in use or if the ship or RegisterShip limits are exceeded.</exception>
-            <remarks>This will create a DEAD ship. To bring it to life, you need to call the Continue() method on the ship. Typically, you would call NewShip() followed by Continue()
-            on the controllable.</remarks>
         </member>
         <member name="M:Flattiverse.Connector.UniverseGroup.TryGetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32,Flattiverse.Connector.Units.PlayerUnitSystemUpgradepath@)">
             <summary>
@@ -1030,24 +993,9 @@
             <param name="system">The system or null, if not found.</param>
             <returns>true, if the system has been found, false otherwise.</returns>
         </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystem(Flattiverse.Connector.Units.PlayerUnitSystemKind,System.Int32)">
-            <summary>
-            Tries to get the corresponding system.
-            </summary>
-            <param name="kind">The system kind of the system.</param>
-            <param name="level">The system level of the system.</param>
-            <returns>The system if found, null otherwise.</returns>
-        </member>
-        <member name="M:Flattiverse.Connector.UniverseGroup.GetSystem(Flattiverse.Connector.Units.PlayerUnitSystemIdentifier)">
-            <summary>
-            Tries to get the corresponding system.
-            </summary>
-            <param name="identifier">The systemidentifier associated with the upgrade path.</param>
-            <returns>The system if found, null otherwise.</returns>
-        </member>
         <member name="M:Flattiverse.Connector.UniverseGroup.GetSystems">
             <summary>
-            Retrieves the json definition of all systems in the universegroup.
+            Queries the json definition of all systems in the universegroup from the server.
             </summary>
             <returns>All systems.</returns>
         </member>
@@ -1100,6 +1048,96 @@
             <param name="requiredKind">The kind of the system which needs to be present in order to build this system.</param>
             <param name="requiredLevel">The level of the system which needs to be present in order to build this system.</param>
             <returns>Nothing, or throws an error.</returns>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Players">
+            <summary>
+            The players which are active currently in the UniverseGroup. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumeratePlayers().
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.EnumeratePlayers">
+            <summary>
+            Enumerates over the players which are currently connected to the UniverseGroup.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetPlayer(System.String,Flattiverse.Connector.Player@)">
+            <summary>
+            Tries to get the corresponding player.
+            </summary>
+            <param name="name">The name of the player.</param>
+            <param name="player">The player or null, if not found.</param>
+            <returns>true, if the player has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetPlayer(System.Int32,Flattiverse.Connector.Player@)">
+            <summary>
+            Tries to get the corresponding player.
+            </summary>
+            <param name="id">The id of the player.</param>
+            <param name="player">The player or null, if not found.</param>
+            <returns>true, if the player has been found, false otherwise.</returns>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Controllables">
+            <summary>
+            The controllables you currently own. Try to avoid this method as it creates copies of internal lists. Better enumerate over EnumerateControllables().
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.EnumerateControllables">
+            <summary>
+            Enumerates over the controllables which are currently registered by the player.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetControllable(System.String,Flattiverse.Connector.Controllable@)">
+            <summary>
+            Tries to get the corresponding controllable. First does a case-sensitive search, then a case-insensitive search.
+            </summary>
+            <param name="name">The name of the controllable.</param>
+            <param name="controllable">The controllable or null, if not found.</param>
+            <returns>true, if the controllable has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetControllable(System.Int32,Flattiverse.Connector.Controllable@)">
+            <summary>
+            Tries to get the corresponding controllable.
+            </summary>
+            <param name="id">The id of the controllable.</param>
+            <param name="controllable">The controllable or null, if not found.</param>
+            <returns>true, if the controllable has been found, false otherwise.</returns>
+        </member>
+        <member name="P:Flattiverse.Connector.UniverseGroup.Teams">
+            <summary>
+            The teams in the UniverseGroup.
+            </summary>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.EnumerateTeams">
+            <summary>
+            Enumerates over the teams which are available in the universe group.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetTeam(System.String,Flattiverse.Connector.Team@)">
+            <summary>
+            Tries to get the corresponding team.
+            </summary>
+            <param name="name">The name of the team.</param>
+            <param name="team">The team or null, if not found.</param>
+            <returns>true, if the team has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.TryGetTeam(System.Int32,Flattiverse.Connector.Team@)">
+            <summary>
+            Tries to get the corresponding team.
+            </summary>
+            <param name="id">The id of the team.</param>
+            <param name="team">The team or null, if not found.</param>
+            <returns>true, if the team has been found, false otherwise.</returns>
+        </member>
+        <member name="M:Flattiverse.Connector.UniverseGroup.NewShip(System.String)">
+            <summary>
+            Creates a new ship instantly. There is no building process or resource gathering involved. However, the number of ships that can be registered in this manner may be limited
+            by the rules of the UniverseGroup. (See RegisterShipLimit.)
+            </summary>
+            <param name="name">The name of the ship to be created.</param>
+            <returns>A controllable object that gives control over the ship.</returns>
+            <exception cref="T:Flattiverse.Connector.GameException">Thrown if the name is already in use or if the ship or RegisterShip limits are exceeded.</exception>
+            <remarks>This will create a DEAD ship. To bring it to life, you need to call the Continue() method on the ship. Typically, you would call NewShip() followed by Continue()
+            on the controllable.</remarks>
         </member>
         <member name="M:Flattiverse.Connector.UniverseGroup.NextEvent">
             <summary>

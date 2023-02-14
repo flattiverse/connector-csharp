@@ -13,6 +13,7 @@ This connector is compatible to .NET 6. Current downloads:
 
 # The current status
 
+* 2k23.02.14: 7th release, r309: Colissions implemented. And energy loading (but not usage). Some bug fixes.
 * 2k23.02.13: 6th release, r299: Thruster should now also be implemented correctly.
 * 2k23.02.12: Fifth release, r296: Scanning should now be implemented correctly.
 * 2k23.02.11: Fourth release, r284: Chat-Messages.
