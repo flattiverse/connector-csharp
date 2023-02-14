@@ -108,7 +108,7 @@ internal class Program
                         break;
                     case TickProcessedEvent tickProcessedEvent:
                         //Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
-                        Console.WriteLine($" * P={c.Position} M={c.Movement}");
+                        Console.WriteLine($" * BAT={c.BatteryEnergy.Value}/{((PlayerUnitRegularSystem)c.BatteryEnergy).MaxValue} Alive: {c.IsAlive}");
                         break;
                     case DeathControllableEvent deathControllableEvent:
                         Console.WriteLine($"DeathControllableEvent Event: {deathControllableEvent.CauserKind}: \"{deathControllableEvent.CauserName}\"");
