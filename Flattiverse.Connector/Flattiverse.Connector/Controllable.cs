@@ -50,6 +50,7 @@ namespace Flattiverse.Connector
         private PlayerUnitEnergyConsumingSystem? analyzer;
         private PlayerUnitRegularSystem? cellsParticles;
         private PlayerUnitRegularSystem? batteryParticles;
+        private PlayerUnitRegularSystem? weaponAmmunition;
         private PlayerUnitRegularSystem? weaponLauncher;
         private PlayerUnitRegularSystem? weaponPayloadDamage;
         private PlayerUnitRegularSystem? weaponPayloadRadius;
@@ -200,7 +201,12 @@ namespace Flattiverse.Connector
         public PlayerUnitRegularSystem? BatteryParticles => batteryParticles;
 
         /// <summary>
-        /// The weapon launcher of your controllable, used to do the pew pew.
+        /// The shot lifetime of your controllable's weapons.
+        /// </summary>
+        public PlayerUnitRegularSystem? WeaponAmmunition => weaponAmmunition;
+
+        /// <summary>
+        /// The shot speed of your controllable's weapons.
         /// </summary>
         public PlayerUnitRegularSystem? WeaponLauncher => weaponLauncher;
 
@@ -455,6 +461,9 @@ namespace Flattiverse.Connector
                         case PlayerUnitSystemKind.BatteryParticles:
                             batteryParticles = (PlayerUnitRegularSystem)system;
                             break;
+                        case PlayerUnitSystemKind.WeaponAmmunition:
+                            weaponAmmunition = (PlayerUnitRegularSystem)system;
+                            break;
                         case PlayerUnitSystemKind.WeaponLauncher:
                             weaponLauncher = (PlayerUnitRegularSystem)system;
                             break;
@@ -528,6 +537,7 @@ namespace Flattiverse.Connector
             analyzer = playerUnit.Analyzer;
             cellsParticles = playerUnit.CellsParticles;
             batteryParticles = playerUnit.BatteryParticles;
+            weaponAmmunition = playerUnit.WeaponAmmunition;
             weaponLauncher = playerUnit.WeaponLauncher;
             weaponPayloadDamage = playerUnit.WeaponPayloadDamage;
             weaponPayloadRadius = playerUnit.WeaponPayloadRadius;
@@ -544,23 +554,6 @@ namespace Flattiverse.Connector
             extractorSilicon = playerUnit.ExtractorSilicon;
             extractorPlatinum = playerUnit.ExtractorPlatinum;
             extractorGold = playerUnit.ExtractorGold;
-
-            //Evtl. muss es so gemacht werden...
-
-            //if (playerUnit.Hull is not null) hull.Update(playerUnit.Hull);
-            //if (playerUnit.CellsEnergy is not null) cellsEnergy.Update(playerUnit.CellsEnergy);
-            //if (playerUnit.BatteryEnergy is not null) batteryEnergy.Update(playerUnit.BatteryEnergy);
-            //if (playerUnit.Thruster is not null) thruster.Update(playerUnit.Thruster);
-            //if (playerUnit.Nozzle is not null) nozzle.Update(playerUnit.Nozzle);
-            //if (playerUnit.Scanner is not null) scanner.Update(playerUnit.Scanner);
-
-            //if (playerUnit.Armor is not null)
-            //    if (armor is not null)
-            //        armor.Update(playerUnit.Armor);
-            //    else
-            //        armor = new PlayerUnitArmorSystem(playerUnit.Armor);
-
-            //etc...
         }
 
         public async Task Continue()

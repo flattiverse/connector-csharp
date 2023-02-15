@@ -27,6 +27,7 @@ namespace Flattiverse.Connector.Units
         public PlayerUnitEnergyConsumingSystem? Analyzer;
         public PlayerUnitRegularSystem? CellsParticles;
         public PlayerUnitRegularSystem? BatteryParticles;
+        public PlayerUnitRegularSystem? WeaponAmmunition;
         public PlayerUnitRegularSystem? WeaponLauncher;
         public PlayerUnitRegularSystem? WeaponPayloadDamage;
         public PlayerUnitRegularSystem? WeaponPayloadRadius;
@@ -118,6 +119,9 @@ namespace Flattiverse.Connector.Units
                         break;
                     case PlayerUnitSystemKind.BatteryParticles:
                         BatteryParticles = new PlayerUnitRegularSystem(group, kind, system.Value);
+                        break;
+                    case PlayerUnitSystemKind.WeaponAmmunition:
+                        WeaponAmmunition = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponLauncher:
                         WeaponLauncher = new PlayerUnitRegularSystem(group, kind, system.Value);

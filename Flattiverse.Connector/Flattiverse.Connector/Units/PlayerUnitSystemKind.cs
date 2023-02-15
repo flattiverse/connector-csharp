@@ -13,6 +13,7 @@
         CellsParticles,
         BatteryEnergy,
         BatteryParticles,
+        WeaponAmmunition,
         WeaponLauncher,
         WeaponPayloadDamage,
         WeaponPayloadRadius,
