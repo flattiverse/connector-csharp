@@ -72,6 +72,10 @@
         /// <summary>
         /// Notifies about the successful unregister of one of your controllables.
         /// </summary>
-        ControllableUnregistered
+        ControllableUnregistered,
+        /// <summary>
+        /// Notifies about the depletion and possibly overuse of a resource of your controllable.
+        /// </summary>
+        ResourceDepleted
     }
 }
