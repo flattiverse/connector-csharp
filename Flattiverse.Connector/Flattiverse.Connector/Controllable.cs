@@ -691,6 +691,59 @@ namespace Flattiverse.Connector
             }
         }
 
+        /// <summary>
+        /// Shoots a shot. It can only handle one shot per tick per ship and has a buffer of one additional shot. Units generally can shoot only one shot per tick, so specifying
+        /// 3 Shots in one tick will result in an error at the 3rd shot requested. The shot will be generated with the next tick. The server tries to anticipate, if you are
+        /// able to shoot. However, this may not be possible. So the call to this method may be successfull but the shot may not be created, if you are out of energy, etc.
+        /// Please observe Events like ResourceDepletedEvent to determine such situations.
+        /// </summary>
+        /// <param name="strength">The length of the initial movement of the shot. If you fly with a speed of 1 and shoot with a strength of 2, then the absolute speed the resulting shot will be 3. (Movement vector of resulting shot has a length of 3.)</param>
+        /// <param name="load">The radius of the resulting explosion.</param>
+        /// <param name="damage">The damage dealt of the explosion.</param>
+        /// <param name="time">The amount of ticks the shot will live, before exploding.</param>
+        /// <exception cref="GameException">Wrong parameters may result in an exception, also if you don't have enough shots to shoot.</exception>
+        /// <remarks>Please query the status of your weapon systems for the corresponding maximums: strength is WeaponLauncher, load is WeaponPayloadRadius, damage is WeaponPayloadDamage and time is WeaponAmmunition.</remarks>
+        public async Task Shoot(double strength, double load, double damage, int time)
+        {
+            if (hull.Value <= 0.0)
+                throw new GameException(0x22);
+
+            if (double.IsNaN(strength) || double.IsInfinity(strength) || double.IsNaN(load) || double.IsInfinity(load) || double.IsNaN(damage) || double.IsInfinity(damage))
+                throw new GameException(0xB6);
+
+            //if (strength < 0 || strength > WeaponAmmunition.MaxValue || length < 59.9 || length > scanner.MaxRange * 1.05 || width < 19.9 || width > scanner.MaxAngle * 1.05)
+            //    throw new GameException(0x23);
+
+            //if (direction > 360.0)
+            //    direction = 360.0;
+
+            //if (length < 60.0)
+            //    length = 60.0;
+
+            //if (length > scanner.MaxRange)
+            //    length = scanner.MaxRange;
+
+            //if (width < 20.0)
+            //    width = 20.0;
+
+            //if (width > scanner.MaxAngle)
+            //    width = scanner.MaxAngle;
+
+            using (Query query = Group.connection.Query("controllableScanner"))
+            {
+                query.Write("controllable", ID);
+
+                query.Write("direction", direction);
+                //query.Write("length", length);
+                //query.Write("width", width);
+                //query.Write("enabled", enabled);
+
+                await query.Send().ConfigureAwait(false);
+
+                await query.Wait().ConfigureAwait(false);
+            }
+        }
+
         internal void updateUnregistered()
         {
             active = false;
