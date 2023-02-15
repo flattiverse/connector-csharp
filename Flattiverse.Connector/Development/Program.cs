@@ -9,8 +9,10 @@ internal class Program
         //Unit
         //string unitSun = "{\"name\":\"Schnappi\",\"setPosition\":{\"x\":200,\"y\":100},\"setRadius\":50,\"gravity\":500,\"kind\":\"sun\"}";
 
-        //using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
-        using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/mission1.ws", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
+        int ticks = 0;
+
+        using (UniverseGroup universeGroup = new UniverseGroup("ws://127.0.0.1", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
+        //using (UniverseGroup universeGroup = new UniverseGroup("wss://www.flattiverse.com/api/universes/mission1.ws", "0000000000DAD1DAD1DAD1DAD100000000789634278596032409875325734585"))
         {
             Thread.Sleep(1000);
 
@@ -41,7 +43,20 @@ internal class Program
 
                 Thread.Sleep(1000);
 
-                await c.Continue();
+                while (true)
+                {
+                    await c.Continue();
+
+                    ticks = 0;
+
+                    while (c.IsAlive)
+                    {
+                        Console.Write($" -> {c.Position}\r");
+                        await Task.Delay(10);
+                    }
+
+                    Console.WriteLine($" => {ticks} till death.");
+                }
 
                 //while (true)
                 //{
@@ -98,7 +113,7 @@ internal class Program
                         Console.WriteLine($"RemovedUnitEvent Event: {removedUnitEvent.Name}");
                         break;
                     case AddedUnitEvent addedUnitEvent:
-                        Console.WriteLine($"AddedUnitEvent Event: {addedUnitEvent.Unit.Name}");
+                        Console.WriteLine($"AddedUnitEvent Event: [{addedUnitEvent.Unit.Kind}] {addedUnitEvent.Unit.Name}");
                         break;
                     case UpdatedUnitEvent updatedUnitEvent:
                         //if (updatedUnitEvent.Unit is PlayerUnit)
@@ -108,7 +123,8 @@ internal class Program
                         break;
                     case TickProcessedEvent tickProcessedEvent:
                         //Console.WriteLine($"Tick: {tickProcessedEvent.ProcessingTime}.");
-                        Console.WriteLine($" * BAT={c.BatteryEnergy.Value}/{((PlayerUnitRegularSystem)c.BatteryEnergy).MaxValue} Alive: {c.IsAlive}");
+                        //Console.WriteLine($" * BAT={c.BatteryEnergy.Value}/{((PlayerUnitRegularSystem)c.BatteryEnergy).MaxValue} Alive: {c.IsAlive}");
+                        ticks++;
                         break;
                     case DeathControllableEvent deathControllableEvent:
                         Console.WriteLine($"DeathControllableEvent Event: {deathControllableEvent.CauserKind}: \"{deathControllableEvent.CauserName}\"");

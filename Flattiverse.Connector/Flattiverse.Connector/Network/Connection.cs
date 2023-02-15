@@ -74,6 +74,8 @@ namespace Flattiverse.Connector.Network
                         throw new GameException(0xC4);
                     case "the server returned status code '409' when status code '101' was expected.":
                         throw new GameException(0xC5);
+                    case "the server returned status code '502' when status code '101' was expected.":
+                        throw new GameException(0xC5);
                     default:
                         throw new GameException(0xCF, exception);
                 }

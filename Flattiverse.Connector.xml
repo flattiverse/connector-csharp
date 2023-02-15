@@ -547,7 +547,7 @@
             The name of the player.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Player.playerKind">
+        <member name="F:Flattiverse.Connector.Player.PlayerKind">
             <summary>
             The kind of the player.
             </summary>

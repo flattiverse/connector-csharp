@@ -101,6 +101,8 @@ namespace Flattiverse.Connector
                     return "[0xC4] The specified team doesn't exist.";
                 case 0xC5:
                     return "[0xC5] Your connector is outdated and incompatible: Please update the connector.";
+                case 0xC6:
+                    return "[0xC6] The universe group is currently offline.";
                 case 0xCF:
                     return "[0xCF] Something went wrong while connecting but we don't know what and don't have any more infomration. You may try your luck with the inner exception.";
                 case 0xF0:
