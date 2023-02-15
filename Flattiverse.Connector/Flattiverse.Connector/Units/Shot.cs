@@ -7,7 +7,7 @@ namespace Flattiverse.Connector.Units
     {
         public double ExplosionDamage;
         public double ExplosionRadius;
-        public int LifeTime;
+        public int Lifetime;
 
         public Shot(string name, Vector position, Vector movement) : base(name, position, movement)
         {
@@ -29,7 +29,7 @@ namespace Flattiverse.Connector.Units
         {
             Utils.Traverse(element, out ExplosionDamage, "explosionDamage");
             Utils.Traverse(element, out ExplosionRadius, "explosionRadius");
-            Utils.Traverse(element, out LifeTime, "lifetime");
+            Utils.Traverse(element, out Lifetime, "lifetime");
         }
 
         public override UnitKind Kind => UnitKind.Shot;
