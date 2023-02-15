@@ -81,9 +81,17 @@ The following HTTP error codes are sent by the server if connecting to the unive
 - No auth parameter was given, or a malformed or nonexisting auth key was given. A proper auth parameter consists of string of 64 characters representing hex values.
 - A connection as a spectator was attempted, but the UniverseGroup does not allow spectators.
 
+### `HTTP/409`
+
+- A connection with a wrong connector version was attempted.
+
 ### `HTTP/412`
 
 - A connection as a player or admin was attempted, but the associated account is still online with another connection. As disconnecting players will linger for a while, a connection may not be possible for a short time even if a previous connection has been closed or severed.
+
+### `HTTP/415`
+
+- A connection with a wrong team was attempted.
 
 ### `HTTP/417`
 
