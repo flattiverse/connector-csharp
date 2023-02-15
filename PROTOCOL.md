@@ -666,6 +666,7 @@ A player units JSON will look like this:
     - `weaponLauncher`: Specifies the maximum speed of the launched projectile.
     - `weaponlPayloadDamage`: Specifies the damage a projectiles explosion does.
     - `weaponPayloadRadius`: Specifies the radius of the resulting explosion.
+    - `weaponAmmunition`: Specifies how many ticks shots can fly.
     - `weaponFactory`: Specifies how quick shots are produced.
     - `weaponStorage`: Specifies how many produced shots can be stored.
   - The ship's cargo systems (`cargoIron`,`cargoCarbon`,`carboSilicon`,`carboPlatinum`,`cargoGold`) specifiy the cargo capabilities (`level`) and load (`value`) per resource. Iin addition to the 5 extractable resource kinds there is also a sixth cargo kind `cargoSpecial`.
