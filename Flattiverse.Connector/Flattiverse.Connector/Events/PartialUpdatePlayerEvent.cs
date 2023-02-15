@@ -8,12 +8,9 @@ namespace Flattiverse.Connector.Events
     [FlattiverseEventIdentifier("playerPartialUpdate")]
     public class PartialUpdatePlayerEvent : PlayerEvent
     {
-        internal JsonElement element;
-
-        internal PartialUpdatePlayerEvent(UniverseGroup group, JsonElement element) : base(element)
+        internal PartialUpdatePlayerEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
-            this.element = element;
-            group.playersId[ID].Update(element);
+            group.playersId[Player.ID].Update(element);
         }
 
         public override EventKind Kind => EventKind.PlayerPartialUpdate;

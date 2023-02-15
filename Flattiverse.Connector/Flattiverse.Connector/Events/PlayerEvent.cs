@@ -7,11 +7,12 @@ namespace Flattiverse.Connector.Events
         /// <summary>
         /// The ID of the player, representing his slot in the universegroup's player array.
         /// </summary>
-        public readonly int ID;
+        public readonly Player Player;
 
-        internal PlayerEvent(JsonElement element) : base()
+        internal PlayerEvent(UniverseGroup group, JsonElement element) : base()
         {
-            Utils.Traverse(element, out ID, "id");
+            Utils.Traverse(element, out int ID, "id");
+            Player = group.playersId[ID];
         }
     }
 }
