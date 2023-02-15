@@ -115,6 +115,36 @@ namespace Flattiverse.Connector
         public double TurnRate => turnRate;
 
         /// <summary>
+        /// The requested scan direction.
+        /// </summary>
+        public double RequestedScanDirection => requestedScanDirection;
+
+        /// <summary>
+        /// The requested scan width.
+        /// </summary>
+        public double RequestedScanWidth => requestedScanWidth;
+
+        /// <summary>
+        /// The requested scan range.
+        /// </summary>
+        public double RequestedScanRange => requestedScanRange;
+
+        /// <summary>
+        /// The current scan direction.
+        /// </summary>
+        public double ScanDirection => scanDirection;
+
+        /// <summary>
+        /// The current scan width.
+        /// </summary>
+        public double ScanWidth => scanWidth;
+
+        /// <summary>
+        /// The current scan range.
+        /// </summary>
+        public double ScanRange => scanRange;
+
+        /// <summary>
         /// The hull of your controllable, keeping you away from the cold void of space.
         /// </summary>
         public PlayerUnitRegularSystem Hull => hull;
