@@ -39,53 +39,30 @@ internal class Program
 
             ThreadPool.QueueUserWorkItem(async delegate
             {
-                
+                await c.Continue();
 
-                Thread.Sleep(1000);
+                while (c.WeaponStorage.Value < 1.0)
+                {
+                    Console.WriteLine($" * {c.WeaponStorage.Value}.");
+                    Thread.Sleep(50);
+                }
 
                 while (true)
                 {
-                    await c.Continue();
+                    //await c.SetThruster(0.15);
 
-                    ticks = 0;
+                    Console.WriteLine("Scan now: 270°.");
 
-                    while (c.IsAlive)
-                    {
-                        Console.Write($" -> {c.Position}\r");
-                        await Task.Delay(10);
-                    }
+                    await c.SetScanner(0, 300, 60, true);
 
-                    Console.WriteLine($" => {ticks} till death.");
+                    await c.Shoot(new Vector(3, 0), 5, 3, 10);
+
+                    Thread.Sleep(100);
+
+                    await c.SetThruster(1.25);
+
+                    Thread.Sleep(100000);
                 }
-
-                //while (true)
-                //{
-                //    Thread.Sleep(5000);
-
-                //    //await c.SetThruster(0.15);
-
-                //    Console.WriteLine("Scan now: 270°.");
-
-                //    await c.SetScanner(270, 300, 60, true);
-
-                //    Thread.Sleep(5000);
-
-                //    Console.WriteLine("Scan now: 0°.");
-
-                //    await c.SetScanner(0, 300, 60, true);
-
-                //    Thread.Sleep(5000);
-
-                //    Console.WriteLine("Scan now: 90°.");
-
-                //    await c.SetScanner(90, 300, 60, true);
-
-                //    Thread.Sleep(5000);
-
-                //    Console.WriteLine("Scan now: 180°.");
-
-                //    await c.SetScanner(180, 300, 60, true);
-                //}
             });
 
             while (true)
@@ -101,13 +78,13 @@ internal class Program
                         Console.WriteLine($"UniverseGroupInfo Event: {universeGroupInfoEvent.Name}");
                         break;
                     case FullUpdatePlayerEvent fullUpdatePlayerEvent:
-                        Console.WriteLine($"FullUpdatePlayerEvent Event: #{fullUpdatePlayerEvent.ID}");
+                        Console.WriteLine($"FullUpdatePlayerEvent Event: #{fullUpdatePlayerEvent.Player.ID}");
                         break;
                     case PartialUpdatePlayerEvent partialUpdatePlayerEvent:
-                        Console.WriteLine($"PartialUpdatePlayerEvent Event: #{partialUpdatePlayerEvent.ID}");
+                        Console.WriteLine($"PartialUpdatePlayerEvent Event: #{partialUpdatePlayerEvent.Player.ID}");
                         break;
                     case RemovedPlayerEvent removedPlayerEvent:
-                        Console.WriteLine($"RemovedPlayerEvent Event: #{removedPlayerEvent.ID}");
+                        Console.WriteLine($"RemovedPlayerEvent Event: #{removedPlayerEvent.Player.ID}");
                         break;
                     case RemovedUnitEvent removedUnitEvent:
                         Console.WriteLine($"RemovedUnitEvent Event: {removedUnitEvent.Name}");

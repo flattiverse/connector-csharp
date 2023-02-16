@@ -55,6 +55,14 @@ namespace Flattiverse.Connector
                     return "[0x22] You need to Continue() before doing this.";
                 case 0x23:
                     return "[0x23] This system doesn't support those values.";
+                case 0x24:
+                    return "[0x24] You don't have (any of) the required system(s).";
+                case 0x25:
+                    return "[0x25] Direction can't be near 0 length. Use a vector longer than 0.1.";
+                case 0x26:
+                    return "[0x26] You already have 2 queued shots.";
+                case 0x27:
+                    return "[0x27] You must have at least one shot ready.";
                 case 0xA0:
                     return "[0xA0] Your JSON definition is missing some mandatory base value like name or radius.";
                 case 0xA1:

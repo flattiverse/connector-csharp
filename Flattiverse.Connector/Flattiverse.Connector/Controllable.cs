@@ -649,51 +649,64 @@ namespace Flattiverse.Connector
         }
 
         /// <summary>
-        /// Shoots a shot. It can only handle one shot per tick per ship and has a buffer of one additional shot. Units generally can shoot only one shot per tick, so specifying
-        /// 3 Shots in one tick will result in an error at the 3rd shot requested. The shot will be generated with the next tick. The server tries to anticipate, if you are
-        /// able to shoot. However, this may not be possible. So the call to this method may be successfull but the shot may not be created, if you are out of energy, etc.
-        /// Please observe Events like ResourceDepletedEvent to determine such situations.
+        /// <para>Shoots a shot. It can only handle one shot per tick per ship and has a buffer of one additional shot. Units generally can shoot only one shot per tick, so
+        /// specifying 3 Shots in one tick will result in an error at the 3rd shot requested. The shot will be generated with the next tick. The server tries to anticipate,
+        /// if you are able to shoot. However, this may not be possible. So the call to this method may be successfull but the shot may not be created, if you are out of
+        /// energy, etc. Please observe Events like <c>ResourceDepletedEvent</c> to determine such situations.</para>
+        /// <list type="number"><listheader><term>The process.</term><description>The process is as described in the following steps.</description></listheader>
+        /// <item><term>You call <c>.Shoot()</c> with time 1</term></item><item><term>The shot will be placed when the next tick is processed with time 1.</term></item>
+        /// <item><term>The next tick will change time to 0.</term></item><item><term>The next tick will delete the shot and create the explosion.</term></item>
+        /// <item><term>In the next tick the explosion is removed and deals the damage.</term></item></list>
+        /// <para>This described process has been implemented for "a better gameflow". Please also note the corresponding minimum and maximum values for each of the parameters.</para>
         /// </summary>
-        /// <param name="strength">The length of the initial movement of the shot. If you fly with a speed of 1 and shoot with a strength of 2, then the absolute speed the resulting shot will be 3. (Movement vector of resulting shot has a length of 3.)</param>
-        /// <param name="load">The radius of the resulting explosion.</param>
-        /// <param name="damage">The damage dealt of the explosion.</param>
-        /// <param name="time">The amount of ticks the shot will live, before exploding.</param>
-        /// <exception cref="GameException">Wrong parameters may result in an exception, also if you don't have enough shots to shoot.</exception>
-        /// <remarks>Please query the status of your weapon systems for the corresponding maximums: strength is WeaponLauncher, load is WeaponPayloadRadius, damage is WeaponPayloadDamage and time is WeaponAmmunition.</remarks>
-        public async Task Shoot(double strength, double load, double damage, int time)
+        /// <param name="direction">The direction in which you want to shoot. Calculated energy costs due to what the corresponding systems say are true for a exact forward shot. Shooting backwards the shot will cost 7 times the energy. Shooting 90 degrees sideways will cost 4 times the energy and so on. The length of this vector should be longer than 0.1.</param>
+        /// <param name="load">The radius of the resulting explosion. Minimum value is 2.5.</param>
+        /// <param name="damage">The damage dealt of the explosion. Minimum value is 0.001.</param>
+        /// <param name="time">The amount of ticks the shot will live, before exploding. Minimum value is 0.</param>
+        /// <exception cref="GameException">Wrong parameters may result in an exception, also if you don't have enough shots to shoot or if oyu don't have all of the required systems.</exception>
+        /// <remarks>Please query the status of your weapon systems for the corresponding maximums (<c>MaxValue</c>) and energy costs: <c>direction.Length</c> is <c>WeaponLauncher</c>, <c>load</c> is <c>WeaponPayloadRadius</c>, <c>damage</c> is <c>WeaponPayloadDamage</c> and <c>time</c> is <c>WeaponAmmunition</c>.</remarks>
+        public async Task Shoot(Vector direction, double load, double damage, int time)
         {
             if (hull.Value <= 0.0)
                 throw new GameException(0x22);
 
-            if (double.IsNaN(strength) || double.IsInfinity(strength) || double.IsNaN(load) || double.IsInfinity(load) || double.IsNaN(damage) || double.IsInfinity(damage))
+            if (direction is null)
+                throw new GameException(0xB0);
+
+            if (direction.IsDamaged || double.IsNaN(load) || double.IsInfinity(load) || double.IsNaN(damage) || double.IsInfinity(damage))
                 throw new GameException(0xB6);
 
-            //if (strength < 0 || strength > WeaponAmmunition.MaxValue || length < 59.9 || length > scanner.MaxRange * 1.05 || width < 19.9 || width > scanner.MaxAngle * 1.05)
-            //    throw new GameException(0x23);
+            if (WeaponAmmunition is null || WeaponFactory is null || WeaponLauncher is null || WeaponPayloadDamage is null || WeaponPayloadRadius is null || WeaponStorage is null)
+                throw new GameException(0x24);
 
-            //if (direction > 360.0)
-            //    direction = 360.0;
+            if (direction < 0.075 || direction > WeaponLauncher.MaxValue * 1.05 || load < 2.25 || load > WeaponPayloadRadius.MaxValue * 1.05 || damage < 0.00075 || damage > WeaponPayloadDamage.MaxValue * 1.05 || time < 0 || time > (int)(WeaponAmmunition.MaxValue + 0.5))
+                throw new GameException(0x23);
 
-            //if (length < 60.0)
-            //    length = 60.0;
+            if (direction < 0.1)
+                direction.Length = 0.1;
+            else if (direction > WeaponLauncher.MaxValue)
+                direction.Length = WeaponLauncher.MaxValue;
 
-            //if (length > scanner.MaxRange)
-            //    length = scanner.MaxRange;
+            if (load < 2.5)
+                load = 2.5;
+            
+            if (load > WeaponPayloadRadius.MaxValue)
+                load = WeaponPayloadRadius.MaxValue;
 
-            //if (width < 20.0)
-            //    width = 20.0;
+            if (damage < 0.001)
+                damage = 0.001;
 
-            //if (width > scanner.MaxAngle)
-            //    width = scanner.MaxAngle;
+            if (damage > WeaponPayloadDamage.MaxValue)
+                damage = WeaponPayloadDamage.MaxValue;
 
-            using (Query query = Group.connection.Query("controllableScanner"))
+            using (Query query = Group.connection.Query("controllableShoot"))
             {
                 query.Write("controllable", ID);
 
                 query.Write("direction", direction);
-                //query.Write("length", length);
-                //query.Write("width", width);
-                //query.Write("enabled", enabled);
+                query.Write("load", load);
+                query.Write("damage", damage);
+                query.Write("time", time);
 
                 await query.Send().ConfigureAwait(false);
 

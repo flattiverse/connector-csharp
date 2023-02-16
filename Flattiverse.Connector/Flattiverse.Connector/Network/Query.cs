@@ -47,6 +47,13 @@ namespace Flattiverse.Connector.Network
             Writer.WriteString(name, value);
         }
 
+        public void Write(string name, Vector value)
+        {
+            Writer.WriteStartObject(name);
+            value.writeJson(Writer);
+            Writer.WriteEndObject();
+        }
+
         public void Write(string name, double value)
         {
             Writer.WriteNumber(name, value);
