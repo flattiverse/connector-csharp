@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Events
 {
@@ -17,5 +18,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.TickProcessed;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} TIKPR A Tick was processed in {ProcessingTime}.";
+        }
     }
 }

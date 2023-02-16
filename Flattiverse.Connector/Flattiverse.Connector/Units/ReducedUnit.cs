@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
@@ -30,5 +31,10 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.Reduced;
+
+        public override string ToString()
+        {
+            return $"[{Kind}] {Name} at {Position} is probably a {ProbableKind}.";
+        }
     }
 }

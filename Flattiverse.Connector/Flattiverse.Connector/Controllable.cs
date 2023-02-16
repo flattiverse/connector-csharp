@@ -692,7 +692,7 @@ namespace Flattiverse.Connector
 
             if (load < 2.5)
                 load = 2.5;
-            
+
             if (load > WeaponPayloadRadius.MaxValue)
                 load = WeaponPayloadRadius.MaxValue;
 

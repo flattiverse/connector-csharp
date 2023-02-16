@@ -17,5 +17,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.ChatTeamcast;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} MSG4T Player {Source.Name} has sent a message to your team.";
+        }
     }
 }

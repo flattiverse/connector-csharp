@@ -168,5 +168,10 @@ namespace Flattiverse.Connector.Events
         /// Specifies the kind of the event for a better switch() experience.
         /// </summary>
         public override EventKind Kind => EventKind.UniverseGroupInfo;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} GRPUP The Universegroup was updated.";
+        }
     }
 }

@@ -22,5 +22,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.ControllableUnregistered;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} CONRM Controllable {Controllable.Name} was unregistered.";
+        }
     }
 }

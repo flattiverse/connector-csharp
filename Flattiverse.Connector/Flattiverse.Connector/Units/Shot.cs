@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
@@ -33,5 +34,10 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.Shot;
+
+        public override string ToString()
+        {
+            return $"[{Kind}] at {Position} with explosion damage {ExplosionDamage}, explosion radius {ExplosionRadius} and remaining lifetime {Lifetime}.";
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
@@ -95,5 +96,10 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.PlayerUnit;
+
+        public override string ToString()
+        {
+            return $"[{Kind}] {Name} at {Position} of player {Player.Name} with {Hull}/{HullMax} hull and {Energy}/{EnergyMax} energy.";
+        }
     }
 }

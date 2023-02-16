@@ -16,5 +16,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.ChatUnicast;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} MSG4U Player {Source.Name} has sent a message just for you.";
+        }
     }
 }

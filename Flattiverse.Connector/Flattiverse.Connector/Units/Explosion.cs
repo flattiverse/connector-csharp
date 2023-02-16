@@ -29,5 +29,10 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.Explosion;
+
+        public override string ToString()
+        {
+            return $"[{Kind}] {Name} at {Position} with damage {Damage}.";
+        }
     }
 }

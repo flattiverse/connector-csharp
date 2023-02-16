@@ -54,5 +54,20 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.Sun;
+
+        public override string ToString()
+        {
+            if (Corona is null && Sections is null)
+                return $"[{Kind}] {Name} at {Position} with radius {Radius} but no corona or corona section.";
+
+            if (Corona is null)
+                return $"[{Kind}] {Name} at {Position} with radius {Radius} and {Sections!.Count} corona sections.";
+
+            if (Sections is null)
+                return $"[{Kind}] {Name} at {Position} with radius {Radius} and a corona with radius {Corona!.Radius}.";
+
+
+            return $"[{Kind}] {Name} at {Position} with radius {Radius} and a corona with radius {Corona.Radius} and {Sections.Count} corona sections.";
+        }
     }
 }

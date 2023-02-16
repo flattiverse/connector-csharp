@@ -26,5 +26,10 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.Meteoroid;
+
+        public override string ToString()
+        {
+            return $"[{Kind}] {Name} at {Position}.";
+        }
     }
 }

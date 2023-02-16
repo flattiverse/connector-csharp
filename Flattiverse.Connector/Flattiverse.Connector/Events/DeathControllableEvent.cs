@@ -45,5 +45,13 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.ControllableDeath;
+
+        public override string ToString()
+        {
+            if (CauserName is null)
+                return $"{Stamp:HH:mm:ss.fff} DEATH Your controllable {Controllable.Name} died with reason {Reason}.";
+
+            return $"{Stamp:HH:mm:ss.fff} DEATH Your controllable {Controllable.Name} died with reason {Reason} with unit [{CauserKind}] \"{CauserName}\".";
+        }
     }
 }

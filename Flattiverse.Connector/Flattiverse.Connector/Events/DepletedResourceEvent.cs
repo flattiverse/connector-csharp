@@ -28,12 +28,9 @@ namespace Flattiverse.Connector.Events
 
         public override EventKind Kind => EventKind.ControllableDeath;
 
-        //public override string ToString()
-        //{
-        //    if (CauserName is null)
-        //        return $"{Stamp:HH:mm:ss.fff} DEATH Your controllable {Controllable.Name} died with reason {Reason}.";
-
-        //    return $"{Stamp:HH:mm:ss.fff} DEATH Your controllable {Controllable.Name} died with reason {Reason} with unit [{CauserKind}] \"{CauserName}\".";
-        //}
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} DPLTD Your controllable {Controllable.Name} has depleted a resource: There was a deficit of {EnergyOveruse} energy and {ParticleOveruse} particles.";
+        }
     }
 }

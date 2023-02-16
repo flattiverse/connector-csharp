@@ -31,5 +31,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.UnitRemoved;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} UNIRM Unit {Name} was removed.";
+        }
     }
 }

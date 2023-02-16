@@ -54,5 +54,20 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.BlackHole;
+
+        public override string ToString()
+        {
+            if (GravityWell is null && Sections is null)
+                return $"[{Kind}] {Name} at {Position} with radius {Radius} but no gravitywell or gravitywell section.";
+
+            if (GravityWell is null)
+                return $"[{Kind}] {Name} at {Position} with radius {Radius} and {Sections!.Count} gravitywell sections.";
+
+            if (Sections is null)
+                return $"[{Kind}] {Name} at {Position} with radius {Radius} and a gravitywell with radius {GravityWell!.Radius}.";
+
+
+            return $"[{Kind}] {Name} at {Position} with radius {Radius} and a gravitywell with radius {GravityWell.Radius} and {Sections.Count} gravitywell sections.";
+        }
     }
 }

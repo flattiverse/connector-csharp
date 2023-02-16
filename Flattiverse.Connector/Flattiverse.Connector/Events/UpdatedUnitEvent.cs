@@ -19,5 +19,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.UnitUpdated;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} UNIUP Unit {Unit.Name} was updated.";
+        }
     }
 }

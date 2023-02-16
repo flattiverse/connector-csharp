@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
@@ -51,5 +53,23 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.MissionTarget;
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder($"[{Kind}] {Name} at {Position}");            
+
+            if (Sequence is not null)
+                sb.Append($" with sequence #{Sequence}");
+
+            if (DominationRadius is not null)
+                sb.Append($" with dominationradius #{DominationRadius}");
+
+            if (Hints is not null)
+                sb.Append($" with {Hints.Count} hint vectors");
+
+            sb.Append(".");
+
+            return sb.ToString();            
+        }
     }
 }

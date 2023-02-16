@@ -14,5 +14,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.PlayerPartialUpdate;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} PLRUP Player {Player.Name} was updated.";
+        }
     }
 }

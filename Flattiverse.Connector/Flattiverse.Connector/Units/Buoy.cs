@@ -41,5 +41,13 @@ namespace Flattiverse.Connector.Units
         }
 
         public override UnitKind Kind => UnitKind.Buoy;
+
+        public override string ToString()
+        {
+            if (Hints is not null)
+                return $"[{Kind}] {Name} at {Position} with a {MessageKind} message \"{Message}\" and {Hints.Count} hint vectors.";
+
+            return $"[{Kind}] {Name} at {Position} with a {MessageKind} message \"{Message}\".";
+        }
     }
 }

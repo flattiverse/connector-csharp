@@ -21,5 +21,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.UnitAdded;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} ADDED The unit {Unit.Name} was added to the universe {Universe.Name}.";
+        }
     }
 }

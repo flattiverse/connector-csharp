@@ -14,5 +14,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.PlayerRemoved;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} PLRRM Player {Player.Name} was removed.";
+        }
     }
 }

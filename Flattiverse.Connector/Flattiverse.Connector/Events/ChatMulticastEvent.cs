@@ -14,5 +14,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.ChatMulticast;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} MSG4A Player {Source.Name} has sent a message to everyone.";
+        }
     }
 }

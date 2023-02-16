@@ -23,5 +23,10 @@ namespace Flattiverse.Connector.Events
         }
 
         public override EventKind Kind => EventKind.ControllableUpdated;
+
+        public override string ToString()
+        {
+            return $"{Stamp:HH:mm:ss.fff} CONUP Controllable {Controllable.Name} was updated.";
+        }
     }
 }
