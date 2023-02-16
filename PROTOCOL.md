@@ -126,19 +126,21 @@ There are two kinds of vector information which are used in the commands:
 - angles indicating the rotation of an object, like the direction a ship is pointing to.
 
 ```
-+------------------------------- (+X)
-|         , - ~ ~ ~ - ,
-|     , '      |(0°)    ' ,
-|   ,          |            ,
-|  ,           |             ,
-| ,            |              ,
-| ,            X--------(90°) ,
-| ,                           ,
-|  ,                         ,
-|   ,                       ,
-|     ,                  , '
-|       ' - , _ _ _ ,  '
-(+Y)
+     (-Y)
+     /|\
+(-X) <+------------------------------> (+X)
+      |         , - ~ ~ ~ - ,
+      |     , '      |(270°)  ' ,
+      |   ,          |            ,
+      |  ,           |             ,
+      | ,            |              ,
+      | , (180°)-----X---------(0°) ,
+      | ,            | \__          ,
+      |  ,           |    \__(45°) ,
+      |   ,          |       \__  ,
+      |     ,        |(90°)    , '
+     \|/      ' - , _ _ _ ,  '
+     (+Y)
 ```
 
 JSON structure of a vector:
