@@ -47,6 +47,10 @@ namespace Flattiverse.Connector.Units
                 default:
                     system = new PlayerUnitRegularSystem(universeGroup, systemUpgradepath);
                     break;
+                case PlayerUnitSystemKind.WeaponAmmunition:
+                case PlayerUnitSystemKind.WeaponLauncher:
+                case PlayerUnitSystemKind.WeaponPayloadDamage:
+                case PlayerUnitSystemKind.WeaponPayloadRadius:
                 case PlayerUnitSystemKind.ExtractorCarbon:
                 case PlayerUnitSystemKind.ExtractorIron:
                 case PlayerUnitSystemKind.ExtractorSilicon:
