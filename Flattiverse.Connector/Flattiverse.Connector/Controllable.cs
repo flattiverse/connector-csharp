@@ -51,10 +51,10 @@ namespace Flattiverse.Connector
         private PlayerUnitEnergyConsumingSystem? analyzer;
         private PlayerUnitRegularSystem? cellsParticles;
         private PlayerUnitRegularSystem? batteryParticles;
-        private PlayerUnitRegularSystem? weaponAmmunition;
-        private PlayerUnitRegularSystem? weaponLauncher;
-        private PlayerUnitRegularSystem? weaponPayloadDamage;
-        private PlayerUnitRegularSystem? weaponPayloadRadius;
+        private PlayerUnitEnergyConsumingSystem? weaponAmmunition;
+        private PlayerUnitEnergyConsumingSystem? weaponLauncher;
+        private PlayerUnitEnergyConsumingSystem? weaponPayloadDamage;
+        private PlayerUnitEnergyConsumingSystem? weaponPayloadRadius;
         private PlayerUnitRegularSystem? weaponFactory;
         private PlayerUnitRegularSystem? weaponStorage;
         private PlayerUnitRegularSystem? cargoIron;
@@ -209,22 +209,22 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The shot lifetime of your controllable's weapons.
         /// </summary>
-        public PlayerUnitRegularSystem? WeaponAmmunition => weaponAmmunition;
+        public PlayerUnitEnergyConsumingSystem? WeaponAmmunition => weaponAmmunition;
 
         /// <summary>
         /// The shot speed of your controllable's weapons.
         /// </summary>
-        public PlayerUnitRegularSystem? WeaponLauncher => weaponLauncher;
+        public PlayerUnitEnergyConsumingSystem? WeaponLauncher => weaponLauncher;
 
         /// <summary>
         /// The damage of your controllable's weapons.
         /// </summary>
-        public PlayerUnitRegularSystem? WeaponPayloadDamage => weaponPayloadDamage;
+        public PlayerUnitEnergyConsumingSystem? WeaponPayloadDamage => weaponPayloadDamage;
 
         /// <summary>
         /// The radius of your controllable's weapons' explosions.
         /// </summary>
-        public PlayerUnitRegularSystem? WeaponPayloadRadius => weaponPayloadRadius;
+        public PlayerUnitEnergyConsumingSystem? WeaponPayloadRadius => weaponPayloadRadius;
 
         /// <summary>
         /// The weapon factory of your controllable.
@@ -358,14 +358,17 @@ namespace Flattiverse.Connector
                     case PlayerUnitSystemKind.BatteryParticles:
                         batteryParticles = new PlayerUnitRegularSystem(group, kind, system.Value);
                         break;
+                    case PlayerUnitSystemKind.WeaponAmmunition:
+                        weaponAmmunition = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
+                        break;
                     case PlayerUnitSystemKind.WeaponLauncher:
-                        weaponLauncher = new PlayerUnitRegularSystem(group, kind, system.Value);
+                        weaponLauncher = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponPayloadDamage:
-                        weaponPayloadDamage = new PlayerUnitRegularSystem(group, kind, system.Value);
+                        weaponPayloadDamage = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponPayloadRadius:
-                        weaponPayloadRadius = new PlayerUnitRegularSystem(group, kind, system.Value);
+                        weaponPayloadRadius = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
                         break;
                     case PlayerUnitSystemKind.WeaponFactory:
                         weaponFactory = new PlayerUnitRegularSystem(group, kind, system.Value);
@@ -458,16 +461,16 @@ namespace Flattiverse.Connector
                             batteryParticles = (PlayerUnitRegularSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponAmmunition:
-                            weaponAmmunition = (PlayerUnitRegularSystem)system;
+                            weaponAmmunition = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponLauncher:
-                            weaponLauncher = (PlayerUnitRegularSystem)system;
+                            weaponLauncher = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponPayloadDamage:
-                            weaponPayloadDamage = (PlayerUnitRegularSystem)system;
+                            weaponPayloadDamage = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponPayloadRadius:
-                            weaponPayloadRadius = (PlayerUnitRegularSystem)system;
+                            weaponPayloadRadius = (PlayerUnitEnergyConsumingSystem)system;
                             break;
                         case PlayerUnitSystemKind.WeaponFactory:
                             weaponFactory = (PlayerUnitRegularSystem)system;
