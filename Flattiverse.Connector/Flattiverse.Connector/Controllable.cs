@@ -38,6 +38,7 @@ namespace Flattiverse.Connector
         private double scanDirection;
         private double scanWidth;
         private double scanRange;
+        private bool scanActivated;
 
         private PlayerUnitRegularSystem hull;
         private PlayerUnitRegularSystem cellsEnergy;
@@ -144,6 +145,11 @@ namespace Flattiverse.Connector
         /// The current scan range.
         /// </summary>
         public double ScanRange => scanRange;
+
+        /// <summary>
+        /// Whether the scan is activated.
+        /// </summary>
+        public bool ScanActivated => scanActivated;
 
         /// <summary>
         /// The hull of your controllable, keeping you away from the cold void of space.
@@ -309,6 +315,7 @@ namespace Flattiverse.Connector
             Utils.Traverse(element, out scanDirection, "scanDirection");
             Utils.Traverse(element, out scanWidth, "scanWidth");
             Utils.Traverse(element, out scanRange, "scanRange");
+            Utils.Traverse(element, out scanActivated, "scanActivated");
 
             Utils.Traverse(element, out JsonElement systems, "systems");
             foreach (JsonProperty system in systems.EnumerateObject())
@@ -406,22 +413,11 @@ namespace Flattiverse.Connector
             }
         }
 
-        internal Controllable(UniverseGroup group, string name, int id/*, double radius, Vector position, Vector movement, double direction, Team? team, double gravity, double energyOutput, double turnRate*/)
+        internal Controllable(UniverseGroup group, string name, int id)
         {
             Group = group;
             Name = name;
             ID = id;
-
-            //Maluk: Uncomment if needed
-
-            //this.radius = radius;
-            //this.position = position;
-            //this.movement = movement;
-            //this.direction = direction;
-            //this.team = team;
-            //this.gravity = gravity;
-            //this.energyOutput = energyOutput;
-            //this.turnRate = turnRate;
 
             foreach (PlayerUnitSystemKind kind in Enum.GetValues(typeof(PlayerUnitSystemKind)))
                 if (PlayerUnitSystem.TryGetStartSystem(group, kind, out PlayerUnitSystem? system))
@@ -522,38 +518,6 @@ namespace Flattiverse.Connector
         internal void update()
         {
             hull.Value = 0.0;
-        }
-
-        internal void update(Universe universe, PlayerUnit playerUnit)
-        {
-            hull = playerUnit.Hull;
-            cellsEnergy = playerUnit.CellsEnergy;
-            batteryEnergy = playerUnit.BatteryEnergy;
-            thruster = playerUnit.Thruster;
-            nozzle = playerUnit.Nozzle;
-            scanner = playerUnit.Scanner;
-            armor = playerUnit.Armor;
-            shield = playerUnit.Shield;
-            analyzer = playerUnit.Analyzer;
-            cellsParticles = playerUnit.CellsParticles;
-            batteryParticles = playerUnit.BatteryParticles;
-            weaponAmmunition = playerUnit.WeaponAmmunition;
-            weaponLauncher = playerUnit.WeaponLauncher;
-            weaponPayloadDamage = playerUnit.WeaponPayloadDamage;
-            weaponPayloadRadius = playerUnit.WeaponPayloadRadius;
-            weaponFactory = playerUnit.WeaponFactory;
-            weaponStorage = playerUnit.WeaponStorage;
-            cargoIron = playerUnit.CargoIron;
-            cargoCarbon = playerUnit.CargoCarbon;
-            cargoSilicon = playerUnit.CargoSilicon;
-            cargoPlatinum = playerUnit.CargoPlatinum;
-            cargoGold = playerUnit.CargoGold;
-            cargoSpecial = playerUnit.CargoSpecial;
-            extractorIron = playerUnit.ExtractorIron;
-            extractorCarbon = playerUnit.ExtractorCarbon;
-            extractorSilicon = playerUnit.ExtractorSilicon;
-            extractorPlatinum = playerUnit.ExtractorPlatinum;
-            extractorGold = playerUnit.ExtractorGold;
         }
 
         public async Task Continue()

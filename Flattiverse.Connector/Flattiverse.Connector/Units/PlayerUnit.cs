@@ -6,44 +6,32 @@ namespace Flattiverse.Connector.Units
     public class PlayerUnit : MobileUnit
     {
         public Player Player;
-        public int Controllable;
+        public Controllable? Controllable;
 
         public double TurnRate;
-        public double RequestedScanDirection;
-        public double RequestedScanWidth;
-        public double RequestedScanRange;
         public double ScanDirection;
         public double ScanWidth;
         public double ScanRange;
+        public bool ScanActivated;
 
-        public PlayerUnitRegularSystem Hull;
-        public PlayerUnitRegularSystem CellsEnergy;
-        public PlayerUnitRegularSystem BatteryEnergy;
-        public PlayerUnitEnergyConsumingSystem Thruster;
-        public PlayerUnitEnergyConsumingSystem Nozzle;
-        public PlayerUnitScannerSystem Scanner;
-        public PlayerUnitArmorSystem? Armor;
-        public PlayerUnitRegularSystem? Shield;
-        public PlayerUnitEnergyConsumingSystem? Analyzer;
-        public PlayerUnitRegularSystem? CellsParticles;
-        public PlayerUnitRegularSystem? BatteryParticles;
-        public PlayerUnitRegularSystem? WeaponAmmunition;
-        public PlayerUnitRegularSystem? WeaponLauncher;
-        public PlayerUnitRegularSystem? WeaponPayloadDamage;
-        public PlayerUnitRegularSystem? WeaponPayloadRadius;
-        public PlayerUnitRegularSystem? WeaponFactory;
-        public PlayerUnitRegularSystem? WeaponStorage;
-        public PlayerUnitRegularSystem? CargoIron;
-        public PlayerUnitRegularSystem? CargoCarbon;
-        public PlayerUnitRegularSystem? CargoSilicon;
-        public PlayerUnitRegularSystem? CargoPlatinum;
-        public PlayerUnitRegularSystem? CargoGold;
-        public PlayerUnitRegularSystem? CargoSpecial;
-        public PlayerUnitEnergyConsumingSystem? ExtractorIron;
-        public PlayerUnitEnergyConsumingSystem? ExtractorCarbon;
-        public PlayerUnitEnergyConsumingSystem? ExtractorSilicon;
-        public PlayerUnitEnergyConsumingSystem? ExtractorPlatinum;
-        public PlayerUnitEnergyConsumingSystem? ExtractorGold;
+        public double Hull;
+        public double HullMax;
+        public double Nozzle;
+        public double NozzleMax;
+        public double Thruster;
+        public double ThrusterMax;
+        public double Armor;
+        public double ArmorMax;
+        public double Shield;
+        public double ShieldMax;
+        public double Energy;
+        public double EnergyMax;
+        public double Particles;
+        public double ParticlesMax;
+        public double CargoLoad;
+
+        public Dictionary<PlayerUnitSystemKind, int> SystemLevels;
+
 
         public PlayerUnit()
         {
@@ -70,111 +58,39 @@ namespace Flattiverse.Connector.Units
                 Player = group.playersId[playerId];
 
             Utils.Traverse(element, out Direction, "direction");
-            Utils.Traverse(element, out Controllable, "controllable");
+            Utils.Traverse(element, out int controllableID, "controllable");
+            if (Player?.ID == group.Player.ID)
+                group.TryGetControllable(controllableID, out Controllable);
             Utils.Traverse(element, out TurnRate, "turnRate");
-            Utils.Traverse(element, out RequestedScanDirection, "requestedScanDirection"); 
-            Utils.Traverse(element, out RequestedScanWidth, "requestedScanWidth"); 
-            Utils.Traverse(element, out RequestedScanRange, "requestedScanRange"); 
-            Utils.Traverse(element, out ScanDirection, "scanDirection"); 
-            Utils.Traverse(element, out ScanWidth, "scanWidth"); 
-            Utils.Traverse(element, out ScanRange, "scanRange"); 
+            Utils.Traverse(element, out ScanDirection, "scanDirection");
+            Utils.Traverse(element, out ScanWidth, "scanWidth");
+            Utils.Traverse(element, out ScanRange, "scanRange");
+            Utils.Traverse(element, out ScanActivated, "scanActivated");
 
-            Utils.Traverse(element, out JsonElement systems, "systems");
+            Utils.Traverse(element, out Hull, "hull");
+            Utils.Traverse(element, out HullMax, "hullMax");
+            Utils.Traverse(element, out Nozzle, "nozzle");
+            Utils.Traverse(element, out NozzleMax, "nozzleMax");
+            Utils.Traverse(element, out Thruster, "thruster");
+            Utils.Traverse(element, out ThrusterMax, "thrusterMax");
+            Utils.Traverse(element, out Armor, "armor");
+            Utils.Traverse(element, out ArmorMax, "armorMax");
+            Utils.Traverse(element, out Shield, "shield");
+            Utils.Traverse(element, out ShieldMax, "shieldMax");
+            Utils.Traverse(element, out Energy, "energy");
+            Utils.Traverse(element, out EnergyMax, "energyMax");
+            Utils.Traverse(element, out Particles, "particles");
+            Utils.Traverse(element, out ParticlesMax, "particlesMax");
+            Utils.Traverse(element, out CargoLoad, "cargoLoad");
+
+            Utils.Traverse(element, out JsonElement systems, "systemLevels");
+            SystemLevels = new Dictionary<PlayerUnitSystemKind, int>();
             foreach (JsonProperty system in systems.EnumerateObject())
             {
-                if (!Enum.TryParse(system.Name, true, out PlayerUnitSystemKind kind))
-                    group.connection.PushFailureEvent($"Couldn't parse kind in PlayerUnit for system {system.Name}.");
-
-                switch (kind)
-                {
-                    case PlayerUnitSystemKind.Hull:
-                        Hull = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.Shield:
-                        Shield = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.Armor:
-                        Armor = new PlayerUnitArmorSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.Thruster:
-                        Thruster = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.Nozzle:
-                        Nozzle = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.Scanner:
-                        Scanner = new PlayerUnitScannerSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.Analyzer:
-                        Analyzer = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CellsEnergy:
-                        CellsEnergy = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CellsParticles:
-                        CellsParticles = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.BatteryEnergy:
-                        BatteryEnergy = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.BatteryParticles:
-                        BatteryParticles = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.WeaponAmmunition:
-                        WeaponAmmunition = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.WeaponLauncher:
-                        WeaponLauncher = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.WeaponPayloadDamage:
-                        WeaponPayloadDamage = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.WeaponPayloadRadius:
-                        WeaponPayloadRadius = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.WeaponFactory:
-                        WeaponFactory = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.WeaponStorage:
-                        WeaponStorage = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CargoIron:
-                        CargoIron = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CargoCarbon:
-                        CargoCarbon = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CargoSilicon:
-                        CargoSilicon = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CargoPlatinum:
-                        CargoPlatinum = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CargoGold:
-                        CargoGold = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.CargoSpecial:
-                        CargoSpecial = new PlayerUnitRegularSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.ExtractorIron:
-                        ExtractorIron = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.ExtractorCarbon:
-                        ExtractorCarbon = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.ExtractorSilicon:
-                        ExtractorSilicon = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.ExtractorPlatinum:
-                        ExtractorPlatinum = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    case PlayerUnitSystemKind.ExtractorGold:
-                        ExtractorGold = new PlayerUnitEnergyConsumingSystem(group, kind, system.Value);
-                        break;
-                    default:
-                        group.connection.PushFailureEvent($"PlayerUnitSystemKind {system.Name} is not implemented.");
-                        break;
-                }
+                if (!Enum.TryParse(system.Name, true, out PlayerUnitSystemKind systemKind))
+                    group.connection.PushFailureEvent($"Invalid system kind received.");
+                else
+                    SystemLevels.Add(systemKind, system.Value.GetInt32());
             }
         }
 
