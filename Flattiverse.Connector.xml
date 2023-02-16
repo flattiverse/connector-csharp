@@ -69,6 +69,41 @@
             The rate at which your controllable is turning.
             </summary>
         </member>
+        <member name="P:Flattiverse.Connector.Controllable.RequestedScanDirection">
+            <summary>
+            The requested scan direction.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.RequestedScanWidth">
+            <summary>
+            The requested scan width.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.RequestedScanRange">
+            <summary>
+            The requested scan range.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ScanDirection">
+            <summary>
+            The current scan direction.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ScanWidth">
+            <summary>
+            The current scan width.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ScanRange">
+            <summary>
+            The current scan range.
+            </summary>
+        </member>
+        <member name="P:Flattiverse.Connector.Controllable.ScanActivated">
+            <summary>
+            Whether the scan is activated.
+            </summary>
+        </member>
         <member name="P:Flattiverse.Connector.Controllable.Hull">
             <summary>
             The hull of your controllable, keeping you away from the cold void of space.
@@ -124,9 +159,14 @@
             The particle battery of your controllable, used for storing particles.
             </summary>
         </member>
+        <member name="P:Flattiverse.Connector.Controllable.WeaponAmmunition">
+            <summary>
+            The shot lifetime of your controllable's weapons.
+            </summary>
+        </member>
         <member name="P:Flattiverse.Connector.Controllable.WeaponLauncher">
             <summary>
-            The weapon launcher of your controllable, used to do the pew pew.
+            The shot speed of your controllable's weapons.
             </summary>
         </member>
         <member name="P:Flattiverse.Connector.Controllable.WeaponPayloadDamage">
@@ -211,6 +251,25 @@
             or due to disconnection of the player.
             </summary>
         </member>
+        <member name="M:Flattiverse.Connector.Controllable.Shoot(Flattiverse.Connector.Vector,System.Double,System.Double,System.Int32)">
+            <summary>
+            <para>Shoots a shot. It can only handle one shot per tick per ship and has a buffer of one additional shot. Units generally can shoot only one shot per tick, so
+            specifying 3 Shots in one tick will result in an error at the 3rd shot requested. The shot will be generated with the next tick. The server tries to anticipate,
+            if you are able to shoot. However, this may not be possible. So the call to this method may be successfull but the shot may not be created, if you are out of
+            energy, etc. Please observe Events like <c>ResourceDepletedEvent</c> to determine such situations.</para>
+            <list type="number"><listheader><term>The process.</term><description>The process is as described in the following steps.</description></listheader>
+            <item><term>You call <c>.Shoot()</c> with time 1</term></item><item><term>The shot will be placed when the next tick is processed with time 1.</term></item>
+            <item><term>The next tick will change time to 0.</term></item><item><term>The next tick will delete the shot and create the explosion.</term></item>
+            <item><term>In the next tick the explosion is removed and deals the damage.</term></item></list>
+            <para>This described process has been implemented for "a better gameflow". Please also note the corresponding minimum and maximum values for each of the parameters.</para>
+            </summary>
+            <param name="direction">The direction in which you want to shoot. Calculated energy costs due to what the corresponding systems say are true for a exact forward shot. Shooting backwards the shot will cost 7 times the energy. Shooting 90 degrees sideways will cost 4 times the energy and so on. The length of this vector should be longer than 0.1.</param>
+            <param name="load">The radius of the resulting explosion. Minimum value is 2.5.</param>
+            <param name="damage">The damage dealt of the explosion. Minimum value is 0.001.</param>
+            <param name="time">The amount of ticks the shot will live, before exploding. Minimum value is 0.</param>
+            <exception cref="T:Flattiverse.Connector.GameException">Wrong parameters may result in an exception, also if you don't have enough shots to shoot or if oyu don't have all of the required systems.</exception>
+            <remarks>Please query the status of your weapon systems for the corresponding maximums (<c>MaxValue</c>) and energy costs: <c>direction.Length</c> is <c>WeaponLauncher</c>, <c>load</c> is <c>WeaponPayloadRadius</c>, <c>damage</c> is <c>WeaponPayloadDamage</c> and <c>time</c> is <c>WeaponAmmunition</c>.</remarks>
+        </member>
         <member name="T:Flattiverse.Connector.Events.AddedUnitEvent">
             <summary>
             This event informs of the addition of a unit to the universeGroup.
@@ -244,6 +303,11 @@
         <member name="T:Flattiverse.Connector.Events.DeathControllableEvent">
             <summary>
             This event informs of the untimely demise of a controllable in the universeGroup.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.DepletedResourceEvent">
+            <summary>
+            Notifies about the depletion and possibly overuse of a resource of your controllable.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.EventKind">
@@ -335,6 +399,11 @@
             Notifies about the successful unregister of one of your controllables.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.ResourceDepleted">
+            <summary>
+            Notifies about the depletion and possibly overuse of a resource of your controllable.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.FailureEvent">
             <summary>
             This event indicates some critical out-of-game failure like a problem with the
@@ -382,7 +451,7 @@
             This event contains only mutable information about a player.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Events.PlayerEvent.ID">
+        <member name="F:Flattiverse.Connector.Events.PlayerEvent.Player">
             <summary>
             The ID of the player, representing his slot in the universegroup's player array.
             </summary>

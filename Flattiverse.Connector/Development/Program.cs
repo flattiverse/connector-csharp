@@ -59,7 +59,7 @@ internal class Program
 
                     Thread.Sleep(100);
 
-                    await c.SetThruster(1.25);
+                    await c.SetThruster(0.15);
 
                     Thread.Sleep(100000);
                 }
@@ -90,7 +90,10 @@ internal class Program
                         Console.WriteLine($"RemovedUnitEvent Event: {removedUnitEvent.Name}");
                         break;
                     case AddedUnitEvent addedUnitEvent:
-                        Console.WriteLine($"AddedUnitEvent Event: [{addedUnitEvent.Unit.Kind}] {addedUnitEvent.Unit.Name}");
+                        Console.WriteLine($"AddedUnitEvent Event: [{addedUnitEvent.Unit.Kind}] {addedUnitEvent.Unit.Name} @{addedUnitEvent.Unit.Position}");
+                        break;
+                    case FullUpdateControllableEvent controllableEvent:
+                        Console.WriteLine($"Controllable Position: {controllableEvent.Controllable.Position}.");
                         break;
                     case UpdatedUnitEvent updatedUnitEvent:
                         //if (updatedUnitEvent.Unit is PlayerUnit)

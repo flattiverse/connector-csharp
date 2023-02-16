@@ -13,6 +13,7 @@ This connector is compatible to .NET 6. Current downloads:
 
 # The current status
 
+* 2k23.02.16: 8th release, r325: First UNTESTED release of Shots.
 * 2k23.02.15: interrim, r312: Some minor bug fixes.
 * 2k23.02.14: 7th release, r309: Colissions implemented. And energy loading (but not usage). Some bug fixes.
 * 2k23.02.13: 6th release, r299: Thruster should now also be implemented correctly.
