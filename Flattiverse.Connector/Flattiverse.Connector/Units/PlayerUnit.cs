@@ -52,6 +52,8 @@ namespace Flattiverse.Connector.Units
 
         internal PlayerUnit(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = true;
+
             Utils.Traverse(element, out int playerId, "player");
             if (group.playersId[playerId] is null)
                 group.connection.PushFailureEvent($"Tried to instantiate a PlayerUnit for a player that does not exist in the universe.");

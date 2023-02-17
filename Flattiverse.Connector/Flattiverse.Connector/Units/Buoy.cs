@@ -27,6 +27,8 @@ namespace Flattiverse.Connector.Units
 
         internal Buoy(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = false;
+
             Utils.Traverse(element, out Message, "message");
 
             if (Utils.Traverse(element, out JsonElement hints, "hints"))

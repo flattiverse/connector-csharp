@@ -23,6 +23,7 @@ namespace Flattiverse.Connector.Units
 
         internal Planet(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = true;
         }
 
         public override UnitKind Kind => UnitKind.Planet;

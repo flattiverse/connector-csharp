@@ -25,6 +25,8 @@ namespace Flattiverse.Connector.Units
 
         internal Explosion(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = true;
+            
             Utils.Traverse(element, out Damage, "damage");
         }
 

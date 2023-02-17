@@ -27,6 +27,8 @@ namespace Flattiverse.Connector.Units
 
         internal Sun(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = true;
+
             if (Utils.Traverse(element, out JsonElement corona, "corona"))
             {
                 if (corona.ValueKind != JsonValueKind.Object)

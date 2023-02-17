@@ -27,15 +27,25 @@ namespace Flattiverse.Connector.Units
         {
             Utils.Traverse(element, out string probableKind, "probableKind");
             Enum.TryParse(probableKind, true, out ProbableKind);
-
+            IsSolid = true;
             switch (ProbableKind)
             {
+                case UnitKind.Buoy:
+                case UnitKind.MissionTarget:
+                    Mobility = Mobility.Still;
+                    IsSolid = false;
+                    break;
                 case UnitKind.PlayerUnit:
+                    Mobility = Mobility.Mobile;
+                    IsSolid = true;
+                    break;
                 case UnitKind.Shot:
                     Mobility = Mobility.Mobile;
+                    IsSolid = false;
                     break;
                 default:
                     Mobility = Mobility.Still;
+                    IsSolid = true;
                     break;
             }
         }

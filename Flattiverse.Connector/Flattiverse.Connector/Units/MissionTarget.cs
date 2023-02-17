@@ -31,6 +31,7 @@ namespace Flattiverse.Connector.Units
 
         internal MissionTarget(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = false;
 
             if (Utils.Traverse(element, out int sequence, "sequence"))
                 Sequence = sequence;

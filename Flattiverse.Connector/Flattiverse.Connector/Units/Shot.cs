@@ -28,6 +28,8 @@ namespace Flattiverse.Connector.Units
 
         internal Shot(UniverseGroup group, JsonElement element) : base(group, element)
         {
+            IsSolid = false;
+
             Utils.Traverse(element, out ExplosionDamage, "explosionDamage");
             Utils.Traverse(element, out ExplosionRadius, "explosionRadius");
             Utils.Traverse(element, out Lifetime, "lifetime");
