@@ -2,21 +2,15 @@
 
 namespace Flattiverse.Connector.Events
 {
-    public class ChatEvent : FlattiverseEvent
+    public class ChatEvent : MessageEvent
     {
         /// <summary>
         /// The player that sent the message.
         /// </summary>
         public readonly Player Source;
 
-        /// <summary>
-        /// The chat message received.
-        /// </summary>
-        public readonly string Message;
-
-        internal ChatEvent(UniverseGroup group, JsonElement element) : base()
+        internal ChatEvent(UniverseGroup group, JsonElement element) : base(element)
         {
-            Utils.Traverse(element, out Message, "message");
             Utils.Traverse(element, out int playerID, "source");
             Source = group.playersId[playerID];
         }
