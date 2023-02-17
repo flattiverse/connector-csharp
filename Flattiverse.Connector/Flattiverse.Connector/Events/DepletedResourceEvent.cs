@@ -8,12 +8,14 @@ namespace Flattiverse.Connector.Events
     [FlattiverseEventIdentifier("resourceDepleted")]
     public class DepletedResourceEvent : UnitEvent
     {
+        public readonly Universe Universe;
         public readonly Controllable Controllable;
         public readonly double EnergyOveruse;
         public readonly double ParticleOveruse;
 
         internal DepletedResourceEvent(UniverseGroup group, JsonElement element) : base(group, element)
         {
+
             Utils.Traverse(element, out int controllableID, "controllableID");
             if (!group.TryGetControllable(controllableID, out Controllable))
             {
@@ -24,6 +26,9 @@ namespace Flattiverse.Connector.Events
 
             Utils.Traverse(element, out EnergyOveruse, "energyOveruse");
             Utils.Traverse(element, out ParticleOveruse, "particleOveruse");
+
+            Utils.Traverse(element, out int universe, "universe");
+            Universe = group.universesId[universe];
         }
 
         public override EventKind Kind => EventKind.ControllableDeath;

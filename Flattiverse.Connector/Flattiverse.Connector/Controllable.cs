@@ -300,6 +300,9 @@ namespace Flattiverse.Connector
 
         internal void update(UniverseGroup group, JsonElement element)
         {
+            if (Utils.Traverse(element, out int teamID, "team") && teamID >= 0 && teamID < 16)
+                team = group.teamsId[teamID];
+
             Utils.Traverse(element, out movement, "movement");
             Utils.Traverse(element, out position, "position");
 
@@ -421,6 +424,7 @@ namespace Flattiverse.Connector
             Group = group;
             Name = name;
             ID = id;
+            team = group.Player.Team;
 
             foreach (PlayerUnitSystemKind kind in Enum.GetValues(typeof(PlayerUnitSystemKind)))
                 if (PlayerUnitSystem.TryGetStartSystem(group, kind, out PlayerUnitSystem? system))

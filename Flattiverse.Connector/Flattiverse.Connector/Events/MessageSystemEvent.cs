@@ -12,9 +12,11 @@ namespace Flattiverse.Connector.Events
         {
         }
 
+        public override EventKind Kind => EventKind.MessageSystem;
+
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} MSGSY The syystem has sent a message to everyone.";
+            return $"{Stamp:HH:mm:ss.fff} MSGSY The syystem has sent a message to everyone: \"{Message}\".";
         }
     }
 }

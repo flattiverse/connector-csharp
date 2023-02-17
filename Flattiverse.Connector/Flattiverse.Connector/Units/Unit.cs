@@ -170,5 +170,10 @@ namespace Flattiverse.Connector.Units
             if (Utils.Traverse(element, out int teamID, "team") && teamID >= 0 && teamID < 16)
                 Team = group.teamsId[teamID];
         }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

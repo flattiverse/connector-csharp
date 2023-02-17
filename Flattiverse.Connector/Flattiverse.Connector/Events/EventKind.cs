@@ -76,6 +76,10 @@
         /// <summary>
         /// Notifies about the depletion and possibly overuse of a resource of your controllable.
         /// </summary>
-        ResourceDepleted
+        ResourceDepleted,
+        /// <summary>
+        /// Notifies about a message by the system.
+        /// </summary>
+        MessageSystem
     }
 }

@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.Events
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} MSG4U Player {Source.Name} has sent a message just for you.";
+            return $"{Stamp:HH:mm:ss.fff} MSG4U Player {Source.Name} has sent a message just for you: \"{Message}\".";
         }
     }
 }

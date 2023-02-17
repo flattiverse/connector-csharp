@@ -20,7 +20,7 @@ namespace Flattiverse.Connector.Events
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} MSG4T Player {Source.Name} has sent a message to your team.";
+            return $"{Stamp:HH:mm:ss.fff} MSG4T Player {Source.Name} has sent a message to your team: \"{Message}\".";
         }
     }
 }
