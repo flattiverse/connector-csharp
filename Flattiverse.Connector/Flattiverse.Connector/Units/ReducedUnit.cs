@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
@@ -28,6 +27,17 @@ namespace Flattiverse.Connector.Units
         {
             Utils.Traverse(element, out string probableKind, "probableKind");
             Enum.TryParse(probableKind, true, out ProbableKind);
+
+            switch (ProbableKind)
+            {
+                case UnitKind.PlayerUnit:
+                case UnitKind.Shot:
+                    Mobility = Mobility.Mobile;
+                    break;
+                default:
+                    Mobility = Mobility.Still;
+                    break;
+            }
         }
 
         public override UnitKind Kind => UnitKind.Reduced;
