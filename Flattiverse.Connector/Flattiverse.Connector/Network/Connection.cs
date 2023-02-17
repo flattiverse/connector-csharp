@@ -26,6 +26,8 @@ namespace Flattiverse.Connector.Network
         private readonly Queue<TaskCompletionSource<FlattiverseEvent>> pendingEventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
         private readonly object syncEvents = new object();
 
+        private const string version = "2";
+
         private readonly SemaphoreSlim syncSend = new SemaphoreSlim(1);
 
         private bool connected = true;
@@ -36,7 +38,7 @@ namespace Flattiverse.Connector.Network
         {
             Group = group;
 
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}");
 
             socket = new ClientWebSocket();
 
@@ -75,7 +77,7 @@ namespace Flattiverse.Connector.Network
                     case "the server returned status code '409' when status code '101' was expected.":
                         throw new GameException(0xC5);
                     case "the server returned status code '502' when status code '101' was expected.":
-                        throw new GameException(0xC5);
+                        throw new GameException(0xC6);
                     default:
                         throw new GameException(0xCF, exception);
                 }
@@ -88,7 +90,7 @@ namespace Flattiverse.Connector.Network
         {
             Group = group;
 
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1&team={team}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
 
             socket = new ClientWebSocket();
 
@@ -134,7 +136,7 @@ namespace Flattiverse.Connector.Network
 
         public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth)
         {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}");
 
             ClientWebSocket socket = new ClientWebSocket();
 
@@ -168,7 +170,7 @@ namespace Flattiverse.Connector.Network
 
         public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth, string team)
         {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version=1&team={team}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
 
             ClientWebSocket socket = new ClientWebSocket();
 

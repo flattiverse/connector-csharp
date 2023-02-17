@@ -280,11 +280,6 @@
             The player that sent the message.
             </summary>
         </member>
-        <member name="F:Flattiverse.Connector.Events.ChatEvent.Message">
-            <summary>
-            The chat message received.
-            </summary>
-        </member>
         <member name="T:Flattiverse.Connector.Events.ChatMulticastEvent">
             <summary>
             This event informs of a chatmessage to everyone.
@@ -444,6 +439,16 @@
         <member name="T:Flattiverse.Connector.Events.FullUpdatePlayerEvent">
             <summary>
             This event contains all information abaout a player.
+            </summary>
+        </member>
+        <member name="F:Flattiverse.Connector.Events.MessageEvent.Message">
+            <summary>
+            The message received.
+            </summary>
+        </member>
+        <member name="T:Flattiverse.Connector.Events.MessageSystemEvent">
+            <summary>
+            This event informs of a system message by the server.
             </summary>
         </member>
         <member name="T:Flattiverse.Connector.Events.PartialUpdatePlayerEvent">
