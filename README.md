@@ -13,6 +13,7 @@ This connector is compatible to .NET 6. Current downloads:
 
 # The current status
 
+* 2k23.02.17: 10th and 11th release, r331: Shoot the MissionTarget!
 * 2k23.02.17: 9th release, r327: Some Bugfixes.
 * 2k23.02.16: 8th release, r325: First UNTESTED release of Shots.
 * 2k23.02.15: interrim, r312: Some minor bug fixes.

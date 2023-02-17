@@ -16,7 +16,7 @@ namespace Flattiverse.Connector.Events
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} MSGSY The syystem has sent a message to everyone: \"{Message}\".";
+            return $"{Stamp:HH:mm:ss.fff} MSGSY --SYSTEM-- \"{Message}\".";
         }
     }
 }

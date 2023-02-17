@@ -399,6 +399,11 @@
             Notifies about the depletion and possibly overuse of a resource of your controllable.
             </summary>
         </member>
+        <member name="F:Flattiverse.Connector.Events.EventKind.MessageSystem">
+            <summary>
+            Notifies about a message by the system.
+            </summary>
+        </member>
         <member name="T:Flattiverse.Connector.Events.FailureEvent">
             <summary>
             This event indicates some critical out-of-game failure like a problem with the

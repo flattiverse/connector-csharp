@@ -93,7 +93,7 @@ internal class Program
                         Console.WriteLine($"AddedUnitEvent Event: [{addedUnitEvent.Unit.Kind}] {addedUnitEvent.Unit.Name} @{addedUnitEvent.Unit.Position}");
                         break;
                     case FullUpdateControllableEvent controllableEvent:
-                        Console.WriteLine($"Controllable Position: {controllableEvent.Controllable.Position}.");
+                        Console.WriteLine($"Controllable Position: {controllableEvent.Controllable.Position} with Energy: {controllableEvent.Controllable.BatteryEnergy.Value}.");
                         break;
                     case UpdatedUnitEvent updatedUnitEvent:
                         //if (updatedUnitEvent.Unit is PlayerUnit)
