@@ -4,7 +4,7 @@ using static System.Collections.Specialized.BitVector32;
 namespace Flattiverse.Connector.Units
 {
     [UnitIdentifier("shot")]
-    public class Shot : SteadyUnit
+    public class Shot : MobileUnit
     {
         public double ExplosionDamage;
         public double ExplosionRadius;

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Version>0.0.8-development</Version>
+    <Version>0.0.9-development</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -15,7 +15,7 @@ namespace Flattiverse.Connector.Events
             Utils.Traverse(element, out JsonElement controllable, "controllable");
             Utils.Traverse(element, out int controllableID, "controllableID");
 
-            // TOG: Hie rbitte eine zwischenvariable machen, die auch tatsächlich null sein kann. Sonst ist Dein Controllable? ziemlich sus.
+            // TOG: Hier bitte eine zwischenvariable machen, die auch tatsächlich null sein kann. Sonst ist Dein Controllable? ziemlich sus.
             if (!group.TryGetControllable(controllableID, out Controllable))
                 group.connection.PushFailureEvent($"Couldn't get the controllable with the id {controllableID}.");
 
