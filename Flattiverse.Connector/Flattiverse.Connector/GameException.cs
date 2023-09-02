@@ -63,6 +63,14 @@ namespace Flattiverse.Connector
                     return "[0x26] You already have 2 queued shots.";
                 case 0x27:
                     return "[0x27] You must have at least one shot ready.";
+                case 0x28:
+                    return "[0x28] You already used this upgrade.";
+                case 0x29:
+                    return "[0x29] You're lacking a required upgrade to use this one.";
+                case 0x2A:
+                    return "[0x2A] You don't have enough energy to buy this upgrade.";
+                case 0x2B:
+                    return "[0x2B] You don't have enough minerals to buy this upgrade.";
                 case 0xA0:
                     return "[0xA0] Your JSON definition is missing some mandatory base value like name or radius.";
                 case 0xA1:
