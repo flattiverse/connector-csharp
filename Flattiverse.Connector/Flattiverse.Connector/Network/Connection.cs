@@ -1,49 +1,24 @@
-﻿using Flattiverse.Connector.Events;
-using Flattiverse.Connector.Units;
-using System;
-using System.Buffers;
-using System.Globalization;
-using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
-using System.Security.AccessControl;
-using System.Text;
-using System.Text.Json;
+﻿using System.Net.WebSockets;
 
 namespace Flattiverse.Connector.Network
 {
-    class Connection : IDisposable
+    class Connection
     {
-        internal static readonly JsonDocumentOptions options = new JsonDocumentOptions() { AllowTrailingCommas = false, CommentHandling = JsonCommentHandling.Disallow, MaxDepth = 6 };
         private readonly ClientWebSocket socket;
 
-        private readonly object syncQuery = new object();
-        private readonly Dictionary<string, Query> queries = new Dictionary<string, Query>();
-
-        private readonly Random rng = new Random();
-        private static readonly char[] tokens = Utils.GenerateAllAllowedOneByteUtf8CharsWithoutSpace();
-
-        private readonly Queue<FlattiverseEvent> pendingEvents = new Queue<FlattiverseEvent>();
-        private readonly Queue<TaskCompletionSource<FlattiverseEvent>> pendingEventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
-        private readonly object syncEvents = new object();
-
-        private const string version = "2";
-
-        private readonly SemaphoreSlim syncSend = new SemaphoreSlim(1);
+        private const string version = "0";
 
         private bool connected = true;
 
-        public readonly UniverseGroup Group;
+        public readonly Universe Universe;
 
-        public Connection(UniverseGroup group, string uri, string auth)
+        public Connection(Universe universe, string uri, string auth, string team)
         {
-            Group = group;
+            Universe = universe;
 
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}");
+            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
 
             socket = new ClientWebSocket();
-
-            CultureInfo culture = new CultureInfo("de-DE");
-            CultureInfo.CurrentCulture = culture;
 
             try
             {
@@ -83,285 +58,12 @@ namespace Flattiverse.Connector.Network
                 }
             }
 
-            ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
+            ThreadPool.QueueUserWorkItem(async delegate { await Recv(); });
         }
-
-        public Connection(UniverseGroup group, string uri, string auth, string team)
+        
+        private async Task Recv()
         {
-            Group = group;
-
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
-
-            socket = new ClientWebSocket();
-
-            CultureInfo culture = new CultureInfo("de-DE");
-            CultureInfo.CurrentCulture = culture;
-
-            try
-            {
-                socket.ConnectAsync(parsedUri, CancellationToken.None).GetAwaiter().GetResult();
-            }
-            catch (Exception exception)
-            {
-                switch (exception.Message.ToLower())
-                {
-                    case "unable to connect to the remote server":
-                        throw new GameException(0xC0);
-                    case "the server returned status code '401' when status code '101' was expected.":
-                        throw new GameException(0xC1);
-                    case "the server returned status code '412' when status code '101' was expected.":
-                        throw new GameException(0xC2);
-                    case "the server returned status code '417' when status code '101' was expected.":
-                        throw new GameException(0xC3);
-                    case "the server returned status code '415' when status code '101' was expected.":
-                        throw new GameException(0xC4);
-                    case "the server returned status code '409' when status code '101' was expected.":
-                        throw new GameException(0xC5);
-                    default:
-                        throw new GameException(0xCF, exception);
-                }
-            }
-
-            ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
-        }
-
-        private Connection(UniverseGroup group, ClientWebSocket socket)
-        {
-            Group = group;
-
-            this.socket = socket;
-
-            ThreadPool.QueueUserWorkItem(async delegate { await recv(); });
-        }
-
-        public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth)
-        {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}");
-
-            ClientWebSocket socket = new ClientWebSocket();
-
-            try
-            {
-                await socket.ConnectAsync(parsedUri, CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception exception)
-            {
-                switch (exception.Message.ToLower())
-                {
-                    case "unable to connect to the remote server":
-                        throw new GameException(0xC0);
-                    case "the server returned status code '401' when status code '101' was expected.":
-                        throw new GameException(0xC1);
-                    case "the server returned status code '412' when status code '101' was expected.":
-                        throw new GameException(0xC2);
-                    case "the server returned status code '417' when status code '101' was expected.":
-                        throw new GameException(0xC3);
-                    case "the server returned status code '415' when status code '101' was expected.":
-                        throw new GameException(0xC4);
-                    case "the server returned status code '409' when status code '101' was expected.":
-                        throw new GameException(0xC5);
-                    default:
-                        throw new GameException(0xCF, exception);
-                }
-            }
-
-            return new Connection(group, socket);
-        }
-
-        public static async Task<Connection> NewAsyncConnection(UniverseGroup group, string uri, string auth, string team)
-        {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
-
-            ClientWebSocket socket = new ClientWebSocket();
-
-            try
-            {
-                await socket.ConnectAsync(parsedUri, CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception exception)
-            {
-                switch (exception.Message.ToLower())
-                {
-                    case "unable to connect to the remote server":
-                        throw new GameException(0xC0);
-                    case "the server returned status code '401' when status code '101' was expected.":
-                        throw new GameException(0xC1);
-                    case "the server returned status code '412' when status code '101' was expected.":
-                        throw new GameException(0xC2);
-                    case "the server returned status code '417' when status code '101' was expected.":
-                        throw new GameException(0xC3);
-                    case "the server returned status code '415' when status code '101' was expected.":
-                        throw new GameException(0xC4);
-                    case "the server returned status code '409' when status code '101' was expected.":
-                        throw new GameException(0xC5);
-                    default:
-                        throw new GameException(0xCF, exception);
-                }
-            }
-
-            return new Connection(group, socket);
-        }
-
-        internal void shutdown(string? message)
-        {
-            connected = false;
-            socket.Dispose();
-
-            if (message != null)
-                PushFailureEvent(message);
-
-            lock (syncQuery)
-            {
-                foreach (KeyValuePair<string, Query> query in queries)
-                    query.Value.Answer(0xF0);
-
-                queries.Clear();
-            }
-        }
-
-        private async Task recv()
-        {
-            byte[] recv;
-            Memory<byte> recvMemory;
-
-            JsonDocument document;
-            JsonElement element;
-            string kind;
-            string id;
-            int code;
-            Query? query;
-
-            ValueWebSocketReceiveResult result;
-            FlattiverseEvent @event;
-
-            while (true)
-            {
-                recv = ArrayPool<byte>.Shared.Rent(262144);
-                recvMemory = new Memory<byte>(recv);
-
-                try
-                {
-                    result = await socket.ReceiveAsync(recvMemory, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception exception)
-                {
-                    shutdown($"WebSocket got disconnected: {exception.Message}");
-                    return;
-                }
-
-                //Console.WriteLine($"\nRECVd: {Encoding.UTF8.GetString(recv, 0, result.Count)}\n");
-
-                switch (socket.State)
-                {
-                    case WebSocketState.CloseReceived:
-                        PushFailureEvent($"WebSocket got disconnected with reason \"{socket.CloseStatus}\" and message: {socket.CloseStatusDescription ?? "<none>."} Connection terminated.");
-
-                        connected = false;
-
-                        try
-                        {
-                            await syncSend.WaitAsync().ConfigureAwait(false);
-                            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good bye.", CancellationToken.None).ConfigureAwait(false);
-                        }
-                        catch { }
-                        finally
-                        {
-                            try
-                            {
-                                syncSend.Release();
-                            }
-                            catch { }
-                        }
-                        shutdown(null);
-                        return;
-                    case WebSocketState.Open:
-                        break;
-                    default:
-                        shutdown($"WebSocket had invalid state after receive: \"{socket.State}\". Connection terminated.");
-                        return;
-                }
-
-                if (!result.EndOfMessage)
-                {
-                    shutdown("Received message has exceedet 256 KiB.");
-                    return;
-                }
-
-                if (result.MessageType != WebSocketMessageType.Text)
-                {
-                    shutdown($"Received message has type {result.MessageType}. But we require Text with JSON. Connection terminated.");
-                    return;
-                }
-
-                try
-                {
-                    document = JsonDocument.Parse(recvMemory.Slice(0, result.Count), options);
-                }
-                catch
-                {
-                    shutdown($"Received message didn't contain valid JSON.");
-                    return;
-                }
-
-                if (!Utils.Traverse(document.RootElement, out kind, "kind"))
-                {
-                    shutdown($"Received message didn't contain \"kind\". Connection terminated.");
-                    return;
-                }
-
-                switch (kind)
-                {
-                    case "success":
-                        lock (syncQuery)
-                        {
-                            if (!Utils.Traverse(document.RootElement, out id, "id") || !queries.TryGetValue(id, out query))
-                            {
-                                PushFailureEvent("Property \"id\" missing on messages from kind \"success\".");
-                                break;
-                            }
-
-                            queries.Remove(id);
-                        }
-
-                        query.Answer(recv, document);
-                        break;
-                    case "failure":
-                        if (!Utils.Traverse(document.RootElement, out code, "code"))
-                        {
-                            PushFailureEvent("Missing property \"code\" (number) on message from kind \"failure\".");
-                            break;
-                        }
-
-                        lock (syncQuery)
-                        {
-                            if (!Utils.Traverse(document.RootElement, out id, "id") || !queries.TryGetValue(id, out query))
-                            {
-                                PushFailureEvent("Property \"id\" missing on messages from kind \"failure\".");
-                                break;
-                            }
-
-                            queries.Remove(id);
-                        }
-
-                        query.Answer(recv, code);
-                        break;
-                    case "events":
-                        if (!Utils.Traverse(document.RootElement, out element, "events") || element.ValueKind != JsonValueKind.Array)
-                        {
-                            PushFailureEvent("\"events\" Array didn't exist in events message.");
-                            break;
-                        }
-
-                        foreach (JsonElement subElement in element.EnumerateArray())
-                        {
-                            if (subElement.ValueKind == JsonValueKind.Object)
-                                PushEvent(EventRouter.CreateFromJson(Group, subElement));
-                            else
-                                PushEvent(new RawEvent(subElement));
-                        }
-                        break;
-                }
-            }
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -416,89 +118,6 @@ namespace Flattiverse.Connector.Network
                     }
                     return true;
             }
-        }
-
-        public Query Query(string command)
-        {
-            Query query;
-            string id = $"{tokens[rng.Next(tokens.Length)]}{tokens[rng.Next(tokens.Length)]}";
-
-            if (queries.Count > 1000)
-                throw new InvalidOperationException("It looks like you have way too many pending commands.");
-
-            lock (syncQuery)
-            {
-                while (queries.ContainsKey(id))
-                    id = $"{tokens[rng.Next(tokens.Length)]}{tokens[rng.Next(tokens.Length)]}";
-
-                query = new Query(this, command, id);
-
-                queries.Add(id, query);
-            }
-
-            return query;
-        }
-
-        public async Task Send(byte[] query, int length)
-        {
-            try
-            {
-                await syncSend.WaitAsync();
-                await socket.SendAsync(new Memory<byte>(query, 0, length), WebSocketMessageType.Text, true, CancellationToken.None);
-            }
-            catch { }
-            finally
-            {
-                try
-                {
-                    syncSend.Release();
-                }
-                catch { }
-            }
-        }
-
-        public void PushEvent(FlattiverseEvent @event)
-        {
-            TaskCompletionSource<FlattiverseEvent>? tcs;
-
-            lock (syncEvents)
-            {
-                if (pendingEventWaiters.TryDequeue(out tcs))
-                {
-                    ThreadPool.QueueUserWorkItem(delegate { tcs.SetResult(@event); });
-                    return;
-                }
-
-                pendingEvents.Enqueue(@event);
-            }
-        }
-
-        public void PushFailureEvent(string message)
-        {
-            PushEvent(new FailureEvent(message));
-        }
-
-        public async Task<FlattiverseEvent> NextEvent()
-        {
-            FlattiverseEvent? @event;
-            TaskCompletionSource<FlattiverseEvent> tcs;
-
-            lock (syncEvents)
-            {
-                if (pendingEvents.TryDequeue(out @event))
-                    return @event;
-
-                tcs = new TaskCompletionSource<FlattiverseEvent>();
-                pendingEventWaiters.Enqueue(tcs);
-            }
-
-            return await tcs.Task;
-        }
-
-        public void Dispose()
-        {
-            socket.Dispose();
-            syncSend.Dispose();
         }
     }
 }
