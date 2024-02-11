@@ -4,6 +4,6 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        // A new beginning and a test.
+        // A new beginning and a test - again.
     }
 }
