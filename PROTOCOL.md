@@ -22,22 +22,22 @@ If you would draw a system diagram of flattiverse you could go like this:
 
 You have to specify the following data when connecting to a galaxy:
 
-2. The URI you connect to. (The URI determines the galaxy you choose.)
-2. The auth key you use to identify yourself.
-2. The team you want to use to join.
-2. The protocol version you speak. (You will be disconnected, if this doesn't match what the galaxy server expects.)
+1. The URI you connect to. (The URI determines the galaxy you choose.)
+1. The auth key you use to identify yourself.
+1. The team you want to use to join.
+1. The protocol version you speak. (You will be disconnected, if this doesn't match what the galaxy server expects.)
 
 The Server may reply with the following HTTP status codes and the error they result in in the reference connector (propably you should use the same messages):
 
-3. <couldn't connect>: `[0xF1] Couldn't connect to the universe server: Are you online? Is flattiverse still online?`
-3. `502` or `504`: `[0xF2] The reverse proxy of the flattiverse universe is online but the corresponding galaxy is offline. This may be due to maintenance reasons or the galaxy software version is being upgraded.`
-3. `400`: `[0xF3] You must make a WebSocket call.`
-3. `401`: `[0xF4] Auth parameter missing or ambiguous.`
-3. `409`: `[0xF5] Outdated connector.`
-3. `415`: `[0xF6] Specified team doesn't exist or can't be selected.`
-3. `401`: `[0xF7] No spectators allowed.`
-3. `401`: `[0xF8] Auth unknown.`
-3. `400`: `[0xF9] Unknown database failure.`
-3. `412`: `[0xFA] You are currently online.`
+1. <couldn't connect>: `[0xF1] Couldn't connect to the universe server: Are you online? Is flattiverse still online?`
+1. `502` or `504`: `[0xF2] The reverse proxy of the flattiverse universe is online but the corresponding galaxy is offline. This may be due to maintenance reasons or the galaxy software version is being upgraded.`
+1. `400`: `[0xF3] You must make a WebSocket call.`
+1. `401`: `[0xF4] Auth parameter missing or ambiguous.`
+1. `409`: `[0xF5] Outdated connector.`
+1. `415`: `[0xF6] Specified team doesn't exist or can't be selected.`
+1. `401`: `[0xF7] No spectators allowed.`
+1. `401`: `[0xF8] Auth unknown.`
+1. `400`: `[0xF9] Unknown database failure.`
+1. `412`: `[0xFA] You are currently online.`
 
 If this documentation is not recent, you can find the assignments [here](Flattiverse.Connector/Flattiverse.Connector/Network/Connection.cs).

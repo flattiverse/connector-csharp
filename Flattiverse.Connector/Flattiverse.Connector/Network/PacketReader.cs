@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Flattiverse.Connector.Network;
 
@@ -25,5 +26,14 @@ class PacketReader
         position += 4;
         
         return Unsafe.As<byte, int>(ref data[position - 4]);
+    }
+
+    public string ReadString(ushort length)
+    {
+        Debug.Assert(position + length <= end, "Can't read out of bounds.");
+
+        position += length;
+
+        return Encoding.ASCII.GetString(data, position - length, length);
     }
 }

@@ -198,9 +198,18 @@ namespace Flattiverse.Connector.Network
                     
                     Console.Write(packet);
 
-                    PacketReader reader = packet.Read();
+                    PacketReader reader;
 
-                    Console.WriteLine($": {reader.ReadInt32()}, {reader.ReadInt32()}.");
+                    switch (packet.Header.Command)
+                    {
+                        case 0x30://SendMessage
+                            reader = packet.Read();
+
+                            Console.WriteLine($"Received message from player {packet.Header.Player}: {reader.ReadString(packet.Header.Size)}");
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -224,10 +233,16 @@ namespace Flattiverse.Connector.Network
                 // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
                 // and securely query the HTTP error code.
 
-                switch (webSocketException.Message.Substring()
+                switch (webSocketException.Message.Substring(33, 3))
                 {
-                    case "the server returned status code '502' when status code '101' was expected.":
+                    case "502":
+                        throw new GameException(0xF1);
+                    case "504":
+                        throw new GameException(0xF2);
+                    case "400":
                         throw new GameException(0xF3);
+                    case "401":
+                        throw new GameException(0xF4);
                     default:
                         throw new GameException(0xF0, webSocketException.Message, webSocketException);
                 }
