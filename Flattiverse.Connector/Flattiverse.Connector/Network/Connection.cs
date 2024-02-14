@@ -82,7 +82,7 @@ namespace Flattiverse.Connector.Network
         }
 
         /// <summary>
-        /// Sets all variables and cleanupps everything accordingly if this connection ends. The closure of the
+        /// Sets all variables and cleanups everything accordingly if this connection ends. The closure of the
         /// web socket is not part of this method.
         /// </summary>
         /// <param name="reason">The reason for the closure.</param>
