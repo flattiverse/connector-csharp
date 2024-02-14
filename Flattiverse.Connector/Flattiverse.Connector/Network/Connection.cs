@@ -35,8 +35,13 @@ namespace Flattiverse.Connector.Network
         
         public async Task Connect(string uri, string auth, byte team)
         {
-            Uri parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
-
+            Uri parsedUri;
+            
+            if (team > 31)
+                parsedUri = new Uri($"{uri}?auth={auth}&version={version}");
+            else
+                parsedUri = new Uri($"{uri}?auth={auth}&version={version}&team={team}");
+            
             CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
             
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
@@ -50,6 +55,8 @@ namespace Flattiverse.Connector.Network
                 // The .NET framework, or specifically the ClientWebSocket class, is very disappointing at this point:
                 // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
                 // and securely query the HTTP error code.
+
+                // JAM TODO: Hier die ganzen Codes und dann auch die GameExceptions nachpflegen.
 
                 switch (webSocketException.Message.ToLower())
                 {
@@ -96,7 +103,7 @@ namespace Flattiverse.Connector.Network
         private async Task Recv()
         {
             Packet packet;
-            byte[] data = GC.AllocateUninitializedArray<byte>(262144, true);
+            byte[] data = GC.AllocateUninitializedArray<byte>(4194304, true);
             int position = 0;
             
             WebSocketReceiveResult result;
@@ -185,6 +192,8 @@ namespace Flattiverse.Connector.Network
 
                 while (position < result.Count)
                 {
+                    Console.Write($"loc={position}: ");
+                    
                     packet = new Packet(data, ref position);
                     
                     Console.Write(packet);
