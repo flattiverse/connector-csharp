@@ -17,7 +17,7 @@ class Packet
     {
         Header = header;
         Payload = new byte[1048];
-        Offset = 0;
+        Offset = 8;
     }
 
     /// <summary>
@@ -44,19 +44,14 @@ class Packet
         return new PacketReader(this);
     }
 
-    //TODO MALUK CHECK
-    public Memory<byte> AsMemory()
+    internal void Flush()
     {
-        byte[] data = new byte[8 + Header.Size];
-
-        Unsafe.As<byte, ulong>(ref data[0]) = Header.DirectAssign;
-        Unsafe.CopyBlock(ref data[8], ref Payload[0], Header.Size);
-
-        return data.AsMemory();
+        Unsafe.As<byte, ulong>(ref Payload[0]) = Header.DirectAssign;
     }
 
     public override string ToString()
     {
         return $"cmd=0x{Header.Command:X02}; session=0x{Header.Session:X02}; player=0x{Header.Player:X02}; controllable=0x{Header.Controllable:X02}; params=(0x{Header.Param0:X02}; 0x{Header.Param1:X02} | 0x{Header.Param:X04}); size=0x{Header.Size:X02}";
     }
+
 }

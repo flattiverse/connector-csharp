@@ -31,7 +31,7 @@ The Server may reply with the following HTTP status codes and the error they res
 
 1. <couldn't connect>: `[0xF1] Couldn't connect to the universe server: Are you online? Is flattiverse still online?`
 1. `502` or `504`: `[0xF2] The reverse proxy of the flattiverse universe is online but the corresponding galaxy is offline. This may be due to maintenance reasons or the galaxy software version is being upgraded.`
-1. `400`: `[0xF3] You must make a WebSocket call.`
+1. `400`: `[0xF3] You must make a WebSocket call or database is not available.`
 1. `401`: `[0xF4] Unauthorized.`
 1. `409`: `[0xF5] Outdated connector.`
 1. `412`: `[0xF6] You are currently online.`

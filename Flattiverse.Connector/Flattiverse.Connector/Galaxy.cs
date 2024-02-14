@@ -1,4 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
+using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Flattiverse.Connector;
@@ -30,11 +32,12 @@ public class Galaxy
         if (message is null || message.Length > 1040)
             throw new ArgumentOutOfRangeException(nameof(message), "Length of message has to be between including 1 and 1040.");
 
-        Packet packet = new Packet(new PacketHeader(0x30, 0x00, playerId, 0x00, 0x00, 0x00, 0x00));
+        Packet packet = new Packet(new PacketHeader(0x30, 0x00, 0, 0x00, 0x00, 0x00, 0x00));
 
         using (PacketWriter pw = packet.Write())
             pw.Write(message);
 
+        packet.Flush();
         await connection.Send(packet);
     }
 }

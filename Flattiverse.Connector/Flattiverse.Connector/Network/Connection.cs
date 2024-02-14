@@ -56,29 +56,11 @@ namespace Flattiverse.Connector.Network
                 // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
                 // and securely query the HTTP error code.
 
-                // JAM TODO: Hier die ganzen Codes und dann auch die GameExceptions nachpflegen.
-
-                if (webSocketException.Message.Length < 38)
+                if (webSocketException.Message.Length < 37)
                     throw new GameException(0xF0, webSocketException.Message, webSocketException);
                 else
-                    switch (webSocketException.Message.Substring(33, 3))
-                    {
-                        case "502":
-                        case "504":
-                            throw new GameException(0xF2);
-                        case "400":
-                            throw new GameException(0xF3);
-                        case "401":
-                            throw new GameException(0xF4);
-                        case "409":
-                            throw new GameException(0xF5);
-                        case "412":
-                            throw new GameException(0xF6);
-                        case "415":
-                            throw new GameException(0xF7);
-                        default:
-                            throw new GameException(0xF1);
-                    }
+                    throw GameException.ParseHttpCode(webSocketException.Message.Substring(33, 3));
+
             }
             catch (Exception exception)
             {
@@ -235,7 +217,7 @@ namespace Flattiverse.Connector.Network
 
             try
             {
-                await socket.SendAsync(packet.AsMemory(), WebSocketMessageType.Binary, true,
+                await socket.SendAsync(packet.Payload.AsMemory(), WebSocketMessageType.Binary, true,
                     cancellationToken);
             }
             catch (WebSocketException webSocketException)
@@ -247,24 +229,7 @@ namespace Flattiverse.Connector.Network
                 if (webSocketException.Message.Length < 37)
                     throw new GameException(0xF0, webSocketException.Message, webSocketException);
                 else
-                    switch (webSocketException.Message.Substring(33, 3))
-                    {
-                        case "502":
-                        case "504":
-                            throw new GameException(0xF2);
-                        case "400":
-                            throw new GameException(0xF3);
-                        case "401":
-                            throw new GameException(0xF4);
-                        case "409":
-                            throw new GameException(0xF5);
-                        case "412":
-                            throw new GameException(0xF6);
-                        case "415":
-                            throw new GameException(0xF7);
-                        default:
-                            throw new GameException(0xF0, webSocketException.Message, webSocketException);
-                    }
+                    throw GameException.ParseHttpCode(webSocketException.Message.Substring(33, 3));
             }
             catch (Exception exception)
             {
