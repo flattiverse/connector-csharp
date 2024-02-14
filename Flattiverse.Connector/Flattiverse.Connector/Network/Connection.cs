@@ -233,19 +233,27 @@ namespace Flattiverse.Connector.Network
                 // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
                 // and securely query the HTTP error code.
 
-                switch (webSocketException.Message.Substring(33, 3))
-                {
-                    case "502":
-                        throw new GameException(0xF1);
-                    case "504":
-                        throw new GameException(0xF2);
-                    case "400":
-                        throw new GameException(0xF3);
-                    case "401":
-                        throw new GameException(0xF4);
-                    default:
-                        throw new GameException(0xF0, webSocketException.Message, webSocketException);
-                }
+                if (webSocketException.Message.Length < 37)
+                    throw new GameException(0xF0, webSocketException.Message, webSocketException);
+                else
+                    switch (webSocketException.Message.Substring(33, 3))
+                    {
+                        case "502":
+                        case "504":
+                            throw new GameException(0xF2);
+                        case "400":
+                            throw new GameException(0xF3);
+                        case "401":
+                            throw new GameException(0xF4);
+                        case "409":
+                            throw new GameException(0xF5);
+                        case "412":
+                            throw new GameException(0xF6);
+                        case "415":
+                            throw new GameException(0xF7);
+                        default:
+                            throw new GameException(0xF0, webSocketException.Message, webSocketException);
+                    }
             }
             catch (Exception exception)
             {
