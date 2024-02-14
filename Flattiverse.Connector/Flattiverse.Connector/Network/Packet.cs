@@ -8,15 +8,17 @@ class Packet
 {
     public PacketHeader Header;
 
-    public byte[] Payload;
+    public readonly byte[] Payload;
 
-    public int Offset;
+    public readonly int Offset;
 
-    //TODO MALUK CHECK
-    public Packet(PacketHeader header)
+    public Packet(byte session)
     {
-        Header = header;
+        Header = new PacketHeader();
+
         Payload = new byte[1048];
+
+        Header.Session = session;
         Offset = 8;
     }
 

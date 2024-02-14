@@ -207,92 +207,14 @@ namespace Flattiverse.Connector.Network
             }
         }
 
-        //TODO MALUK CHECK
-        internal async Task Send(Packet packet)
-        {
-
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-
-            try
-            {
-                await socket.SendAsync(packet.Payload.AsMemory(), WebSocketMessageType.Binary, true,
-                    cancellationToken);
-            }
-            catch (WebSocketException webSocketException)
-            {
-                // The .NET framework, or specifically the ClientWebSocket class, is very disappointing at this point:
-                // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
-                // and securely query the HTTP error code.
-
-                if (webSocketException.Message.Length < 37)
-                    throw new GameException(0xF0, webSocketException.Message, webSocketException);
-                else
-                    throw GameException.ParseHttpCode(webSocketException.Message.Substring(33, 3));
-            }
-            catch (Exception exception)
-            {
-                throw new GameException(0xF0, exception.Message, exception);
-            }
-            finally
-            {
-                Thread.CurrentThread.CurrentCulture = originalCulture;
-            }
-        }
+        /// <summary>
+        /// true, if the connection is still established.
+        /// </summary>
+        public bool Connected => connected;
 
         /// <summary>
-        /// Does whatever required to close the connection as properly as possible.
+        /// The reason why we did disconnect from the server.
         /// </summary>
-        /// <param name="status">The status with what we close the connection.</param>
-        /// <param name="message">The message to send to the endpoint.</param>
-        /// <returns>true, if the close has been executed "until the end", false if we wait for confirmation.</returns>
-        internal async Task<bool> close(WebSocketCloseStatus status, string message)
-        {
-            switch (socket.State)
-            {
-                // case WebSocketState.Closed:
-                // case WebSocketState.Aborted:
-                // case WebSocketState.None:
-                // case WebSocketState.Connecting:
-                // case WebSocketState.CloseSent:
-                default:
-                    try
-                    {
-                        socket.Dispose();
-                    }
-                    catch { }
-                    return true;
-                case WebSocketState.CloseReceived:
-                    try
-                    {
-                        await socket.CloseAsync(status, message, CancellationToken.None);
-                    }
-                    catch { }
-
-                    try
-                    {
-                        socket.Dispose();
-                    }
-                    catch { }
-                    return true;
-                case WebSocketState.Open:
-                    try
-                    {
-                        await socket.CloseAsync(status, message, CancellationToken.None);
-
-                        return false;
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            socket.Dispose();
-                        }
-                        catch { }
-                    }
-                    return true;
-            }
-        }
+        public string? DisconnectReason => disconnectReason;
     }
 }
