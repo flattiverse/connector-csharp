@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Net.WebSockets;
+using System.Reflection.PortableExecutable;
+using System.Text.RegularExpressions;
 
 namespace Flattiverse.Connector.Network
 {
@@ -191,6 +193,43 @@ namespace Flattiverse.Connector.Network
 
                     Console.WriteLine($": {reader.ReadInt32()}, {reader.ReadInt32()}.");
                 }
+            }
+        }
+
+        //TODO MALUK CHECK
+        internal async Task Send(Packet packet)
+        {
+
+            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
+
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+            try
+            {
+                await socket.SendAsync(packet.AsMemory(), WebSocketMessageType.Binary, true,
+                    cancellationToken);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                // The .NET framework, or specifically the ClientWebSocket class, is very disappointing at this point:
+                // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
+                // and securely query the HTTP error code.
+
+                switch (webSocketException.Message.Substring()
+                {
+                    case "the server returned status code '502' when status code '101' was expected.":
+                        throw new GameException(0xF3);
+                    default:
+                        throw new GameException(0xF0, webSocketException.Message, webSocketException);
+                }
+            }
+            catch (Exception exception)
+            {
+                throw new GameException(0xF0, exception.Message, exception);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
             }
         }
 

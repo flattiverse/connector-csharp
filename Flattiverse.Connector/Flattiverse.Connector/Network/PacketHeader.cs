@@ -31,4 +31,15 @@ struct PacketHeader
         
     [FieldOffset(0)]
     public ulong DirectAssign;
+
+    public PacketHeader(byte command, byte session, byte player, byte controllable, byte param0, byte param1, ushort param)
+    {
+        Command = command;
+        Session = session;
+        Player = player;
+        Controllable = controllable;
+        Param0 = param0;
+        Param1 = param1;
+        Param = param;
+    }
 }

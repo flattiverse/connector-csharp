@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Flattiverse.Connector.Network;
@@ -10,6 +11,14 @@ class Packet
     public byte[] Payload;
 
     public int Offset;
+
+    //TODO MALUK CHECK
+    public Packet(PacketHeader header)
+    {
+        Header = header;
+        Payload = new byte[1048];
+        Offset = 0;
+    }
 
     /// <summary>
     /// Parses a packet from a byte[].
@@ -24,17 +33,28 @@ class Packet
 
         position += 8 + Header.Size;
     }
- 
+
     public PacketWriter Write()
     {
         return new PacketWriter(this);
     }
- 
+
     public PacketReader Read()
     {
         return new PacketReader(this);
     }
-    
+
+    //TODO MALUK CHECK
+    public Memory<byte> AsMemory()
+    {
+        byte[] data = new byte[8 + Header.Size];
+
+        Unsafe.As<byte, ulong>(ref data[0]) = Header.DirectAssign;
+        Unsafe.CopyBlock(ref data[8], ref Payload[0], Header.Size);
+
+        return data.AsMemory();
+    }
+
     public override string ToString()
     {
         return $"cmd=0x{Header.Command:X02}; session=0x{Header.Session:X02}; player=0x{Header.Player:X02}; controllable=0x{Header.Controllable:X02}; params=(0x{Header.Param0:X02}; 0x{Header.Param1:X02} | 0x{Header.Param:X04}); size=0x{Header.Size:X02}";

@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Flattiverse.Connector.Network;
 
@@ -28,6 +30,17 @@ class PacketWriter : IDisposable
         
         Unsafe.As<byte, int>(ref data[position]) = number;
         position += 4;
+    }
+
+    //TODO MALUK CHECK
+    internal void Write(string message)
+    {
+        byte[] msg = Encoding.ASCII.GetBytes(message);
+
+        Debug.Assert(position + msg.Length < end, "Can't write out of bounds.");
+
+        Unsafe.CopyBlock(ref data[position], ref msg[0], (uint)msg.Length);
+        position += msg.Length;
     }
     
     public void Dispose()
