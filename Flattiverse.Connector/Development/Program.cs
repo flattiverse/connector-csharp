@@ -9,7 +9,11 @@ internal class Program
 
         Universe universe = new Universe();
 
-        Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "F7160CB2E108EF022D317AECFF3DF958EB2C4437D5A24DA7E18EC727236A1AE5", 0x00);
+        //Admin key
+        //Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "5AE4A6FD01FFCB104F594D7510160766FF9BE6731058D9469CB404C999CC7BF0", 0x00);
+
+        //Player key
+        Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "7CA8F14EE55FCD522FB8FB4B4E09BEB7D5892D8341A0740FCC596D1CEC1D9D13", 0x00);
 
         //await galaxy.SendMessage(1, "This is a message.");
 

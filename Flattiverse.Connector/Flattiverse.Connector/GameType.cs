@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Flattiverse.Connector
+﻿namespace Flattiverse.Connector
 {
-    enum GameType
+    public enum GameType
     {
         Mission,
         STF,

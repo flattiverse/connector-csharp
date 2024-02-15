@@ -184,7 +184,7 @@ class PacketReader
 
         position += 2 + length;
 
-        return Encoding.UTF8.GetString(Unsafe.As<byte, byte[]>(ref data[position - length]));
+        return Encoding.UTF8.GetString(data, position - length, length);
     }
 
     internal byte? ReadNullableByte()
