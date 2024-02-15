@@ -31,6 +31,8 @@ public class Galaxy
         Session session = await sessions.Get();
 
         Packet packet = new Packet();
+
+        packet.Header.Command = 0x55;
         
         using (PacketWriter writer = packet.Write())
             writer.Write(number);
