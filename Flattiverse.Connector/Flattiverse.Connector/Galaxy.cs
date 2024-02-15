@@ -26,6 +26,12 @@ public class Galaxy
         sessions.TerminateConnections(connection.DisconnectReason);
     }
 
+    /// <summary>
+    /// Requests from the server if given number is even.
+    /// This is a method to test the connector-server communication.
+    /// </summary>
+    /// <param name="number"></param>
+    /// <returns></returns>
     public async Task<bool> IsEven(int number)
     {
         Session session = await sessions.Get();
