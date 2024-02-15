@@ -53,41 +53,42 @@ namespace Flattiverse.Connector.Units
         {
             ID = id;
             Galaxy = galaxy;
+            Ship = ship;
 
-            PreviousUpgrade = reader.ReadNullableByte();
+            if (reader.ReadNullableByte() is byte previousUpgradeId && ship.upgrades[previousUpgradeId] is Upgrade previousUpgrade)
+                PreviousUpgrade = previousUpgrade;
 
-            writer.WriteNullable(PreviousUpgrade?.ID);
-            writer.Write(Name);
-            writer.Write4S(CostEnergy, 2);
-            writer.Write4S(CostIon, 2);
-            writer.Write4S(CostIron, 2);
-            writer.Write4S(CostTungsten, 2);
-            writer.Write4S(CostSilicon, 2);
-            writer.Write4S(CostTritium, 2);
-            writer.Write4S(CostTime, 2);
-            writer.Write4S(Hull, 2);
-            writer.Write4S(HullRepair, 2);
-            writer.Write4S(Shields, 2);
-            writer.Write4S(ShieldsRepair, 2);
-            writer.Write4S(Size, 2);
-            writer.Write4S(Weight, 2);
-            writer.Write4S(EnergyMax, 2);
-            writer.Write4S(EnergyCells, 2);
-            writer.Write4S(EnergyReactor, 2);
-            writer.Write4S(EnergyTransfer, 2);
-            writer.Write4S(IonMax, 2);
-            writer.Write4S(IonCells, 2);
-            writer.Write4S(IonReactor, 2);
-            writer.Write4S(IonTransfer, 2);
-            writer.Write4S(Thruster, 2);
-            writer.Write4S(Nozzle, 2);
-            writer.Write4S(Speed, 2);
-            writer.Write4S(Turnrate, 2);
-            writer.Write4S(Cargo, 2);
-            writer.Write4S(Extractor, 2);
-            writer.Write4S(WeaponSpeed, 2);
-            writer.Write4S(WeaponTime, 2);
-            writer.Write4S(WeaponLoad, 2);
+            Name = reader.ReadString();
+            CostEnergy = reader.Read4S(2);
+            CostIon = reader.Read4S(2);
+            CostIron = reader.Read4S(2);
+            CostTungsten = reader.Read4S(2);
+            CostSilicon = reader.Read4S(2);
+            CostTritium = reader.Read4S(2);
+            CostTime = reader.Read4S(2);
+            Hull = reader.Read4S(2);
+            HullRepair = reader.Read4S(2);
+            Shields = reader.Read4S(2);
+            ShieldsRepair = reader.Read4S(2);
+            Size = reader.Read4S(2);
+            Weight = reader.Read4S(2);
+            EnergyMax = reader.Read4S(2);
+            EnergyCells = reader.Read4S(2);
+            EnergyReactor = reader.Read4S(2);
+            EnergyTransfer = reader.Read4S(2);
+            IonMax = reader.Read4S(2);
+            IonCells = reader.Read4S(2);
+            IonReactor = reader.Read4S(2);
+            IonTransfer = reader.Read4S(2);
+            Thruster = reader.Read4S(2);
+            Nozzle = reader.Read4S(2);
+            Speed = reader.Read4S(2);
+            Turnrate = reader.Read4S(2);
+            Cargo = reader.Read4S(2);
+            Extractor = reader.Read4S(2);
+            WeaponSpeed = reader.Read4S(2);
+            WeaponTime = reader.Read4S(2);
+            WeaponLoad = reader.Read4S(2);
         }
     }
 }

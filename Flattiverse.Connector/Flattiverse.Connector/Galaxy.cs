@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
@@ -128,7 +129,7 @@ public class Galaxy
 
                 break;
             case 0x12://Team info
-                teams[packet.Header.Param0] = new Team(packet.Header.Param0, this, reader);
+                teams[packet.Header.Param0] = new Team(packet.Header.Param0, reader);
 
                 if (teamMax < packet.Header.Param0 + 1)
                     teamMax = packet.Header.Param0 + 1;
@@ -143,7 +144,7 @@ public class Galaxy
                 break;
             case 0x14://Upgrade info
                 if (ships[packet.Header.Param1] is Ship ship)
-                    ships[packet.Header.Param1].ReadUpgrade(packet.Header.Param0, this, reader);
+                    ship.ReadUpgrade(packet.Header.Param0, reader);
 
                 break;
             case 0x15://New player joined info

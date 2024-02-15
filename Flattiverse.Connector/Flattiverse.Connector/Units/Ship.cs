@@ -50,7 +50,40 @@ namespace Flattiverse.Connector.Units
 
         public Ship(byte id, Galaxy galaxy, PacketReader reader)
         {
+            ID = id;
+            Galaxy = galaxy;
 
+            Name = reader.ReadString();
+            CostEnergy = reader.Read4S(2);
+            CostIon = reader.Read4S(2);
+            CostIron = reader.Read4S(2);
+            CostTungsten = reader.Read4S(2);
+            CostSilicon = reader.Read4S(2);
+            CostTritium = reader.Read4S(2);
+            CostTime = reader.Read4S(2);
+            Hull = reader.Read4S(2);
+            HullRepair = reader.Read4S(2);
+            Shields = reader.Read4S(2);
+            ShieldsRepair = reader.Read4S(2);
+            Size = reader.Read4S(2);
+            Weight = reader.Read4S(2);
+            EnergyMax = reader.Read4S(2);
+            EnergyCells = reader.Read4S(2);
+            EnergyReactor = reader.Read4S(2);
+            EnergyTransfer = reader.Read4S(2);
+            IonMax = reader.Read4S(2);
+            IonCells = reader.Read4S(2);
+            IonReactor = reader.Read4S(2);
+            IonTransfer = reader.Read4S(2);
+            Thruster = reader.Read4S(2);
+            Nozzle = reader.Read4S(2);
+            Speed = reader.Read4S(2);
+            Turnrate = reader.Read4S(2);
+            Cargo = reader.Read4S(2);
+            Extractor = reader.Read4S(2);
+            WeaponSpeed = reader.Read4S(2);
+            WeaponTime = reader.Read4S(2);
+            WeaponLoad = reader.Read4S(2);
         }
 
         internal void ReadUpgrade(byte id, PacketReader reader)
