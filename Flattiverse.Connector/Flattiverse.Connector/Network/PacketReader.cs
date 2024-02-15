@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using Flattiverse.Connector.Units;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Flattiverse.Connector.Network;
 
@@ -183,5 +185,22 @@ class PacketReader
         position += 2 + length;
 
         return Encoding.UTF8.GetString(Unsafe.As<byte, byte[]>(ref data[position - length]));
+    }
+
+    internal byte? ReadNullableByte()
+    {
+        Debug.Assert(position + 1 <= end, "Can't read out of bounds.");
+
+        if (Unsafe.As<byte, byte>(ref data[position]) == 1)
+        {
+            Debug.Assert(position + 2 <= end, "Can't read out of bounds.");
+
+            position += 2;
+
+            return Unsafe.As<byte, byte>(ref data[position - 1]);
+        }
+
+        position += 1;
+        return null;
     }
 }

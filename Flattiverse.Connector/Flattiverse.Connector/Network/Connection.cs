@@ -113,7 +113,6 @@ namespace Flattiverse.Connector.Network
         
         private async Task Recv()
         {
-            Packet packet;
             byte[] data = GC.AllocateUninitializedArray<byte>(4194304, true);
             int position = 0;
             
