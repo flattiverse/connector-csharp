@@ -44,6 +44,8 @@ public class Galaxy
     private readonly Team?[] teams = new Team?[33];
     private int teamMax = 0;
 
+    private Dictionary<byte, Player> players = new Dictionary<byte, Player>();
+
     private readonly SessionHandler sessions;
     private readonly Connection connection;
 
@@ -148,6 +150,8 @@ public class Galaxy
 
                 break;
             case 0x15://New player joined info
+                if (teams[packet.Header.Param1] is Team team)
+                    players[packet.Header.Player] = new Player(packet.Header.Player, (PlayerKind)packet.Header.Param0, team, reader);
                 break;
         }
     }
