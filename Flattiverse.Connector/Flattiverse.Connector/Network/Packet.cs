@@ -12,6 +12,15 @@ class Packet
 
     public readonly int Offset;
 
+    public Packet()
+    {
+        Header = new PacketHeader();
+
+        Payload = new byte[1048];
+
+        Offset = 8;
+    }
+    
     public Packet(byte session)
     {
         Header = new PacketHeader();
