@@ -5,6 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace Flattiverse.Connector.Network
 {
+    delegate void ConnectionClosed();
+    delegate void PacketReceived(Packet packet);
+    
     class Connection
     {
         private readonly ClientWebSocket socket;
@@ -15,13 +18,18 @@ namespace Flattiverse.Connector.Network
         private const string version = "0";
 
         private object sync;
+
+        private readonly SemaphoreSlim syncSend = new SemaphoreSlim(1, 1);
         
         private bool connected = true;
         private string? disconnectReason; // Is used to report the reason why we did lose the connection.
 
         public readonly Universe Universe;
+        
+        private ConnectionClosed closedHandler;
+        private PacketReceived packetHandler;
 
-        public Connection(Universe universe)
+        public Connection(Universe universe, ConnectionClosed closedHandler, PacketReceived packetHandler)
         {
             Universe = universe;
             
@@ -30,6 +38,9 @@ namespace Flattiverse.Connector.Network
             cancellationSource = new CancellationTokenSource();
             cancellationToken = cancellationSource.Token;
 
+            this.closedHandler = closedHandler;
+            this.packetHandler = packetHandler;
+            
             sync = new object();
         }
         
@@ -91,6 +102,13 @@ namespace Flattiverse.Connector.Network
             
             cancellationSource.Dispose();
             socket.Dispose();
+            syncSend.Dispose();
+
+            try
+            {
+                closedHandler();
+            }
+            catch { }
         }
         
         private async Task Recv()
@@ -105,12 +123,13 @@ namespace Flattiverse.Connector.Network
             {
                 try
                 {
-                    result = await socket.ReceiveAsync(new ArraySegment<byte>(data), cancellationToken).ConfigureAwait(false);
+                    result = await socket.ReceiveAsync(new ArraySegment<byte>(data), cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
                     Terminate($"The connection got closed unexpectedly: {e.Message}");
-                    
+
                     return;
                 }
 
@@ -157,13 +176,15 @@ namespace Flattiverse.Connector.Network
                             {
                             }
 
-                            Terminate("Protocol error, the server did send a text message which is not supported. Do you have the latest connector version?");
+                            Terminate(
+                                "Protocol error, the server did send a text message which is not supported. Do you have the latest connector version?");
 
                             return;
                     }
 
-                    Terminate("Unknown error, the server did send a unknown message datagram which is not supported. Do you have the latest connector version?");
-                    
+                    Terminate(
+                        "Unknown error, the server did send a unknown message datagram which is not supported. Do you have the latest connector version?");
+
                     return;
                 }
 
@@ -174,125 +195,64 @@ namespace Flattiverse.Connector.Network
                         await socket.CloseAsync(WebSocketCloseStatus.MessageTooBig,
                             "The message you did send exceeded the limit of 262144 bytes.", cancellationToken);
                     }
-                    catch { }
+                    catch
+                    {
+                    }
 
-                    Terminate("Protocol error, der server did send a packet which is too big.");
-                
+                    Terminate("Protocol error, the server did send a packet which is too big.");
+
                     return;
                 }
 
                 position = 0;
 
                 while (position < result.Count)
-                {
-                    Console.Write($"loc={position}: ");
-                    
-                    packet = new Packet(data, ref position);
-                    
-                    Console.Write(packet);
-
-                    PacketReader reader;
-
-                    switch (packet.Header.Command)
+                    try
                     {
-                        case 0x30://SendMessage
-                            reader = packet.Read();
-
-                            Console.WriteLine($"Received message from player {packet.Header.Player}: {reader.ReadString(packet.Header.Size)}");
-                            break;
-                        default:
-                            break;
+                        packetHandler(new Packet(data, ref position));
                     }
-                }
-            }
-        }
-
-        //TODO MALUK CHECK
-        internal async Task Send(Packet packet)
-        {
-
-            CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
-
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-
-            try
-            {
-                await socket.SendAsync(packet.Payload.AsMemory(), WebSocketMessageType.Binary, true,
-                    cancellationToken);
-            }
-            catch (WebSocketException webSocketException)
-            {
-                // The .NET framework, or specifically the ClientWebSocket class, is very disappointing at this point:
-                // It is not possible to request the HTTP body upon a rejection of the connection upgrade, nor to easily
-                // and securely query the HTTP error code.
-
-                if (webSocketException.Message.Length < 37)
-                    throw new GameException(0xF0, webSocketException.Message, webSocketException);
-                else
-                    throw GameException.ParseHttpCode(webSocketException.Message.Substring(33, 3));
-            }
-            catch (Exception exception)
-            {
-                throw new GameException(0xF0, exception.Message, exception);
-            }
-            finally
-            {
-                Thread.CurrentThread.CurrentCulture = originalCulture;
+                    catch
+                    {
+                    }
             }
         }
 
         /// <summary>
-        /// Does whatever required to close the connection as properly as possible.
+        /// Sends a packet.
         /// </summary>
-        /// <param name="status">The status with what we close the connection.</param>
-        /// <param name="message">The message to send to the endpoint.</param>
-        /// <returns>true, if the close has been executed "until the end", false if we wait for confirmation.</returns>
-        internal async Task<bool> close(WebSocketCloseStatus status, string message)
+        /// <param name="packet">The packet to send.</param>
+        public async Task Send(Packet packet)
         {
-            switch (socket.State)
+            if (!connected)
+                return;
+            
+            packet.CopyHeader();
+
+            await syncSend.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
-                // case WebSocketState.Closed:
-                // case WebSocketState.Aborted:
-                // case WebSocketState.None:
-                // case WebSocketState.Connecting:
-                // case WebSocketState.CloseSent:
-                default:
-                    try
-                    {
-                        socket.Dispose();
-                    }
-                    catch { }
-                    return true;
-                case WebSocketState.CloseReceived:
-                    try
-                    {
-                        await socket.CloseAsync(status, message, CancellationToken.None);
-                    }
-                    catch { }
-
-                    try
-                    {
-                        socket.Dispose();
-                    }
-                    catch { }
-                    return true;
-                case WebSocketState.Open:
-                    try
-                    {
-                        await socket.CloseAsync(status, message, CancellationToken.None);
-
-                        return false;
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            socket.Dispose();
-                        }
-                        catch { }
-                    }
-                    return true;
+                await socket.SendAsync(new ArraySegment<byte>(packet.Payload, 0, packet.Offset + packet.Header.Size),
+                    WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Terminate($"The connection got closed unexpectedly: {e.Message}");
+            }
+            finally
+            {
+                syncSend.Release();
             }
         }
+        
+        /// <summary>
+        /// true, if the connection is still established.
+        /// </summary>
+        public bool Connected => connected;
+
+        /// <summary>
+        /// The reason why we did disconnect from the server.
+        /// </summary>
+        public string? DisconnectReason => disconnectReason;
     }
 }

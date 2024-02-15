@@ -27,7 +27,12 @@ namespace Flattiverse.Connector
             Code = error;
         }
 
-        internal GameException(int error, string info, Exception innerException) : base(ParsedMessage(error, info), innerException)
+        internal GameException(int error, string? info) : base(ParsedMessage(error, info))
+        {
+            Code = error;
+        }
+
+        internal GameException(int error, string? info, Exception innerException) : base(ParsedMessage(error, info), innerException)
         {
             Code = error;
         }
@@ -41,22 +46,27 @@ namespace Flattiverse.Connector
         {
             switch (code)
             {
-                case 0xF0: // Connection issues.
+                case 0xF0: // Unspecified connection issues.
                     return $"[0xF0] An unknown error occurred while connecting to the flattiverse server: {info}";
-                case 0xF1:
+                case 0xF1: // Couldn't establish tcp/ip connection.
                     return "[0xF1] Couldn't connect to the universe server: Are you online? Is flattiverse still online?";
-                case 0xF2://502/504
+                case 0xF2:// HTTP/502 or HTTP/504
                     return "[0xF2] The reverse proxy of the flattiverse universe is online but the corresponding galaxy is offline. This may be due to maintenance reasons or the galaxy software version is being upgraded.";
-                case 0xF3://400
+                case 0xF3:// HTTP/400
                     return "[0xF3] The call could not be processed. Either must didn't make a WebSocket call or the database is not available.";
-                case 0xF4://401
+                case 0xF4:// HTTP/401
                     return "[0xF4] Authorization failed, possibly because one of these reasons: auth parameter missing, ambiguous or unknown, or no spectators allowed.";
-                case 0xF5://409
+                case 0xF5:// HTTP/409
                     return "[0xF5] The connector you are using is outdated.";
-                case 0xF6://412
+                case 0xF6:// HTTP/412
                     return "[0xF6] Login failed because you're already online.";
-                case 0xF7://415
+                case 0xF7:// HTTP/415
                     return "[0xF7] Specified team doesn't exist or can't be selected.";
+                case 0xFE: // Connection has been closed.
+                    if (info is null)
+                        return $"[0xFE] The network connection has been closed.";
+
+                    return $"[0xFE] The network connection has been closed: {info}";
                 case 0xFF:
                     return info ?? "[0xFF] Generic exception thrown without additional error message (info is null).";
                 default:
