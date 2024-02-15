@@ -5,6 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace Flattiverse.Connector.Network
 {
+    delegate void ConnectionClosed();
+    delegate void PacketReceived(Packet packet);
+    
     class Connection
     {
         private readonly ClientWebSocket socket;
@@ -22,8 +25,11 @@ namespace Flattiverse.Connector.Network
         private string? disconnectReason; // Is used to report the reason why we did lose the connection.
 
         public readonly Universe Universe;
+        
+        private ConnectionClosed closedHandler;
+        private PacketReceived packetHandler;
 
-        public Connection(Universe universe)
+        public Connection(Universe universe, ConnectionClosed closedHandler, PacketReceived packetHandler)
         {
             Universe = universe;
             
@@ -32,6 +38,9 @@ namespace Flattiverse.Connector.Network
             cancellationSource = new CancellationTokenSource();
             cancellationToken = cancellationSource.Token;
 
+            this.closedHandler = closedHandler;
+            this.packetHandler = packetHandler;
+            
             sync = new object();
         }
         
@@ -94,6 +103,12 @@ namespace Flattiverse.Connector.Network
             cancellationSource.Dispose();
             socket.Dispose();
             syncSend.Dispose();
+
+            try
+            {
+                closedHandler();
+            }
+            catch { }
         }
         
         private async Task Recv()
@@ -108,12 +123,13 @@ namespace Flattiverse.Connector.Network
             {
                 try
                 {
-                    result = await socket.ReceiveAsync(new ArraySegment<byte>(data), cancellationToken).ConfigureAwait(false);
+                    result = await socket.ReceiveAsync(new ArraySegment<byte>(data), cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
                     Terminate($"The connection got closed unexpectedly: {e.Message}");
-                    
+
                     return;
                 }
 
@@ -160,13 +176,15 @@ namespace Flattiverse.Connector.Network
                             {
                             }
 
-                            Terminate("Protocol error, the server did send a text message which is not supported. Do you have the latest connector version?");
+                            Terminate(
+                                "Protocol error, the server did send a text message which is not supported. Do you have the latest connector version?");
 
                             return;
                     }
 
-                    Terminate("Unknown error, the server did send a unknown message datagram which is not supported. Do you have the latest connector version?");
-                    
+                    Terminate(
+                        "Unknown error, the server did send a unknown message datagram which is not supported. Do you have the latest connector version?");
+
                     return;
                 }
 
@@ -177,36 +195,25 @@ namespace Flattiverse.Connector.Network
                         await socket.CloseAsync(WebSocketCloseStatus.MessageTooBig,
                             "The message you did send exceeded the limit of 262144 bytes.", cancellationToken);
                     }
-                    catch { }
+                    catch
+                    {
+                    }
 
                     Terminate("Protocol error, the server did send a packet which is too big.");
-                
+
                     return;
                 }
 
                 position = 0;
 
                 while (position < result.Count)
-                {
-                    Console.Write($"loc={position}: ");
-                    
-                    packet = new Packet(data, ref position);
-                    
-                    Console.Write(packet);
-
-                    PacketReader reader;
-
-                    switch (packet.Header.Command)
+                    try
                     {
-                        case 0x30://SendMessage
-                            reader = packet.Read();
-
-                            Console.WriteLine($"Received message from player {packet.Header.Player}: {reader.ReadString(packet.Header.Size)}");
-                            break;
-                        default:
-                            break;
+                        packetHandler(new Packet(data, ref position));
                     }
-                }
+                    catch
+                    {
+                    }
             }
         }
 

@@ -39,4 +39,14 @@ class Session
 
         return packet;
     }
+
+    public void Resolve(Packet packet)
+    {
+        tcs.SetResult(packet);
+    }
+
+    public void Reset(string? reason)
+    {
+        tcs.TrySetException(new GameException(0xFE, reason));
+    }
 }

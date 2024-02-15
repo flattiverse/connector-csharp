@@ -38,4 +38,13 @@ class SessionHandler
 
         throw new GameException(0xFE, Connection.DisconnectReason);
     }
+
+    public void TerminateConnections(string? reason)
+    {
+        for (int position = 0; position < sessions.Length; position++)
+        {
+            sessions[position]?.Reset(reason);
+            sessions[position] = null;
+        }
+    }
 }
