@@ -33,8 +33,9 @@ The Server may reply with the following HTTP status codes and the error they res
 1. `502` or `504`: `[0xF2] The reverse proxy of the flattiverse universe is online but the corresponding galaxy is offline. This may be due to maintenance reasons or the galaxy software version is being upgraded.`
 1. `400`: `[0xF3] The call could not be processed. Either must didn't make a WebSocket call or the database is not available.`
 1. `401`: `[0xF4] Authorization failed, possibly because one of these reasons: auth parameter missing, ambiguous or unknown, or no spectators allowed.`
-1. `409`: `[0xF5] The connector you are using is outdated.`
-1. `412`: `[0xF6] Login failed because you're already online.`
-1. `415`: `[0xF7] Specified team doesn't exist or can't be selected.`
+1. `403`: `[0xF5] Forbidden. You are not allowed to perform this action (the way you tried).`
+1. `409`: `[0xF6] The connector you are using is outdated.`
+1. `412`: `[0xF7] Login failed because you're already online.`
+1. `415`: `[0xF8] Specified team doesn't exist or can't be selected.`
 
 If this documentation is not recent, you can find the assignments [here](Flattiverse.Connector/Flattiverse.Connector/Network/Connection.cs).
