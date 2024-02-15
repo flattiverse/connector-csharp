@@ -28,7 +28,33 @@ If you would draw a system diagram of flattiverse you could go like this:
    be unique within the cluster and within the set of units which can change
    the cluster.
 
-## Basic network yadda, yadda...
+## Basic network mechanics.
+
+The game is based on a binary web socket protocol that sends packets around.
+A packet has the following structure:
+
+* Header
+  * `byte` `Command`: A command identifier which selects the command to call.
+  * `byte` `Session`: The session to which this packet belongs. 
+  * `byte` `Id0`: An id which is used to address various things.
+  * `byte` `Id1`: An id which is used to address various things.
+  * `byte` `Param0`: An general purpose parameter.
+  * `byte` `Param1`: An general purpose parameter.
+  * `ushort` `Size`: The size of the payload.
+* Up to 1024 bytes of payload.
+
+### Payload reading.
+
+The payload is used to transfer various things, including floating point numbers.
+However, floating point numbers will be transferred as integers, thus meaning that
+all the floating point numbers aren't real floating point numbers but based on a
+specific number of digits:
+
+* A coordinate (`X` or `Y` of a `Vector`): `int` (4 bytes) with 5 decimal places
+  representing values from `-21474.83648` to `21474.83647`.
+* An angle (0° - 360°): `ushort` (2 bytes) with 2 decimal places from `0.00` to
+  `359.99`.
+* etc...
 
 ## Connecting to the game server.
 
