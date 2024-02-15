@@ -32,6 +32,20 @@ class PacketWriter : IDisposable
         position += 4;
     }
     
+    /// <summary>
+    /// Writes a double as 4 byte signed integer.
+    /// </summary>
+    /// <param name="number">The number to write.</param>
+    /// <param name="shift">The shift of the decimal point. If you want to store 2 decimal places,
+    /// you need to specify 100 here.</param>
+    public void Write4S(double number, double shift)
+    {
+        Debug.Assert(position + 4 < end, "Can't write out of bounds.");
+        
+        Unsafe.As<byte, int>(ref data[position]) = (int)(number * shift + 0.5);
+        position += 4;
+    }
+    
     public void Dispose()
     {
         packet.Header.Size = (ushort)(position - packet.Offset);
