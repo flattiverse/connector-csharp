@@ -6,11 +6,11 @@ class SessionHandler
     
     private byte position;
 
-    private readonly Connection connection;
+    public readonly Connection Connection;
 
     public SessionHandler(Connection connection)
     {
-        this.connection = connection;
+        Connection = connection;
         
         sessions = new Session[256];
         
@@ -23,7 +23,7 @@ class SessionHandler
 
         position++;
 
-        while (connection.Connected)
+        while (Connection.Connected)
         {
             for (int count = 0; count < 16; count++, position++)
             {
@@ -36,6 +36,6 @@ class SessionHandler
             await Task.Delay(10);
         }
 
-        throw new GameException(0xFE, connection.DisconnectReason);
+        throw new GameException(0xFE, Connection.DisconnectReason);
     }
 }

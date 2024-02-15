@@ -15,6 +15,8 @@ namespace Flattiverse.Connector.Network
         private const string version = "0";
 
         private object sync;
+
+        private readonly SemaphoreSlim syncSend = new SemaphoreSlim(1, 1);
         
         private bool connected = true;
         private string? disconnectReason; // Is used to report the reason why we did lose the connection.
@@ -91,6 +93,7 @@ namespace Flattiverse.Connector.Network
             
             cancellationSource.Dispose();
             socket.Dispose();
+            syncSend.Dispose();
         }
         
         private async Task Recv()
@@ -176,7 +179,7 @@ namespace Flattiverse.Connector.Network
                     }
                     catch { }
 
-                    Terminate("Protocol error, der server did send a packet which is too big.");
+                    Terminate("Protocol error, the server did send a packet which is too big.");
                 
                     return;
                 }
@@ -207,6 +210,34 @@ namespace Flattiverse.Connector.Network
             }
         }
 
+        /// <summary>
+        /// Sends a packet.
+        /// </summary>
+        /// <param name="packet">The packet to send.</param>
+        public async Task Send(Packet packet)
+        {
+            if (!connected)
+                return;
+            
+            packet.CopyHeader();
+
+            await syncSend.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await socket.SendAsync(new ArraySegment<byte>(packet.Payload, 0, packet.Offset + packet.Header.Size),
+                    WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Terminate($"The connection got closed unexpectedly: {e.Message}");
+            }
+            finally
+            {
+                syncSend.Release();
+            }
+        }
+        
         /// <summary>
         /// true, if the connection is still established.
         /// </summary>

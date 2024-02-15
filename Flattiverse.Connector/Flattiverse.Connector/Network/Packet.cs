@@ -46,7 +46,7 @@ class Packet
         return new PacketReader(this);
     }
 
-    internal void Flush()
+    public void CopyHeader()
     {
         Unsafe.As<byte, ulong>(ref Payload[0]) = Header.DirectAssign;
     }
