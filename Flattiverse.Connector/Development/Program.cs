@@ -12,6 +12,8 @@ internal class Program
         Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "F7160CB2E108EF022D317AECFF3DF958EB2C4437D5A24DA7E18EC727236A1AE5", 0x00);
 
         //await galaxy.SendMessage(1, "This is a message.");
+        
+        
 
         await Task.Delay(60000);
     }
