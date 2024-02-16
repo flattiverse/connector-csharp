@@ -92,28 +92,6 @@ public class Galaxy
     }
 
     /// <summary>
-    /// Requests from the server if given number is even.
-    /// This is a method to test the connector-server communication.
-    /// </summary>
-    /// <param name="number"></param>
-    /// <returns></returns>
-    public async Task<bool> IsEven(int number)
-    {
-        Session session = await sessions.Get();
-
-        Packet packet = new Packet();
-
-        packet.Header.Command = 0x55;
-        
-        using (PacketWriter writer = packet.Write())
-            writer.Write(number);
-
-        packet = await session.SendWait(packet);
-
-        return packet.Header.Param0 != 0;
-    }
-
-    /// <summary>
     /// Sets given values in this galaxy.
     /// </summary>
     /// <param name="config"></param>
