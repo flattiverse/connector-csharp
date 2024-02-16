@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Flattiverse.Connector;
+using Flattiverse.Connector.Hierarchy;
 
 internal class Program
 {

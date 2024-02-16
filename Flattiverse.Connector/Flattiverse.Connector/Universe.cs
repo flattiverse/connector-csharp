@@ -1,4 +1,6 @@
-﻿namespace Flattiverse.Connector;
+﻿using Flattiverse.Connector.Hierarchy;
+
+namespace Flattiverse.Connector;
 
 public class Universe
 {

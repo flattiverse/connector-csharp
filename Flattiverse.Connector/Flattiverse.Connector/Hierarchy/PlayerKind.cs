@@ -1,4 +1,4 @@
-﻿namespace Flattiverse.Connector
+﻿namespace Flattiverse.Connector.Hierarchy
 {
     enum PlayerKind
     {

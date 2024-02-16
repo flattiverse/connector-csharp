@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector.Units
 {
