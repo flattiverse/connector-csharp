@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Flattiverse.Connector;
+namespace Flattiverse.Connector.Hierarchy;
 
 public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
 {
