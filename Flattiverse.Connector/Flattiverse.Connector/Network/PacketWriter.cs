@@ -225,19 +225,16 @@ class PacketWriter : IDisposable
     }
 
     /// <summary>
-    /// Writes a string using UTF-8.
+    /// Writes a string with a maximum length of 64 chars using UTF-8.
     /// </summary>
     /// <param name="text">The text to write.</param>
     public void Write(string text)
     {
-        byte[] bytes = Encoding.UTF8.GetBytes(text);
+        int len = Encoding.UTF8.GetBytes(text, data.AsSpan(position + 1, end - position - 1));
 
-        Debug.Assert(position + 2 + bytes.Length < end, "Can't write out of bounds.");
+        data[position] = (byte)len;
 
-        Unsafe.As<byte, short>(ref data[position]) = (short)bytes.Length;
-        Unsafe.CopyBlock(ref data[position + 2], ref bytes[0], (uint)bytes.Length);
-
-        position += 2 + bytes.Length;
+        position += 1 + len;
     }
 
     internal void WriteNullable(byte? number)
@@ -255,7 +252,7 @@ class PacketWriter : IDisposable
         {
             Debug.Assert(position + 1 < end, "Can't write out of bounds.");
 
-            Unsafe.As<byte, byte>(ref data[position]) = 1;
+            Unsafe.As<byte, byte>(ref data[position]) = 0;
 
             position += 1;
         }

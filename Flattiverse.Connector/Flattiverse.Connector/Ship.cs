@@ -90,6 +90,7 @@ namespace Flattiverse.Connector
         internal void ReadUpgrade(byte id, PacketReader reader)
         {
             upgrades[id] = new Upgrade(id, Galaxy, this, reader);
+            Console.WriteLine($"Received upgrade {upgrades[id]!.Name} update for ship {Name}");
 
             if (upgradeMax < id + 1)
                 upgradeMax = id + 1;

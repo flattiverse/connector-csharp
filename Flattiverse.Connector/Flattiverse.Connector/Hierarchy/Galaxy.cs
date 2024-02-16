@@ -132,18 +132,21 @@ public class Galaxy
         {
             case 0x10://Galaxy info
                 Update(packet.Header, reader);
+                Console.WriteLine($"Received galaxy {Name} update");
 
                 break;
             case 0x11://Cluster info
                 clusters[packet.Header.Param0] = new Cluster(packet.Header.Param0, this, reader);
+                Console.WriteLine($"Received cluster {clusters[packet.Header.Param0]!.Name} update");
 
                 // JAM TODO: Hier arbeiten wir nicht mit so was wie clusterMax, sondern mit etwas dass ich im
                 //           Flattiverse 2014 eingebaut habe und UniversalHolder heißt. Habe Mal die Klasse
                 //           Beispielhaft implementiert.
-                
+
                 break;
             case 0x12://Team info
                 teams[packet.Header.Param0] = new Team(packet.Header.Param0, reader);
+                Console.WriteLine($"Received team {teams[packet.Header.Param0]!.Name} update");
 
                 if (teamMax < packet.Header.Param0 + 1)
                     teamMax = packet.Header.Param0 + 1;
@@ -151,6 +154,7 @@ public class Galaxy
                 break;
             case 0x13://Ship info
                 ships[packet.Header.Param0] = new Ship(packet.Header.Param0, this, reader);
+                Console.WriteLine($"Received ship {ships[packet.Header.Param0]!.Name} update");
 
                 if (shipMax < packet.Header.Param0 + 1)
                     shipMax = packet.Header.Param0 + 1;

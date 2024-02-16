@@ -174,13 +174,13 @@ class PacketReader
 
     public string ReadString()
     {
-        Debug.Assert(position + 2 <= end, "Can't read out of bounds.");
+        Debug.Assert(position + 1 <= end, "Can't read out of bounds.");
 
-        short length = Unsafe.As<byte, short>(ref data[position]);
+        int length = Unsafe.As<byte, byte>(ref data[position]);
 
-        Debug.Assert(position + 2 + length <= end, "Can't read out of bounds.");
+        Debug.Assert(position + 1 + length <= end, "Can't read out of bounds.");
 
-        position += 2 + length;
+        position += 1 + length;
 
         return Encoding.UTF8.GetString(data, position - length, length);
     }
