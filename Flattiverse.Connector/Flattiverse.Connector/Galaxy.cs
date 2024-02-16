@@ -36,7 +36,13 @@ public class Galaxy
     private int maxBasesPlayer;
 
     private readonly Cluster?[] clusters = new Cluster?[256];
-    private int clusterMax = 0;
+    public readonly UniversalHolder<Cluster> Clusters;
+    
+    // JAM TODO: Clusters ist jetzt beispielhaft mit UniversalHolder implementiert. Wir brauchen maxClusters
+    //           praktisch nie und uns die die Performance des Clients praktisch egal. Der kann sich das theoretisch
+    //           einmal abholen und dann glücklich sein. Wenn er inperformante calls macht ist uns das egal.
+    //
+    //           Bitte den Holder auch für alles andere nutzen.
 
     private readonly Ship?[] ships = new Ship?[256];
     private int shipMax = 0;
@@ -51,6 +57,8 @@ public class Galaxy
 
     internal Galaxy(Universe universe)
     {
+        Clusters = new UniversalHolder<Cluster>(clusters);
+        
         connection = new Connection(universe, ConnectionClosed, PacketRecevied);
         sessions = new SessionHandler(connection);
     }
@@ -155,9 +163,6 @@ public class Galaxy
                 break;
             case 0x11://Cluster info
                 clusters[packet.Header.Param0] = new Cluster(packet.Header.Param0, this, reader);
-
-                if (clusterMax < packet.Header.Param0 + 1)
-                    clusterMax = packet.Header.Param0 + 1;
 
                 // JAM TODO: Hier arbeiten wir nicht mit so was wie clusterMax, sondern mit etwas dass ich im
                 //           Flattiverse 2014 eingebaut habe und UniversalHolder heißt. Habe Mal die Klasse

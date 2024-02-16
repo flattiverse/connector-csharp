@@ -2,14 +2,14 @@
 
 namespace Flattiverse.Connector;
 
-class Cluster
+public class Cluster : INamedUnit
 {
     public readonly Galaxy Galaxy;
     public readonly byte ID;
 
     private string name;
 
-    public Cluster(byte id, Galaxy galaxy, PacketReader reader)
+    internal Cluster(byte id, Galaxy galaxy, PacketReader reader)
     {
         ID = id;
         Galaxy = galaxy;
@@ -17,5 +17,8 @@ class Cluster
         name = reader.ReadString();
     }
 
+    /// <summary>
+    /// The name of the cluster.
+    /// </summary>
     public string Name => name;
 }

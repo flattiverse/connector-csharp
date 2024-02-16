@@ -1,6 +1,6 @@
 ﻿namespace Flattiverse.Connector;
 
-public interface NamedUnit
+public interface INamedUnit
 {
     string Name { get; }
 }
