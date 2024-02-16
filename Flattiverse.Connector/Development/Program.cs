@@ -23,10 +23,157 @@ internal class Program
 
         //await galaxy.SendMessage(1, "This is a message.");
 
-        /*Cluster cluster =*/ await galaxy.CreateCluster(config =>
+        try
         {
-            config.Name = "Spaß";
-        });
+            Cluster cluster = await galaxy.CreateCluster(config =>
+            {
+                config.Name = "TestCluster";
+            });
+
+            Console.WriteLine($"Created cluster {cluster.Name} #{cluster.ID}");
+
+            Region region = await cluster.CreateRegion(config =>
+            {
+                config.Name = "TestRegion";
+                config.StartPropability = 1;
+                config.RespawnPropability = 2;
+                config.Protected = true;
+            });
+
+            Console.WriteLine($"Created region {region.Name} #{region.ID}");
+            Console.WriteLine($"Cluster {cluster.Name} #{cluster.ID} now has {cluster.Regions.Count} regions");
+
+            Team team = await galaxy.CreateTeam(config =>
+            {
+                config.Name = "TestTeam";
+                config.Red = 1;
+                config.Green = 2;
+                config.Blue = 3;
+            });
+
+            Console.WriteLine($"Created team {team.Name} #{team.ID}");
+
+            Ship ship = await galaxy.CreateShip(config =>
+            {
+                config.Name = "TestShip";
+                config.CostEnergy = 1;
+                config.CostIon = 2;
+                config.CostIron = 3;
+                config.CostTungsten = 4;
+                config.CostSilicon = 5;
+                config.CostTritium = 6;
+                config.CostTime = 7;
+                config.Hull = 8;
+                config.HullRepair = 9;
+                config.Shields = 10;
+                config.ShieldsLoad = 11;
+                config.Size = 12;
+                config.Weight = 13;
+                config.EnergyMax = 14;
+                config.EnergyCells = 15;
+                config.EnergyReactor = 16;
+                config.EnergyTransfer = 17;
+                config.IonMax = 18;
+                config.IonCells = 19;
+                config.IonReactor = 20;
+                config.IonTransfer = 21;
+                config.Thruster =22;
+                config.Nozzle = 23;
+                config.Speed = 24;
+                config.Turnrate = 25;
+                config.Cargo = 26;
+                config.Extractor = 27;
+                config.WeaponSpeed = 28;
+                config.WeaponTime = 29;
+                config.WeaponLoad = 30;
+                config.FreeSpawn = false;
+            });
+
+            Console.WriteLine($"Created ship {ship.Name} #{ship.ID}");
+
+            Upgrade upgrade1 = await ship.CreateUpgrade(config =>
+            {
+                config.Name = "TestUpgrade1";
+                config.CostEnergy = 1;
+                config.CostIon = 2;
+                config.CostIron = 3;
+                config.CostTungsten = 4;
+                config.CostSilicon = 5;
+                config.CostTritium = 6;
+                config.CostTime = 7;
+                config.Hull = 8;
+                config.HullRepair = 9;
+                config.Shields = 10;
+                config.ShieldsLoad = 11;
+                config.Size = 12;
+                config.Weight = 13;
+                config.EnergyMax = 14;
+                config.EnergyCells = 15;
+                config.EnergyReactor = 16;
+                config.EnergyTransfer = 17;
+                config.IonMax = 18;
+                config.IonCells = 19;
+                config.IonReactor = 20;
+                config.IonTransfer = 21;
+                config.Thruster = 22;
+                config.Nozzle = 23;
+                config.Speed = 24;
+                config.Turnrate = 25;
+                config.Cargo = 26;
+                config.Extractor = 27;
+                config.WeaponSpeed = 28;
+                config.WeaponTime = 29;
+                config.WeaponLoad = 30;
+                config.FreeSpawn = false;
+            });
+
+            Console.WriteLine($"Created upgrade {upgrade1.Name} #{upgrade1.ID} following upgrade {upgrade1.PreviousUpgrade?.Name ?? "none"}");
+            Console.WriteLine($"Ship {ship.Name} #{ship.ID} now has {ship.Upgrades.Count} upgrades");
+
+            Upgrade upgrade2 = await ship.CreateUpgrade(config =>
+            {
+                config.Name = "TestUpgrade2";
+                config.PreviousUpgrade = upgrade1;
+                config.CostEnergy = 1;
+                config.CostIon = 2;
+                config.CostIron = 3;
+                config.CostTungsten = 4;
+                config.CostSilicon = 5;
+                config.CostTritium = 6;
+                config.CostTime = 7;
+                config.Hull = 8;
+                config.HullRepair = 9;
+                config.Shields = 10;
+                config.ShieldsLoad = 11;
+                config.Size = 12;
+                config.Weight = 13;
+                config.EnergyMax = 14;
+                config.EnergyCells = 15;
+                config.EnergyReactor = 16;
+                config.EnergyTransfer = 17;
+                config.IonMax = 18;
+                config.IonCells = 19;
+                config.IonReactor = 20;
+                config.IonTransfer = 21;
+                config.Thruster = 22;
+                config.Nozzle = 23;
+                config.Speed = 24;
+                config.Turnrate = 25;
+                config.Cargo = 26;
+                config.Extractor = 27;
+                config.WeaponSpeed = 28;
+                config.WeaponTime = 29;
+                config.WeaponLoad = 30;
+                config.FreeSpawn = false;
+            });
+
+            Console.WriteLine($"Created upgrade {upgrade2.Name} #{upgrade2.ID} following upgrade {upgrade2.PreviousUpgrade?.Name ?? "none"}");
+            Console.WriteLine($"Ship {ship.Name} #{ship.ID} now has {ship.Upgrades.Count} upgrades");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
 
         await Task.Delay(60000);
     }

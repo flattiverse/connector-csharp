@@ -35,7 +35,7 @@ internal class Session
             if (packet.Header.Size == 0)
                 throw new GameException(packet.Header.Param0);
             else
-                throw new GameException(packet.Header.Param0, System.Text.Encoding.UTF8.GetString(packet.Payload, packet.Offset, packet.Payload.Length));
+                throw new GameException(packet.Header.Param0, System.Text.Encoding.UTF8.GetString(packet.Payload, packet.Offset, packet.Payload.Length)); // TODO: MALUK muss hier nicht bei der Länge noch packet.Offset abgezogen werden?
 
         return packet;
     }

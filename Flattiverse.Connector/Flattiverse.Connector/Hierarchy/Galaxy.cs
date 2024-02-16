@@ -110,10 +110,7 @@ public class Galaxy
         using (PacketWriter writer = packet.Write())
             changes.Write(writer);
 
-        packet = await session.SendWait(packet);
-
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        await session.SendWait(packet);
     }
 
     /// <summary>
@@ -121,7 +118,7 @@ public class Galaxy
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task CreateCluster(Action<ClusterConfig> config)
+    public async Task<Cluster> CreateCluster(Action<ClusterConfig> config)
     {
         ClusterConfig changes = ClusterConfig.Default;
         config(changes);
@@ -136,8 +133,10 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        if (clusters[packet.Header.Param0] is not Cluster cluster)
+            throw GameException.TODO;
+
+        return cluster;
     }
 
     /// <summary>
@@ -145,7 +144,7 @@ public class Galaxy
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task CreateTeam(Action<TeamConfig> config)
+    public async Task<Team> CreateTeam(Action<TeamConfig> config)
     {
         TeamConfig changes = TeamConfig.Default;
         config(changes);
@@ -160,8 +159,10 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        if (teams[packet.Header.Param0] is not Team team)
+            throw GameException.TODO;
+
+        return team;
     }
 
     /// <summary>
@@ -169,7 +170,7 @@ public class Galaxy
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task CreateShip(Action<ShipConfig> config)
+    public async Task<Ship> CreateShip(Action<ShipConfig> config)
     {
         ShipConfig changes = ShipConfig.Default;
         config(changes);
@@ -184,8 +185,10 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        if (ships[packet.Header.Param0] is not Ship ship)
+            throw GameException.TODO;
+
+        return ship;
     }
 
     private void PacketRecevied(Packet packet)

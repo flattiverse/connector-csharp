@@ -50,10 +50,7 @@ public class Cluster : INamedUnit
         using (PacketWriter writer = packet.Write())
             changes.Write(writer);
 
-        packet = await session.SendWait(packet);
-
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        await session.SendWait(packet);
     }
 
     /// <summary>
@@ -68,10 +65,7 @@ public class Cluster : INamedUnit
         packet.Header.Command = 0x43;
         packet.Header.Param0 = id;
 
-        packet = await session.SendWait(packet);
-
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        await session.SendWait(packet);
     }
 
     /// <summary>
@@ -79,7 +73,7 @@ public class Cluster : INamedUnit
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task CreateRegion(Action<RegionConfig> config)
+    public async Task<Region> CreateRegion(Action<RegionConfig> config)
     {
         RegionConfig changes = RegionConfig.Default;
         config(changes);
@@ -95,8 +89,10 @@ public class Cluster : INamedUnit
 
         packet = await session.SendWait(packet);
 
-        if (GameException.Check(packet) is GameException ex)
-            throw ex;
+        if (regions[packet.Header.Param0] is not Region region)
+            throw GameException.TODO;
+
+        return region;
     }
 
     internal void ReadRegion(byte id, PacketReader reader)

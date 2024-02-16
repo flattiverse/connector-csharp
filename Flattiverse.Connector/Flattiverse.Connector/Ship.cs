@@ -142,10 +142,7 @@ namespace Flattiverse.Connector
             using (PacketWriter writer = packet.Write())
                 changes.Write(writer);
 
-            packet = await session.SendWait(packet);
-
-            if (GameException.Check(packet) is GameException ex)
-                throw ex;
+            await session.SendWait(packet);
         }
 
         /// <summary>
@@ -160,10 +157,7 @@ namespace Flattiverse.Connector
             packet.Header.Command = 0x4C;
             packet.Header.Param0 = id;
 
-            packet = await session.SendWait(packet);
-
-            if (GameException.Check(packet) is GameException ex)
-                throw ex;
+            await session.SendWait(packet);
         }
 
         /// <summary>
@@ -171,7 +165,7 @@ namespace Flattiverse.Connector
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task CreateUpgrade(Action<UpgradeConfig> config)
+        public async Task<Upgrade> CreateUpgrade(Action<UpgradeConfig> config)
         {
             UpgradeConfig changes = UpgradeConfig.Default;
             config(changes);
@@ -187,8 +181,10 @@ namespace Flattiverse.Connector
 
             packet = await session.SendWait(packet);
 
-            if (GameException.Check(packet) is GameException ex)
-                throw ex;
+            if (upgrades[packet.Header.Param0] is not Upgrade upgrade)
+                throw GameException.TODO;
+
+            return upgrade;
         }
 
         internal void ReadUpgrade(byte id, PacketReader reader)

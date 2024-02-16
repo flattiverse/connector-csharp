@@ -145,10 +145,7 @@ namespace Flattiverse.Connector
             using (PacketWriter writer = packet.Write())
                 changes.Write(writer);
 
-            packet = await session.SendWait(packet);
-
-            if (GameException.Check(packet) is GameException ex)
-                throw ex;
+            await session.SendWait(packet);
         }
 
         /// <summary>
@@ -163,10 +160,7 @@ namespace Flattiverse.Connector
             packet.Header.Command = 0x4F;
             packet.Header.Param0 = id;
 
-            packet = await session.SendWait(packet);
-
-            if (GameException.Check(packet) is GameException ex)
-                throw ex;
+            await session.SendWait(packet);
         }
     }
 }
