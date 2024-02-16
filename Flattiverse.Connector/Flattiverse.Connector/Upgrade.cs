@@ -1,5 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Hierarchy;
+using System.Drawing;
 
 namespace Flattiverse.Connector
 {
@@ -7,88 +8,165 @@ namespace Flattiverse.Connector
     {
         public readonly Galaxy Galaxy;
         public readonly Ship Ship;
-        public readonly byte ID;
 
         public readonly Upgrade? PreviousUpgrade;
 
+        internal byte id;
         private string name;
-        public readonly double CostEnergy;
-        public readonly double CostIon;
-        public readonly double CostIron;
-        public readonly double CostTungsten;
-        public readonly double CostSilicon;
-        public readonly double CostTritium;
-        public readonly double CostTime;
-        public readonly double Hull;
-        public readonly double HullRepair;
-        public readonly double Shields;
-        public readonly double ShieldsRepair;
-        public readonly double Size;
-        public readonly double Weight;
-        public readonly double EnergyMax;
-        public readonly double EnergyCells;
-        public readonly double EnergyReactor;
-        public readonly double EnergyTransfer;
-        public readonly double IonMax;
-        public readonly double IonCells;
-        public readonly double IonReactor;
-        public readonly double IonTransfer;
-        public readonly double Thruster;
-        public readonly double Nozzle;
-        public readonly double Speed;
-        public readonly double Turnrate;
-        public readonly double Cargo;
-        public readonly double Extractor;
-        public readonly double WeaponSpeed;
-        public readonly double WeaponTime;
-        public readonly double WeaponLoad;
+        private double costEnergy;
+        private double costIon;
+        private double costIron;
+        private double costTungsten;
+        private double costSilicon;
+        private double costTritium;
+        private double costTime;
+        private double hull;
+        private double hullRepair;
+        private double shields;
+        private double shieldsLoad;
+        private double size;
+        private double weight;
+        private double energyMax;
+        private double energyCells;
+        private double energyReactor;
+        private double energyTransfer;
+        private double ionMax;
+        private double ionCells;
+        private double ionReactor;
+        private double ionTransfer;
+        private double thruster;
+        private double nozzle;
+        private double speed;
+        private double turnrate;
+        private double cargo;
+        private double extractor;
+        private double weaponSpeed;
+        private double weaponTime;
+        private double weaponLoad;
+        private bool freeSpawn;
 
-        internal Upgrade(byte id, Galaxy galaxy, Ship ship, PacketReader reader)
+        internal Upgrade(Galaxy galaxy, Ship ship, byte id, PacketReader reader)
         {
-            ID = id;
             Galaxy = galaxy;
             Ship = ship;
+            this.id = id;
 
             name = reader.ReadString();
 
             if (reader.ReadNullableByte() is byte previousUpgradeId && ship.upgrades[previousUpgradeId] is Upgrade previousUpgrade)
                 PreviousUpgrade = previousUpgrade;
 
-            CostEnergy = reader.Read2U(1);
-            CostIon = reader.Read2U(100);
-            CostIron = reader.Read2U(1);
-            CostTungsten = reader.Read2U(100);
-            CostSilicon = reader.Read2U(1);
-            CostTritium = reader.Read2U(10);
-            CostTime = reader.Read2U(10);
-            Hull = reader.Read2U(10);
-            HullRepair = reader.Read2U(100);
-            Shields = reader.Read2U(10);
-            ShieldsRepair = reader.Read2U(100);
-            Size = reader.Read2U(10);
-            Weight = reader.Read2S(10000);
-            EnergyMax = reader.Read2U(10);
-            EnergyCells = reader.Read4U(100);
-            EnergyReactor = reader.Read2U(100);
-            EnergyTransfer = reader.Read2U(100);
-            IonMax = reader.Read2U(100);
-            IonCells = reader.Read2U(100);
-            IonReactor = reader.Read2U(1000);
-            IonTransfer = reader.Read2U(1000);
-            Thruster = reader.Read2U(10000);
-            Nozzle = reader.Read2U(100);
-            Speed = reader.Read2U(100);
-            Turnrate = reader.Read2U(100);
-            Cargo = reader.Read4U(1000);
-            Extractor = reader.Read2U(100);
-            WeaponSpeed = reader.Read2U(10);
-            WeaponTime = reader.ReadUInt16();// TODO: MALUK hier wolltest du etwas verrechnen
-            WeaponLoad = reader.Read2U(10);
+            costEnergy = reader.Read2U(1);
+            costIon = reader.Read2U(100);
+            costIron = reader.Read2U(1);
+            costTungsten = reader.Read2U(100);
+            costSilicon = reader.Read2U(1);
+            costTritium = reader.Read2U(10);
+            costTime = reader.Read2U(10);
+            hull = reader.Read2U(10);
+            hullRepair = reader.Read2U(100);
+            shields = reader.Read2U(10);
+            shieldsLoad = reader.Read2U(100);
+            size = reader.Read2U(10);
+            weight = reader.Read2S(10000);
+            energyMax = reader.Read2U(10);
+            energyCells = reader.Read4U(100);
+            energyReactor = reader.Read2U(100);
+            energyTransfer = reader.Read2U(100);
+            ionMax = reader.Read2U(100);
+            ionCells = reader.Read2U(100);
+            ionReactor = reader.Read2U(1000);
+            ionTransfer = reader.Read2U(1000);
+            thruster = reader.Read2U(10000);
+            nozzle = reader.Read2U(100);
+            speed = reader.Read2U(100);
+            turnrate = reader.Read2U(100);
+            cargo = reader.Read4U(1000);
+            extractor = reader.Read2U(100);
+            weaponSpeed = reader.Read2U(10);
+            weaponTime = reader.ReadUInt16();// TODO: MALUK hier wolltest du etwas verrechnen
+            weaponLoad = reader.Read2U(10);
+            freeSpawn = reader.ReadBoolean();
         }
 
+        public int ID => id;
         /// <summary>
         /// The name of the upgrade.
         /// </summary>
         public string Name => name;
+        public double CostEnergy => costEnergy;
+        public double CostIon => costIon;
+        public double CostIron => costIron;
+        public double CostTungsten => costTungsten;
+        public double CostSilicon => costSilicon;
+        public double CostTritium => costTritium;
+        public double CostTime => costTime;
+        public double Hull => hull;
+        public double HullRepair => hullRepair;
+        public double Shields => shields;
+        public double ShieldsLoad => shieldsLoad;
+        public double Size => size;
+        public double Weight => weight;
+        public double EnergyMax => energyMax;
+        public double EnergyCells => energyCells;
+        public double EnergyReactor => energyReactor;
+        public double EnergyTransfer => energyTransfer;
+        public double IonMax => ionMax;
+        public double IonCells => ionCells;
+        public double IonReactor => ionReactor;
+        public double IonTransfer => ionTransfer;
+        public double Thruster => thruster;
+        public double Nozzle => nozzle;
+        public double Speed => speed;
+        public double Turnrate => turnrate;
+        public double Cargo => cargo;
+        public double Extractor => extractor;
+        public double WeaponSpeed => weaponSpeed;
+        public double WeaponTime => weaponTime;
+        public double WeaponLoad => weaponLoad;
+        public bool FreeSpawn => freeSpawn;
+
+        /// <summary>
+        /// Sets given values in this upgrade.
+        /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public async Task Configure(Action<UpgradeConfig> config)
+        {
+            UpgradeConfig changes = new UpgradeConfig(this);
+            config(changes);
+
+            Session session = await Galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x4E;
+            packet.Header.Param0 = id;
+
+            using (PacketWriter writer = packet.Write())
+                changes.Write(writer);
+
+            packet = await session.SendWait(packet);
+
+            if (GameException.Check(packet) is GameException ex)
+                throw ex;
+        }
+
+        /// <summary>
+        /// Removes this upgrade.
+        /// </summary>
+        /// <returns></returns>
+        public async Task Remove()
+        {
+            Session session = await Galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x4F;
+            packet.Header.Param0 = id;
+
+            packet = await session.SendWait(packet);
+
+            if (GameException.Check(packet) is GameException ex)
+                throw ex;
+        }
     }
 }

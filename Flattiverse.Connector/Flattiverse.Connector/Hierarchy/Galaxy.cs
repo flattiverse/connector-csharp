@@ -4,7 +4,7 @@ namespace Flattiverse.Connector.Hierarchy;
 
 public class Galaxy
 {
-    private int id;
+    private ushort id;
     private string name;
     private string description;
     private GameType gameType;
@@ -52,6 +52,7 @@ public class Galaxy
         sessions = new SessionHandler(connection);
     }
 
+    public int ID => id;
     public string Name => name;
     public string Description => description;
     public GameType GameType => gameType;
@@ -85,6 +86,11 @@ public class Galaxy
         sessions.TerminateConnections(connection.DisconnectReason);
     }
 
+    internal async Task<Session> GetSession()
+    {
+        return await sessions.Get();
+    }
+
     /// <summary>
     /// Requests from the server if given number is even.
     /// This is a method to test the connector-server communication.
@@ -106,7 +112,104 @@ public class Galaxy
 
         return packet.Header.Param0 != 0;
     }
-    
+
+    /// <summary>
+    /// Sets given values in this galaxy.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    public async Task Configure(Action<GalaxyConfig> config)
+    {
+        GalaxyConfig changes = new GalaxyConfig(this);
+        config(changes);
+
+        Session session = await sessions.Get();
+
+        Packet packet = new Packet();
+        packet.Header.Command = 0x40;
+        packet.Header.Param = id;
+
+        using (PacketWriter writer = packet.Write())
+            changes.Write(writer);
+
+        packet = await session.SendWait(packet);
+
+        if (GameException.Check(packet) is GameException ex)
+            throw ex;
+    }
+
+    /// <summary>
+    /// Creates a cluster with given values.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    public async Task CreateCluster(Action<ClusterConfig> config)
+    {
+        ClusterConfig changes = ClusterConfig.Default;
+        config(changes);
+
+        Session session = await sessions.Get();
+
+        Packet packet = new Packet();
+        packet.Header.Command = 0x41;
+
+        using (PacketWriter writer = packet.Write())
+            changes.Write(writer);
+
+        packet = await session.SendWait(packet);
+
+        if (GameException.Check(packet) is GameException ex)
+            throw ex;
+    }
+
+    /// <summary>
+    /// Creates a team with given values.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    public async Task CreateTeam(Action<TeamConfig> config)
+    {
+        TeamConfig changes = TeamConfig.Default;
+        config(changes);
+
+        Session session = await sessions.Get();
+
+        Packet packet = new Packet();
+        packet.Header.Command = 0x47;
+
+        using (PacketWriter writer = packet.Write())
+            changes.Write(writer);
+
+        packet = await session.SendWait(packet);
+
+        if (GameException.Check(packet) is GameException ex)
+            throw ex;
+    }
+
+    /// <summary>
+    /// Creates a ship with given values.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    public async Task CreateShip(Action<ShipConfig> config)
+    {
+        ShipConfig changes = ShipConfig.Default;
+        config(changes);
+
+        Session session = await sessions.Get();
+
+        Packet packet = new Packet();
+        packet.Header.Command = 0x4A;
+
+        using (PacketWriter writer = packet.Write())
+            changes.Write(writer);
+
+        packet = await session.SendWait(packet);
+
+        if (GameException.Check(packet) is GameException ex)
+            throw ex;
+    }
+
     private void PacketRecevied(Packet packet)
     {
         if (packet.Header.Session != 0)
@@ -125,28 +228,36 @@ public class Galaxy
 
                 break;
             case 0x11://Cluster info
-                clusters[packet.Header.Param0] = new Cluster(packet.Header.Param0, this, reader);
+                clusters[packet.Header.Param0] = new Cluster(this, packet.Header.Param0, reader);
                 Console.WriteLine($"Received cluster {clusters[packet.Header.Param0]!.Name} update");
 
                 break;
-            case 0x12://Team info
-                teams[packet.Header.Param0] = new Team(packet.Header.Param0, reader);
+            case 0x12://Region info
+                if (clusters[packet.Header.Param1] is Cluster cluster)
+                    cluster.ReadRegion(packet.Header.Param0, reader);
+
+                break;
+            case 0x13://Team info
+                teams[packet.Header.Param0] = new Team(this, packet.Header.Param0, reader);
                 Console.WriteLine($"Received team {teams[packet.Header.Param0]!.Name} update");
 
                 break;
-            case 0x13://Ship info
-                ships[packet.Header.Param0] = new Ship(packet.Header.Param0, this, reader);
+            case 0x14://Ship info
+                ships[packet.Header.Param0] = new Ship(this, packet.Header.Param0, reader);
                 Console.WriteLine($"Received ship {ships[packet.Header.Param0]!.Name} update");
 
                 break;
-            case 0x14://Upgrade info
+            case 0x15://Upgrade info
                 if (ships[packet.Header.Param1] is Ship ship)
                     ship.ReadUpgrade(packet.Header.Param0, reader);
 
                 break;
-            case 0x15://New player joined info
+            case 0x16://New player joined info
                 if (teams[packet.Header.Param1] is Team team)
+                {
                     players[packet.Header.Player] = new Player(packet.Header.Player, (PlayerKind)packet.Header.Param0, team, reader);
+                    Console.WriteLine($"Received player {players[packet.Header.Player]!.Name} update");
+                }
                 break;
         }
     }

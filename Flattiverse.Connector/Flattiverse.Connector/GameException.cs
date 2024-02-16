@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flattiverse.Connector.Network;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
@@ -16,6 +17,11 @@ namespace Flattiverse.Connector
         /// The error code number of the exception.
         /// </summary>
         public readonly int Code;
+
+        /// <summary>
+        /// This exception has to be replaced!
+        /// </summary>
+        public static GameException TODO => new GameException(0xFF);
 
         internal GameException(int error) : base(ParsedMessage(error, null))
         {
@@ -101,6 +107,17 @@ namespace Flattiverse.Connector
                 default:
                     return new GameException(0xF1); //Couldn't connect to the universe server: Are you online? Is flattiverse still online?
             }
+        }
+
+        internal static GameException? Check(Packet packet)
+        {
+            if (packet.Header.Command == 0xFF)
+                if (packet.Header.Size > 0)
+                    return new GameException(packet.Header.Param0, packet.Read().ReadString());
+                else
+                    return new GameException(packet.Header.Param0);
+
+            return null;
         }
     }
 }
