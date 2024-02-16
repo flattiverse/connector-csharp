@@ -15,25 +15,25 @@ public class Galaxy
     private string name;
     private string description;
     private GameType gameType;
-    private byte maxPlayers;
+    private int maxPlayers;
 
-    private ushort maxPlatformsUniverse;
-    private ushort maxProbesUniverse;
-    private ushort maxDronesUniverse;
-    private ushort maxShipsUniverse;
-    private ushort maxBasesUniverse;
+    private int maxPlatformsUniverse;
+    private int maxProbesUniverse;
+    private int maxDronesUniverse;
+    private int maxShipsUniverse;
+    private int maxBasesUniverse;
 
-    private ushort maxPlatformsTeam;
-    private ushort maxProbesTeam;
-    private ushort maxDronesTeam;
-    private ushort maxShipsTeam;
-    private ushort maxBasesTeam;
+    private int maxPlatformsTeam;
+    private int maxProbesTeam;
+    private int maxDronesTeam;
+    private int maxShipsTeam;
+    private int maxBasesTeam;
 
-    private byte maxPlatformsPlayer;
-    private byte maxProbesPlayer;
-    private byte maxDronesPlayer;
-    private byte maxShipsPlayer;
-    private byte maxBasesPlayer;
+    private int maxPlatformsPlayer;
+    private int maxProbesPlayer;
+    private int maxDronesPlayer;
+    private int maxShipsPlayer;
+    private int maxBasesPlayer;
 
     private readonly Cluster?[] clusters = new Cluster?[256];
     public readonly UniversalHolder<Cluster> Clusters;
@@ -66,25 +66,25 @@ public class Galaxy
     public string Name => name;
     public string Description => description;
     public GameType GameType => gameType;
-    public byte MaxPlayers => maxPlayers;
+    public int MaxPlayers => maxPlayers;
 
-    public ushort MaxPlatformsUniverse => maxPlatformsUniverse;
-    public ushort MaxProbesUniverse => maxProbesUniverse;
-    public ushort MaxDronesUniverse => maxDronesUniverse;
-    public ushort MaxShipsUniverse => maxShipsUniverse;
-    public ushort MaxBasesUniverse => maxBasesUniverse;
-           
-    public ushort MaxPlatformsTeam => maxPlatformsTeam;
-    public ushort MaxProbesTeam => maxProbesTeam;
-    public ushort MaxDronesTeam => maxDronesTeam;
-    public ushort MaxShipsTeam => maxShipsTeam;
-    public ushort MaxBasesTeam => maxBasesTeam;
+    public int MaxPlatformsUniverse => maxPlatformsUniverse;
+    public int MaxProbesUniverse => maxProbesUniverse;
+    public int MaxDronesUniverse => maxDronesUniverse;
+    public int MaxShipsUniverse => maxShipsUniverse;
+    public int MaxBasesUniverse => maxBasesUniverse;
 
-    public byte MaxPlatformsPlayer => maxPlatformsPlayer;
-    public byte MaxProbesPlayer => maxProbesPlayer;
-    public byte MaxDronesPlayer => maxDronesPlayer;
-    public byte MaxShipsPlayer => maxShipsPlayer;
-    public byte MaxBasesPlayer => maxBasesPlayer;
+    public int MaxPlatformsTeam => maxPlatformsTeam;
+    public int MaxProbesTeam => maxProbesTeam;
+    public int MaxDronesTeam => maxDronesTeam;
+    public int MaxShipsTeam => maxShipsTeam;
+    public int MaxBasesTeam => maxBasesTeam;
+
+    public int MaxPlatformsPlayer => maxPlatformsPlayer;
+    public int MaxProbesPlayer => maxProbesPlayer;
+    public int MaxDronesPlayer => maxDronesPlayer;
+    public int MaxShipsPlayer => maxShipsPlayer;
+    public int MaxBasesPlayer => maxBasesPlayer;
 
     internal async Task Connect(string uri, string auth, byte team)
     {
