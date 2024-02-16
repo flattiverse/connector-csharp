@@ -7,8 +7,8 @@ namespace Flattiverse.Connector.Network
 {
     delegate void ConnectionClosed();
     delegate void PacketReceived(Packet packet);
-    
-    class Connection
+
+    internal class Connection
     {
         private readonly ClientWebSocket socket;
 

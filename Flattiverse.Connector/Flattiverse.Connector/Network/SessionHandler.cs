@@ -2,7 +2,7 @@
 
 namespace Flattiverse.Connector.Network;
 
-class SessionHandler
+internal class SessionHandler
 {
     private readonly Session?[] sessions;
     

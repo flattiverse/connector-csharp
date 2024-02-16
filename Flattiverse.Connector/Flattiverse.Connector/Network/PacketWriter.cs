@@ -5,7 +5,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Flattiverse.Connector.Network;
 
-class PacketWriter : IDisposable
+internal class PacketWriter : IDisposable
 {
     private readonly Packet packet;
 

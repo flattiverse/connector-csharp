@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Network;
 
 [StructLayout(LayoutKind.Explicit, Size = 8)]
-struct PacketHeader
+internal struct PacketHeader
 {
     [FieldOffset(0)]
     public byte Command;

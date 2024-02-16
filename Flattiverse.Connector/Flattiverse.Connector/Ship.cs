@@ -1,23 +1,17 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector
 {
-    class Ship
+    public class Ship : INamedUnit
     {
         public readonly Galaxy Galaxy;
         public readonly byte ID;
 
         internal readonly Upgrade?[] upgrades = new Upgrade?[256];
-        internal int upgradeMax = 0;
+        public readonly UniversalHolder<Upgrade> Upgrades;
 
-        public readonly string Name;
+        private string name;
         public readonly double CostEnergy;
         public readonly double CostIon;
         public readonly double CostIron;
@@ -49,12 +43,12 @@ namespace Flattiverse.Connector
         public readonly double WeaponTime;
         public readonly double WeaponLoad;
 
-        public Ship(byte id, Galaxy galaxy, PacketReader reader)
+        internal Ship(byte id, Galaxy galaxy, PacketReader reader)
         {
             ID = id;
             Galaxy = galaxy;
 
-            Name = reader.ReadString();
+            name = reader.ReadString();
             CostEnergy = reader.Read2U(1);
             CostIon = reader.Read2U(100);
             CostIron = reader.Read2U(1);
@@ -85,15 +79,19 @@ namespace Flattiverse.Connector
             WeaponSpeed = reader.Read2U(10);
             WeaponTime = reader.ReadUInt16();// TODO: MALUK hier wolltest du etwas verrechnen
             WeaponLoad = reader.Read2U(10);
+
+            Upgrades = new UniversalHolder<Upgrade>(upgrades);
         }
+
+        /// <summary>
+        /// The name of the ship.
+        /// </summary>
+        public string Name => name;
 
         internal void ReadUpgrade(byte id, PacketReader reader)
         {
             upgrades[id] = new Upgrade(id, Galaxy, this, reader);
             Console.WriteLine($"Received upgrade {upgrades[id]!.Name} update for ship {Name}");
-
-            if (upgradeMax < id + 1)
-                upgradeMax = id + 1;
         }
     }
 }

@@ -9,12 +9,17 @@ public class Cluster : INamedUnit
 
     private string name;
 
+    private readonly Region?[] regions = new Region?[256];
+    public readonly UniversalHolder<Region> Regions;
+
     internal Cluster(byte id, Galaxy galaxy, PacketReader reader)
     {
         ID = id;
         Galaxy = galaxy;
 
         name = reader.ReadString();
+
+        Regions = new UniversalHolder<Region>(regions);
     }
 
     /// <summary>

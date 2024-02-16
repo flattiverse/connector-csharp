@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Flattiverse.Connector.Network;
 
-class Packet
+internal class Packet
 {
     public PacketHeader Header;
 

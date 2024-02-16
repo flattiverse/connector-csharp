@@ -1,11 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using System.Net.Sockets;
-using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy;
 
@@ -37,18 +30,12 @@ public class Galaxy
 
     private readonly Cluster?[] clusters = new Cluster?[256];
     public readonly UniversalHolder<Cluster> Clusters;
-    
-    // JAM TODO: Clusters ist jetzt beispielhaft mit UniversalHolder implementiert. Wir brauchen maxClusters
-    //           praktisch nie und uns die die Performance des Clients praktisch egal. Der kann sich das theoretisch
-    //           einmal abholen und dann glücklich sein. Wenn er inperformante calls macht ist uns das egal.
-    //
-    //           Bitte den Holder auch für alles andere nutzen.
 
     private readonly Ship?[] ships = new Ship?[256];
-    private int shipMax = 0;
+    public readonly UniversalHolder<Ship> Ships;
 
     private readonly Team?[] teams = new Team?[33];
-    private int teamMax = 0;
+    public readonly UniversalHolder<Team> Teams;
 
     private Dictionary<byte, Player> players = new Dictionary<byte, Player>();
 
@@ -58,7 +45,9 @@ public class Galaxy
     internal Galaxy(Universe universe)
     {
         Clusters = new UniversalHolder<Cluster>(clusters);
-        
+        Ships = new UniversalHolder<Ship>(ships);
+        Teams = new UniversalHolder<Team>(teams);
+
         connection = new Connection(universe, ConnectionClosed, PacketRecevied);
         sessions = new SessionHandler(connection);
     }
@@ -139,25 +128,15 @@ public class Galaxy
                 clusters[packet.Header.Param0] = new Cluster(packet.Header.Param0, this, reader);
                 Console.WriteLine($"Received cluster {clusters[packet.Header.Param0]!.Name} update");
 
-                // JAM TODO: Hier arbeiten wir nicht mit so was wie clusterMax, sondern mit etwas dass ich im
-                //           Flattiverse 2014 eingebaut habe und UniversalHolder heißt. Habe Mal die Klasse
-                //           Beispielhaft implementiert.
-
                 break;
             case 0x12://Team info
                 teams[packet.Header.Param0] = new Team(packet.Header.Param0, reader);
                 Console.WriteLine($"Received team {teams[packet.Header.Param0]!.Name} update");
 
-                if (teamMax < packet.Header.Param0 + 1)
-                    teamMax = packet.Header.Param0 + 1;
-
                 break;
             case 0x13://Ship info
                 ships[packet.Header.Param0] = new Ship(packet.Header.Param0, this, reader);
                 Console.WriteLine($"Received ship {ships[packet.Header.Param0]!.Name} update");
-
-                if (shipMax < packet.Header.Param0 + 1)
-                    shipMax = packet.Header.Param0 + 1;
 
                 break;
             case 0x14://Upgrade info

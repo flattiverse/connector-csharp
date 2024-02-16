@@ -1,13 +1,8 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Hierarchy
 {
-    class Team
+    public class Team : INamedUnit
     {
         public readonly byte ID;
         private string name;
@@ -16,7 +11,7 @@ namespace Flattiverse.Connector.Hierarchy
         private byte green;
         private byte blue;
 
-        public Team(byte id, PacketReader reader)
+        internal Team(byte id, PacketReader reader)
         {
             ID = id;
 
@@ -26,6 +21,9 @@ namespace Flattiverse.Connector.Hierarchy
             blue = reader.ReadByte();
         }
 
+        /// <summary>
+        /// The name of the team.
+        /// </summary>
         public string Name => name;
         public byte Red => red;
         public byte Green => green;

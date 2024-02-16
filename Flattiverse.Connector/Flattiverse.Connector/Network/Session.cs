@@ -1,6 +1,6 @@
 ﻿namespace Flattiverse.Connector.Network;
 
-class Session
+internal class Session
 {
     public readonly SessionHandler Handler;
     public readonly byte Id;

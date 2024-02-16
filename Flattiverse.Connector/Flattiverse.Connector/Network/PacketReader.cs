@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flattiverse.Connector.Network;
 
-class PacketReader
+internal class PacketReader
 {
     private byte[] data;
     private int position;

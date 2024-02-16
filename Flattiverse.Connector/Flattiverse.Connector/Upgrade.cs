@@ -1,16 +1,9 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector
 {
-    class Upgrade
+    public class Upgrade : INamedUnit
     {
         public readonly Galaxy Galaxy;
         public readonly Ship Ship;
@@ -18,7 +11,7 @@ namespace Flattiverse.Connector
 
         public readonly Upgrade? PreviousUpgrade;
 
-        public readonly string Name;
+        private string name;
         public readonly double CostEnergy;
         public readonly double CostIon;
         public readonly double CostIron;
@@ -50,16 +43,17 @@ namespace Flattiverse.Connector
         public readonly double WeaponTime;
         public readonly double WeaponLoad;
 
-        public Upgrade(byte id, Galaxy galaxy, Ship ship, PacketReader reader)
+        internal Upgrade(byte id, Galaxy galaxy, Ship ship, PacketReader reader)
         {
             ID = id;
             Galaxy = galaxy;
             Ship = ship;
 
+            name = reader.ReadString();
+
             if (reader.ReadNullableByte() is byte previousUpgradeId && ship.upgrades[previousUpgradeId] is Upgrade previousUpgrade)
                 PreviousUpgrade = previousUpgrade;
 
-            Name = reader.ReadString();
             CostEnergy = reader.Read2U(1);
             CostIon = reader.Read2U(100);
             CostIron = reader.Read2U(1);
@@ -91,5 +85,10 @@ namespace Flattiverse.Connector
             WeaponTime = reader.ReadUInt16();// TODO: MALUK hier wolltest du etwas verrechnen
             WeaponLoad = reader.Read2U(10);
         }
+
+        /// <summary>
+        /// The name of the upgrade.
+        /// </summary>
+        public string Name => name;
     }
 }
