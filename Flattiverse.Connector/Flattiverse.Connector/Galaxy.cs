@@ -1,5 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
+using System.Net.Sockets;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
@@ -15,25 +16,25 @@ public class Galaxy
     private string name;
     private string description;
     private GameType gameType;
-    private int maxPlayers;
+    private byte maxPlayers;
 
-    private int maxPlatformsUniverse;
-    private int maxProbesUniverse;
-    private int maxDronesUniverse;
-    private int maxShipsUniverse;
-    private int maxBasesUniverse;
+    private ushort maxPlatformsUniverse;
+    private ushort maxProbesUniverse;
+    private ushort maxDronesUniverse;
+    private ushort maxShipsUniverse;
+    private ushort maxBasesUniverse;
 
-    private int maxPlatformsTeam;
-    private int maxProbesTeam;
-    private int maxDronesTeam;
-    private int maxShipsTeam;
-    private int maxBasesTeam;
+    private ushort maxPlatformsTeam;
+    private ushort maxProbesTeam;
+    private ushort maxDronesTeam;
+    private ushort maxShipsTeam;
+    private ushort maxBasesTeam;
 
-    private int maxPlatformsPlayer;
-    private int maxProbesPlayer;
-    private int maxDronesPlayer;
-    private int maxShipsPlayer;
-    private int maxBasesPlayer;
+    private byte maxPlatformsPlayer;
+    private byte maxProbesPlayer;
+    private byte maxDronesPlayer;
+    private byte maxShipsPlayer;
+    private byte maxBasesPlayer;
 
     private readonly Cluster?[] clusters = new Cluster?[256];
     public readonly UniversalHolder<Cluster> Clusters;
@@ -66,25 +67,25 @@ public class Galaxy
     public string Name => name;
     public string Description => description;
     public GameType GameType => gameType;
-    public int MaxPlayers => maxPlayers;
+    public byte MaxPlayers => maxPlayers;
 
-    public int MaxPlatformsUniverse => maxPlatformsUniverse;
-    public int MaxProbesUniverse => maxProbesUniverse;
-    public int MaxDronesUniverse => maxDronesUniverse;
-    public int MaxShipsUniverse => maxShipsUniverse;
-    public int MaxBasesUniverse => maxBasesUniverse;
+    public ushort MaxPlatformsUniverse => maxPlatformsUniverse;
+    public ushort MaxProbesUniverse => maxProbesUniverse;
+    public ushort MaxDronesUniverse => maxDronesUniverse;
+    public ushort MaxShipsUniverse => maxShipsUniverse;
+    public ushort MaxBasesUniverse => maxBasesUniverse;
+           
+    public ushort MaxPlatformsTeam => maxPlatformsTeam;
+    public ushort MaxProbesTeam => maxProbesTeam;
+    public ushort MaxDronesTeam => maxDronesTeam;
+    public ushort MaxShipsTeam => maxShipsTeam;
+    public ushort MaxBasesTeam => maxBasesTeam;
 
-    public int MaxPlatformsTeam => maxPlatformsTeam;
-    public int MaxProbesTeam => maxProbesTeam;
-    public int MaxDronesTeam => maxDronesTeam;
-    public int MaxShipsTeam => maxShipsTeam;
-    public int MaxBasesTeam => maxBasesTeam;
-
-    public int MaxPlatformsPlayer => maxPlatformsPlayer;
-    public int MaxProbesPlayer => maxProbesPlayer;
-    public int MaxDronesPlayer => maxDronesPlayer;
-    public int MaxShipsPlayer => maxShipsPlayer;
-    public int MaxBasesPlayer => maxBasesPlayer;
+    public byte MaxPlatformsPlayer => maxPlatformsPlayer;
+    public byte MaxProbesPlayer => maxProbesPlayer;
+    public byte MaxDronesPlayer => maxDronesPlayer;
+    public byte MaxShipsPlayer => maxShipsPlayer;
+    public byte MaxBasesPlayer => maxBasesPlayer;
 
     internal async Task Connect(string uri, string auth, byte team)
     {
@@ -131,34 +132,7 @@ public class Galaxy
         switch (packet.Header.Command)
         {
             case 0x10://Galaxy info
-                id = packet.Header.Param;
-
-                // JAM TODO: Hier die Datentypen bitte ändern. Für fast gar nichts brauchst Du 32 Bit. Außerdem würde
-                //           ich eine Update-Methode machen, denn wenn diese Einstellungen über den Map-Editor (einem
-                //           Admin per Schnittstelle) verändert werden müssen diese Daten durch erneutes Senden dieses
-                //           Pakets ebenfalls aktualisiert werden.
-                //
-                //           Optimalerweise sind alle cases dieses switch nur schlanke zuordnungen oder Methodenaufrufe.
-                
-                name = reader.ReadString();
-                description = reader.ReadString();
-                gameType = (GameType)reader.ReadByte();
-                maxPlayers = reader.ReadInt32();
-                maxPlatformsUniverse = reader.ReadInt32();
-                maxProbesUniverse = reader.ReadInt32();
-                maxDronesUniverse = reader.ReadInt32();
-                maxShipsUniverse = reader.ReadInt32();
-                maxBasesUniverse = reader.ReadInt32();
-                maxPlatformsTeam = reader.ReadInt32();
-                maxProbesTeam = reader.ReadInt32();
-                maxDronesTeam = reader.ReadInt32();
-                maxShipsTeam = reader.ReadInt32();
-                maxBasesTeam = reader.ReadInt32();
-                maxPlatformsPlayer = reader.ReadInt32();
-                maxProbesPlayer = reader.ReadInt32();
-                maxDronesPlayer = reader.ReadInt32();
-                maxShipsPlayer = reader.ReadInt32();
-                maxBasesPlayer = reader.ReadInt32();
+                Update(packet.Header, reader);
 
                 break;
             case 0x11://Cluster info
@@ -193,5 +167,30 @@ public class Galaxy
                     players[packet.Header.Player] = new Player(packet.Header.Player, (PlayerKind)packet.Header.Param0, team, reader);
                 break;
         }
+    }
+
+    private void Update(PacketHeader header, PacketReader reader)
+    {
+        id = header.Param;
+
+        name = reader.ReadString();
+        description = reader.ReadString();
+        gameType = (GameType)reader.ReadByte();
+        maxPlayers = reader.ReadByte();
+        maxPlatformsUniverse = reader.ReadUInt16();
+        maxProbesUniverse = reader.ReadUInt16();
+        maxDronesUniverse = reader.ReadUInt16();
+        maxShipsUniverse = reader.ReadUInt16();
+        maxBasesUniverse = reader.ReadUInt16();
+        maxPlatformsTeam = reader.ReadUInt16();
+        maxProbesTeam = reader.ReadUInt16();
+        maxDronesTeam = reader.ReadUInt16();
+        maxShipsTeam = reader.ReadUInt16();
+        maxBasesTeam = reader.ReadUInt16();
+        maxPlatformsPlayer = reader.ReadByte();
+        maxProbesPlayer = reader.ReadByte();
+        maxDronesPlayer = reader.ReadByte();
+        maxShipsPlayer = reader.ReadByte();
+        maxBasesPlayer = reader.ReadByte();
     }
 }
