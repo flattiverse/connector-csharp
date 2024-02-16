@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Flattiverse.Connector.Units
+namespace Flattiverse.Connector
 {
     class Upgrade
     {

@@ -1,5 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using Flattiverse.Connector.Units;
 using System.Net.Sockets;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
