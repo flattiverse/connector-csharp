@@ -45,7 +45,7 @@ namespace Flattiverse.Connector.Units
         public readonly double Cargo;
         public readonly double Extractor;
         public readonly double WeaponSpeed;
-        public readonly double WeaponTime;
+        public readonly ushort WeaponTime;
         public readonly double WeaponLoad;
 
         public Ship(byte id, Galaxy galaxy, PacketReader reader)
@@ -54,36 +54,36 @@ namespace Flattiverse.Connector.Units
             Galaxy = galaxy;
 
             Name = reader.ReadString();
-            CostEnergy = reader.Read4S(2);
-            CostIon = reader.Read4S(2);
-            CostIron = reader.Read4S(2);
-            CostTungsten = reader.Read4S(2);
-            CostSilicon = reader.Read4S(2);
-            CostTritium = reader.Read4S(2);
-            CostTime = reader.Read4S(2);
-            Hull = reader.Read4S(2);
-            HullRepair = reader.Read4S(2);
-            Shields = reader.Read4S(2);
-            ShieldsRepair = reader.Read4S(2);
-            Size = reader.Read4S(2);
-            Weight = reader.Read4S(2);
-            EnergyMax = reader.Read4S(2);
-            EnergyCells = reader.Read4S(2);
-            EnergyReactor = reader.Read4S(2);
-            EnergyTransfer = reader.Read4S(2);
-            IonMax = reader.Read4S(2);
-            IonCells = reader.Read4S(2);
-            IonReactor = reader.Read4S(2);
-            IonTransfer = reader.Read4S(2);
-            Thruster = reader.Read4S(2);
-            Nozzle = reader.Read4S(2);
-            Speed = reader.Read4S(2);
-            Turnrate = reader.Read4S(2);
-            Cargo = reader.Read4S(2);
-            Extractor = reader.Read4S(2);
-            WeaponSpeed = reader.Read4S(2);
-            WeaponTime = reader.Read4S(2);
-            WeaponLoad = reader.Read4S(2);
+            CostEnergy = reader.Read2U(1);
+            CostIon = reader.Read2U(100);
+            CostIron = reader.Read2U(1);
+            CostTungsten = reader.Read2U(100);
+            CostSilicon = reader.Read2U(1);
+            CostTritium = reader.Read2U(10);
+            CostTime = reader.Read2U(10);
+            Hull = reader.Read2U(10);
+            HullRepair = reader.Read2U(100);
+            Shields = reader.Read2U(10);
+            ShieldsRepair = reader.Read2U(100);
+            Size = reader.Read2U(10);
+            Weight = reader.Read2S(10000);
+            EnergyMax = reader.Read2U(10);
+            EnergyCells = reader.Read4U(100);
+            EnergyReactor = reader.Read2U(100);
+            EnergyTransfer = reader.Read2U(100);
+            IonMax = reader.Read2U(100);
+            IonCells = reader.Read2U(100);
+            IonReactor = reader.Read2U(1000);
+            IonTransfer = reader.Read2U(1000);
+            Thruster = reader.Read2U(10000);
+            Nozzle = reader.Read2U(100);
+            Speed = reader.Read2U(100);
+            Turnrate = reader.Read2U(100);
+            Cargo = reader.Read4U(1000);
+            Extractor = reader.Read2U(100);
+            WeaponSpeed = reader.Read2U(10);
+            WeaponTime = reader.ReadUInt16();
+            WeaponLoad = reader.Read2U(10);
         }
 
         internal void ReadUpgrade(byte id, PacketReader reader)
