@@ -79,7 +79,7 @@ namespace Flattiverse.Connector
             cargo = reader.Read4U(1000);
             extractor = reader.Read2U(100);
             weaponSpeed = reader.Read2U(10);
-            weaponTime = reader.ReadUInt16();// TODO: MALUK hier wolltest du etwas verrechnen
+            weaponTime = reader.ReadUInt16() / 20.0;
             weaponLoad = reader.Read2U(10);
             freeSpawn = reader.ReadBoolean();
 
