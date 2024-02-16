@@ -46,7 +46,7 @@ namespace Flattiverse.Connector
         public readonly double Cargo;
         public readonly double Extractor;
         public readonly double WeaponSpeed;
-        public readonly ushort WeaponTime;
+        public readonly double WeaponTime;
         public readonly double WeaponLoad;
 
         public Ship(byte id, Galaxy galaxy, PacketReader reader)
@@ -83,7 +83,7 @@ namespace Flattiverse.Connector
             Cargo = reader.Read4U(1000);
             Extractor = reader.Read2U(100);
             WeaponSpeed = reader.Read2U(10);
-            WeaponTime = reader.ReadUInt16();
+            WeaponTime = reader.ReadUInt16();// TODO: MALUK hier wolltest du etwas verrechnen
             WeaponLoad = reader.Read2U(10);
         }
 
