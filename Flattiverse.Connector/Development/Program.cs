@@ -10,15 +10,11 @@ internal class Program
 
         Universe universe = new Universe();
 
-        Console.WriteLine("Starting join request");
-
         //Admin key
         //Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "5AE4A6FD01FFCB104F594D7510160766FF9BE6731058D9469CB404C999CC7BF0", 0x00);
 
         //Player key
         Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "7CA8F14EE55FCD522FB8FB4B4E09BEB7D5892D8341A0740FCC596D1CEC1D9D13", 0x00);
-
-        Console.WriteLine("Finished join request");
 
         //await galaxy.SendMessage(1, "This is a message.");
 
@@ -27,8 +23,6 @@ internal class Program
         for (int i = 0; i < 10; i++)
         {
             int number = rng.Next();
-
-            Console.WriteLine("Starting IsEven request");
 
             if (await galaxy.IsEven(number))
                 Console.WriteLine($"Number {number,11} is even");
