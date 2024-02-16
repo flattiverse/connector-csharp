@@ -155,6 +155,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write2U(WeaponSpeed, 10);
             writer.Write((ushort)WeaponTime);
             writer.Write2U(WeaponLoad, 10);
+            writer.Write(FreeSpawn);
         }
     }
 }
