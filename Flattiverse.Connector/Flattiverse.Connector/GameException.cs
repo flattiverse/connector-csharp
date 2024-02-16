@@ -46,8 +46,13 @@ namespace Flattiverse.Connector
         {
             switch (code)
             {
+                case 0x30: // The requested element doesn't exist.
+                    if (info is null)
+                        return $"[0x30] The requested element doesn't exist or can't be accessed.";
+                    
+                    return $"[0x30] {info}";
                 case 0xE0: // The requested command doesn't exist.
-                    return $"[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
+                    return "[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
                 case 0xF0: // Unspecified connection issues.
                     return $"[0xF0] An unknown error occurred while connecting to the flattiverse server: {info}";
                 case 0xF1: // Couldn't establish tcp/ip connection.

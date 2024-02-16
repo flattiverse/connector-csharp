@@ -125,6 +125,13 @@ public class Galaxy
             case 0x10://Galaxy info
                 id = packet.Header.Param;
 
+                // JAM TODO: Hier die Datentypen bitte ändern. Für fast gar nichts brauchst Du 32 Bit. Außerdem würde
+                //           ich eine Update-Methode machen, denn wenn diese Einstellungen über den Map-Editor (einem
+                //           Admin per Schnittstelle) verändert werden müssen diese Daten durch erneutes Senden dieses
+                //           Pakets ebenfalls aktualisiert werden.
+                //
+                //           Optimalerweise sind alle cases dieses switch nur schlanke zuordnungen oder Methodenaufrufe.
+                
                 name = reader.ReadString();
                 description = reader.ReadString();
                 gameType = (GameType)reader.ReadByte();
@@ -152,6 +159,10 @@ public class Galaxy
                 if (clusterMax < packet.Header.Param0 + 1)
                     clusterMax = packet.Header.Param0 + 1;
 
+                // JAM TODO: Hier arbeiten wir nicht mit so was wie clusterMax, sondern mit etwas dass ich im
+                //           Flattiverse 2014 eingebaut habe und UniversalHolder heißt. Habe Mal die Klasse
+                //           Beispielhaft implementiert.
+                
                 break;
             case 0x12://Team info
                 teams[packet.Header.Param0] = new Team(packet.Header.Param0, reader);
