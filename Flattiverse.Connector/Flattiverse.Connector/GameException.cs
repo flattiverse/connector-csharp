@@ -57,6 +57,8 @@ namespace Flattiverse.Connector
                         return $"[0x30] The requested element doesn't exist or can't be accessed.";
                     
                     return $"[0x30] {info}";
+                case 0x31: // The parameter doesn't match required specification.
+                    return "[0x31] The specified parameter doesn't match specification: Is something null? Something NaN or Infinity? Invalid characters?";
                 case 0xE0: // The requested command doesn't exist.
                     return "[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
                 case 0xF0: // Unspecified connection issues.
