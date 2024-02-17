@@ -210,6 +210,7 @@ public class Galaxy
                 else
                 {
                     // TODO this seems to be a race condition on the server side?
+                    // only happens in spectator mode (APIKEY=0000000000000000000000000000000000000000000000000000000000000000)
                     Console.WriteLine($"Received Upgrade for non existing ship {packet.Header.Param1}");
                 }
 
