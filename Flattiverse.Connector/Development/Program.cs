@@ -25,6 +25,34 @@ internal class Program
 
         try
         {
+            Thread.Sleep(2000);
+
+            Console.WriteLine($"Original galaxy {galaxy.Name} #{galaxy.ID}: {galaxy.Description}");
+
+            await galaxy.Configure(config =>
+            {
+                config.Description = "An updated description.";
+                config.GameType = GameType.Domination;
+                config.MaxPlayers = 1;
+                config.MaxPlatformsUniverse = 2;
+                config.MaxProbesUniverse = 3;
+                config.MaxDronesUniverse = 4;
+                config.MaxShipsUniverse = 5;
+                config.MaxBasesUniverse = 6;
+                config.MaxPlatformsTeam = 7;
+                config.MaxProbesTeam = 8;
+                config.MaxDronesTeam = 9;
+                config.MaxShipsTeam = 10;
+                config.MaxBasesTeam = 11;
+                config.MaxPlatformsPlayer = 12;
+                config.MaxProbesPlayer = 13;
+                config.MaxDronesPlayer = 14;
+                config.MaxShipsPlayer = 15;
+                config.MaxBasesPlayer = 16;
+            });
+
+            Console.WriteLine($"Updated galaxy {galaxy.Name} #{galaxy.ID}: {galaxy.Description}");
+
             Cluster cluster = await galaxy.CreateCluster(config =>
             {
                 config.Name = "TestCluster";
