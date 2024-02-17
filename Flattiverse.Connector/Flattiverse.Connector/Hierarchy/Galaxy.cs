@@ -109,7 +109,7 @@ public class Galaxy
         packet = await session.SendWait(packet);
 
         if (clusters[packet.Header.Param0] is not Cluster cluster)
-            throw GameException.TODO;
+            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return cluster;
     }
@@ -135,7 +135,7 @@ public class Galaxy
         packet = await session.SendWait(packet);
 
         if (teams[packet.Header.Param0] is not Team team)
-            throw GameException.TODO;
+            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return team;
     }
@@ -161,7 +161,7 @@ public class Galaxy
         packet = await session.SendWait(packet);
 
         if (ships[packet.Header.Param0] is not Ship ship)
-            throw GameException.TODO;
+            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return ship;
     }

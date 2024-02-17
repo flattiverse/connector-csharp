@@ -68,14 +68,14 @@ namespace Flattiverse.Connector.Network
                 // and securely query the HTTP error code.
 
                 if (webSocketException.Message.Length < 37)
-                    throw new GameException(0xF0, webSocketException.Message, webSocketException);
+                    throw new GameException(0xF1, webSocketException.Message, webSocketException);
                 else
                     throw GameException.ParseHttpCode(webSocketException.Message.Substring(33, 3));
 
             }
             catch (Exception exception)
             {
-                throw new GameException(0xF0, exception.Message, exception);
+                throw new GameException(0xF1, exception.Message, exception);
             }
             finally
             {

@@ -89,7 +89,7 @@ namespace Flattiverse.Connector
             packet = await session.SendWait(packet);
 
             if (upgrades[packet.Header.Param0] is not Upgrade upgrade)
-                throw GameException.TODO;
+                throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
             return upgrade;
         }

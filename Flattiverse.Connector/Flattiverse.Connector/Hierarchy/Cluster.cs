@@ -91,7 +91,7 @@ public class Cluster : INamedUnit
         packet = await session.SendWait(packet);
 
         if (regions[packet.Header.Param0] is not Region region)
-            throw GameException.TODO;
+            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return region;
     }
