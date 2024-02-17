@@ -92,4 +92,7 @@ If this documentation is not recent, you can find the assignments
 Symphony implements those commands sent from Server to Connector:
 
 * JAM TODO: Deine Pakete noch dokumentieren.
-* 0x20:Round comitted. 
+* `0x1C`: A new unit has been found.
+* `0x1D`: A already found unit has been updated.
+* `0x1E`: A unit which has been seen in the past
+* `0x20`: Round comitted.
