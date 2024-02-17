@@ -208,7 +208,10 @@ public class Galaxy
                 if (ships[packet.Header.Param1] is Ship ship)
                     ship.ReadUpgrade(packet.Header.Param0, reader);
                 else
+                {
+                    // TODO this seems to be a race condition on the server side?
                     Console.WriteLine($"Received Upgrade for non existing ship {packet.Header.Param1}");
+                }
 
                 break;
             case 0x16://New player joined info
