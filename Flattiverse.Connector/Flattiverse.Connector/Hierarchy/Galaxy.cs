@@ -42,6 +42,8 @@ public class Galaxy
     private readonly SessionHandler sessions;
     private readonly Connection connection;
 
+    private TaskCompletionSource? roundFinishedSignal;
+
     internal Galaxy(Universe universe)
     {
         Clusters = new UniversalHolder<Cluster>(clusters);
@@ -91,6 +93,15 @@ public class Galaxy
         return await sessions.Get();
     }
 
+    public async Task WaitNextTurn()
+    {
+        TaskCompletionSource tSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        roundFinishedSignal = tSignal;
+
+        await tSignal.Task.ConfigureAwait(false);
+    }
+    
     /// <summary>
     /// Sets given values in this galaxy.
     /// </summary>
@@ -239,6 +250,18 @@ public class Galaxy
                     players[packet.Header.Player] = new Player(packet.Header.Player, (PlayerKind)packet.Header.Param0, team, reader);
                     Console.WriteLine($"Received player {players[packet.Header.Player]!.Name} update");
                 }
+                break;
+            
+            case 0x20: // Tick completed.
+                if (roundFinishedSignal is not null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("SIGNALLING UNIVERSE TICK.");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    roundFinishedSignal.SetResult();
+                    roundFinishedSignal = null;
+                }
+
                 break;
         }
     }

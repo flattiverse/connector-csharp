@@ -86,3 +86,10 @@ result in in the reference connector (propably you should use the same messages)
 
 If this documentation is not recent, you can find the assignments
 [here](Flattiverse.Connector/Flattiverse.Connector/Network/Connection.cs).
+
+## Packet Command List.
+
+Symphony implements those commands sent from Server to Connector:
+
+* JAM TODO: Deine Pakete noch dokumentieren.
+* 0x20:Round comitted. 

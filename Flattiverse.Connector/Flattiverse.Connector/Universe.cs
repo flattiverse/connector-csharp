@@ -9,6 +9,9 @@ public class Universe
         Galaxy galaxy = new Galaxy(this);
         
         await galaxy.Connect(uri, auth, teamId);
+
+        // We wait so that we are sure that we have all meta data.
+        await galaxy.WaitNextTurn();
         
         return galaxy;
     }
