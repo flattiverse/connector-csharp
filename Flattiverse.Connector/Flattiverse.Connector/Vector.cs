@@ -11,7 +11,7 @@ namespace Flattiverse.Connector
     {
         public static Vector Null => new Vector();
 
-        private static double tolerance = 0.0125;
+        private static double tolerance = 0.000015;
 
         public double X;
         public double Y;
@@ -32,116 +32,7 @@ namespace Flattiverse.Connector
             X = x;
             Y = y;
         }
-
-        public Vector(JsonElement json)
-        {
-            double x;
-            double y;
-
-            JsonElement subElement;
-
-            if (!json.TryGetProperty("x", out subElement))
-            {
-                throw new ArgumentException($"Vector doesn't contain x sub-parameter.");
-            }
-
-            if (!subElement.TryGetDouble(out x))
-            {
-                throw new ArgumentException($"Vector sub-parameter x doesn't contain a double.");
-            }
-
-            if (!json.TryGetProperty("y", out subElement))
-            {
-                throw new ArgumentException($"Vector doesn't contain y sub-parameter.");
-            }
-
-            if (!subElement.TryGetDouble(out y))
-            {
-                throw new ArgumentException($"Vector sub-parameter y doesn't contain a double.");
-            }
-
-            X = x;
-            Y = y;
-
-        }
-
-        /// <summary>
-        /// Tries to parse a json Element to a Vector.
-        /// </summary>
-        /// <param name="data">The json data.</param>
-        /// <exception cref="ArgumentException"></exception>
-        internal static bool TryParse(JsonElement json, out Vector vector)
-        {
-            double x;
-            double y;
-
-            JsonElement subElement;
-
-            if (!json.TryGetProperty("x", out subElement))
-            {
-                vector = new Vector();
-                return false;
-            }
-
-            if (!subElement.TryGetDouble(out x))
-            {
-                vector = new Vector();
-                return false;
-            }
-
-            if (!json.TryGetProperty("y", out subElement))
-            {
-                vector = new Vector();
-                return false;
-            }
-
-            if (!subElement.TryGetDouble(out y))
-            {
-                vector = new Vector();
-                return false;
-            }
-
-            vector = new Vector(x, y);
-            return true;
-        }
-
-        /// <summary>
-        /// throws Exception on invalid json Element
-        /// </summary>
-        /// <param name="data"></param>
-        /// <exception cref="ArgumentException"></exception>
-        internal static void validateJson(JsonElement data)
-        {
-            double temp;
-
-            JsonElement subElement;
-
-            if (!data.TryGetProperty("x", out subElement))
-            {
-                throw new ArgumentException($"Vector doesn't contain x sub-parameter.");
-            }
-
-            if (!subElement.TryGetDouble(out temp))
-            {
-                throw new ArgumentException($"Vector sub-parameter x doesn't contain a double.");
-            }
-
-            if (!data.TryGetProperty("y", out subElement))
-            {
-                throw new ArgumentException($"Vector doesn't contain y sub-parameter.");
-            }
-
-            if (!subElement.TryGetDouble(out temp))
-            {
-                throw new ArgumentException($"Vector sub-parameter y doesn't contain a double.");
-            }
-        }
-
-        public static Vector FromXY(double x, double y)
-        {
-            return new Vector(x, y);
-        }
-
+        
         public static Vector FromAngleLength(double angle, double length)
         {
             return new Vector(Math.Cos(angle * Math.PI / 180f) * length, Math.Sin(angle * Math.PI / 180f) * length);
@@ -153,8 +44,8 @@ namespace Flattiverse.Connector
             {
                 if (X == 0f && Y == 0f)
                     return lastAngle;
-                else
-                    return (Math.Atan2(Y, X) * 180 / Math.PI + 360) % 360f;
+
+                return (Math.Atan2(Y, X) * 180 / Math.PI + 360) % 360f;
             }
             set
             {
@@ -194,15 +85,20 @@ namespace Flattiverse.Connector
             }
         }
 
-        public Vector RotatedBy(double angle)
+        public void RotatedBy(double angle)
         {
             double alpha = angle * Math.PI / 180;
 
-            return new Vector(Math.Cos(alpha) * X - Math.Sin(alpha) * Y, Math.Sin(alpha) * X + Math.Cos(alpha) * Y);
+            double x = Math.Cos(alpha) * X - Math.Sin(alpha) * Y;
+            Y = Math.Sin(alpha) * X + Math.Cos(alpha) * Y;
+            X = x;
         }
 
-        public double AngleFrom(Vector v)
+        public double AngleFrom(Vector? v)
         {
+            if (v is null)
+                return -Angle;
+            
             double deg = v.Angle - Angle;
 
             if (deg < 0)
@@ -211,18 +107,39 @@ namespace Flattiverse.Connector
             return deg;
         }
 
-        public static Vector operator +(Vector l, Vector r)
+        public static Vector operator +(Vector? l, Vector? r)
         {
+            if (l is null && r is null)
+                return Null;
+
+            if (l is null)
+                return r!;
+
+            if (r is null)
+                return l;
+            
             return new Vector(l.X + r.X, l.Y + r.Y);
         }
 
-        public static Vector operator -(Vector l, Vector r)
+        public static Vector operator -(Vector? l, Vector? r)
         {
+            if (l is null && r is null)
+                return Null;
+
+            if (l is null)
+                return new Vector(-r.X, -r.Y);
+
+            if (r is null)
+                return l;
+            
             return new Vector(l.X - r.X, l.Y - r.Y);
         }
 
-        public static Vector operator *(Vector vector, double factor)
+        public static Vector operator *(Vector? vector, double factor)
         {
+            if (vector is null)
+                return Null;
+            
             Vector resultingVector = new Vector(factor * vector.X, factor * vector.Y);
 
             if (factor == 0)
@@ -231,12 +148,15 @@ namespace Flattiverse.Connector
             return resultingVector;
         }
 
-        public static Vector operator /(Vector vector, double divisor)
+        public static Vector operator /(Vector? vector, double divisor)
         {
-            return Vector.FromXY(vector.X / divisor, vector.Y / divisor);
+            if (vector is null)
+                return Null;
+            
+            return new Vector(vector.X / divisor, vector.Y / divisor);
         }
 
-        public static bool operator ==(Vector l, Vector r)
+        public static bool operator ==(Vector? l, Vector? r)
         {
             if (l is null && r is null)
                 return true;
@@ -247,9 +167,9 @@ namespace Flattiverse.Connector
             return l - r < tolerance;
         }
 
-        public static bool operator ==(Vector l, double r)
+        public static bool operator ==(Vector? l, double r)
         {
-            if ((object)l == null)
+            if (l is null)
                 return false;
 
             double length = l.Length;
@@ -257,48 +177,81 @@ namespace Flattiverse.Connector
             return length - tolerance < r && length + tolerance > r;
         }
 
-        public static bool operator >(Vector l, Vector r)
+        public static bool operator >(Vector? l, Vector? r)
         {
+            if (l is null)
+                return false;
+
+            if (r is null)
+                return true;
+            
             return l.X * l.X + l.Y * l.Y > r.X * r.X + r.Y * r.Y;
         }
 
-        public static bool operator !=(Vector l, Vector r)
+        public static bool operator !=(Vector? l, Vector? r)
         {
             return !(l == r);
         }
 
-        public static bool operator !=(Vector l, double r)
+        public static bool operator !=(Vector? l, double r)
         {
             return !(l == r);
         }
 
-        public static bool operator <(Vector l, Vector r)
+        public static bool operator <(Vector? l, Vector? r)
         {
+            if (l is null && r is null)
+                return false;
+            
+            if (l is null)
+                return true;
+
+            if (r is null)
+                return false;
+            
             return l.X * l.X + l.Y * l.Y < r.X * r.X + r.Y * r.Y;
         }
 
-        public static bool operator >(Vector l, double r)
+        public static bool operator >(Vector? l, double r)
         {
+            if (l is null)
+                return false;
+            
             return l.X * l.X + l.Y * l.Y > r * r;
         }
 
-        public static bool operator <(Vector l, double r)
+        public static bool operator <(Vector? l, double r)
         {
+            if (l is null)
+                return true;
+            
             return l.X * l.X + l.Y * l.Y < r * r;
         }
 
-        public bool IsDamaged
-        {
-            get { return double.IsInfinity(X) || double.IsNaN(X) || double.IsInfinity(Y) || double.IsNaN(Y); }
-        }
+        public bool IsDamaged => double.IsInfinity(X) || double.IsNaN(X) || double.IsInfinity(Y) || double.IsNaN(Y);
 
-        public static double SquaredDistance(Vector a, Vector b)
+        public static double SquaredDistance(Vector? a, Vector? b)
         {
+            if (a is null && b is null)
+                return 0.0;
+
+            if (a is null)
+                return b!.X * b.X + b.Y * b.Y;
+
+            if (b is null)
+                return a.X * a.X + a.Y * a.Y;
+            
             return (b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y);
         }
 
-        public static double Distance(Vector a, Vector b)
+        public static double Distance(Vector? a, Vector? b)
         {
+            if (a is null)
+                a = Null;
+
+            if (b is null)
+                b = Null;
+            
             return Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
         }
 
@@ -340,11 +293,6 @@ namespace Flattiverse.Connector
         public override int GetHashCode()
         {
             return base.GetHashCode();
-        }
-        internal void writeJson(Utf8JsonWriter writer)
-        {
-            writer.WriteNumber("x", X);
-            writer.WriteNumber("y", Y);
         }
     }
 }
