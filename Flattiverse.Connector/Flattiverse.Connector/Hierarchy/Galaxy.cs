@@ -61,10 +61,6 @@ public class Galaxy
         loginCompleted = tSignal;
 
         await tSignal.Task.ConfigureAwait(false);
-        
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("SIGNALLED LOGIN COMPLETED.");
-        Console.ForegroundColor = ConsoleColor.Gray;
     }
     
     /// <summary>
