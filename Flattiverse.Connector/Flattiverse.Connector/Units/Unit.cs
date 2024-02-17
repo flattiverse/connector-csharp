@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units;
 
@@ -9,14 +10,14 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class Unit
 {
-        /// <summary>
+    /// <summary>
     /// This is the name of the unit. An unit can't change her name after it has been setup.
     /// </summary>
     public readonly string Name;
 
-    internal Unit(string name)
+    internal Unit(Configuration configuration)
     {
-        Name = name;
+        Name = configuration.Name;
     }
 
     /// <summary>
@@ -63,7 +64,12 @@ public class Unit
     /// The gravity this unit has on other units.
     /// </summary>
     public virtual double Gravity => 0.0;
-    
+
+    /// <summary>
+    /// The radius of the unit. 
+    /// </summary>
+    public virtual double Radius => 1.0;
+
     /// <summary>
     /// This factor will be multiplied with the distance of the unit to match, if you can see it. 0.9 means you
     /// can see the unit 10% worse than with 100%.

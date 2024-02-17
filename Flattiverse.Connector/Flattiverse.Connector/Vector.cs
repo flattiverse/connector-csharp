@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flattiverse.Connector.Network;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,36 @@ namespace Flattiverse.Connector
 
         public Vector()
         {
+        }
+
+        internal Vector(PacketReader reader)
+        {
+            X = reader.Read4S(100000);
+            Y = reader.Read4S(100000);
+        }
+
+        internal void Write(PacketWriter writer)
+        {
+            if (IsDamaged)
+            {
+                writer.Write(0UL);
+
+                return;
+            }
+
+            if (X < -21470)
+                writer.Write(-2147000000);
+            else if (X > 21470)
+                writer.Write(2147000000);
+            else
+                writer.Write4S(X, 100000);
+
+            if (Y < -21470)
+                writer.Write(-2147000000);
+            else if (Y > 21470)
+                writer.Write(2147000000);
+            else
+                writer.Write4S(Y, 100000);
         }
 
         public Vector(Vector vectorToCopy)
