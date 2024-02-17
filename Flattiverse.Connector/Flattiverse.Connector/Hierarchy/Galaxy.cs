@@ -211,8 +211,8 @@ public class Galaxy
             case 0x16://New player joined info
                 if (teams[packet.Header.Param1] is Team team)
                 {
-                    players[packet.Header.Player] = new Player(packet.Header.Player, (PlayerKind)packet.Header.Param0, team, reader);
-                    Console.WriteLine($"Received player {players[packet.Header.Player]!.Name} update");
+                    players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, team, reader);
+                    Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
                 }
                 break;
             

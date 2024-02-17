@@ -62,7 +62,7 @@ internal class Packet
 
     public override string ToString()
     {
-        return $"cmd=0x{Header.Command:X02}; session=0x{Header.Session:X02}; player=0x{Header.Player:X02}; controllable=0x{Header.Controllable:X02}; params=(0x{Header.Param0:X02}; 0x{Header.Param1:X02} | 0x{Header.Param:X04}); size=0x{Header.Size:X02}";
+        return $"cmd=0x{Header.Command:X02}; session=0x{Header.Session:X02}; player=0x{Header.Id0:X02}; controllable=0x{Header.Id1:X02}; params=(0x{Header.Param0:X02}; 0x{Header.Param1:X02} | 0x{Header.Param:X04}); size=0x{Header.Size:X02}";
     }
 
 }

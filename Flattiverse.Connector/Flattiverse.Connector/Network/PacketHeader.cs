@@ -12,11 +12,14 @@ internal struct PacketHeader
     public byte Session;
         
     [FieldOffset(2)]
-    public byte Player;
+    public byte Id0;
         
     [FieldOffset(3)]
-    public byte Controllable;
-        
+    public byte Id1;
+
+    [FieldOffset(2)]
+    public ushort Id;
+
     [FieldOffset(4)]
     public byte Param0;
         
@@ -32,12 +35,12 @@ internal struct PacketHeader
     [FieldOffset(0)]
     public ulong DirectAssign;
 
-    public PacketHeader(byte command, byte session, byte player, byte controllable, byte param0, byte param1, ushort param)
+    public PacketHeader(byte command, byte session, byte id0, byte id1, byte param0, byte param1, ushort param)
     {
         Command = command;
         Session = session;
-        Player = player;
-        Controllable = controllable;
+        Id0 = id0;
+        Id1 = id1;
         Param0 = param0;
         Param1 = param1;
         Param = param;
