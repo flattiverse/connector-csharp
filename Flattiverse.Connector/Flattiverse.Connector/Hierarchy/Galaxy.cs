@@ -201,12 +201,14 @@ public class Galaxy
                 break;
             case 0x14://Ship info
                 ships[packet.Header.Param0] = new Ship(this, packet.Header.Param0, reader);
-                Console.WriteLine($"Received ship {ships[packet.Header.Param0]!.Name} update");
+                Console.WriteLine($"Received ship(id={packet.Header.Param0}) {ships[packet.Header.Param0]!.Name} update");
 
                 break;
             case 0x15://Upgrade info
                 if (ships[packet.Header.Param1] is Ship ship)
                     ship.ReadUpgrade(packet.Header.Param0, reader);
+                else
+                    Console.WriteLine($"Received Upgrade for non existing ship {packet.Header.Param1}");
 
                 break;
             case 0x16://New player joined info
