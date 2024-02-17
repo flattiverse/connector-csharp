@@ -21,6 +21,11 @@ public class Unit
     }
 
     /// <summary>
+    /// This is the cluster the unit is in.
+    /// </summary>
+    public virtual Cluster Cluster => throw new InvalidOperationException("Cluster should be overwritten by the derived class.");
+
+    /// <summary>
     /// Specifies if this unit can hide other units behind her. True means you can't see behind this unit in a scan.
     /// </summary>
     public virtual bool IsMasking => true;
