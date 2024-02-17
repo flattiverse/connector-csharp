@@ -7,30 +7,22 @@ namespace Flattiverse.Connector.Hierarchy
         public readonly Galaxy Galaxy;
 
         private byte id;
-        private string name;
-        private byte red;
-        private byte green;
-        private byte blue;
+        private TeamConfig config;
 
         internal Team(Galaxy galaxy, byte id, PacketReader reader)
         {
             Galaxy = galaxy;
             this.id = id;
 
-            name = reader.ReadString();
-            red = reader.ReadByte();
-            green = reader.ReadByte();
-            blue = reader.ReadByte();
+            config = new TeamConfig(reader);
         }
 
         public int ID => id;
         /// <summary>
         /// The name of the team.
         /// </summary>
-        public string Name => name;
-        public int Red => red;
-        public int Green => green;
-        public int Blue => blue;
+        public string Name => config.Name;
+        public TeamConfig Config => config;
 
         /// <summary>
         /// Sets given values in this team.
@@ -39,7 +31,7 @@ namespace Flattiverse.Connector.Hierarchy
         /// <returns></returns>
         public async Task Configure(Action<TeamConfig> config)
         {
-            TeamConfig changes = new TeamConfig(this);
+            TeamConfig changes = new TeamConfig(this.config);
             config(changes);
 
             Session session = await Galaxy.GetSession();

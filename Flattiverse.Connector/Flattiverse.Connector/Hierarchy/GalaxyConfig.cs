@@ -1,11 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
@@ -34,7 +27,7 @@ namespace Flattiverse.Connector.Hierarchy
         public int MaxShipsPlayer;
         public int MaxBasesPlayer;
 
-        public GalaxyConfig(Galaxy galaxy)
+        internal GalaxyConfig(GalaxyConfig galaxy)
         {
             Name = galaxy.Name;
             Description = galaxy.Description;
@@ -58,6 +51,29 @@ namespace Flattiverse.Connector.Hierarchy
             MaxDronesPlayer = galaxy.MaxDronesPlayer;
             MaxShipsPlayer = galaxy.MaxShipsPlayer;
             MaxBasesPlayer = galaxy.MaxBasesPlayer;
+        }
+
+        internal GalaxyConfig(PacketReader reader)
+        {
+            Name = reader.ReadString();
+            Description = reader.ReadString();
+            GameType = (GameType)reader.ReadByte();
+            MaxPlayers = reader.ReadByte();
+            MaxPlatformsUniverse = reader.ReadUInt16();
+            MaxProbesUniverse = reader.ReadUInt16();
+            MaxDronesUniverse = reader.ReadUInt16();
+            MaxShipsUniverse = reader.ReadUInt16();
+            MaxBasesUniverse = reader.ReadUInt16();
+            MaxPlatformsTeam = reader.ReadUInt16();
+            MaxProbesTeam = reader.ReadUInt16();
+            MaxDronesTeam = reader.ReadUInt16();
+            MaxShipsTeam = reader.ReadUInt16();
+            MaxBasesTeam = reader.ReadUInt16();
+            MaxPlatformsPlayer = reader.ReadByte();
+            MaxProbesPlayer = reader.ReadByte();
+            MaxDronesPlayer = reader.ReadByte();
+            MaxShipsPlayer = reader.ReadByte();
+            MaxBasesPlayer = reader.ReadByte();
         }
 
         internal void Write(PacketWriter writer)

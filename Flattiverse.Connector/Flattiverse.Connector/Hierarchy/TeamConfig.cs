@@ -1,11 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
@@ -24,12 +17,20 @@ namespace Flattiverse.Connector.Hierarchy
             Blue = 0;
         }
 
-        public TeamConfig(Team team)
+        internal TeamConfig(TeamConfig team)
         {
             Name = team.Name;
             Red = team.Red;
             Green = team.Green;
             Blue = team.Blue;
+        }
+
+        internal TeamConfig(PacketReader reader)
+        {
+            Name = reader.ReadString();
+            Red = reader.ReadByte();
+            Green = reader.ReadByte();
+            Blue = reader.ReadByte();
         }
 
         internal static TeamConfig Default => new TeamConfig();

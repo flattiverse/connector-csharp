@@ -1,10 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
@@ -23,12 +17,20 @@ namespace Flattiverse.Connector.Hierarchy
             Protected = false;
         }
 
-        public RegionConfig(Region region)
+        internal RegionConfig(RegionConfig region)
         {
             Name = region.Name;
             StartPropability = region.StartPropability;
             RespawnPropability = region.RespawnPropability;
             Protected = region.Protected;
+        }
+
+        internal RegionConfig(PacketReader reader)
+        {
+            Name = reader.ReadString();
+            StartPropability = reader.Read2U(100);
+            RespawnPropability = reader.Read2U(100);
+            Protected = reader.ReadBoolean();
         }
 
         internal static RegionConfig Default => new RegionConfig();

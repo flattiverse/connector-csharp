@@ -5,28 +5,8 @@ namespace Flattiverse.Connector.Hierarchy;
 public class Galaxy
 {
     private ushort id;
-    private string name;
-    private string description;
-    private GameType gameType;
-    private int maxPlayers;
 
-    private int maxPlatformsUniverse;
-    private int maxProbesUniverse;
-    private int maxDronesUniverse;
-    private int maxShipsUniverse;
-    private int maxBasesUniverse;
-
-    private int maxPlatformsTeam;
-    private int maxProbesTeam;
-    private int maxDronesTeam;
-    private int maxShipsTeam;
-    private int maxBasesTeam;
-
-    private int maxPlatformsPlayer;
-    private int maxProbesPlayer;
-    private int maxDronesPlayer;
-    private int maxShipsPlayer;
-    private int maxBasesPlayer;
+    private GalaxyConfig config;
 
     private readonly Cluster?[] clusters = new Cluster?[256];
     public readonly UniversalHolder<Cluster> Clusters;
@@ -55,28 +35,8 @@ public class Galaxy
     }
 
     public int ID => id;
-    public string Name => name;
-    public string Description => description;
-    public GameType GameType => gameType;
-    public int MaxPlayers => maxPlayers;
-
-    public int MaxPlatformsUniverse => maxPlatformsUniverse;
-    public int MaxProbesUniverse => maxProbesUniverse;
-    public int MaxDronesUniverse => maxDronesUniverse;
-    public int MaxShipsUniverse => maxShipsUniverse;
-    public int MaxBasesUniverse => maxBasesUniverse;
-
-    public int MaxPlatformsTeam => maxPlatformsTeam;
-    public int MaxProbesTeam => maxProbesTeam;
-    public int MaxDronesTeam => maxDronesTeam;
-    public int MaxShipsTeam => maxShipsTeam;
-    public int MaxBasesTeam => maxBasesTeam;
-
-    public int MaxPlatformsPlayer => maxPlatformsPlayer;
-    public int MaxProbesPlayer => maxProbesPlayer;
-    public int MaxDronesPlayer => maxDronesPlayer;
-    public int MaxShipsPlayer => maxShipsPlayer;
-    public int MaxBasesPlayer => maxBasesPlayer;
+    public string Name => config.Name;
+    public GalaxyConfig Config => config;
 
     internal async Task Connect(string uri, string auth, byte team)
     {
@@ -113,7 +73,7 @@ public class Galaxy
     /// <returns></returns>
     public async Task Configure(Action<GalaxyConfig> config)
     {
-        GalaxyConfig changes = new GalaxyConfig(this);
+        GalaxyConfig changes = new GalaxyConfig(this.config);
         config(changes);
 
         Session session = await sessions.Get();
@@ -271,24 +231,6 @@ public class Galaxy
     {
         id = header.Param;
 
-        name = reader.ReadString();
-        description = reader.ReadString();
-        gameType = (GameType)reader.ReadByte();
-        maxPlayers = reader.ReadByte();
-        maxPlatformsUniverse = reader.ReadUInt16();
-        maxProbesUniverse = reader.ReadUInt16();
-        maxDronesUniverse = reader.ReadUInt16();
-        maxShipsUniverse = reader.ReadUInt16();
-        maxBasesUniverse = reader.ReadUInt16();
-        maxPlatformsTeam = reader.ReadUInt16();
-        maxProbesTeam = reader.ReadUInt16();
-        maxDronesTeam = reader.ReadUInt16();
-        maxShipsTeam = reader.ReadUInt16();
-        maxBasesTeam = reader.ReadUInt16();
-        maxPlatformsPlayer = reader.ReadByte();
-        maxProbesPlayer = reader.ReadByte();
-        maxDronesPlayer = reader.ReadByte();
-        maxShipsPlayer = reader.ReadByte();
-        maxBasesPlayer = reader.ReadByte();
+        config = new GalaxyConfig(reader);
     }
 }

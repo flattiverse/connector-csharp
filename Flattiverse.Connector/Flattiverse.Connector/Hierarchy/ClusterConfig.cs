@@ -11,10 +11,16 @@ namespace Flattiverse.Connector.Hierarchy
             Name = string.Empty;
         }
 
-        public ClusterConfig(Cluster cluster)
+        internal ClusterConfig(ClusterConfig cluster)
         {
             Name = cluster.Name;
         }
+
+        internal ClusterConfig(PacketReader reader)
+        {
+            Name = reader.ReadString();
+        }
+
         internal static ClusterConfig Default => new ClusterConfig();
 
         internal void Write(PacketWriter writer)

@@ -1,13 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
-namespace Flattiverse.Connector.Hierarchy
+namespace Flattiverse.Connector
 {
     public class UpgradeConfig
     {
@@ -82,7 +75,7 @@ namespace Flattiverse.Connector.Hierarchy
             FreeSpawn = true;
         }
 
-        public UpgradeConfig(Upgrade upgrade)
+        internal UpgradeConfig(UpgradeConfig upgrade)
         {
             Name = upgrade.Name;
             PreviousUpgrade = upgrade.PreviousUpgrade;
@@ -119,12 +112,52 @@ namespace Flattiverse.Connector.Hierarchy
             FreeSpawn = upgrade.FreeSpawn;
         }
 
+        internal UpgradeConfig(PacketReader reader, Ship ship)
+        {
+            Name = reader.ReadString();
+
+            if (reader.ReadNullableByte() is byte previousUpgradeId && ship.upgrades[previousUpgradeId] is Upgrade previousUpgrade)
+                PreviousUpgrade = previousUpgrade;
+
+            CostEnergy = reader.Read2U(1);
+            CostIon = reader.Read2U(100);
+            CostIron = reader.Read2U(1);
+            CostTungsten = reader.Read2U(100);
+            CostSilicon = reader.Read2U(1);
+            CostTritium = reader.Read2U(10);
+            CostTime = reader.Read2U(10);
+            Hull = reader.Read2U(10);
+            HullRepair = reader.Read2U(100);
+            Shields = reader.Read2U(10);
+            ShieldsLoad = reader.Read2U(100);
+            Size = reader.Read2U(10);
+            Weight = reader.Read2S(10000);
+            EnergyMax = reader.Read2U(10);
+            EnergyCells = reader.Read4U(100);
+            EnergyReactor = reader.Read2U(100);
+            EnergyTransfer = reader.Read2U(100);
+            IonMax = reader.Read2U(100);
+            IonCells = reader.Read2U(100);
+            IonReactor = reader.Read2U(1000);
+            IonTransfer = reader.Read2U(1000);
+            Thruster = reader.Read2U(10000);
+            Nozzle = reader.Read2U(100);
+            Speed = reader.Read2U(100);
+            Turnrate = reader.Read2U(100);
+            Cargo = reader.Read4U(1000);
+            Extractor = reader.Read2U(100);
+            WeaponSpeed = reader.Read2U(10);
+            WeaponTime = reader.ReadUInt16() / 20.0;
+            WeaponLoad = reader.Read2U(10);
+            FreeSpawn = reader.ReadBoolean();
+        }
+
         internal static UpgradeConfig Default => new UpgradeConfig();
 
         internal void Write(PacketWriter writer)
         {
             writer.Write(Name);
-            writer.WriteNullable(PreviousUpgrade?.id);
+            writer.WriteNullable(PreviousUpgrade is null ? null : (byte)PreviousUpgrade.ID);
             writer.Write2U(CostEnergy, 1);
             writer.Write2U(CostIon, 100);
             writer.Write2U(CostIron, 1);

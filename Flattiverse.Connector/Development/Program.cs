@@ -25,9 +25,7 @@ internal class Program
 
         try
         {
-            Thread.Sleep(2000);
-
-            Console.WriteLine($"Original galaxy {galaxy.Name} #{galaxy.ID}: {galaxy.Description}");
+            Console.WriteLine($"Original galaxy {galaxy.Name} #{galaxy.ID}: {galaxy.Config.Description}");
 
             await galaxy.Configure(config =>
             {
@@ -51,7 +49,7 @@ internal class Program
                 config.MaxBasesPlayer = 16;
             });
 
-            Console.WriteLine($"Updated galaxy {galaxy.Name} #{galaxy.ID}: {galaxy.Description}");
+            Console.WriteLine($"Updated galaxy {galaxy.Name} #{galaxy.ID}: {galaxy.Config.Description}");
 
             Cluster cluster = await galaxy.CreateCluster(config =>
             {
@@ -155,7 +153,7 @@ internal class Program
                 config.FreeSpawn = false;
             });
 
-            Console.WriteLine($"Created upgrade {upgrade1.Name} #{upgrade1.ID} following upgrade {upgrade1.PreviousUpgrade?.Name ?? "none"}");
+            Console.WriteLine($"Created upgrade {upgrade1.Name} #{upgrade1.ID} following upgrade {upgrade1.Config.PreviousUpgrade?.Name ?? "none"}");
             Console.WriteLine($"Ship {ship.Name} #{ship.ID} now has {ship.Upgrades.Count} upgrades");
 
             Upgrade upgrade2 = await ship.CreateUpgrade(config =>
@@ -195,7 +193,7 @@ internal class Program
                 config.FreeSpawn = false;
             });
 
-            Console.WriteLine($"Created upgrade {upgrade2.Name} #{upgrade2.ID} following upgrade {upgrade2.PreviousUpgrade?.Name ?? "none"}");
+            Console.WriteLine($"Created upgrade {upgrade2.Name} #{upgrade2.ID} following upgrade {upgrade2.Config.PreviousUpgrade?.Name ?? "none"}");
             Console.WriteLine($"Ship {ship.Name} #{ship.ID} now has {ship.Upgrades.Count} upgrades");
         }
         catch (Exception ex)

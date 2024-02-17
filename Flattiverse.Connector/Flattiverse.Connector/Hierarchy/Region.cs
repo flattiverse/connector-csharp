@@ -1,5 +1,4 @@
 ﻿using Flattiverse.Connector.Network;
-using System.Diagnostics.Metrics;
 
 namespace Flattiverse.Connector.Hierarchy
 {
@@ -9,10 +8,7 @@ namespace Flattiverse.Connector.Hierarchy
         public readonly Cluster Cluster;
 
         private byte id;
-        private string name;
-        private double startPropability;
-        private double respawnPropability;
-        private bool @protected;
+        private RegionConfig config;
 
         internal Region(Galaxy galaxy, Cluster cluster, byte id, PacketReader reader)
         {
@@ -20,20 +16,15 @@ namespace Flattiverse.Connector.Hierarchy
             Cluster = cluster;
             this.id = id;
 
-            name = reader.ReadString();
-            startPropability = reader.Read2U(100);
-            respawnPropability = reader.Read2U(100);
-            @protected = reader.ReadBoolean();
+            config = new RegionConfig(reader);
         }
 
         public int ID => id;
         /// <summary>
         /// The name of the region.
         /// </summary>
-        public string Name => name;
-        public double StartPropability => startPropability;
-        public double RespawnPropability => respawnPropability;
-        public bool Protected => @protected;
+        public string Name => config.Name;
+        public RegionConfig Config => config;
 
         /// <summary>
         /// Sets given values in this region.
@@ -42,7 +33,7 @@ namespace Flattiverse.Connector.Hierarchy
         /// <returns></returns>
         public async Task Configure(Action<RegionConfig> config)
         {
-            RegionConfig changes = new RegionConfig(this);
+            RegionConfig changes = new RegionConfig(this.config);
             config(changes);
 
             Session session = await Galaxy.GetSession();

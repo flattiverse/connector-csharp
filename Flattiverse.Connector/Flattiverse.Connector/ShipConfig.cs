@@ -1,13 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
-namespace Flattiverse.Connector.Hierarchy
+namespace Flattiverse.Connector
 {
     public class ShipConfig
     {
@@ -80,7 +73,7 @@ namespace Flattiverse.Connector.Hierarchy
             FreeSpawn = true;
         }
 
-        public ShipConfig(Ship ship)
+        internal ShipConfig(ShipConfig ship)
         {
             Name = ship.Name;
             CostEnergy = ship.CostEnergy;
@@ -114,6 +107,42 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponTime = ship.WeaponTime;
             WeaponLoad = ship.WeaponLoad;
             FreeSpawn = ship.FreeSpawn;
+        }
+
+        internal ShipConfig(PacketReader reader)
+        {
+            Name = reader.ReadString();
+            CostEnergy = reader.Read2U(1);
+            CostIon = reader.Read2U(100);
+            CostIron = reader.Read2U(1);
+            CostTungsten = reader.Read2U(100);
+            CostSilicon = reader.Read2U(1);
+            CostTritium = reader.Read2U(10);
+            CostTime = reader.Read2U(10);
+            Hull = reader.Read2U(10);
+            HullRepair = reader.Read2U(100);
+            Shields = reader.Read2U(10);
+            ShieldsLoad = reader.Read2U(100);
+            Size = reader.Read2U(10);
+            Weight = reader.Read2S(10000);
+            EnergyMax = reader.Read2U(10);
+            EnergyCells = reader.Read4U(100);
+            EnergyReactor = reader.Read2U(100);
+            EnergyTransfer = reader.Read2U(100);
+            IonMax = reader.Read2U(100);
+            IonCells = reader.Read2U(100);
+            IonReactor = reader.Read2U(1000);
+            IonTransfer = reader.Read2U(1000);
+            Thruster = reader.Read2U(10000);
+            Nozzle = reader.Read2U(100);
+            Speed = reader.Read2U(100);
+            Turnrate = reader.Read2U(100);
+            Cargo = reader.Read4U(1000);
+            Extractor = reader.Read2U(100);
+            WeaponSpeed = reader.Read2U(10);
+            WeaponTime = reader.ReadUInt16() / 20.0;
+            WeaponLoad = reader.Read2U(10);
+            FreeSpawn = reader.ReadBoolean();
         }
 
         internal static ShipConfig Default => new ShipConfig();

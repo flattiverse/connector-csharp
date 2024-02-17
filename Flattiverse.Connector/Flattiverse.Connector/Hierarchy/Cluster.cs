@@ -8,7 +8,7 @@ public class Cluster : INamedUnit
     public readonly Galaxy Galaxy;
 
     private byte id;
-    private string name;
+    private ClusterConfig config;
 
     private readonly Region?[] regions = new Region?[256];
     public readonly UniversalHolder<Region> Regions;
@@ -20,7 +20,7 @@ public class Cluster : INamedUnit
         Galaxy = galaxy;
         this.id = id;
 
-        name = reader.ReadString();
+        config = new ClusterConfig(reader);
 
         Regions = new UniversalHolder<Region>(regions);
     }
@@ -29,7 +29,8 @@ public class Cluster : INamedUnit
     /// <summary>
     /// The name of the cluster.
     /// </summary>
-    public string Name => name;
+    public string Name => config.Name;
+    public ClusterConfig Config => config;
 
     /// <summary>
     /// Sets given values in this cluster.
@@ -38,7 +39,7 @@ public class Cluster : INamedUnit
     /// <returns></returns>
     public async Task Configure(Action<ClusterConfig> config)
     {
-        ClusterConfig changes = new ClusterConfig(this);
+        ClusterConfig changes = new ClusterConfig(this.config);
         config(changes);
 
         Session session = await Galaxy.GetSession();
