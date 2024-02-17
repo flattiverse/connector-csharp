@@ -1,4 +1,6 @@
-﻿using Flattiverse.Connector.UnitConfigurations;
+﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Network;
+using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units
 {
@@ -10,11 +12,12 @@ namespace Flattiverse.Connector.Units
 
         private double gravity;
 
-        internal CelestialBody(CelestialBodyConfiguration configuration) : base(configuration)
+        internal CelestialBody(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
-            position = configuration.Position;
-            radius = configuration.Radius;
-            gravity = configuration.Gravity;
+            position = new Vector(reader);
+            
+            radius = reader.Read4U(100);
+            gravity = reader.Read4U(10000);
         }
 
         public override double Gravity => gravity;

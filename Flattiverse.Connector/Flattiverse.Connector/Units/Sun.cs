@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.Units
 {
@@ -13,9 +15,14 @@ namespace Flattiverse.Connector.Units
     {
         public readonly ReadOnlyCollection<SunSection> Sections;
 
-        public Sun(SunConfiguration configuration) : base(configuration)
+        internal Sun(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
-            Sections = configuration.Sections;
+            int coronas = reader.ReadByte();
+
+            List<SunSection> sections = new List<SunSection>();
+
+            for (int position = 0; position < coronas; position++)
+                sections.Add(new SunSection(null, reader));
         }
     }
 }

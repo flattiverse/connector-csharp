@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units;
@@ -15,15 +16,27 @@ public class Unit
     /// </summary>
     public readonly string Name;
 
-    internal Unit(Configuration configuration)
+    private Cluster cluster; 
+    
+    internal Unit(Cluster cluster, PacketReader reader)
     {
-        Name = configuration.Name;
+        this.cluster = cluster;
+        Name = reader.ReadString();
     }
 
+    internal static Unit FromPacket(Cluster cluster, Packet packet)
+    {
+        switch ((UnitKind)packet.Header.Param0)
+        {
+            case UnitKind.Sun:
+                return new Sun(cluster, packet.Read());
+        }
+    }
+    
     /// <summary>
     /// This is the cluster the unit is in.
     /// </summary>
-    public virtual Cluster Cluster => throw new InvalidOperationException("Cluster should be overwritten by the derived class.");
+    public Cluster Cluster => cluster;
 
     /// <summary>
     /// Specifies if this unit can hide other units behind her. True means you can't see behind this unit in a scan.
