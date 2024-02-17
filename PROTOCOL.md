@@ -96,3 +96,8 @@ Symphony implements those commands sent from Server to Connector:
 * `0x1D`: A already found unit has been updated.
 * `0x1E`: A unit which has been seen in the past
 * `0x20`: Round comitted.
+* `0xFF` (in a session): An error occurred which processing the session.
+
+And those commands from the client to the server:
+
+* `x666`: JAM TODO: Auch Dokumentieren.
