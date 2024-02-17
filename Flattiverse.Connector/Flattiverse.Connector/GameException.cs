@@ -61,6 +61,8 @@ namespace Flattiverse.Connector
                     return "[0x31] The specified parameter doesn't match specification: Null? NaN or Infinity? Invalid characters? Out of bounds?";
                 case 0x32: // Can't add more to the object. Object full?
                     return "[0x32] The object can't have more of these. Object full?";
+                case 0x33: // There is no such Kind.
+                    return "[0x33] There is no compatible or available kind.";
                 case 0xE0: // The requested command doesn't exist.
                     return "[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
                 case 0xF0: // Unspecified connection issues.
