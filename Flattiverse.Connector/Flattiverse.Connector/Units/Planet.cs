@@ -11,7 +11,7 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
-    public class Planet : CelestialBody
+    public class Planet : Harvestable
     {
         internal Planet(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {

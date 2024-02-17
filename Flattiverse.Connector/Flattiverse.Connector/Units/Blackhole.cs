@@ -1,13 +1,23 @@
 ﻿using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
+using Flattiverse.Connector.Units.SubComponents;
+using System.Collections.ObjectModel;
 
 namespace Flattiverse.Connector.Units
 {
     public class BlackHole : CelestialBody
     {
+        public readonly ReadOnlyCollection<BlackHoleSection> Sections;
+
         internal BlackHole(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
+            int coronas = reader.ReadByte();
+
+            List<BlackHoleSection> sections = new List<BlackHoleSection>();
+
+            for (int position = 0; position < coronas; position++)
+                sections.Add(new BlackHoleSection(null, reader));
         }
 
         /// <summary>

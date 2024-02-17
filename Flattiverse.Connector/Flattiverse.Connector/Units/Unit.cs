@@ -15,12 +15,9 @@ public class Unit
     /// This is the name of the unit. An unit can't change her name after it has been setup.
     /// </summary>
     public readonly string Name;
-
-    private Cluster cluster; 
     
-    internal Unit(Cluster cluster, PacketReader reader)
+    internal Unit(PacketReader reader)
     {
-        this.cluster = cluster;
         Name = reader.ReadString();
     }
 
@@ -45,11 +42,11 @@ public class Unit
         }
 
     }
-    
+
     /// <summary>
     /// This is the cluster the unit is in.
     /// </summary>
-    public Cluster Cluster => cluster;
+    public virtual Cluster Cluster => throw new InvalidOperationException("Cluster should be overwritten by the derived class.");
 
     /// <summary>
     /// Specifies if this unit can hide other units behind her. True means you can't see behind this unit in a scan.

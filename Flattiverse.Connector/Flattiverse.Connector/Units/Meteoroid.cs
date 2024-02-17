@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
-    public class Meteoroid : CelestialBody
+    public class Meteoroid : Harvestable
     {
         internal Meteoroid(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {

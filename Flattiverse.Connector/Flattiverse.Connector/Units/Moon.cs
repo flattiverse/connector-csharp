@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
-    public class Moon : CelestialBody
+    public class Moon : Harvestable
     {
         internal Moon(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
