@@ -136,9 +136,9 @@ public class Cluster : INamedUnit
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task<BlackHole> CreateBlackhole(Action<BlackholeConfiguration> config)
+    public async Task<BlackHole> CreateBlackhole(Action<BlackHoleConfiguration> config)
     {
-        BlackholeConfiguration changes = BlackholeConfiguration.Default;
+        BlackHoleConfiguration changes = BlackHoleConfiguration.Default;
         config(changes);
 
         Session session = await Galaxy.GetSession();

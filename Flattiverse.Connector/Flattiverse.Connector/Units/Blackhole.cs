@@ -15,7 +15,7 @@ namespace Flattiverse.Connector.Units
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task Configure(Action<BlackholeConfiguration> config)
+        public async Task Configure(Action<BlackHoleConfiguration> config)
         {
             Session session = await Cluster.Galaxy.GetSession();
 
@@ -28,7 +28,7 @@ namespace Flattiverse.Connector.Units
                 writer.Write(Name);
 
             Packet configurationPacket = await session.SendWait(packet);
-            BlackholeConfiguration changes = new BlackholeConfiguration(configurationPacket.Read());
+            BlackHoleConfiguration changes = new BlackHoleConfiguration(configurationPacket.Read());
             config(changes);
 
             session = await Cluster.Galaxy.GetSession();

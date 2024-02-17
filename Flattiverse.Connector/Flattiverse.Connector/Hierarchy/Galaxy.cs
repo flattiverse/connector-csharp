@@ -181,28 +181,28 @@ public class Galaxy
 
                 break;
             case 0x11://Cluster info
-                clusters[packet.Header.Param0] = new Cluster(this, packet.Header.Param0, reader);
-                Console.WriteLine($"Received cluster {clusters[packet.Header.Param0]!.Name} update");
+                clusters[packet.Header.Id0] = new Cluster(this, packet.Header.Id0, reader);
+                Console.WriteLine($"Received cluster {clusters[packet.Header.Id0]!.Name} update");
 
                 break;
             case 0x12://Region info
-                if (clusters[packet.Header.Param1] is Cluster cluster)
-                    cluster.ReadRegion(packet.Header.Param0, reader);
+                if (clusters[packet.Header.Id1] is Cluster cluster)
+                    cluster.ReadRegion(packet.Header.Id0, reader);
 
                 break;
             case 0x13://Team info
-                teams[packet.Header.Param0] = new Team(this, packet.Header.Param0, reader);
-                Console.WriteLine($"Received team {teams[packet.Header.Param0]!.Name} update");
+                teams[packet.Header.Id0] = new Team(this, packet.Header.Id0, reader);
+                Console.WriteLine($"Received team {teams[packet.Header.Id0]!.Name} update");
 
                 break;
             case 0x14://Ship info
-                ships[packet.Header.Param0] = new Ship(this, packet.Header.Param0, reader);
-                Console.WriteLine($"Received ship(id={packet.Header.Param0}) {ships[packet.Header.Param0]!.Name} update");
+                ships[packet.Header.Id0] = new Ship(this, packet.Header.Id0, reader);
+                Console.WriteLine($"Received ship(id={packet.Header.Id0}) {ships[packet.Header.Id0]!.Name} update");
 
                 break;
             case 0x15://Upgrade info
-                if (ships[packet.Header.Param1] is Ship ship)
-                    ship.ReadUpgrade(packet.Header.Param0, reader);
+                if (ships[packet.Header.Id1] is Ship ship)
+                    ship.ReadUpgrade(packet.Header.Id0, reader);
                 else
                 {
                     // TODO this seems to be a race condition on the server side?
@@ -212,9 +212,9 @@ public class Galaxy
 
                 break;
             case 0x16://New player joined info
-                if (teams[packet.Header.Param1] is Team team)
+                if (teams[packet.Header.Id1] is Team team)
                 {
-                    players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, team, reader);
+                    players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
                     Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
                 }
 

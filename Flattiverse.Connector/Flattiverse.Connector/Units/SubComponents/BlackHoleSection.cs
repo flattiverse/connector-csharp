@@ -3,22 +3,21 @@ using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units.SubComponents
 {
-    // JAM TODO: Das müssen im Connector Properties mit Exceptions mit entsprechenden Fehlermeldungen sein - zumindest im Connector. Hier Beispielhaft implementiert.
-    // JAM TODO: Die Properties müssen Configuration honorieren. (Sollten nur geändert werden können, wenn sie sich in einem Konfigurations-Scenario befinden.)
-
-    public class SunSection
+    public class BlackHoleSection
     {
+        // JAM TODO: Das müssen im Connector Properties mit Exceptions mit entsprechenden Fehlermeldungen sein - zumindest im Connector. Hier Beispielhaft implementiert.
+        // JAM TODO: Die Properties müssen Configuration honorieren. (Sollten nur geändert werden können, wenn sie sich in einem Konfigurations-Scenario befinden.)
+
         private double innerRadius;
         private double outerRadius;
         private double angelFrom;
         private double angelTo;
 
-        private double energy;
-        private double ions;
+        private double additionalGravity;
 
-        private readonly SunConfiguration? Configuration;
+        private readonly BlackHoleConfiguration? Configuration;
 
-        internal SunSection(SunConfiguration configuration)
+        internal BlackHoleSection(BlackHoleConfiguration configuration)
         {
             Configuration = configuration;
 
@@ -27,13 +26,13 @@ namespace Flattiverse.Connector.Units.SubComponents
 
             AngelFrom = 45;
             AngelTo = 135;
-
-            Energy = 4;
-            Ions = 0;
+            AdditionalGravity = 0.03;
         }
 
-        internal SunSection(SunConfiguration? configuration, PacketReader reader)
+        internal BlackHoleSection(BlackHoleConfiguration? configuration, PacketReader reader)
         {
+            // JAM TODO: Hierfür (shift bei verschiedenen Werten) einheitliche Doku in PROTOCOL.md und inkonsistenzen finden und fixen.
+
             Configuration = configuration;
 
             InnerRadius = reader.Read2U(100);
@@ -41,8 +40,8 @@ namespace Flattiverse.Connector.Units.SubComponents
             AngelFrom = reader.Read2U(100);
             AngelTo = reader.Read2U(100);
 
-            Energy = reader.Read2S(100);
-            Ions = reader.Read2S(100);
+            // TODO: MALUK Werte anpassen
+            AdditionalGravity = reader.Read2S(100);
         }
 
         internal void Write(PacketWriter writer)
@@ -52,8 +51,8 @@ namespace Flattiverse.Connector.Units.SubComponents
             writer.Write2U(AngelFrom, 100);
             writer.Write2U(AngelTo, 100);
 
-            writer.Write2S(Energy, 100);
-            writer.Write2S(Ions, 100);
+            // TODO: MALUK Werte anpassen
+            writer.Write2S(AdditionalGravity, 100);
         }
 
         public void Remove()
@@ -176,38 +175,21 @@ namespace Flattiverse.Connector.Units.SubComponents
         }
 
         /// <summary>
-        /// The energy output in this corona. This value multiplied with EnergyCells results in the energy loaded per Second. 
+        /// The force by which the black hole pulls or pushes in this direction.
         /// </summary>
-        public double Energy
+        public double AdditionalGravity
         {
-            get => energy;
+            get => additionalGravity;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || energy > 500.0 || energy < -500.0)
+                // TODO: MALUK Werte anpassen
+                if (double.IsInfinity(value) || double.IsNaN(value) || additionalGravity > 500.0 || additionalGravity < -500.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                energy = value;
-            }
-        }
-
-        /// <summary>
-        /// The ions output in this corona. This value multiplied with IonCells results in the ions loaded per Second. 
-        /// </summary>
-        public double Ions
-        {
-            get => ions;
-            set
-            {
-                if (double.IsInfinity(value) || double.IsNaN(value) || ions > 50.0 || ions < -50.0)
-                    throw new GameException(0x31);
-
-                if (Configuration is null)
-                    throw new GameException(0x34);
-
-                ions = value;
+                additionalGravity = value;
             }
         }
     }

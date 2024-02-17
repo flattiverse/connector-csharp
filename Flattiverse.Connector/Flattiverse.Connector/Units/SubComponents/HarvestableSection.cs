@@ -3,22 +3,21 @@ using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units.SubComponents
 {
-    // JAM TODO: Das müssen im Connector Properties mit Exceptions mit entsprechenden Fehlermeldungen sein - zumindest im Connector. Hier Beispielhaft implementiert.
-    // JAM TODO: Die Properties müssen Configuration honorieren. (Sollten nur geändert werden können, wenn sie sich in einem Konfigurations-Scenario befinden.)
-
-    public class SunSection
+    public class HarvestableSection
     {
         private double innerRadius;
         private double outerRadius;
         private double angelFrom;
         private double angelTo;
 
-        private double energy;
-        private double ions;
+        private double iron;
+        private double silicon;
+        private double tungsten;
+        private double tritium;
 
-        private readonly SunConfiguration? Configuration;
+        private readonly HarvestableConfiguration? Configuration;
 
-        internal SunSection(SunConfiguration configuration)
+        internal HarvestableSection(HarvestableConfiguration configuration)
         {
             Configuration = configuration;
 
@@ -28,11 +27,14 @@ namespace Flattiverse.Connector.Units.SubComponents
             AngelFrom = 45;
             AngelTo = 135;
 
-            Energy = 4;
-            Ions = 0;
+            // TODO: MALUK Werte anpassen
+            Iron = 1;
+            Silicon = 1;
+            Tungsten = 1;
+            Tritium = 1;
         }
 
-        internal SunSection(SunConfiguration? configuration, PacketReader reader)
+        internal HarvestableSection(HarvestableConfiguration? configuration, PacketReader reader)
         {
             Configuration = configuration;
 
@@ -41,8 +43,11 @@ namespace Flattiverse.Connector.Units.SubComponents
             AngelFrom = reader.Read2U(100);
             AngelTo = reader.Read2U(100);
 
-            Energy = reader.Read2S(100);
-            Ions = reader.Read2S(100);
+            // TODO: MALUK Werte anpassen
+            Iron = reader.Read2S(100);
+            Silicon = reader.Read2S(100);
+            Tungsten = reader.Read2S(100);
+            Tritium = reader.Read2S(100);
         }
 
         internal void Write(PacketWriter writer)
@@ -52,8 +57,11 @@ namespace Flattiverse.Connector.Units.SubComponents
             writer.Write2U(AngelFrom, 100);
             writer.Write2U(AngelTo, 100);
 
-            writer.Write2S(Energy, 100);
-            writer.Write2S(Ions, 100);
+            // TODO: MALUK Werte anpassen
+            writer.Write2S(Iron, 100);
+            writer.Write2S(Silicon, 100);
+            writer.Write2S(Tungsten, 100);
+            writer.Write2S(Tritium, 100);
         }
 
         public void Remove()
@@ -176,38 +184,78 @@ namespace Flattiverse.Connector.Units.SubComponents
         }
 
         /// <summary>
-        /// The energy output in this corona. This value multiplied with EnergyCells results in the energy loaded per Second. 
+        /// The iron output in this area. This value multiplied with extractor results in the iron loaded per Second. 
         /// </summary>
-        public double Energy
+        public double Iron
         {
-            get => energy;
+            get => iron;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || energy > 500.0 || energy < -500.0)
+                // TODO: MALUK Werte anpassen
+                if (double.IsInfinity(value) || double.IsNaN(value) || iron > 500.0 || iron < -500.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                energy = value;
+                iron = value;
             }
         }
 
         /// <summary>
-        /// The ions output in this corona. This value multiplied with IonCells results in the ions loaded per Second. 
+        /// The silicon output in this area. This value multiplied with extractor results in the silicon loaded per Second. 
         /// </summary>
-        public double Ions
+        public double Silicon
         {
-            get => ions;
+            get => silicon;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || ions > 50.0 || ions < -50.0)
+                // TODO: MALUK Werte anpassen
+                if (double.IsInfinity(value) || double.IsNaN(value) || silicon > 500.0 || silicon < -500.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                ions = value;
+                silicon = value;
+            }
+        }
+
+        /// <summary>
+        /// The tungsten output in this area. This value multiplied with extractor results in the tungsten loaded per Second. 
+        /// </summary>
+        public double Tungsten
+        {
+            get => tungsten;
+            set
+            {
+                // TODO: MALUK Werte anpassen
+                if (double.IsInfinity(value) || double.IsNaN(value) || tungsten > 500.0 || tungsten < -500.0)
+                    throw new GameException(0x31);
+
+                if (Configuration is null)
+                    throw new GameException(0x34);
+
+                tungsten = value;
+            }
+        }
+
+        /// <summary>
+        /// The tritium output in this area. This value multiplied with extractor results in the tritium loaded per Second. 
+        /// </summary>
+        public double Tritium
+        {
+            get => tritium;
+            set
+            {
+                // TODO: MALUK Werte anpassen
+                if (double.IsInfinity(value) || double.IsNaN(value) || tritium > 500.0 || tritium < -500.0)
+                    throw new GameException(0x31);
+
+                if (Configuration is null)
+                    throw new GameException(0x34);
+
+                tritium = value;
             }
         }
     }
