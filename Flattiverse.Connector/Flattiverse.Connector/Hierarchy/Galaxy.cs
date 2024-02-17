@@ -42,7 +42,7 @@ public class Galaxy
     private readonly SessionHandler sessions;
     private readonly Connection connection;
 
-    private TaskCompletionSource? roundFinishedSignal;
+    private TaskCompletionSource? loginCompleted;
 
     internal Galaxy(Universe universe)
     {
@@ -93,13 +93,17 @@ public class Galaxy
         return await sessions.Get();
     }
 
-    public async Task WaitNextTurn()
+    public async Task WaitLoginCompleted()
     {
         TaskCompletionSource tSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        roundFinishedSignal = tSignal;
+        loginCompleted = tSignal;
 
         await tSignal.Task.ConfigureAwait(false);
+        
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("SIGNALLED LOGIN COMPLETED.");
+        Console.ForegroundColor = ConsoleColor.Gray;
     }
     
     /// <summary>
@@ -253,13 +257,10 @@ public class Galaxy
                 break;
             
             case 0x20: // Tick completed.
-                if (roundFinishedSignal is not null)
+                if (loginCompleted is not null)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("SIGNALLING UNIVERSE TICK.");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    roundFinishedSignal.SetResult();
-                    roundFinishedSignal = null;
+                    loginCompleted.SetResult();
+                    loginCompleted = null;
                 }
 
                 break;
