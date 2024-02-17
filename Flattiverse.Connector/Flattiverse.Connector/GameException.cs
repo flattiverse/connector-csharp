@@ -81,9 +81,9 @@ namespace Flattiverse.Connector
         /// </summary>
         public static byte NoRowsAffected => 0xF9;
         /// <summary>
-        /// Given name is invalid.
+        /// Given value is invalid.
         /// </summary>
-        public static byte InvalidName => 0xFA;
+        public static byte InvalidValue => 0xFA;
         /// <summary>
         /// Given name already exists.
         /// </summary>
@@ -170,7 +170,10 @@ namespace Flattiverse.Connector
                 case 0xF9:
                     return "[0xF9] Command didn't affect any database rows.";
                 case 0xFA:
-                    return "[0xFA] Given name is invalid.";
+                    if (info is null)
+                        return $"[0xFA] Invalid value given.";
+
+                    return $"[0xFA] {info}";
                 case 0xFB:
                     return "[0xFB] Given name already exists.";
                 case 0xFC:
