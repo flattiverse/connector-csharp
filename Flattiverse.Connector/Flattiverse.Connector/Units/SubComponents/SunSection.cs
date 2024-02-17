@@ -72,7 +72,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             get => innerRadius;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || innerRadius < 0.0 || innerRadius >= outerRadius)
+                if (double.IsInfinity(value) || double.IsNaN(value) || innerRadius < 0.0 || innerRadius >= outerRadius)// TODO: MALUK Micha hatte hier eine Anmerkung
                     throw new GameException(0x31);
 
                 if (Configuration is null)
@@ -90,7 +90,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             get => outerRadius;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || outerRadius < 0.0 || innerRadius >= outerRadius)
+                if (double.IsInfinity(value) || double.IsNaN(value) || outerRadius < 0.0 || innerRadius >= outerRadius)// TODO: MALUK Micha hatte hier eine Anmerkung
                     throw new GameException(0x31);
 
                 if (Configuration is null)
