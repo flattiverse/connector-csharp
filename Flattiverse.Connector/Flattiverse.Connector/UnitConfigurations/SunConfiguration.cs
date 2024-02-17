@@ -9,6 +9,8 @@ namespace Flattiverse.Connector.UnitConfigurations
     {
         internal readonly List<SunSection> sections = new List<SunSection>();
 
+        private SunConfiguration() : base() { }
+
         internal SunConfiguration(PacketReader reader) : base(reader)
         {
             int sections = reader.ReadByte();
@@ -43,5 +45,7 @@ namespace Flattiverse.Connector.UnitConfigurations
         }
 
         public override UnitKind Kind => UnitKind.Sun;
+
+        internal static SunConfiguration Default => new SunConfiguration();
     }
 }

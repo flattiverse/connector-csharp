@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Hierarchy;
 
@@ -214,14 +215,19 @@ public class Galaxy
                     players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, team, reader);
                     Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
                 }
+
                 break;
-            
-            case 0x20: // Tick completed.
+            case 0x20: //Tick completed.
                 if (loginCompleted is not null)
                 {
                     loginCompleted.SetResult();
                     loginCompleted = null;
                 }
+
+                break;
+            case 0x50://Unit
+                // TODO: MALUK extend
+                Console.WriteLine($"Received {(UnitKind)packet.Header.Param0} {packet.Header.Id0} update");
 
                 break;
         }

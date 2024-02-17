@@ -1,29 +1,20 @@
-﻿using Flattiverse.Connector.Network;
+﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
 using Flattiverse.Connector.Units.SubComponents;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Flattiverse.Connector.Hierarchy;
-using Flattiverse.Connector.Network;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
-    public class Sun : CelestialBody
+    public class Planet : CelestialBody
     {
-        public readonly ReadOnlyCollection<SunSection> Sections;
-
-        internal Sun(Cluster cluster, PacketReader reader) : base(cluster, reader)
+        internal Planet(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
-            int coronas = reader.ReadByte();
-
-            List<SunSection> sections = new List<SunSection>();
-
-            for (int position = 0; position < coronas; position++)
-                sections.Add(new SunSection(null, reader));
         }
 
         /// <summary>
@@ -31,7 +22,7 @@ namespace Flattiverse.Connector.Units
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task Configure(Action<SunConfiguration> config)
+        public async Task Configure(Action<PlanetConfiguration> config)
         {
             Session session = await Cluster.Galaxy.GetSession();
 
@@ -44,7 +35,7 @@ namespace Flattiverse.Connector.Units
                 writer.Write(Name);
 
             Packet configurationPacket = await session.SendWait(packet);
-            SunConfiguration changes = new SunConfiguration(configurationPacket.Read());
+            PlanetConfiguration changes = new PlanetConfiguration(configurationPacket.Read());
             config(changes);
 
             session = await Cluster.Galaxy.GetSession();

@@ -10,6 +10,8 @@ namespace Flattiverse.Connector.UnitConfigurations
 
         private double gravity;
 
+        protected internal CelestialBodyConfiguration() : base() { }
+
         internal CelestialBodyConfiguration(PacketReader reader) : base(reader)
         {
             position = new Vector(reader);
@@ -72,5 +74,7 @@ namespace Flattiverse.Connector.UnitConfigurations
                 radius = value;
             }
         }
+
+        internal static CelestialBodyConfiguration Default => new CelestialBodyConfiguration();
     }
 }

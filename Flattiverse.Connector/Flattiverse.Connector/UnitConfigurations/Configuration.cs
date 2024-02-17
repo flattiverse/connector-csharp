@@ -8,6 +8,8 @@ namespace Flattiverse.Connector.UnitConfigurations
     {
         private string name;
 
+        protected internal Configuration() { }
+
         internal Configuration(PacketReader reader)
         {
             name = reader.ReadString();
@@ -58,5 +60,7 @@ namespace Flattiverse.Connector.UnitConfigurations
                 name = value;
             }
         }
+
+        internal static Configuration Default => new Configuration();
     }
 }

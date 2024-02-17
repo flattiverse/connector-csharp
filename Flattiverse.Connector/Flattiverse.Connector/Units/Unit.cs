@@ -30,7 +30,20 @@ public class Unit
         {
             case UnitKind.Sun:
                 return new Sun(cluster, packet.Read());
+            case UnitKind.BlackHole:
+                return new BlackHole(cluster, packet.Read());
+            case UnitKind.Planet:
+                return new Planet(cluster, packet.Read());
+            case UnitKind.Moon:
+                return new Moon(cluster, packet.Read());
+            case UnitKind.Meteoroid:
+                return new Meteoroid(cluster, packet.Read());
+            case UnitKind.Buoy:
+                return new Buoy(cluster, packet.Read());
+            default:
+                throw new NotImplementedException($"Unknown UnitKind 0x{packet.Header.Param0:X02} in Unit constructor given.");
         }
+
     }
     
     /// <summary>

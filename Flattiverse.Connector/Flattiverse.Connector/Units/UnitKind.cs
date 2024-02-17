@@ -7,5 +7,6 @@ public enum UnitKind
     Planet = 0x04,
     Moon = 0x05,
     Meteoroid = 0x06,
+    Buoy = 0x10,
     PlayerUnit = 0xF0
 }
