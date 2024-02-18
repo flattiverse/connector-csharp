@@ -45,5 +45,10 @@ namespace Flattiverse.Connector.UnitConfigurations
 
             return section;
         }
+
+        public void ClearSections()
+        {
+            sections.Clear();
+        }
     }
 }

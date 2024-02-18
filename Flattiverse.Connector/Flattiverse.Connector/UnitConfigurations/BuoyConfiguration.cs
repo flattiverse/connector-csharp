@@ -1,10 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {

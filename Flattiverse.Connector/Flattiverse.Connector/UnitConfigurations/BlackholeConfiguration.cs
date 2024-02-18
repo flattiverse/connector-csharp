@@ -44,6 +44,11 @@ namespace Flattiverse.Connector.UnitConfigurations
             return section;
         }
 
+        public void ClearSections()
+        {
+            sections.Clear();
+        }
+
         public override UnitKind Kind => UnitKind.BlackHole;
 
         internal static BlackHoleConfiguration Default => new BlackHoleConfiguration();

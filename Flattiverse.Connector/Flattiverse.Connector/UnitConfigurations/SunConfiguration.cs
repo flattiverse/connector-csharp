@@ -44,6 +44,11 @@ namespace Flattiverse.Connector.UnitConfigurations
             return section;
         }
 
+        public void ClearSections()
+        {
+            sections.Clear();
+        }
+
         public override UnitKind Kind => UnitKind.Sun;
 
         internal static SunConfiguration Default => new SunConfiguration();
