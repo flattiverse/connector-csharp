@@ -89,9 +89,15 @@ If this documentation is not recent, you can find the assignments
 
 ## Packet Command List.
 
-Symphony implements those commands sent from Server to Connector:
+Flattiverse implements those commands sent from Server to Connector:
 
-* JAM TODO: Deine Pakete noch dokumentieren.
+* `0x10`: A galaxy info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x11`: A cluster info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x12`: A region info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x13`: A team info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x14`: A ship info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x15`: A upgrade info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x16`: A player info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
 * `0x1C`: A new unit has been found.
 * `0x1D`: A already found unit has been updated.
 * `0x1E`: A unit which has been seen in the past
@@ -100,4 +106,33 @@ Symphony implements those commands sent from Server to Connector:
 
 And those commands from the client to the server:
 
-* `x666`: JAM TODO: Auch Dokumentieren.
+* `0x40`: Configure galaxy
+* `0x41`: Add new cluster
+* `0x42`: Configure cluster
+* `0x43`: Remove cluster
+* `0x44`: Add new region
+* `0x45`: Configure region
+* `0x46`: Remove region
+* `0x47`: Add new team
+* `0x48`: Configure team
+* `0x49`: Remove team
+* `0x4A`: Add new ship
+* `0x4B`: Configure ship
+* `0x4C`: Remove ship
+* `0x4D`: Add new upgrade
+* `0x4E`: Configure upgrade
+* `0x4F`: Remove upgrade
+* `0x50`: Get specific unit
+* `0x51`: Add new unit
+* `0x52`: Configure black hole
+* `0x53`: Remove black hole
+* `0x54`: Configure buoy
+* `0x55`: Remove buoy
+* `0x56`: Configure meteoroid
+* `0x57`: Remove meteoroid
+* `0x58`: Configure moon
+* `0x59`: Remove moon
+* `0x5A`: Configure planet
+* `0x5B`: Remove planet
+* `0x5C`: Configure sun
+* `0x5D`: Remove sun
