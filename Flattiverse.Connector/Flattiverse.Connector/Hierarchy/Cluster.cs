@@ -132,7 +132,7 @@ public class Cluster : INamedUnit
     }
 
     /// <summary>
-    /// Creates a blackhole with given values in this cluster.
+    /// Creates a black hole with given values in this cluster.
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>

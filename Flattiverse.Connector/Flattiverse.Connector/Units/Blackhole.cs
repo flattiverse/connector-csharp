@@ -49,7 +49,7 @@ namespace Flattiverse.Connector.Units
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
-                writer.Write(Name);
+                changes.Write(writer);
 
             await session.SendWait(packet);
         }

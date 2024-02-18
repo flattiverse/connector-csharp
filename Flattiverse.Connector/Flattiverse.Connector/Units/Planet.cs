@@ -41,12 +41,12 @@ namespace Flattiverse.Connector.Units
             session = await Cluster.Galaxy.GetSession();
 
             packet = new Packet();
-            packet.Header.Command = 0x52;
+            packet.Header.Command = 0x5A;
             packet.Header.Id0 = (byte)Cluster.ID;
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
-                writer.Write(Name);
+                changes.Write(writer);
 
             await session.SendWait(packet);
         }
@@ -60,7 +60,7 @@ namespace Flattiverse.Connector.Units
             Session session = await Cluster.Galaxy.GetSession();
 
             Packet packet = new Packet();
-            packet.Header.Command = 0x53;
+            packet.Header.Command = 0x5B;
             packet.Header.Id0 = (byte)Cluster.ID;
             packet.Header.Param0 = (byte)Kind;
 

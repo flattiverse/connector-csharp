@@ -5,9 +5,6 @@ namespace Flattiverse.Connector.Units.SubComponents
 {
     public class BlackHoleSection
     {
-        // JAM TODO: Das müssen im Connector Properties mit Exceptions mit entsprechenden Fehlermeldungen sein - zumindest im Connector. Hier Beispielhaft implementiert.
-        // JAM TODO: Die Properties müssen Configuration honorieren. (Sollten nur geändert werden können, wenn sie sich in einem Konfigurations-Scenario befinden.)
-
         private double innerRadius;
         private double outerRadius;
         private double angelFrom;
