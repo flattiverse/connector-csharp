@@ -75,6 +75,6 @@ namespace Flattiverse.Connector.UnitConfigurations
             }
         }
 
-        internal static CelestialBodyConfiguration Default => new CelestialBodyConfiguration();
+        internal new static CelestialBodyConfiguration Default => new CelestialBodyConfiguration();
     }
 }

@@ -15,34 +15,52 @@ public class Unit
     /// This is the name of the unit. An unit can't change her name after it has been setup.
     /// </summary>
     public readonly string Name;
+
+    private bool active;
     
     internal Unit(PacketReader reader)
     {
         Name = reader.ReadString();
     }
 
-    internal static Unit FromPacket(Cluster cluster, Packet packet)
+    internal static Unit FromPacket(Cluster cluster, UnitKind kind, PacketReader reader)
     {
-        switch ((UnitKind)packet.Header.Param0)
+        switch (kind)
         {
             case UnitKind.Sun:
-                return new Sun(cluster, packet.Read());
+                return new Sun(cluster, reader);
             case UnitKind.BlackHole:
-                return new BlackHole(cluster, packet.Read());
+                return new BlackHole(cluster, reader);
             case UnitKind.Planet:
-                return new Planet(cluster, packet.Read());
+                return new Planet(cluster, reader);
             case UnitKind.Moon:
-                return new Moon(cluster, packet.Read());
+                return new Moon(cluster, reader);
             case UnitKind.Meteoroid:
-                return new Meteoroid(cluster, packet.Read());
+                return new Meteoroid(cluster, reader);
             case UnitKind.Buoy:
-                return new Buoy(cluster, packet.Read());
+                return new Buoy(cluster, reader);
             default:
-                throw new NotImplementedException($"Unknown UnitKind 0x{packet.Header.Param0:X02} in Unit constructor given.");
+                throw new NotImplementedException($"Unknown UnitKind 0x{(int)kind:X02} ({kind}) in Unit constructor given.");
         }
 
     }
 
+    internal virtual void Update(PacketReader reader)
+    {
+        reader.JumpOverString();
+    }
+
+    /// <summary>
+    /// Indicates whether the unit is still active. A unit is active as long as it is visible to the current player.
+    /// If the unit moves out of all scan areas, the unit is deactivated, so Active = false.
+    /// </summary>
+    public bool Active => active;
+
+    internal void Deactivate()
+    {
+        active = false;
+    }
+    
     /// <summary>
     /// This is the cluster the unit is in.
     /// </summary>

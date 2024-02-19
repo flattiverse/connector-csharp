@@ -99,6 +99,9 @@ Flattiverse implements those commands sent from Server to Connector:
 * `0x15`: A upgrade info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
 * `0x16`: A player info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
 * `0x1C`: A new unit has been found.
+  * `Param0`: `(byte)UnitKind` - specified the kind of the unit trasferred.
+  * `Id0`: `Cluster.ID` - the ID of the cluster this unit is in.
+  * `Payload`: The unit data to read.
 * `0x1D`: A already found unit has been updated.
 * `0x1E`: A unit which has been seen in the past is now not seen any more.
 * `0x20`: Round committed.

@@ -143,6 +143,9 @@ namespace Flattiverse.Connector
                     return "[0x33] There is no compatible or available kind.";
                 case 0x34: // Not configurable.
                     return "[0x34] You don't have permission to alter this element.";
+                case 0x35: // Unit has been created but wasn't there when the session returned.
+                    return
+                        "[0x35] The unit you have created has been successfully created but deleted or reconfigured while the session of your create command returned.";
                 case 0xE0: // The requested command doesn't exist.
                     return "[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
                 

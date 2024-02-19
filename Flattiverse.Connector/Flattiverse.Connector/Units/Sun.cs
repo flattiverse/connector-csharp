@@ -8,23 +8,44 @@ namespace Flattiverse.Connector.Units
 {
     public class Sun : CelestialBody
     {
-        public readonly ReadOnlyCollection<SunSection> Sections;
+        private ReadOnlyCollection<SunSection> sections;
 
         internal Sun(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
             int coronas = reader.ReadByte();
 
-            List<SunSection> sections = new List<SunSection>();
+            List<SunSection> tSections = new List<SunSection>();
 
             for (int position = 0; position < coronas; position++)
-                sections.Add(new SunSection(null, reader));
+                tSections.Add(new SunSection(null, reader));
+
+            sections = new ReadOnlyCollection<SunSection>(tSections);
+        }
+
+        internal override void Update(PacketReader reader)
+        {
+            base.Update(reader);
+            
+            int coronas = reader.ReadByte();
+
+            List<SunSection> tSections = new List<SunSection>();
+
+            for (int position = 0; position < coronas; position++)
+                tSections.Add(new SunSection(null, reader));
+            
+            sections = new ReadOnlyCollection<SunSection>(tSections);
         }
 
         /// <summary>
-        /// Sets given values in this unit.
+        /// Returns the sections of the sun.
         /// </summary>
-        /// <param name="config"></param>
-        /// <returns></returns>
+        public ReadOnlyCollection<SunSection> Sections => sections;
+        
+        /// <summary>
+        /// Updates the configuration of this unit.
+        /// </summary>
+        /// <param name="config">The configuration delegate which allows you to setup the configuration.</param>
+        /// <returns>The task you should await.</returns>
         public async Task Configure(Action<SunConfiguration> config)
         {
             Session session = await Cluster.Galaxy.GetSession();

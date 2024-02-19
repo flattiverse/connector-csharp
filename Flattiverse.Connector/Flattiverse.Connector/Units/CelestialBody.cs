@@ -24,6 +24,15 @@ namespace Flattiverse.Connector.Units
             gravity = reader.Read4U(10000);
         }
 
+        internal override void Update(PacketReader reader)
+        {
+            base.Update(reader);
+            
+            position = new Vector(reader);
+            radius = reader.Read4U(100);
+            gravity = reader.Read4U(10000);
+        }
+
         public override Cluster Cluster => cluster;
 
         public override double Gravity => gravity;

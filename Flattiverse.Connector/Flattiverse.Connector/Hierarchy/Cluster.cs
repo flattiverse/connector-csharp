@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Network;
+﻿using System.Diagnostics;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
 using Flattiverse.Connector.Units;
 using System.Net.Sockets;
@@ -9,7 +10,8 @@ namespace Flattiverse.Connector.Hierarchy;
 public class Cluster : INamedUnit
 {
     public readonly Galaxy Galaxy;
-    private Map map;// TODO: MALUK entfernen
+
+    private Dictionary<string, Unit> units;
 
     private byte id;
     private ClusterConfig config;
@@ -22,7 +24,9 @@ public class Cluster : INamedUnit
     internal Cluster(Galaxy galaxy, byte id, PacketReader reader)
     {
         Galaxy = galaxy;
-        map = new Map();// TODO: MALUK entfernen
+
+        units = new Dictionary<string, Unit>();
+        
         this.id = id;
 
         config = new ClusterConfig(reader);
@@ -31,10 +35,12 @@ public class Cluster : INamedUnit
     }
 
     public int ID => id;
+    
     /// <summary>
     /// The name of the cluster.
     /// </summary>
     public string Name => config.Name;
+    
     public ClusterConfig Config => config;
 
     /// <summary>
@@ -57,6 +63,44 @@ public class Cluster : INamedUnit
             changes.Write(writer);
 
         await session.SendWait(packet);
+    }
+
+    internal Unit SeeNewUnit(UnitKind kind, PacketReader reader)
+    {
+        Unit unit = Unit.FromPacket(this, kind, reader);
+        
+        units.Add(unit.Name, unit);
+
+        return unit;
+    }
+
+    internal void SeeUpdatedUnit(PacketReader reader)
+    {
+        string name = reader.PeekString();
+        Unit? unit;
+        
+        if (!units.TryGetValue(name, out unit))
+            Debug.Fail($"Requested unit \"{name}\" should be know but isn't in my units dictionary.");
+        
+        // TODO JUW: Diese Update-Funktion muss in jeder Unit sein und entsprechend meinem Beispiel funktionieren.
+        
+        unit.Update(reader);
+    }
+
+    internal Unit SeeUnitNoMore(string name)
+    {
+        Unit? unit;
+        
+        if (!units.TryGetValue(name, out unit))
+            Debug.Fail($"Requested unit \"{name}\" should be know but isn't in my units dictionary.");
+
+        units.Remove(name);
+
+        unit.Deactivate();
+
+        return unit;
+
+        // TODO: Notify End user about new unit.
     }
 
     /// <summary>
@@ -125,8 +169,8 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (map.TryGet(name, out Unit? unit) || unit is not Sun sun)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (units.TryGetValue(name, out Unit? unit) || unit is not Sun sun)
+            throw new GameException(0x35);
 
         return sun;
     }
@@ -155,8 +199,8 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (map.TryGet(name, out Unit? unit) || unit is not BlackHole blackHole)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (units.TryGetValue(name, out Unit? unit) || unit is not BlackHole blackHole)
+            throw new GameException(0x35);
 
         return blackHole;
     }
@@ -185,8 +229,8 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (map.TryGet(name, out Unit? unit) || unit is not Planet planet)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (units.TryGetValue(name, out Unit? unit) || unit is not Planet planet)
+            throw new GameException(0x35);
 
         return planet;
     }
@@ -215,8 +259,8 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (map.TryGet(name, out Unit? unit) || unit is not Moon moon)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (units.TryGetValue(name, out Unit? unit) || unit is not Moon moon)
+            throw new GameException(0x35);
 
         return moon;
     }
@@ -245,8 +289,8 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (map.TryGet(name, out Unit? unit) || unit is not Meteoroid meteoroid)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (units.TryGetValue(name, out Unit? unit) || unit is not Meteoroid meteoroid)
+            throw new GameException(0x35);
 
         return meteoroid;
     }
@@ -275,8 +319,8 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (map.TryGet(name, out Unit? unit) || unit is not Buoy buoy)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (units.TryGetValue(name, out Unit? unit) || unit is not Buoy buoy)
+            throw new GameException(0x35);
 
         return buoy;
     }

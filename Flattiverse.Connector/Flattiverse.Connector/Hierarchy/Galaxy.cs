@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Network;
+﻿using System.Diagnostics;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Hierarchy;
@@ -203,12 +204,6 @@ public class Galaxy
             case 0x15://Upgrade info
                 if (ships[packet.Header.Id1] is Ship ship)
                     ship.ReadUpgrade(packet.Header.Id0, reader);
-                else
-                {
-                    // TODO this seems to be a race condition on the server side?
-                    // only happens in spectator mode (APIKEY=0000000000000000000000000000000000000000000000000000000000000000)
-                    Console.WriteLine($"Received Upgrade for non existing ship {packet.Header.Param1}");
-                }
 
                 break;
             case 0x16://New player joined info
@@ -219,19 +214,49 @@ public class Galaxy
                 }
 
                 break;
+            case 0x1C: // We see a new unit which we didn't see before.
+            {
+                Cluster? c = clusters[packet.Header.Id0];
+
+                Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
+                
+                Unit unit = c.SeeNewUnit((UnitKind)packet.Header.Param0, reader);
+                
+                // TODO: Send notification of new unit to the end user here.
+            }
+                break;
+            case 0x1D: // A unit we see has been updated.
+            {
+                Cluster? c = clusters[packet.Header.Id0];
+
+                Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
+
+                c.SeeUpdatedUnit(reader);
+            }
+                break;
+            case 0x1E: // A once known unit vanished.
+            {
+                Cluster? c = clusters[packet.Header.Id0];
+
+                Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
+
+                Unit unit = c.SeeUnitNoMore(reader.ReadString());
+                
+                // TODO: Send notification of vanished unit to the end user here.
+            }
+                break;
             case 0x20: //Tick completed.
                 if (loginCompleted is not null)
                 {
                     loginCompleted.SetResult();
                     loginCompleted = null;
                 }
-
                 break;
-            case 0x50://Unit
-                // TODO: MALUK extend
-                Console.WriteLine($"Received {(UnitKind)packet.Header.Param0} {packet.Header.Id0} update");
-
-                break;
+//            case 0x50://Unit
+//                // TODO: MALUK extend
+//                Console.WriteLine($"Received {(UnitKind)packet.Header.Param0} {packet.Header.Id0} update");
+//
+//                break;
         }
     }
 

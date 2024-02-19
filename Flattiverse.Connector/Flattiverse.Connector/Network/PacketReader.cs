@@ -185,6 +185,28 @@ internal class PacketReader
         return Encoding.UTF8.GetString(data, position - length, length);
     }
 
+    public string PeekString()
+    {
+        Debug.Assert(position + 1 <= end, "Can't read out of bounds.");
+
+        int length = data[position];
+
+        Debug.Assert(position + 1 + length <= end, "Can't read out of bounds.");
+
+        return Encoding.UTF8.GetString(data, position + 1, length);
+    }
+    
+    public void JumpOverString()
+    {
+        Debug.Assert(position + 1 <= end, "Can't read out of bounds.");
+
+        int length = data[position];
+
+        Debug.Assert(position + 1 + length <= end, "Can't read out of bounds.");
+
+        position += 1 + length;
+    }
+
     internal byte? ReadNullableByte()
     {
         Debug.Assert(position + 1 <= end, "Can't read out of bounds.");
