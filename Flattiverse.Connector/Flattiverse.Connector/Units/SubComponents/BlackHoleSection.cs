@@ -37,6 +37,8 @@ namespace Flattiverse.Connector.Units.SubComponents
             AngelFrom = reader.Read2U(100);
             AngelTo = reader.Read2U(100);
 
+            // 0° - 360°   2U (0-65535)   0-36000   *100 -> /100.
+            
             // TODO: MALUK Werte anpassen
             AdditionalGravity = reader.Read2S(100);
         }
