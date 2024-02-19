@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Units
 {
     public class BlackHole : CelestialBody
     {
-        public readonly ReadOnlyCollection<BlackHoleSection> Sections;
+        internal ReadOnlyCollection<BlackHoleSection> sections;
 
         internal BlackHole(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
@@ -19,6 +19,8 @@ namespace Flattiverse.Connector.Units
             for (int position = 0; position < coronas; position++)
                 sections.Add(new BlackHoleSection(null, reader));
         }
+
+        public ReadOnlyCollection<BlackHoleSection> Sections => sections;
 
         /// <summary>
         /// Sets given values in this unit.
@@ -52,6 +54,21 @@ namespace Flattiverse.Connector.Units
                 changes.Write(writer);
 
             await session.SendWait(packet);
+        }
+
+
+        internal override void Update(PacketReader reader)
+        {
+            base.Update(reader);
+
+            int coronas = reader.ReadByte();
+
+            List<BlackHoleSection> tSections = new List<BlackHoleSection>();
+
+            for (int position = 0; position < coronas; position++)
+                tSections.Add(new BlackHoleSection(null, reader));
+
+            sections = new ReadOnlyCollection<BlackHoleSection>(tSections);
         }
 
         /// <summary>

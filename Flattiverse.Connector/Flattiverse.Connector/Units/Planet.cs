@@ -51,6 +51,12 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        internal override void Update(PacketReader reader) 
+        {
+            base.Update(reader);
+        }
+
+
         /// <summary>
         /// Removes this unit.
         /// </summary>
