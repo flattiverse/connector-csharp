@@ -97,7 +97,8 @@ Flattiverse implements those commands sent from Server to Connector:
 * `0x13`: A team info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
 * `0x14`: A ship info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
 * `0x15`: A upgrade info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x16`: A player info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
+* `0x16`: A player info you don't know yet. This can either be directly after login as an initial transmission or if one was created.
+* `0x17`: A player was removed.
 * `0x1C`: A new unit has been found.
   * `Param0`: `(byte)UnitKind` - specified the kind of the unit trasferred.
   * `Id0`: `Cluster.ID` - the ID of the cluster this unit is in.
