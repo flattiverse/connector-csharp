@@ -68,7 +68,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             get => gravity;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || value < 30.0 || value > 30.0)
+                if (double.IsInfinity(value) || double.IsNaN(value) || value < 30.0 || value > 30.0)//TODO: realisitsche Min und Max-Werte setzen:
                     throw new GameException(0x31);
 
                 radius = value;

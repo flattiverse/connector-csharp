@@ -34,7 +34,7 @@ internal class PacketReader
 
         position += 1;
 
-        return Unsafe.As<byte, byte>(ref data[position - 1]);
+        return data[position - 1];
     }
 
     public short ReadInt16()
@@ -106,7 +106,7 @@ internal class PacketReader
 
         position += 1;
 
-        return Unsafe.As<byte, byte>(ref data[position - 1]) / shift;
+        return data[position - 1] / shift;
     }
 
     public double Read2S(double shift)
@@ -169,14 +169,14 @@ internal class PacketReader
 
         position += 1;
 
-        return Unsafe.As<byte, byte>(ref data[position - 1]) == 1;
+        return data[position - 1] == 1;
     }
 
     public string ReadString()
     {
         Debug.Assert(position + 1 <= end, "Can't read out of bounds.");
 
-        int length = Unsafe.As<byte, byte>(ref data[position]);
+        int length = data[position];
 
         Debug.Assert(position + 1 + length <= end, "Can't read out of bounds.");
 
@@ -217,7 +217,7 @@ internal class PacketReader
 
             position += 2;
 
-            return Unsafe.As<byte, byte>(ref data[position - 1]);
+            return data[position - 1];
         }
 
         position += 1;
