@@ -169,7 +169,7 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (units.TryGetValue(name, out Unit? unit) || unit is not Sun sun)
+        if (!units.TryGetValue(name, out Unit? unit) || unit is not Sun sun)
             throw new GameException(0x35);
 
         return sun;
@@ -199,7 +199,7 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (units.TryGetValue(name, out Unit? unit) || unit is not BlackHole blackHole)
+        if (!units.TryGetValue(name, out Unit? unit) || unit is not BlackHole blackHole)
             throw new GameException(0x35);
 
         return blackHole;
@@ -229,7 +229,7 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (units.TryGetValue(name, out Unit? unit) || unit is not Planet planet)
+        if (!units.TryGetValue(name, out Unit? unit) || unit is not Planet planet)
             throw new GameException(0x35);
 
         return planet;
@@ -259,7 +259,7 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (units.TryGetValue(name, out Unit? unit) || unit is not Moon moon)
+        if (!units.TryGetValue(name, out Unit? unit) || unit is not Moon moon)
             throw new GameException(0x35);
 
         return moon;
@@ -289,7 +289,7 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (units.TryGetValue(name, out Unit? unit) || unit is not Meteoroid meteoroid)
+        if (!units.TryGetValue(name, out Unit? unit) || unit is not Meteoroid meteoroid)
             throw new GameException(0x35);
 
         return meteoroid;
@@ -319,7 +319,7 @@ public class Cluster : INamedUnit
 
         await session.SendWait(packet);
 
-        if (units.TryGetValue(name, out Unit? unit) || unit is not Buoy buoy)
+        if (!units.TryGetValue(name, out Unit? unit) || unit is not Buoy buoy)
             throw new GameException(0x35);
 
         return buoy;
