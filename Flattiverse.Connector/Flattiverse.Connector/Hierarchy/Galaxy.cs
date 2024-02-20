@@ -181,9 +181,9 @@ public class Galaxy
 
         switch (packet.Header.Command)
         {
-            case 0x01://Event
-                pushEvent(FlattiverseEvent.FromPacketReader(this, packet.Header, reader));
-                break;
+            //case 0x01://Event
+            //    pushEvent(FlattiverseEvent.FromPacketReader(this, packet.Header, reader));
+            //    break;
 
 
             case 0x10://Galaxy info

@@ -41,11 +41,11 @@ namespace Flattiverse.Connector.Events
                 //case EventKind.UnitVanished:
                 //    return new VanishedUnitEvent(galaxy, reader.ReadUInt32());
 
-                case EventKind.PlayerAdded:
-                    return new PlayerAddedEvent(galaxy, Player.FromPacketReader(galaxy, reader));
+                //case EventKind.PlayerAdded:
+                //    return new PlayerAddedEvent(galaxy, Player.FromPacketReader(galaxy, reader));
 
-                case EventKind.PlayerRemoved:
-                    return new PlayerRemovedEvent(galaxy, reader.ReadUInt32());
+                //case EventKind.PlayerRemoved:
+                //    return new PlayerRemovedEvent(galaxy, Player.FromPacketReader(galaxy, reader));
 
                 default:
                     throw new NotImplementedException($"The event kind {(EventKind)header.Param0} is not implemented.");
