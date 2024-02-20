@@ -220,6 +220,7 @@ public class Galaxy
                 { 
                     if (teams[packet.Header.Id1] is Team team)
                     {
+                        // TODO MALUK (PlayerKind)packet.Header.Id0 <- Id0 ?? Param0? 
                         players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
                         Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
                         pushEvent(new PlayerAddedEvent(this, players[packet.Header.Id0]!));
@@ -230,6 +231,7 @@ public class Galaxy
                 { 
                     if (teams[packet.Header.Id1] is Team team)
                     {
+                        // TODO MALUK (PlayerKind)packet.Header.Id0 <- Id0 ?? Param0? 
                         Player player = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
                         players.Remove(packet.Header.Id0);
                         Console.WriteLine($"Received player {player.Name} removed");
