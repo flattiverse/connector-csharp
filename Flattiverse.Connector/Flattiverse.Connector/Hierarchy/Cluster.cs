@@ -74,7 +74,7 @@ public class Cluster : INamedUnit
         return unit;
     }
 
-    internal void SeeUpdatedUnit(PacketReader reader)
+    internal Unit SeeUpdatedUnit(PacketReader reader)
     {
         string name = reader.PeekString();
         Unit? unit;
@@ -82,9 +82,9 @@ public class Cluster : INamedUnit
         if (!units.TryGetValue(name, out unit))
             Debug.Fail($"Requested unit \"{name}\" should be know but isn't in my units dictionary.");
         
-        // TODO JUW: Diese Update-Funktion muss in jeder Unit sein und entsprechend meinem Beispiel funktionieren.
-        
         unit.Update(reader);
+
+        return unit;
     }
 
     internal Unit SeeUnitNoMore(string name)

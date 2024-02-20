@@ -136,4 +136,6 @@ public class Unit
     /// Specifies the Kind of the unit.
     /// </summary>
     public virtual UnitKind Kind => UnitKind.Sun;
+
+    public override string ToString() => base.ToString();
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
@@ -25,6 +26,10 @@ public class Galaxy
     private readonly Connection connection;
 
     private TaskCompletionSource? loginCompleted;
+
+    private readonly Queue<FlattiverseEvent> pendingEvents = new Queue<FlattiverseEvent>();
+    private readonly Queue<TaskCompletionSource<FlattiverseEvent>> pendingEventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
+    private readonly object syncEvents = new object();
 
     internal Galaxy(Universe universe)
     {
@@ -176,6 +181,11 @@ public class Galaxy
 
         switch (packet.Header.Command)
         {
+            case 0x01://Event
+                pushEvent(FlattiverseEvent.FromPacketReader(this, packet.Header, reader));
+                break;
+
+
             case 0x10://Galaxy info
                 Update(packet.Header, reader);
                 Console.WriteLine($"Received galaxy {Name} update");
@@ -207,43 +217,58 @@ public class Galaxy
 
                 break;
             case 0x16://New player joined info
-                if (teams[packet.Header.Id1] is Team team)
-                {
-                    players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
-                    Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
+                { 
+                    if (teams[packet.Header.Id1] is Team team)
+                    {
+                        players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
+                        Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
+                        pushEvent(new PlayerAddedEvent(this, players[packet.Header.Id0]!));
+                    }
                 }
-
+                break;
+            case 0x17://Player removed info
+                { 
+                    if (teams[packet.Header.Id1] is Team team)
+                    {
+                        Player player = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
+                        players.Remove(packet.Header.Id0);
+                        Console.WriteLine($"Received player {player.Name} removed");
+                        pushEvent(new PlayerRemovedEvent(this, player));
+                    }
+                }
                 break;
             case 0x1C: // We see a new unit which we didn't see before.
-            {
-                Cluster? c = clusters[packet.Header.Id0];
+                {
+                    Cluster? c = clusters[packet.Header.Id0];
 
-                Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
+                    Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
                 
-                Unit unit = c.SeeNewUnit((UnitKind)packet.Header.Param0, reader);
+                    Unit unit = c.SeeNewUnit((UnitKind)packet.Header.Param0, reader);
                 
-                // TODO: Send notification of new unit to the end user here.
-            }
+                    pushEvent(new AddedUnitEvent(this, unit));
+                }
                 break;
             case 0x1D: // A unit we see has been updated.
-            {
-                Cluster? c = clusters[packet.Header.Id0];
+                {
+                    Cluster? c = clusters[packet.Header.Id0];
 
-                Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
+                    Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
 
-                c.SeeUpdatedUnit(reader);
-            }
+                    Unit unit = c.SeeUpdatedUnit(reader);
+
+                    pushEvent(new UpdatedUnitEvent(this, unit));
+                }
                 break;
             case 0x1E: // A once known unit vanished.
-            {
-                Cluster? c = clusters[packet.Header.Id0];
+                {
+                    Cluster? c = clusters[packet.Header.Id0];
 
-                Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
+                    Debug.Assert(c is not null, $"Cluster with ID {packet.Header.Id0} not found.");
 
-                Unit unit = c.SeeUnitNoMore(reader.ReadString());
-                
-                // TODO: Send notification of vanished unit to the end user here.
-            }
+                    Unit unit = c.SeeUnitNoMore(reader.ReadString());
+
+                    pushEvent(new VanishedUnitEvent(this, unit));
+                }
                 break;
             case 0x20: //Tick completed.
                 if (loginCompleted is not null)
@@ -265,5 +290,40 @@ public class Galaxy
         id = header.Param;
 
         config = new GalaxyConfig(reader);
+    }
+
+    internal void pushEvent(FlattiverseEvent @event)
+    {
+        TaskCompletionSource<FlattiverseEvent>? tcs;
+        bool enqueue = true;
+
+        lock (syncEvents)
+        {
+            while (pendingEventWaiters.TryDequeue(out tcs))
+            {
+                ThreadPool.QueueUserWorkItem(delegate { tcs.SetResult(@event); });
+                enqueue = false;
+            }
+
+            if (!enqueue)
+                pendingEvents.Enqueue(@event);
+        }
+    }
+
+    public async Task<FlattiverseEvent> NextEvent()
+    {
+        FlattiverseEvent? @event;
+        TaskCompletionSource<FlattiverseEvent> tcs;
+
+        lock (syncEvents)
+        {
+            if (pendingEvents.TryDequeue(out @event))
+                return @event;
+
+            tcs = new TaskCompletionSource<FlattiverseEvent>();
+            pendingEventWaiters.Enqueue(tcs);
+        }
+
+        return await tcs.Task;
     }
 }

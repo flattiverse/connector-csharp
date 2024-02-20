@@ -72,5 +72,10 @@ namespace Flattiverse.Connector.Units
 
             await session.SendWait(packet);
         }
+
+        public override string ToString()
+        {
+            return $"Buoy {Name}";
+        }
     }
 }

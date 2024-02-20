@@ -1,6 +1,6 @@
 ﻿namespace Flattiverse.Connector.Hierarchy
 {
-    enum PlayerKind
+    public enum PlayerKind
     {
         Player = 0x01,
         Spectator = 0x02,

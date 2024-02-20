@@ -10,11 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="icon.ico" />
+    <Compile Remove="Messages\**" />
+    <EmbeddedResource Remove="Messages\**" />
+    <None Remove="Messages\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Messages\" />
+    <Content Include="icon.ico" />
   </ItemGroup>
 
 </Project>

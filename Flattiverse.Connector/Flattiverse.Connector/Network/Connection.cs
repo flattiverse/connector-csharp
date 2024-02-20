@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Flattiverse.Connector.Events;
+using System.Globalization;
 using System.Net.WebSockets;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
