@@ -3,11 +3,11 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events
 {
-    internal class AddedUnitEvent : UnitEvent
+    public class AddedUnitEvent : UnitEvent
     {
         public readonly Unit Unit;
 
-        internal AddedUnitEvent(Galaxy galaxy, Unit unit) : base(galaxy)
+        internal AddedUnitEvent(Galaxy galaxy, Unit unit) : base(galaxy) 
         {
             Unit = unit;
         }

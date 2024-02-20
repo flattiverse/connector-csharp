@@ -3,7 +3,7 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events
 {
-    internal class VanishedUnitEvent : UnitEvent
+    public class VanishedUnitEvent : UnitEvent
     {
         public readonly Unit Unit;
 
