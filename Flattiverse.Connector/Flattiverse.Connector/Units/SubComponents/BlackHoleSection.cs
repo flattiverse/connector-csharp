@@ -18,8 +18,8 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            InnerRadius = 100;
             OuterRadius = 130;
+            InnerRadius = 100;
 
             AngelFrom = 45;
             AngelTo = 135;
@@ -145,7 +145,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             get => angelFrom;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0 || value >= angelTo)
+                if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)
@@ -163,7 +163,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             get => angelTo;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0 || angelFrom >= value)
+                if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)
