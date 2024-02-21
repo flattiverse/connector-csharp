@@ -307,7 +307,7 @@ public class Galaxy
                 enqueue = false;
             }
 
-            if (!enqueue)
+            if (enqueue)
                 pendingEvents.Enqueue(@event);
         }
     }
