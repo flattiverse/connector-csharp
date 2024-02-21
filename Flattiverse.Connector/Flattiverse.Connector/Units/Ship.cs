@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
+    // TODO Fehlende overrides von Unit für Ship
     public class Ship : Unit
     {
         private Cluster cluster;
