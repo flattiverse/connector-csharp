@@ -120,9 +120,9 @@ And those commands from the client to the server:
 * `0x47`: Add new team
 * `0x48`: Configure team
 * `0x49`: Remove team
-* `0x4A`: Add new ship
-* `0x4B`: Configure ship
-* `0x4C`: Remove ship
+* `0x4A`: Add new ship design
+* `0x4B`: Configure ship design
+* `0x4C`: Remove ship design
 * `0x4D`: Add new upgrade
 * `0x4E`: Configure upgrade
 * `0x4F`: Remove upgrade
