@@ -2,8 +2,6 @@
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
 using Flattiverse.Connector.Units;
-using System.Net.Sockets;
-using System.Numerics;
 
 namespace Flattiverse.Connector.Hierarchy;
 
@@ -99,8 +97,6 @@ public class Cluster : INamedUnit
         unit.Deactivate();
 
         return unit;
-
-        // TODO: Notify End user about new unit.
     }
 
     /// <summary>
@@ -323,6 +319,25 @@ public class Cluster : INamedUnit
             throw new GameException(0x35);
 
         return buoy;
+    }
+
+    public async Task<Controllable> RegisterShip(string name, ShipDesign design) 
+    {         
+        Session session = await Galaxy.GetSession();
+    
+        Packet packet = new Packet();
+        packet.Header.Command = 0x30;
+        packet.Header.Param0 = id;
+    
+        using (PacketWriter writer = packet.Write())
+        {
+            writer.Write(name);
+            writer.Write(design.ID);
+        }
+        
+        Packet answerPacket = await session.SendWait(packet);
+
+        return new Controllable(this, answerPacket.Read());
     }
 
     internal void ReadRegion(byte id, PacketReader reader)

@@ -3,7 +3,7 @@ using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector
 {
-    public class Ship : INamedUnit
+    public class ShipDesign : INamedUnit
     {
         public readonly Galaxy Galaxy;
 
@@ -11,14 +11,14 @@ namespace Flattiverse.Connector
         public readonly UniversalHolder<Upgrade> Upgrades;
 
         private byte id;
-        private ShipConfig config;
+        private ShipDesignConfig config;
 
-        internal Ship(Galaxy galaxy, byte id, PacketReader reader)
+        internal ShipDesign(Galaxy galaxy, byte id, PacketReader reader)
         {
             Galaxy = galaxy;
             this.id = id;
 
-            config = new ShipConfig(reader);
+            config = new ShipDesignConfig(reader);
 
             Upgrades = new UniversalHolder<Upgrade>(upgrades);
         }
@@ -28,16 +28,16 @@ namespace Flattiverse.Connector
         /// The name of the ship.
         /// </summary>
         public string Name => config.Name;
-        public ShipConfig Config => config;
+        public ShipDesignConfig Config => config;
 
         /// <summary>
         /// Sets given values in this ship.
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task Configure(Action<ShipConfig> config)
+        public async Task Configure(Action<ShipDesignConfig> config)
         {
-            ShipConfig changes = new ShipConfig(this.config);
+            ShipDesignConfig changes = new ShipDesignConfig(this.config);
             config(changes);
 
             Session session = await Galaxy.GetSession();

@@ -36,6 +36,8 @@ namespace Flattiverse.Connector
         public double WeaponSpeed;
         public double WeaponTime;
         public double WeaponLoad;
+        public ushort WeaponAmmo;
+        public double WeaponAmmoProduction;
         public bool FreeSpawn;
 
         private UpgradeConfig()
@@ -72,6 +74,8 @@ namespace Flattiverse.Connector
             WeaponSpeed = 0;
             WeaponTime = 0;
             WeaponLoad = 0;
+            WeaponAmmo = 0;
+            WeaponAmmoProduction = 0;
             FreeSpawn = true;
         }
 
@@ -109,10 +113,12 @@ namespace Flattiverse.Connector
             WeaponSpeed = upgrade.WeaponSpeed;
             WeaponTime = upgrade.WeaponTime;
             WeaponLoad = upgrade.WeaponLoad;
+            WeaponAmmo = upgrade.WeaponAmmo;
+            WeaponAmmoProduction = upgrade.WeaponAmmoProduction;
             FreeSpawn = upgrade.FreeSpawn;
         }
 
-        internal UpgradeConfig(PacketReader reader, Ship ship)
+        internal UpgradeConfig(PacketReader reader, ShipDesign ship)
         {
             Name = reader.ReadString();
 
@@ -149,6 +155,8 @@ namespace Flattiverse.Connector
             WeaponSpeed = reader.Read2U(10);
             WeaponTime = reader.ReadUInt16() / 20.0;
             WeaponLoad = reader.Read2U(10);
+            WeaponAmmo = reader.ReadUInt16();
+            WeaponAmmoProduction = reader.Read2U(100000);
             FreeSpawn = reader.ReadBoolean();
         }
 
@@ -188,6 +196,8 @@ namespace Flattiverse.Connector
             writer.Write2U(WeaponSpeed, 10);
             writer.Write((ushort)WeaponTime);
             writer.Write2U(WeaponLoad, 10);
+            writer.Write(WeaponAmmo);
+            writer.Write2U(WeaponAmmoProduction, 100000);
             writer.Write(FreeSpawn);
         }
     }

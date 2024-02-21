@@ -2,7 +2,7 @@
 
 namespace Flattiverse.Connector
 {
-    public class ShipConfig
+    public class ShipDesignConfig
     {
         public string Name;
         public double CostEnergy;
@@ -35,9 +35,11 @@ namespace Flattiverse.Connector
         public double WeaponSpeed;
         public double WeaponTime;
         public double WeaponLoad;
+        public ushort WeaponAmmo;
+        public double WeaponAmmoProduction;
         public bool FreeSpawn;
 
-        private ShipConfig()
+        private ShipDesignConfig()
         {
             Name = string.Empty;
             CostEnergy = 0;
@@ -70,10 +72,12 @@ namespace Flattiverse.Connector
             WeaponSpeed = 0;
             WeaponTime = 0;
             WeaponLoad = 0;
+            WeaponAmmo = 0;
+            WeaponAmmoProduction = 0;
             FreeSpawn = true;
         }
 
-        internal ShipConfig(ShipConfig ship)
+        internal ShipDesignConfig(ShipDesignConfig ship)
         {
             Name = ship.Name;
             CostEnergy = ship.CostEnergy;
@@ -106,10 +110,12 @@ namespace Flattiverse.Connector
             WeaponSpeed = ship.WeaponSpeed;
             WeaponTime = ship.WeaponTime;
             WeaponLoad = ship.WeaponLoad;
+            WeaponAmmo = ship.WeaponAmmo;
+            WeaponAmmoProduction = ship.WeaponAmmoProduction;
             FreeSpawn = ship.FreeSpawn;
         }
 
-        internal ShipConfig(PacketReader reader)
+        internal ShipDesignConfig(PacketReader reader)
         {
             Name = reader.ReadString();
             CostEnergy = reader.Read2U(1);
@@ -142,10 +148,12 @@ namespace Flattiverse.Connector
             WeaponSpeed = reader.Read2U(10);
             WeaponTime = reader.ReadUInt16() / 20.0;
             WeaponLoad = reader.Read2U(10);
+            WeaponAmmo = reader.ReadUInt16();
+            WeaponAmmoProduction = reader.Read2U(100000);
             FreeSpawn = reader.ReadBoolean();
         }
 
-        internal static ShipConfig Default => new ShipConfig();
+        internal static ShipDesignConfig Default => new ShipDesignConfig();
 
         internal void Write(PacketWriter writer)
         {
@@ -180,6 +188,8 @@ namespace Flattiverse.Connector
             writer.Write2U(WeaponSpeed, 10);
             writer.Write((ushort)WeaponTime);
             writer.Write2U(WeaponLoad, 10);
+            writer.Write(WeaponAmmo);
+            writer.Write2U(WeaponAmmoProduction, 100000);
             writer.Write(FreeSpawn);
         }
     }

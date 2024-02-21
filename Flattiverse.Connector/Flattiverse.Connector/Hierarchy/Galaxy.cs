@@ -14,8 +14,8 @@ public class Galaxy
     private readonly Cluster?[] clusters = new Cluster?[256];
     public readonly UniversalHolder<Cluster> Clusters;
 
-    private readonly Ship?[] ships = new Ship?[256];
-    public readonly UniversalHolder<Ship> Ships;
+    private readonly ShipDesign?[] ships = new ShipDesign?[256];
+    public readonly UniversalHolder<ShipDesign> Ships;
 
     private readonly Team?[] teams = new Team?[33];
     public readonly UniversalHolder<Team> Teams;
@@ -34,7 +34,7 @@ public class Galaxy
     internal Galaxy(Universe universe)
     {
         Clusters = new UniversalHolder<Cluster>(clusters);
-        Ships = new UniversalHolder<Ship>(ships);
+        Ships = new UniversalHolder<ShipDesign>(ships);
         Teams = new UniversalHolder<Team>(teams);
 
         connection = new Connection(universe, ConnectionClosed, PacketRecevied);
@@ -148,9 +148,9 @@ public class Galaxy
     /// </summary>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task<Ship> CreateShip(Action<ShipConfig> config)
+    public async Task<ShipDesign> CreateShip(Action<ShipDesignConfig> config)
     {
-        ShipConfig changes = ShipConfig.Default;
+        ShipDesignConfig changes = ShipDesignConfig.Default;
         config(changes);
 
         Session session = await sessions.Get();
@@ -163,7 +163,7 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (ships[packet.Header.Param0] is not Ship ship)
+        if (ships[packet.Header.Param0] is not ShipDesign ship)
             throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return ship;
@@ -207,12 +207,12 @@ public class Galaxy
 
                 break;
             case 0x14://Ship info
-                ships[packet.Header.Id0] = new Ship(this, packet.Header.Id0, reader);
+                ships[packet.Header.Id0] = new ShipDesign(this, packet.Header.Id0, reader);
                 Console.WriteLine($"Received ship(id={packet.Header.Id0}) {ships[packet.Header.Id0]!.Name} update");
 
                 break;
             case 0x15://Upgrade info
-                if (ships[packet.Header.Id1] is Ship ship)
+                if (ships[packet.Header.Id1] is ShipDesign ship)
                     ship.ReadUpgrade(packet.Header.Id0, reader);
 
                 break;

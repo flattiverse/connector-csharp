@@ -6,12 +6,12 @@ namespace Flattiverse.Connector
     public class Upgrade : INamedUnit
     {
         public readonly Galaxy Galaxy;
-        public readonly Ship Ship;
+        public readonly ShipDesign Ship;
         private byte id;
 
         private UpgradeConfig config;
 
-        internal Upgrade(Galaxy galaxy, Ship ship, byte id, PacketReader reader)
+        internal Upgrade(Galaxy galaxy, ShipDesign ship, byte id, PacketReader reader)
         {
             Galaxy = galaxy;
             Ship = ship;
