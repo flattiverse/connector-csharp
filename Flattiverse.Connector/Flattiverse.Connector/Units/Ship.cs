@@ -13,6 +13,10 @@ namespace Flattiverse.Connector.Units
     {
         private Cluster cluster;
 
+        private ShipDesign shipDesign;
+
+        private Player player;
+
         private int playerId;
         private int shipDesignId;
         private int upgradeIndex;
@@ -53,6 +57,11 @@ namespace Flattiverse.Connector.Units
         private ushort weaponAmmo;
         private ushort weaponAmmoMax;
         private double weaponAmmoProduction;
+
+
+        public ShipDesign ShipDesign => shipDesign;
+
+        public Player Player => player;
 
         public int PlayerId => playerId;
         public int ShipDesignId => shipDesignId;
@@ -99,6 +108,10 @@ namespace Flattiverse.Connector.Units
         {
             playerId = reader.ReadInt32();
             shipDesignId = reader.ReadInt32();
+
+            shipDesign = cluster.Galaxy.Ships[shipDesignId];
+            player = cluster.Galaxy.GetPlayer(playerId);
+
             upgradeIndex = reader.ReadInt32();
             hull = reader.Read2U(10);
             hullMax = reader.Read2U(10);

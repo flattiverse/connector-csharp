@@ -326,4 +326,6 @@ public class Galaxy
 
         return await tcs.Task;
     }
+
+    internal Player GetPlayer(int playerId) => players[(byte)playerId];
 }
