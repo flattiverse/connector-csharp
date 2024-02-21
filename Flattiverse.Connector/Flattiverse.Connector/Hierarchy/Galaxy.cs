@@ -297,18 +297,16 @@ public class Galaxy
     internal void pushEvent(FlattiverseEvent @event)
     {
         TaskCompletionSource<FlattiverseEvent>? tcs;
-        bool enqueue = true;
 
         lock (syncEvents)
         {
-            while (pendingEventWaiters.TryDequeue(out tcs))
+            if (pendingEventWaiters.TryDequeue(out tcs))
             {
                 ThreadPool.QueueUserWorkItem(delegate { tcs.SetResult(@event); });
-                enqueue = false;
+                return;
             }
 
-            if (enqueue)
-                pendingEvents.Enqueue(@event);
+            pendingEvents.Enqueue(@event);
         }
     }
 

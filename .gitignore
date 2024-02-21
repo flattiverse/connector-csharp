@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Flattiverse.Connector/.vs
+/.vs
+/Flattiverse.Connector/Development/bin/Debug/net8.0
+/Flattiverse.Connector/Development/obj
+/Flattiverse.Connector/Flattiverse.Connector/bin/Debug/net8.0
+/Flattiverse.Connector/Flattiverse.Connector/obj
