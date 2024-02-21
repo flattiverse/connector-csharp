@@ -33,6 +33,7 @@ public class Galaxy
 
     internal Galaxy(Universe universe)
     {
+        //TODO universal holder are public and can be written to
         Clusters = new UniversalHolder<Cluster>(clusters);
         Ships = new UniversalHolder<ShipDesign>(ships);
         Teams = new UniversalHolder<Team>(teams);
@@ -229,13 +230,31 @@ public class Galaxy
                 break;
             case 0x17://Player removed info
                 { 
-                    if (teams[packet.Header.Id1] is Team team)
+                    if (teams[packet.Header.Id1] is Team && players.TryGetValue(packet.Header.Id0, out Player? p))
                     {
-                        // TODO MALUK (PlayerKind)packet.Header.Id0 <- Id0 ?? Param0? 
-                        Player player = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Id0, team, reader);
+                        p.Deactivate();
                         players.Remove(packet.Header.Id0);
-                        Console.WriteLine($"Received player {player.Name} removed");
-                        pushEvent(new PlayerRemovedEvent(this, player));
+                        Console.WriteLine($"Received player {p.Name} removed");
+                        pushEvent(new PlayerRemovedEvent(this, p));
+                    }
+                }
+                break;
+            case 0x18://Controllable info
+                {
+                    if(players.TryGetValue(packet.Header.Param0, out Player? player) && clusters[packet.Header.Id] is Cluster cl)
+                    {
+                        ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0 == 1);
+                        player.AddControllableInfo(info);
+                        Console.WriteLine($"Received controllable info");
+                    }
+                }
+                break;
+            case 0x19://Controllable removed info
+                {
+                    if (players.TryGetValue(packet.Header.Param0, out Player? player) && clusters[packet.Header.Id] is Cluster cl)
+                    {
+                        player.RemoveControllableInfo(packet.Read().ReadString());
+                        Console.WriteLine($"Received controllable remove info");
                     }
                 }
                 break;

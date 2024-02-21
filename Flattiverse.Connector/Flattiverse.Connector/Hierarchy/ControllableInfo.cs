@@ -8,6 +8,8 @@ namespace Flattiverse.Connector.Hierarchy
 
         public readonly string Name;
 
+        public readonly bool Reduced;
+
         private ShipDesign shipDesign;
 
         private Player player;
@@ -30,6 +32,8 @@ namespace Flattiverse.Connector.Hierarchy
         private double ion;
         private double ionMax;
 
+        private bool active;
+
         public ShipDesign ShipDesign => shipDesign;
         public Player Player => player;
         public int PlayerId => playerId;
@@ -45,20 +49,25 @@ namespace Flattiverse.Connector.Hierarchy
  
         public double Ion => ion;
         public double IonMax => ionMax;
-   
 
-        internal ControllableInfo(Cluster cluster, PacketReader reader)
+        public bool Active => active;
+
+        internal ControllableInfo(Cluster cluster, Player player, PacketReader reader, bool reduced)
         {
+            active = true;
             this.cluster = cluster;
+            this.player = player;
+            Reduced = reduced;
 
             Name = reader.ReadString();
 
-            playerId = reader.ReadInt32();
             shipDesignId = reader.ReadInt32();
-
             shipDesign = cluster.Galaxy.Ships[shipDesignId];
-            player = cluster.Galaxy.GetPlayer(playerId);
+            
             upgradeIndex = reader.ReadInt32();
+
+            if(reduced)
+                return;
 
             hull = reader.Read2U(10);
             hullMax = reader.Read2U(10);
@@ -71,6 +80,11 @@ namespace Flattiverse.Connector.Hierarchy
 
             ion = reader.Read2U(100);
             ionMax = reader.Read2U(100);
+        }
+
+        internal void Deactivate()
+        {
+            active = false;
         }
     }
 }
