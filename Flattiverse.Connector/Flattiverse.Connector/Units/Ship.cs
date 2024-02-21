@@ -1,16 +1,19 @@
 ﻿using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.Network;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Flattiverse.Connector
+namespace Flattiverse.Connector.Units
 {
-    public class Controllable
+    public class Ship : Unit
     {
         private Cluster cluster;
 
-        public readonly string Name;
-
+        private int playerId;
         private int shipDesignId;
         private int upgradeIndex;
         private double hull;
@@ -51,6 +54,7 @@ namespace Flattiverse.Connector
         private ushort weaponAmmoMax;
         private double weaponAmmoProduction;
 
+        public int PlayerId => playerId;
         public int ShipDesignId => shipDesignId;
         public int UpgradeIndex => upgradeIndex;
         public double Hull => hull;
@@ -91,12 +95,9 @@ namespace Flattiverse.Connector
         public ushort WeaponAmmoMax => weaponAmmoMax;
         public double WeaponAmmoProduction => weaponAmmoProduction;
 
-        internal Controllable(Cluster cluster, PacketReader reader)
+        internal Ship(Cluster cluster, PacketReader reader) : base(reader)
         {
-            this.cluster = cluster;
-
-            Name = reader.ReadString();
-
+            playerId = reader.ReadInt32();
             shipDesignId = reader.ReadInt32();
             upgradeIndex = reader.ReadInt32();
             hull = reader.Read2U(10);
@@ -136,23 +137,6 @@ namespace Flattiverse.Connector
             weaponAmmo = reader.ReadUInt16();
             weaponAmmoMax = reader.ReadUInt16();
             weaponAmmoProduction = reader.Read2U(100000);
-        }
-
-        public async Task Kill()
-        {
-            if (hull <= 0.0)
-                throw new GameException(0xF5);
-
-            Session session = await cluster.Galaxy.GetSession();
-
-            Packet packet = new Packet();
-            packet.Header.Command = 0x31;
-            packet.Header.Id0 = (byte)cluster.ID;
-
-            using (PacketWriter writer = packet.Write())
-                writer.Write(Name);
-
-            await session.SendWait(packet);
         }
     }
 }
