@@ -1,7 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
-using Flattiverse.Connector.Hierarchy;
 
-namespace Flattiverse.Connector
+namespace Flattiverse.Connector.Hierarchy
 {
     public class Upgrade : INamedUnit
     {

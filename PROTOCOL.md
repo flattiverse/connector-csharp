@@ -140,3 +140,49 @@ And those commands from the client to the server:
 * `0x5B`: Remove planet
 * `0x5C`: Configure sun
 * `0x5D`: Remove sun
+
+
+## Data Types
+
+
+| Name | Size | Decimal Places | Comment/Todo | status |
+| ---- | ---- | ---- | ---- | ---- |
+| Angle | 2 byte unsigned | 2 |  |  |
+| Radius | 3 byte unsigned | 3 |  |  |
+| WeaponLoad |  |  | -> Radius |  |
+| Size |  |  | -> Radius |  |
+| Vector | 4 byte signed | 5 |  |  |
+|  |  |  |  |  |
+| costEnergy | 4 byte unsigned | 3 | Für Energie, Ions und Cargo |  |
+| costIon |  |  |  |  |
+| CostIron |  |  |  |  |
+| CostTungsten |  |  |  |  |
+| CostSilicon |  |  |  |  |
+| CostTritium |  |  |  |  |
+| EnergyMax |  |  |  |  |
+| EnergyCells |  |  |  |  |
+| EnergyReactor |  |  |  |  |
+| EnergyTransfer |  |  |  |  |
+| IonMax |  |  |  |  |
+| IonCells |  |  |  |  |
+| IonReactor |  |  |  |  |
+| IonTransfer |  |  |  |  |
+| weaponAmmo |  |  |  |  |
+| weaponAmmoProduction |  |  |  |  |
+| Cargo |  |  |  |  |
+| Extractor |  |  |  |  |
+|  |  |  |  |  |
+| CostTime | 2 byte unsigned | /20 -> s |  |  |
+| WeaponTime |  |  | -> Time, wie bei CostTime |  |
+| Hull | 3 byte unsigned | 4 | Für Hüllenpunke und Schildpunkte. |  |
+| WeaponDamage |  |  | -> Hull |  |
+| HullRepair |  |  |  |  |
+| Shields |  |  |  |  |
+| ShieldsLoad |  |  |  |  |
+| Weight | 2 byte signed | 4 | -> Gravitation |  |
+| Thruster | 2 byte unsigned | 4 |  |  |
+| Nozzle | 2 byte signed | 2 | -> Turnrate |  |
+| Turnrate | 2 byte signed | 2 | -> Gleich wie Nozzle |  |
+| Speed | 2 byte unsigned | 3 |  |  |
+| WeaponSpeed |  |  | -> Speed |  |
+
