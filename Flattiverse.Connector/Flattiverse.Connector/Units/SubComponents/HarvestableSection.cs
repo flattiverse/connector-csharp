@@ -134,7 +134,7 @@ namespace Flattiverse.Connector.Units.SubComponents
         /// <exception cref="GameException">Thrown, if you don't have permission to do this or the values are invalid.</exception>
         public void SetAngels(double from, double to)
         {
-            if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || to > 360.0 || from == to)
+            if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || from > 360.0 || from == to)
                 throw new GameException(0x31);
 
             if (double.IsInfinity(to) || double.IsNaN(to) || to > 360.0 || to < 0.0)
