@@ -146,8 +146,7 @@ namespace Flattiverse.Connector
             Cargo = reader.Read4U(1000);
             Extractor = reader.Read2U(100);
             WeaponSpeed = reader.Read2U(10);
-            // TODO MALUK bei read wird durch 20.0 dividert, bei write wird nicht mit 20.0 multipliziert
-            WeaponTime = reader.ReadUInt16() / 20.0;
+            WeaponTime = reader.ReadUInt16();
             WeaponLoad = reader.Read2U(10);
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read2U(100000);
@@ -187,8 +186,7 @@ namespace Flattiverse.Connector
             writer.Write4U(Cargo, 1000);
             writer.Write2U(Extractor, 100);
             writer.Write2U(WeaponSpeed, 10);
-            // TODO MALUK bei read wird durch 20.0 dividert, bei write wird nicht mit 20.0 multipliziert
-            writer.Write((ushort)WeaponTime);
+            writer.Write((ushort)(WeaponTime));
             writer.Write2U(WeaponLoad, 10);
             writer.Write(WeaponAmmo);
             writer.Write2U(WeaponAmmoProduction, 100000);
