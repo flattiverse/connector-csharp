@@ -321,29 +321,6 @@ public class Cluster : INamedUnit
         return buoy;
     }
 
-    public async Task<Controllable> RegisterShip(string name, ShipDesign design) 
-    {         
-        Session session = await Galaxy.GetSession();
-    
-        Packet packet = new Packet();
-        packet.Header.Command = 0x30;
-        packet.Header.Param0 = id;
-    
-        using (PacketWriter writer = packet.Write())
-        {
-            writer.Write(name);
-            writer.Write(design.ID);
-        }
-        
-        Packet answerPacket = await session.SendWait(packet);
-
-        Controllable controllable = new Controllable(this, answerPacket.Read());
-
-        Galaxy.AddControllable(controllable);
-
-        return controllable;
-    }
-
     internal void ReadRegion(byte id, PacketReader reader)
     {
         regions[id] = new Region(Galaxy, this, id, reader);
