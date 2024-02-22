@@ -8,5 +8,5 @@ public enum UnitKind
     Moon = 0x05,
     Meteoroid = 0x06,
     Buoy = 0x10,
-    PlayerUnit = 0xF0
+    Ship = 0xF0
 }
