@@ -32,8 +32,8 @@ namespace Flattiverse.Connector.Units.SubComponents
 
             Configuration = configuration;
 
-            InnerRadius = reader.Read2U(100);
-            OuterRadius = reader.Read2U(100);
+            InnerRadius = reader.Read3U(1000);
+            OuterRadius = reader.Read3U(1000);
             AngelFrom = reader.Read2U(100);
             AngelTo = reader.Read2U(100);
 
@@ -45,8 +45,8 @@ namespace Flattiverse.Connector.Units.SubComponents
 
         internal void Write(PacketWriter writer)
         {
-            writer.Write2U(InnerRadius, 100);
-            writer.Write2U(OuterRadius, 100);
+            writer.Write3U(InnerRadius, 1000);
+            writer.Write3U(OuterRadius, 1000);
             writer.Write2U(AngelFrom, 100);
             writer.Write2U(AngelTo, 100);
 
@@ -106,7 +106,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             if (double.IsInfinity(inner) || double.IsNaN(inner) || inner < 0.0 || inner >= outer)
                 throw new GameException(0x31);
 
-            if (double.IsInfinity(outer) || double.IsNaN(outer) || outer > 2000.0)
+            if (double.IsInfinity(outer) || double.IsNaN(outer) || outer > 2000.0)//TODO: inconsistent: OuterRadius-Setter checks if it is bigger than 1000.0
                 throw new GameException(0x31);
 
             if (Configuration is null)
@@ -124,10 +124,10 @@ namespace Flattiverse.Connector.Units.SubComponents
         /// <exception cref="GameException">Thrown, if you don't have permission to do this or the values are invalid.</exception>
         public void SetAngels(double from, double to)
         {
-            if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || from >= to)
+            if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || from > 360.0 || from == to)
                 throw new GameException(0x31);
 
-            if (double.IsInfinity(to) || double.IsNaN(to) || to > 360.0)
+            if (double.IsInfinity(to) || double.IsNaN(to) || to < 0.0 || to > 360.0)
                 throw new GameException(0x31);
 
             if (Configuration is null)
@@ -145,7 +145,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             get => angelFrom;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0)
+                if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0 || value > 360.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)
@@ -163,7 +163,7 @@ namespace Flattiverse.Connector.Units.SubComponents
             get => angelTo;
             set
             {
-                if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0)
+                if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0 || value < 0.0)
                     throw new GameException(0x31);
 
                 if (Configuration is null)

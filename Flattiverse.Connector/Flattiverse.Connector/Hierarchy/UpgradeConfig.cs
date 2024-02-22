@@ -136,7 +136,7 @@ namespace Flattiverse.Connector.Hierarchy
             HullRepair = reader.Read2U(100);
             Shields = reader.Read2U(10);
             ShieldsLoad = reader.Read2U(100);
-            Size = reader.Read2U(10);
+            Size = reader.Read3U(1000);
             Weight = reader.Read2S(10000);
             EnergyMax = reader.Read2U(10);
             EnergyCells = reader.Read4U(100);
@@ -154,7 +154,7 @@ namespace Flattiverse.Connector.Hierarchy
             Extractor = reader.Read2U(100);
             WeaponSpeed = reader.Read2U(10);
             WeaponTime = reader.ReadUInt16() / 20.0;
-            WeaponLoad = reader.Read2U(10);
+            WeaponLoad = reader.Read3U(1000);
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read2U(100000);
             FreeSpawn = reader.ReadBoolean();
@@ -177,7 +177,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write2U(HullRepair, 100);
             writer.Write2U(Shields, 10);
             writer.Write2U(ShieldsLoad, 100);
-            writer.Write2U(Size, 10);
+            writer.Write3U(Size, 1000);
             writer.Write2S(Weight, 10000);
             writer.Write4U(EnergyMax, 10);
             writer.Write2U(EnergyCells, 100);
@@ -195,7 +195,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write2U(Extractor, 100);
             writer.Write2U(WeaponSpeed, 10);
             writer.Write((ushort)WeaponTime);
-            writer.Write2U(WeaponLoad, 10);
+            writer.Write3U(WeaponLoad, 1000);
             writer.Write(WeaponAmmo);
             writer.Write2U(WeaponAmmoProduction, 100000);
             writer.Write(FreeSpawn);

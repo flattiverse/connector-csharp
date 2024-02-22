@@ -127,6 +127,15 @@ internal class PacketReader
         return Unsafe.As<byte, ushort>(ref data[position - 2]) / shift;
     }
 
+    public double Read3U(double shift)
+    {
+        Debug.Assert(position + 3 <= end, "Can't read out of bounds.");
+
+        position += 3;
+
+        return (data[position - 3] * 65536 + Unsafe.As<byte, ushort>(ref data[position - 2])) / shift;
+    }
+
     public double Read4S(double shift)
     {
         Debug.Assert(position + 4 <= end, "Can't read out of bounds.");

@@ -152,6 +152,30 @@ internal class PacketWriter : IDisposable
         position += 2;
     }
 
+
+    /// <summary>
+    /// Writes a double as 3 byte unsigned short.
+    /// </summary>
+    /// <param name="number">The number to write.</param>
+    /// <param name="shift">The shift of the decimal point. e.g. specify 100 to include the first two decimal places.</param>
+    public void Write3U(double number, double shift)
+    {
+        Debug.Assert(position + 3 < end, "Can't write out of bounds.");
+        int temp = (int)(number * shift + 0.5);
+
+        //TODO: performance?
+
+        byte leastSignificantByte = (byte)(temp & 0xFF);
+        byte middleByte = (byte)((temp >> 8) & 0xFF);
+        byte thirdByte = (byte)((temp >> 16) & 0xFF);
+
+        data[position] = thirdByte;
+        data[position + 1] = middleByte;
+        data[position + 2] = leastSignificantByte;
+
+        position += 3;
+    }
+
     /// <summary>
     /// Writes a double as 4 byte signed integer.
     /// </summary>

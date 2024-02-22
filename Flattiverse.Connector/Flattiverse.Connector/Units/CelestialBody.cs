@@ -20,7 +20,7 @@ namespace Flattiverse.Connector.Units
             this.cluster = cluster;
 
             position = new Vector(reader);
-            radius = reader.Read4U(100);
+            radius = reader.Read3U(1000);
             gravity = reader.Read4U(10000);
         }
 
@@ -29,7 +29,7 @@ namespace Flattiverse.Connector.Units
             base.Update(reader);
             
             position = new Vector(reader);
-            radius = reader.Read4U(100);
+            radius = reader.Read3U(1000);
             gravity = reader.Read4U(10000);
         }
 

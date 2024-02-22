@@ -124,7 +124,7 @@ namespace Flattiverse.Connector.Units
             shields = reader.Read2U(10);
             shieldsMax = reader.Read2U(10);
             shieldsLoad = reader.Read2U(100);
-            size = reader.Read2U(10);
+            size = reader.Read3U(1000);
             weight = reader.Read2S(10000);
             energy = reader.Read4U(10);
             energyMax = reader.Read4U(10);
@@ -151,7 +151,7 @@ namespace Flattiverse.Connector.Units
             extractorMax = reader.Read2U(100);
             weaponSpeed = reader.Read2U(10);
             weaponTime = reader.ReadUInt16();
-            weaponLoad = reader.Read2U(10);
+            weaponLoad = reader.Read3U(1000);
             weaponAmmo = reader.ReadUInt16();
             weaponAmmoMax = reader.ReadUInt16();
             weaponAmmoProduction = reader.Read2U(100000);
