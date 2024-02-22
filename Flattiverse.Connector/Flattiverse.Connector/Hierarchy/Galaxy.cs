@@ -241,9 +241,7 @@ public class Galaxy
                 break;
             case 0x18://Controllable info
                 {
-                    // TODO MALUK param0 für die Player-Id?
-                    // TODO MALUK clusters[packet.Header.Id] => clusters[packet.Header.Id0] ??
-                    if(players.TryGetValue(packet.Header.Param0, out Player? player) && clusters[packet.Header.Id] is Cluster cl)
+                    if(players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster cl)
                     {
                         // TODO MALUK param0 (schon für die Player-Id verwendet) für den reduced flag ??
                         ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0 == 1);
@@ -254,9 +252,7 @@ public class Galaxy
                 break;
             case 0x19://Controllable removed info
                 {
-                    // TODO MALUK param0 für die Player-Id?
-                    // TODO clusters[packet.Header.Id] => clusters[packet.Header.Id0] ??
-                    if (players.TryGetValue(packet.Header.Param0, out Player? player) && clusters[packet.Header.Id] is Cluster cl)
+                    if (players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster)
                     {
                         player.RemoveControllableInfo(packet.Read().ReadString());
                         Console.WriteLine($"Received controllable remove info");
