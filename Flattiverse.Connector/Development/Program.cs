@@ -79,7 +79,7 @@ internal class Program
 
             Console.WriteLine($"Created team {team.Name} #{team.ID}");
 
-            Ship ship = await galaxy.CreateShip(config =>
+            ShipDesign ship = await galaxy.CreateShip(config =>
             {
                 config.Name = "TestShip";
                 config.CostEnergy = 1;

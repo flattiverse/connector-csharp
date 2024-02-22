@@ -1,6 +1,6 @@
 ﻿using Flattiverse.Connector.Network;
 
-namespace Flattiverse.Connector
+namespace Flattiverse.Connector.Hierarchy
 {
     public class UpgradeConfig
     {
