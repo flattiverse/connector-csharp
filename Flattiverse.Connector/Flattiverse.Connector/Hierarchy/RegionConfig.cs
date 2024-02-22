@@ -12,6 +12,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double Top;
         public double Right;
         public double Bottom;
+        public uint Team;
 
         private RegionConfig()
         {
@@ -23,6 +24,7 @@ namespace Flattiverse.Connector.Hierarchy
             Top = 0;
             Right = 0;
             Bottom = 0;
+            Bottom = uint.MaxValue;
         }
 
         internal RegionConfig(RegionConfig region)
@@ -34,6 +36,7 @@ namespace Flattiverse.Connector.Hierarchy
             Left = region.Left;
             Top = region.Top;
             Right = region.Right;
+            Bottom = region.Bottom;
             Bottom = region.Bottom;
         }
 
@@ -47,6 +50,7 @@ namespace Flattiverse.Connector.Hierarchy
             Top = reader.Read2U(100);
             Right = reader.Read2U(100);
             Bottom = reader.Read2U(100);
+            Team = reader.ReadUInt32();
         }
 
         internal static RegionConfig Default => new RegionConfig();
@@ -61,6 +65,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write2U(Top, 100);
             writer.Write2U(Right, 100);
             writer.Write2U(Bottom, 100);
+            writer.Write(Team);
         }
     }
 }
