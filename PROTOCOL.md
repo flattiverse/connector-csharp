@@ -148,7 +148,7 @@ And those commands from the client to the server:
 | Name | Size | Decimal Places | Comment/Todo | status |
 | ---- | ---- | ---- | ---- | ---- |
 | Angle | 2 byte unsigned | 2 |  |  |
-| Radius | 3 byte unsigned | 3 | In CelestialBodyConfiguration 4 byte long!!!<br><br> |  |
+| Radius | 3 byte unsigned | 3 |  |  |
 | WeaponLoad |  |  | -> Radius |  |
 | Size |  |  | -> Radius |  |
 | Vector | 4 byte signed | 5 |  |  |
