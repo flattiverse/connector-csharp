@@ -5,13 +5,15 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector
 {
-    public class Controllable
+    public class Controllable : INamedUnit
     {
         private Cluster cluster;
 
         public readonly int Id;
 
-        public readonly string Name;
+        public string Name => name;
+
+        private readonly string name;
 
         private ShipDesign shipDesign;
 
@@ -99,10 +101,10 @@ namespace Flattiverse.Connector
         {
             this.cluster = cluster;
 
-            Name = reader.ReadString();
+            name = reader.ReadString();
 
             shipDesignId = reader.ReadInt32();
-            shipDesign = cluster.Galaxy.Ships[shipDesignId];
+            shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
 
             Id = reader.ReadInt32();
 
@@ -161,6 +163,8 @@ namespace Flattiverse.Connector
                 writer.Write(Name);
 
             await session.SendWait(packet);
+
+            cluster.Galaxy.RemoveControllable(Id);
         }
     }
 }

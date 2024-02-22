@@ -13,7 +13,9 @@ namespace Flattiverse.Connector.Hierarchy
 
         private bool active;
 
-        private Dictionary<int, ControllableInfo> controllableInfos = new Dictionary<int, ControllableInfo>();
+        private ControllableInfo?[] controllableInfos;
+
+        public readonly UniversalHolder<ControllableInfo> ControllableInfos;
 
         public bool Active => active;
 
@@ -25,9 +27,11 @@ namespace Flattiverse.Connector.Hierarchy
             Team = team;
             
             Name = reader.ReadString();
+
+            controllableInfos = new ControllableInfo[256];
+            ControllableInfos = new UniversalHolder<ControllableInfo>(controllableInfos);
         }
 
-        //TODO: Deaktivate when removed
         internal void Deactivate()
         {
             active = false;
@@ -40,10 +44,10 @@ namespace Flattiverse.Connector.Hierarchy
 
         internal void RemoveControllableInfo(int id)
         {
-            if(controllableInfos.TryGetValue(id, out ControllableInfo? info))
+            if (controllableInfos[id] is ControllableInfo info)
             {
                 info.Deactivate();
-                controllableInfos.Remove(id);
+                controllableInfos[id] = null;
             }
         }
 

@@ -337,7 +337,11 @@ public class Cluster : INamedUnit
         
         Packet answerPacket = await session.SendWait(packet);
 
-        return new Controllable(this, answerPacket.Read());
+        Controllable controllable = new Controllable(this, answerPacket.Read());
+
+        Galaxy.AddControllable(controllable);
+
+        return controllable;
     }
 
     internal void ReadRegion(byte id, PacketReader reader)

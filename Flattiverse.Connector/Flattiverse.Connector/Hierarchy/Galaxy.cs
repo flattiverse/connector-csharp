@@ -15,10 +15,13 @@ public class Galaxy
     public readonly UniversalHolder<Cluster> Clusters;
 
     private readonly ShipDesign?[] ships = new ShipDesign?[256];
-    public readonly UniversalHolder<ShipDesign> Ships;
+    public readonly UniversalHolder<ShipDesign> ShipsDesigns;
 
     private readonly Team?[] teams = new Team?[33];
     public readonly UniversalHolder<Team> Teams;
+
+    private readonly Controllable?[] controllables = new Controllable?[256];
+    public readonly UniversalHolder<Controllable> Controllables;
 
     private Dictionary<byte, Player> players = new Dictionary<byte, Player>();
 
@@ -33,10 +36,10 @@ public class Galaxy
 
     internal Galaxy(Universe universe)
     {
-        //TODO universal holder are public and can be written to
         Clusters = new UniversalHolder<Cluster>(clusters);
-        Ships = new UniversalHolder<ShipDesign>(ships);
+        ShipsDesigns = new UniversalHolder<ShipDesign>(ships);
         Teams = new UniversalHolder<Team>(teams);
+        Controllables = new UniversalHolder<Controllable>(controllables);
 
         connection = new Connection(universe, ConnectionClosed, PacketRecevied);
         sessions = new SessionHandler(connection);
@@ -311,6 +314,16 @@ public class Galaxy
         id = header.Param;
 
         config = new GalaxyConfig(reader);
+    }
+
+    internal void AddControllable(Controllable controllable)
+    {
+        controllables[controllable.Id] = controllable;
+    }   
+
+    internal void RemoveControllable(int id)
+    {
+        controllables[id] = null;
     }
 
     internal void pushEvent(FlattiverseEvent @event)

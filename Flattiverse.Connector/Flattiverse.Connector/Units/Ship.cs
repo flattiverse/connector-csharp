@@ -112,7 +112,7 @@ namespace Flattiverse.Connector.Units
             playerId = reader.ReadInt32();
             shipDesignId = reader.ReadInt32();
 
-            shipDesign = cluster.Galaxy.Ships[shipDesignId];
+            shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
             player = cluster.Galaxy.GetPlayer(playerId);
 
             Id = reader.ReadInt32();

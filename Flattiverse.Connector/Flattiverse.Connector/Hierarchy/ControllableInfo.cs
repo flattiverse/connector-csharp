@@ -2,13 +2,13 @@
 
 namespace Flattiverse.Connector.Hierarchy
 {
-    internal class ControllableInfo
+    public class ControllableInfo : INamedUnit
     {
         private Cluster cluster;
 
         public readonly int Id;
 
-        public readonly string Name;
+        private readonly string name;
 
         public readonly bool Reduced;
 
@@ -54,6 +54,8 @@ namespace Flattiverse.Connector.Hierarchy
 
         public bool Active => active;
 
+        public string Name => name;
+
         internal ControllableInfo(Cluster cluster, Player player, PacketReader reader, int id, bool reduced)
         {
             active = true;
@@ -62,10 +64,10 @@ namespace Flattiverse.Connector.Hierarchy
             Id = id;
             Reduced = reduced;
 
-            Name = reader.ReadString();
+            name = reader.ReadString();
 
             shipDesignId = reader.ReadInt32();
-            shipDesign = cluster.Galaxy.Ships[shipDesignId];
+            shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
             
             upgradeIndex = reader.ReadInt32();
 
