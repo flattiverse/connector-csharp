@@ -359,4 +359,27 @@ public class Galaxy
     }
 
     internal Player GetPlayer(int playerId) => players[(byte)playerId];
+
+    public async Task<Controllable> RegisterShip(string name, ShipDesign design)
+    {
+        Session session = await GetSession();
+
+        Packet packet = new Packet();
+        packet.Header.Command = 0x30;
+
+        using (PacketWriter writer = packet.Write())
+        {
+            writer.Write(name);
+            writer.Write(design.ID);
+        }
+
+        Packet answerPacket = await session.SendWait(packet);
+
+        //Todo cluster kommt vom server zurück
+        Controllable controllable = new Controllable(this, answerPacket.Read());
+
+        AddControllable(controllable);
+
+        return controllable;
+    }
 }
