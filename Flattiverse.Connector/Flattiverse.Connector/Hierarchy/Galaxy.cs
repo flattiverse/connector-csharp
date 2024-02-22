@@ -243,7 +243,6 @@ public class Galaxy
                 {
                     if(players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster cl)
                     {
-                        // TODO MALUK param0 (schon für die Player-Id verwendet) für den reduced flag ??
                         ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0 == 1);
                         player.AddControllableInfo(info);
                         Console.WriteLine($"Received controllable info");
