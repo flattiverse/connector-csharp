@@ -12,6 +12,8 @@ namespace Flattiverse.Connector.Units
     // TODO Fehlende overrides von Unit für Ship
     public class Ship : Unit
     {
+        public readonly int Id;
+
         private Cluster cluster;
 
         private ShipDesign shipDesign;
@@ -112,6 +114,8 @@ namespace Flattiverse.Connector.Units
 
             shipDesign = cluster.Galaxy.Ships[shipDesignId];
             player = cluster.Galaxy.GetPlayer(playerId);
+
+            Id = reader.ReadInt32();
 
             upgradeIndex = reader.ReadInt32();
             hull = reader.Read2U(10);

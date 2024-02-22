@@ -9,6 +9,8 @@ namespace Flattiverse.Connector
     {
         private Cluster cluster;
 
+        public readonly int Id;
+
         public readonly string Name;
 
         private ShipDesign shipDesign;
@@ -101,6 +103,8 @@ namespace Flattiverse.Connector
 
             shipDesignId = reader.ReadInt32();
             shipDesign = cluster.Galaxy.Ships[shipDesignId];
+
+            Id = reader.ReadInt32();
 
             upgradeIndex = reader.ReadInt32();
             hull = reader.Read2U(10);

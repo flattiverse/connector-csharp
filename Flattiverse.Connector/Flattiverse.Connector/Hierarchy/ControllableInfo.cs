@@ -6,6 +6,8 @@ namespace Flattiverse.Connector.Hierarchy
     {
         private Cluster cluster;
 
+        public readonly int Id;
+
         public readonly string Name;
 
         public readonly bool Reduced;
@@ -52,11 +54,12 @@ namespace Flattiverse.Connector.Hierarchy
 
         public bool Active => active;
 
-        internal ControllableInfo(Cluster cluster, Player player, PacketReader reader, bool reduced)
+        internal ControllableInfo(Cluster cluster, Player player, PacketReader reader, int id, bool reduced)
         {
             active = true;
             this.cluster = cluster;
             this.player = player;
+            Id = id;
             Reduced = reduced;
 
             Name = reader.ReadString();

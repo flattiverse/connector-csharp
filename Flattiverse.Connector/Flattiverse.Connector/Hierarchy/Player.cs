@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Hierarchy
 
         private bool active;
 
-        private Dictionary<string, ControllableInfo> controllableInfos = new Dictionary<string, ControllableInfo>();
+        private Dictionary<int, ControllableInfo> controllableInfos = new Dictionary<int, ControllableInfo>();
 
         public bool Active => active;
 
@@ -35,15 +35,15 @@ namespace Flattiverse.Connector.Hierarchy
 
         internal void AddControllableInfo(ControllableInfo info)
         {
-            controllableInfos[info.Name] = info;
+            controllableInfos[info.Id] = info;
         }
 
-        internal void RemoveControllableInfo(string name)
+        internal void RemoveControllableInfo(int id)
         {
-            if(controllableInfos.TryGetValue(name, out ControllableInfo? info))
+            if(controllableInfos.TryGetValue(id, out ControllableInfo? info))
             {
                 info.Deactivate();
-                controllableInfos.Remove(name);
+                controllableInfos.Remove(id);
             }
         }
 

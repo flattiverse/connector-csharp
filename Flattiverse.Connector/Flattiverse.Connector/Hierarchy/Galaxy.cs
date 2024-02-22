@@ -243,7 +243,7 @@ public class Galaxy
                 {
                     if(players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster cl)
                     {
-                        ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0 == 1);
+                        ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Id, packet.Header.Param0 == 1);
                         player.AddControllableInfo(info);
                         Console.WriteLine($"Received controllable info");
                     }
@@ -253,7 +253,7 @@ public class Galaxy
                 {
                     if (players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster)
                     {
-                        player.RemoveControllableInfo(packet.Read().ReadString());
+                        player.RemoveControllableInfo(packet.Header.Id);
                         Console.WriteLine($"Received controllable remove info");
                     }
                 }
