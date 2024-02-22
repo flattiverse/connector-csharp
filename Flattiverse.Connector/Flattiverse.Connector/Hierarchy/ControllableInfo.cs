@@ -6,7 +6,7 @@ namespace Flattiverse.Connector.Hierarchy
     {
         private Cluster cluster;
 
-        public readonly int Id;
+        public readonly int Id; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
 
         private readonly string name;
 

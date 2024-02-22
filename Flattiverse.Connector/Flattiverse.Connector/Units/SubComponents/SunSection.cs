@@ -124,9 +124,11 @@ namespace Flattiverse.Connector.Units.SubComponents
         /// <exception cref="GameException">Thrown, if you don't have permission to do this or the values are invalid.</exception>
         public void SetAngels(double from, double to)
         {
+            // TODO MALUK BlackHoleSection and HarvestableSection had here an additional '|| from == to' condition and are structured differently 
             if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || to > 360.0)
                 throw new GameException(0x31);
 
+            // TODO MALUK second half is the same condition as above
             if (double.IsInfinity(to) || double.IsNaN(to) || from < 0.0 || to > 360.0)
                 throw new GameException(0x31);
 

@@ -12,7 +12,7 @@ namespace Flattiverse.Connector.Units
     // TODO Fehlende overrides von Unit für Ship
     public class Ship : Unit
     {
-        public readonly int Id;
+        public readonly int Id; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
 
         private Cluster cluster;
 
@@ -20,9 +20,9 @@ namespace Flattiverse.Connector.Units
 
         private Player player;
 
-        private int playerId;
-        private int shipDesignId;
-        private int upgradeIndex;
+        private int playerId; // TODO MALUK PlayerId is usually 1 byte
+        private int shipDesignId; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
+        private int upgradeIndex; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
         private double hull;
         private double hullMax;
         private double hullRepair;

@@ -12,7 +12,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double Top;
         public double Right;
         public double Bottom;
-        public uint Team;
+        public uint Team; // TODO MALUK TeamId is usually 1 byte
 
         private RegionConfig()
         {
@@ -24,7 +24,7 @@ namespace Flattiverse.Connector.Hierarchy
             Top = 0;
             Right = 0;
             Bottom = 0;
-            Bottom = uint.MaxValue;
+            Bottom = uint.MaxValue; // TODO MALUK why is Bottom assign twice?
         }
 
         internal RegionConfig(RegionConfig region)
@@ -37,7 +37,7 @@ namespace Flattiverse.Connector.Hierarchy
             Top = region.Top;
             Right = region.Right;
             Bottom = region.Bottom;
-            Bottom = region.Bottom;
+            Bottom = region.Bottom; // TODO MALUK why is Bottom assign twice?
         }
 
         internal RegionConfig(PacketReader reader)
@@ -50,7 +50,7 @@ namespace Flattiverse.Connector.Hierarchy
             Top = reader.Read2U(100);
             Right = reader.Read2U(100);
             Bottom = reader.Read2U(100);
-            Team = reader.ReadUInt32();
+            Team = reader.ReadUInt32(); // TODO MALUK TeamId is usually 1 byte
         }
 
         internal static RegionConfig Default => new RegionConfig();
