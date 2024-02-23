@@ -3,6 +3,7 @@ using Flattiverse.Connector.UnitConfigurations;
 using Flattiverse.Connector.Units.SubComponents;
 using System.Collections.ObjectModel;
 using Flattiverse.Connector.Hierarchy;
+using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Units
 {
@@ -46,7 +47,7 @@ namespace Flattiverse.Connector.Units
         /// </summary>
         /// <param name="config">The configuration delegate which allows you to setup the configuration.</param>
         /// <returns>The task you should await.</returns>
-        public async Task Configure(Action<SunConfiguration> config)
+        public async Task<Sun> Configure(Action<SunConfiguration> config)
         {
             Session session = await Cluster.Galaxy.GetSession();
 
@@ -65,14 +66,22 @@ namespace Flattiverse.Connector.Units
             session = await Cluster.Galaxy.GetSession();
 
             packet = new Packet();
-            packet.Header.Command = 0x5C;
+            packet.Header.Command = 0x52;
             packet.Header.Id0 = (byte)Cluster.ID;
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
+            {
+                writer.Write(Name);
                 changes.Write(writer);
+            }
 
             await session.SendWait(packet);
+
+            if (!Cluster.TryGetUnit(changes.Name, out Unit? unit) || unit is not Sun sun)
+                throw new GameException(0x35);
+
+            return sun;
         }
 
         /// <summary>
@@ -84,7 +93,7 @@ namespace Flattiverse.Connector.Units
             Session session = await Cluster.Galaxy.GetSession();
 
             Packet packet = new Packet();
-            packet.Header.Command = 0x5D;
+            packet.Header.Command = 0x53;
             packet.Header.Id0 = (byte)Cluster.ID;
             packet.Header.Param0 = (byte)Kind;
 
@@ -93,6 +102,8 @@ namespace Flattiverse.Connector.Units
 
             await session.SendWait(packet);
         }
+
+        public override UnitKind Kind => UnitKind.Sun;
 
         public override string ToString()
         {

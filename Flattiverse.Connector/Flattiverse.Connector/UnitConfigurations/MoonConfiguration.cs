@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
-    public class MoonConfiguration : CelestialBodyConfiguration
+    public class MoonConfiguration : HarvestableConfiguration
     {
-        private MoonConfiguration() : base() { }
+        internal MoonConfiguration() : base() { }
 
         internal MoonConfiguration(PacketReader reader) : base(reader)
         {

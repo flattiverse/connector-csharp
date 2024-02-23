@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
-    public class PlanetConfiguration : CelestialBodyConfiguration
+    public class PlanetConfiguration : HarvestableConfiguration
     {
         private PlanetConfiguration() : base() { }
 

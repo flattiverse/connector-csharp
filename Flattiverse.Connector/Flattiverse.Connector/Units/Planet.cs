@@ -22,7 +22,7 @@ namespace Flattiverse.Connector.Units
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task Configure(Action<PlanetConfiguration> config)
+        public async Task<Planet> Configure(Action<PlanetConfiguration> config)
         {
             Session session = await Cluster.Galaxy.GetSession();
 
@@ -41,14 +41,22 @@ namespace Flattiverse.Connector.Units
             session = await Cluster.Galaxy.GetSession();
 
             packet = new Packet();
-            packet.Header.Command = 0x5A;
+            packet.Header.Command = 0x52;
             packet.Header.Id0 = (byte)Cluster.ID;
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
+            {
+                writer.Write(Name);
                 changes.Write(writer);
+            }
 
             await session.SendWait(packet);
+
+            if (!Cluster.TryGetUnit(changes.Name, out Unit? unit) || unit is not Planet planet)
+                throw new GameException(0x35);
+
+            return planet;
         }
 
         internal override void Update(PacketReader reader) 
@@ -66,7 +74,7 @@ namespace Flattiverse.Connector.Units
             Session session = await Cluster.Galaxy.GetSession();
 
             Packet packet = new Packet();
-            packet.Header.Command = 0x5B;
+            packet.Header.Command = 0x53;
             packet.Header.Id0 = (byte)Cluster.ID;
             packet.Header.Param0 = (byte)Kind;
 
@@ -75,6 +83,8 @@ namespace Flattiverse.Connector.Units
 
             await session.SendWait(packet);
         }
+
+        public override UnitKind Kind => UnitKind.Planet;
 
         public override string ToString()
         {

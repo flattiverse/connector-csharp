@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
-    internal class HarvestableConfiguration : CelestialBodyConfiguration
+    public class HarvestableConfiguration : CelestialBodyConfiguration
     {
         internal readonly List<HarvestableSection> sections = new List<HarvestableSection>();
+
+        internal HarvestableConfiguration() : base() { }
 
         internal HarvestableConfiguration(PacketReader reader) : base(reader)
         {

@@ -162,7 +162,7 @@ namespace Flattiverse.Connector.Hierarchy
             CostTungsten = reader.Read2U(100);
             CostSilicon = reader.Read2U(1);
             CostTritium = reader.Read2U(10);
-            CostTime = reader.Read2U(10);
+            CostTime = reader.ReadUInt16();
             Hull = reader.Read2U(10);
             HullRepair = reader.Read2U(100);
             Shields = reader.Read2U(10);
@@ -184,7 +184,7 @@ namespace Flattiverse.Connector.Hierarchy
             Cargo = reader.Read4U(1000);
             Extractor = reader.Read2U(100);
             WeaponSpeed = reader.Read2U(10);
-            WeaponTime = reader.ReadUInt16() / 20.0;
+            WeaponTime = reader.ReadUInt16();
             WeaponLoad = reader.Read3U(1000);
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read2U(100000);

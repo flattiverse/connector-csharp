@@ -27,7 +27,7 @@ namespace Flattiverse.Connector.Units
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task Configure(Action<BlackHoleConfiguration> config)
+        public async Task<BlackHole> Configure(Action<BlackHoleConfiguration> config)
         {
             Session session = await Cluster.Galaxy.GetSession();
 
@@ -51,9 +51,17 @@ namespace Flattiverse.Connector.Units
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
+            {
+                writer.Write(Name);
                 changes.Write(writer);
+            }
 
             await session.SendWait(packet);
+
+            if (!Cluster.TryGetUnit(changes.Name, out Unit? unit) || unit is not BlackHole blackHole)
+                throw new GameException(0x35);
+
+            return blackHole;
         }
 
 
@@ -89,6 +97,8 @@ namespace Flattiverse.Connector.Units
 
             await session.SendWait(packet);
         }
+
+        public override UnitKind Kind => UnitKind.BlackHole;
 
         public override string ToString()
         {

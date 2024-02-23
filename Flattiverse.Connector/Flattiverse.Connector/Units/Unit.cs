@@ -137,7 +137,7 @@ public class Unit
     /// <summary>
     /// Specifies the Kind of the unit.
     /// </summary>
-    public virtual UnitKind Kind => UnitKind.Sun;
+    public virtual UnitKind Kind => throw new NotImplementedException($"Kind should be overwritten in derived class");
 
     public override string ToString() => base.ToString();
 }

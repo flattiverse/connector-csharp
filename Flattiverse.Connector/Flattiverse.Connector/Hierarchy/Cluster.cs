@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
 using Flattiverse.Connector.Units;
@@ -24,7 +25,7 @@ public class Cluster : INamedUnit
         Galaxy = galaxy;
 
         units = new Dictionary<string, Unit>();
-        
+
         this.id = id;
 
         config = new ClusterConfig(reader);
@@ -33,12 +34,12 @@ public class Cluster : INamedUnit
     }
 
     public int ID => id;
-    
+
     /// <summary>
     /// The name of the cluster.
     /// </summary>
     public string Name => config.Name;
-    
+
     public ClusterConfig Config => config;
 
     /// <summary>
@@ -66,7 +67,7 @@ public class Cluster : INamedUnit
     internal Unit SeeNewUnit(UnitKind kind, PacketReader reader)
     {
         Unit unit = Unit.FromPacket(this, kind, reader);
-        
+
         units.Add(unit.Name, unit);
 
         return unit;
@@ -76,10 +77,10 @@ public class Cluster : INamedUnit
     {
         string name = reader.PeekString();
         Unit? unit;
-        
+
         if (!units.TryGetValue(name, out unit))
             Debug.Fail($"Requested unit \"{name}\" should be know but isn't in my units dictionary.");
-        
+
         unit.Update(reader);
 
         return unit;
@@ -88,7 +89,7 @@ public class Cluster : INamedUnit
     internal Unit SeeUnitNoMore(string name)
     {
         Unit? unit;
-        
+
         if (!units.TryGetValue(name, out unit))
             Debug.Fail($"Requested unit \"{name}\" should be know but isn't in my units dictionary.");
 
@@ -326,4 +327,6 @@ public class Cluster : INamedUnit
         regions[id] = new Region(Galaxy, this, id, reader);
         Console.WriteLine($"Received upgrade {regions[id]!.Name} update for cluster {Name}");
     }
+
+    internal bool TryGetUnit(string name, [NotNullWhen(true)] out Unit? unit) => units.TryGetValue(name, out unit);
 }

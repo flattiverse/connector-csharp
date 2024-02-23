@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
-    public class MeteoroidConfiguration : CelestialBodyConfiguration
+    public class MeteoroidConfiguration : HarvestableConfiguration
     {
         private MeteoroidConfiguration() : base() { }
 
