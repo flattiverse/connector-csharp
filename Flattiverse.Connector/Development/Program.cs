@@ -32,11 +32,11 @@ internal class Program
                 config.Description = "An updated description.";
                 config.GameType = GameType.Domination;
                 config.MaxPlayers = 1;
-                config.MaxPlatformsUniverse = 2;
-                config.MaxProbesUniverse = 3;
-                config.MaxDronesUniverse = 4;
-                config.MaxShipsUniverse = 5;
-                config.MaxBasesUniverse = 6;
+                config.MaxPlatformsGalaxy = 2;
+                config.MaxProbesGalaxy = 3;
+                config.MaxDronesGalaxy = 4;
+                config.MaxShipsGalaxy = 5;
+                config.MaxBasesGalaxy = 6;
                 config.MaxPlatformsTeam = 7;
                 config.MaxProbesTeam = 8;
                 config.MaxDronesTeam = 9;
@@ -88,7 +88,7 @@ internal class Program
                 config.CostTungsten = 0.4;
                 config.CostSilicon = 5;
                 config.CostTritium = 0.6;
-                config.CostTime = 0.7;
+                config.CostTime = 14;
                 config.Hull = 0.8;
                 config.HullRepair = 0.9;
                 config.Shields = 1.0;
@@ -110,7 +110,7 @@ internal class Program
                 config.Cargo = 0.26;
                 config.Extractor = 0.27;
                 config.WeaponSpeed = 2.8;
-                config.WeaponTime = 0.29;
+                config.WeaponTime = 55;
                 config.WeaponLoad = 3.0;
                 config.FreeSpawn = false;
             });
