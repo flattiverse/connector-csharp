@@ -180,11 +180,25 @@ namespace Flattiverse.Connector
             packet.Header.Command = 0x31;
             packet.Header.Id0 = Id;
 
+            //Server muss controllable updaten
+
             await session.SendWait(packet);
+        }
 
-            alive = false;
+        public async Task Continue()
+        {
+            if (alive)
+                throw new GameException(0xF6);
 
-            cluster.Galaxy.RemoveControllable(Id);
+            Session session = await cluster.Galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x32;
+            packet.Header.Id0 = Id;
+
+            //Server muss controllable updaten
+
+            await session.SendWait(packet);
         }
 
         public async Task Unregister()
@@ -192,8 +206,10 @@ namespace Flattiverse.Connector
             Session session = await cluster.Galaxy.GetSession();
 
             Packet packet = new Packet();
-            packet.Header.Command = 0x31;
+            packet.Header.Command = 0x33;
             packet.Header.Id0 = Id;
+
+            //Server muss controllable updaten
 
             await session.SendWait(packet);
         }
