@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Flattiverse.Connector.Units
 {
     // TODO Fehlende overrides von Unit für Ship
-    public class Ship : Unit
+    public class PlayerUnit : Unit
     {
         public readonly int Id; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
 
@@ -61,6 +61,11 @@ namespace Flattiverse.Connector.Units
         private ushort weaponAmmoMax;
         private double weaponAmmoProduction;
 
+        private Vector position;
+        private Vector movement;
+
+        private bool active;
+
 
         public ShipDesign ShipDesign => shipDesign;
 
@@ -106,8 +111,12 @@ namespace Flattiverse.Connector.Units
         public ushort WeaponAmmo => weaponAmmo;
         public ushort WeaponAmmoMax => weaponAmmoMax;
         public double WeaponAmmoProduction => weaponAmmoProduction;
+        public Vector Position => position;
+        public Vector Movement => movement;
 
-        internal Ship(Cluster cluster, PacketReader reader) : base(reader)
+        public bool Active => active;
+
+        internal PlayerUnit(Cluster cluster, PacketReader reader) : base(reader)
         {
             playerId = reader.ReadInt32();
             shipDesignId = reader.ReadInt32();
@@ -155,6 +164,14 @@ namespace Flattiverse.Connector.Units
             weaponAmmo = reader.ReadUInt16();
             weaponAmmoMax = reader.ReadUInt16();
             weaponAmmoProduction = reader.Read2U(100000);
+            position = new Vector(reader);
+            movement = new Vector(reader);
+            active = true;
+        }
+
+        internal void Deactivate()
+        {
+            active = false;
         }
     }
 }

@@ -9,11 +9,11 @@ namespace Flattiverse.Connector.Hierarchy
         public GameType GameType;
         public int MaxPlayers;
 
-        public int MaxPlatformsUniverse;
-        public int MaxProbesUniverse;
-        public int MaxDronesUniverse;
-        public int MaxShipsUniverse;
-        public int MaxBasesUniverse;
+        public int MaxPlatformsGalaxy;
+        public int MaxProbesGalaxy;
+        public int MaxDronesGalaxy;
+        public int MaxShipsGalaxy;
+        public int MaxBasesGalaxy;
 
         public int MaxPlatformsTeam;
         public int MaxProbesTeam;
@@ -34,11 +34,11 @@ namespace Flattiverse.Connector.Hierarchy
             GameType = galaxy.GameType;
             MaxPlayers = galaxy.MaxPlayers;
 
-            MaxPlatformsUniverse = galaxy.MaxPlatformsUniverse;
-            MaxProbesUniverse = galaxy.MaxProbesUniverse;
-            MaxDronesUniverse = galaxy.MaxDronesUniverse;
-            MaxShipsUniverse = galaxy.MaxShipsUniverse;
-            MaxBasesUniverse = galaxy.MaxBasesUniverse;
+            MaxPlatformsGalaxy = galaxy.MaxPlatformsGalaxy;
+            MaxProbesGalaxy = galaxy.MaxProbesGalaxy;
+            MaxDronesGalaxy = galaxy.MaxDronesGalaxy;
+            MaxShipsGalaxy = galaxy.MaxShipsGalaxy;
+            MaxBasesGalaxy = galaxy.MaxBasesGalaxy;
 
             MaxPlatformsTeam = galaxy.MaxPlatformsTeam;
             MaxProbesTeam = galaxy.MaxProbesTeam;
@@ -59,11 +59,11 @@ namespace Flattiverse.Connector.Hierarchy
             Description = reader.ReadString();
             GameType = (GameType)reader.ReadByte();
             MaxPlayers = reader.ReadByte();
-            MaxPlatformsUniverse = reader.ReadUInt16();
-            MaxProbesUniverse = reader.ReadUInt16();
-            MaxDronesUniverse = reader.ReadUInt16();
-            MaxShipsUniverse = reader.ReadUInt16();
-            MaxBasesUniverse = reader.ReadUInt16();
+            MaxPlatformsGalaxy = reader.ReadUInt16();
+            MaxProbesGalaxy = reader.ReadUInt16();
+            MaxDronesGalaxy = reader.ReadUInt16();
+            MaxShipsGalaxy = reader.ReadUInt16();
+            MaxBasesGalaxy = reader.ReadUInt16();
             MaxPlatformsTeam = reader.ReadUInt16();
             MaxProbesTeam = reader.ReadUInt16();
             MaxDronesTeam = reader.ReadUInt16();
@@ -82,11 +82,11 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write(Description);
             writer.Write((byte)GameType);
             writer.Write(MaxPlayers);
-            writer.Write(MaxPlatformsUniverse);
-            writer.Write(MaxProbesUniverse);
-            writer.Write(MaxDronesUniverse);
-            writer.Write(MaxShipsUniverse);
-            writer.Write(MaxBasesUniverse);
+            writer.Write(MaxPlatformsGalaxy);
+            writer.Write(MaxProbesGalaxy);
+            writer.Write(MaxDronesGalaxy);
+            writer.Write(MaxShipsGalaxy);
+            writer.Write(MaxBasesGalaxy);
             writer.Write(MaxPlatformsTeam);
             writer.Write(MaxProbesTeam);
             writer.Write(MaxDronesTeam);

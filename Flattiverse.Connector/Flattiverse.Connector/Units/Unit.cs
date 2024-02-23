@@ -40,7 +40,7 @@ public class Unit
             case UnitKind.Buoy:
                 return new Buoy(cluster, reader);
             case UnitKind.Ship:
-                return new Ship(cluster, reader);
+                return new PlayerUnit(cluster, reader);
             default:
                 throw new NotImplementedException($"Unknown UnitKind 0x{(int)kind:X02} ({kind}) in Unit constructor given.");
         }

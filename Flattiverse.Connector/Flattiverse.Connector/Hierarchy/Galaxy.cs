@@ -245,8 +245,7 @@ public class Galaxy
                 {
                     if(players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster cl)
                     {
-                        // TODO MALUK reuse of Id € {Id0, Id1} for ControllableInfo.Id
-                        ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Id, packet.Header.Param0 == 1);
+                        ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0, packet.Header.Param1 == 1);
                         player.AddControllableInfo(info);
                         Console.WriteLine($"Received controllable info");
                     }
@@ -256,8 +255,7 @@ public class Galaxy
                 {
                     if (players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster)
                     {
-                        // TODO MALUK reuse of Id € {Id0, Id1} for ControllableInfo.Id
-                        player.RemoveControllableInfo(packet.Header.Id);
+                        player.RemoveControllableInfo(packet.Header.Param1);
                         Console.WriteLine($"Received controllable remove info");
                     }
                 }
@@ -368,17 +366,14 @@ public class Galaxy
 
         Packet packet = new Packet();
         packet.Header.Command = 0x30;
+        packet.Header.Id0 = (byte)design.ID;
 
         using (PacketWriter writer = packet.Write())
-        {
             writer.Write(name);
-            writer.Write(design.ID);
-        }
 
         Packet answerPacket = await session.SendWait(packet);
 
-        //Todo cluster kommt vom server zurück
-        Controllable controllable = new Controllable(this, answerPacket.Read());
+        Controllable controllable = new Controllable(clusters[packet.Header.Id0]!, answerPacket.Read());
 
         AddControllable(controllable);
 

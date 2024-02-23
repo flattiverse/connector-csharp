@@ -9,13 +9,17 @@ namespace Flattiverse.Connector
     {
         private Cluster cluster;
 
-        public readonly int Id; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
+        public readonly byte Id;
 
         public string Name => name;
+
+        private readonly byte playerId;
 
         private readonly string name;
 
         private ShipDesign shipDesign;
+
+        public ShipDesign ShipDesign => shipDesign;
 
         private int shipDesignId;
         private int upgradeIndex;
@@ -57,6 +61,17 @@ namespace Flattiverse.Connector
         private ushort weaponAmmoMax;
         private double weaponAmmoProduction;
 
+        private Vector position;
+        private Vector movement;
+
+        private bool active;
+
+        private bool alive;
+
+        public bool Active => active;
+
+        public bool Alive => alive;
+
         public int ShipDesignId => shipDesignId;
         public int UpgradeIndex => upgradeIndex;
         public double Hull => hull;
@@ -96,6 +111,8 @@ namespace Flattiverse.Connector
         public ushort WeaponAmmo => weaponAmmo;
         public ushort WeaponAmmoMax => weaponAmmoMax;
         public double WeaponAmmoProduction => weaponAmmoProduction;
+        public Vector Position => position;
+        public Vector Movement => movement;
 
         internal Controllable(Cluster cluster, PacketReader reader)
         {
@@ -106,7 +123,7 @@ namespace Flattiverse.Connector
             shipDesignId = reader.ReadInt32();
             shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
 
-            Id = reader.ReadInt32();
+            Id = reader.ReadByte();
 
             upgradeIndex = reader.ReadInt32();
             hull = reader.Read2U(10);
@@ -146,25 +163,39 @@ namespace Flattiverse.Connector
             weaponAmmo = reader.ReadUInt16();
             weaponAmmoMax = reader.ReadUInt16();
             weaponAmmoProduction = reader.Read2U(100000);
+            position = new Vector(reader);
+            movement = new Vector(reader);
+            active = true;
+            alive = false;
         }
 
         public async Task Kill()
         {
-            if (hull <= 0.0)
+            if (!alive)
                 throw new GameException(0xF5);
 
             Session session = await cluster.Galaxy.GetSession();
 
             Packet packet = new Packet();
             packet.Header.Command = 0x31;
-            packet.Header.Id0 = (byte)cluster.ID;
-
-            using (PacketWriter writer = packet.Write())
-                writer.Write(Name);
+            packet.Header.Id0 = Id;
 
             await session.SendWait(packet);
 
+            alive = false;
+
             cluster.Galaxy.RemoveControllable(Id);
+        }
+
+        public async Task Unregister()
+        {
+            Session session = await cluster.Galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x31;
+            packet.Header.Id0 = Id;
+
+            await session.SendWait(packet);
         }
     }
 }
