@@ -128,18 +128,9 @@ And those commands from the client to the server:
 * `0x4F`: Remove upgrade
 * `0x50`: Get specific unit
 * `0x51`: Add new unit
-* `0x52`: Configure black hole
-* `0x53`: Remove black hole
-* `0x54`: Configure buoy
-* `0x55`: Remove buoy
-* `0x56`: Configure meteoroid
-* `0x57`: Remove meteoroid
-* `0x58`: Configure moon
-* `0x59`: Remove moon
-* `0x5A`: Configure planet
-* `0x5B`: Remove planet
-* `0x5C`: Configure sun
-* `0x5D`: Remove sun
+* `0x52`: Configure unit
+* `0x53`: Remove unit
+
 
 
 ## Data Types
