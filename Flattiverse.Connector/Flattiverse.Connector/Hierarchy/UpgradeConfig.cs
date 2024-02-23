@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Hierarchy
 {
@@ -39,6 +40,16 @@ namespace Flattiverse.Connector.Hierarchy
         public ushort WeaponAmmo;
         public double WeaponAmmoProduction;
         public bool FreeSpawn;
+        public double NozzleEnergyConsumption;
+        public double ThrusterEnergyConsumption;
+        public double HullRepairEnergyConsumption;
+        public double HullRepairIronConsumption;
+        public double ShieldsIonConsumption;
+        public double ExtractorEnergyConsumption;
+        public double WeaponEnergyConsumption;
+        public double ScannerEnergyConsumption;
+        public double ScannerRange;
+        public double ScannerWidth;
 
         private UpgradeConfig()
         {
@@ -77,6 +88,16 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = 0;
             WeaponAmmoProduction = 0;
             FreeSpawn = true;
+            NozzleEnergyConsumption = 0;
+            ThrusterEnergyConsumption = 0;
+            HullRepairEnergyConsumption = 0;
+            HullRepairIronConsumption = 0;
+            ShieldsIonConsumption = 0;
+            ExtractorEnergyConsumption = 0;
+            WeaponEnergyConsumption = 0;
+            ScannerEnergyConsumption = 0;
+            ScannerRange = 0;
+            ScannerWidth = 0;
         }
 
         internal UpgradeConfig(UpgradeConfig upgrade)
@@ -116,6 +137,16 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = upgrade.WeaponAmmo;
             WeaponAmmoProduction = upgrade.WeaponAmmoProduction;
             FreeSpawn = upgrade.FreeSpawn;
+            NozzleEnergyConsumption = upgrade.NozzleEnergyConsumption;
+            ThrusterEnergyConsumption = upgrade.ThrusterEnergyConsumption;
+            HullRepairEnergyConsumption = upgrade.HullRepairEnergyConsumption;
+            HullRepairIronConsumption = upgrade.HullRepairIronConsumption;
+            ShieldsIonConsumption = upgrade.ShieldsIonConsumption;
+            ExtractorEnergyConsumption = upgrade.ExtractorEnergyConsumption;
+            WeaponEnergyConsumption = upgrade.WeaponEnergyConsumption;
+            ScannerEnergyConsumption = upgrade.ScannerEnergyConsumption;
+            ScannerRange = upgrade.ScannerRange;
+            ScannerWidth = upgrade.ScannerWidth;
         }
 
         internal UpgradeConfig(PacketReader reader, ShipDesign ship)
@@ -158,6 +189,16 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read2U(100000);
             FreeSpawn = reader.ReadBoolean();
+            NozzleEnergyConsumption = reader.Read4U(1000);
+            ThrusterEnergyConsumption = reader.Read4U(1000);
+            HullRepairEnergyConsumption = reader.Read4U(1000);
+            HullRepairIronConsumption = reader.Read4U(1000);
+            ShieldsIonConsumption = reader.Read4U(1000);
+            ExtractorEnergyConsumption = reader.Read4U(1000);
+            WeaponEnergyConsumption = reader.Read4U(1000);
+            ScannerEnergyConsumption = reader.Read4U(1000);
+            ScannerRange = reader.Read3U(1000);
+            ScannerWidth = reader.Read3U(1000);
         }
 
         internal static UpgradeConfig Default => new UpgradeConfig();
@@ -199,6 +240,16 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write(WeaponAmmo);
             writer.Write2U(WeaponAmmoProduction, 100000);
             writer.Write(FreeSpawn);
+            writer.Write4U(NozzleEnergyConsumption, 1000);
+            writer.Write4U(ThrusterEnergyConsumption, 1000);
+            writer.Write4U(HullRepairEnergyConsumption, 1000);
+            writer.Write4U(HullRepairIronConsumption, 1000);
+            writer.Write4U(ShieldsIonConsumption, 1000);
+            writer.Write4U(ExtractorEnergyConsumption, 1000);
+            writer.Write4U(WeaponEnergyConsumption, 1000);
+            writer.Write4U(ScannerEnergyConsumption, 1000);
+            writer.Write3U(ScannerRange, 1000);
+            writer.Write3U(ScannerWidth, 1000);
         }
     }
 }
