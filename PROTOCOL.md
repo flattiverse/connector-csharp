@@ -145,44 +145,50 @@ And those commands from the client to the server:
 ## Data Types
 
 
-| Name | Size | Decimal Places | Comment/Todo | status |
-| ---- | ---- | ---- | ---- | ---- |
-| Angle | 2 byte unsigned | 2 |  |  |
-| Radius | 3 byte unsigned | 3 |  |  |
-| WeaponLoad |  |  | -> Radius |  |
-| Size |  |  | -> Radius |  |
-| Vector | 4 byte signed | 5 |  |  |
-|  |  |  |  |  |
-| costEnergy | 4 byte unsigned | 3 | Für Energie, Ions und Cargo |  |
-| costIon |  |  |  |  |
-| CostIron |  |  |  |  |
-| CostTungsten |  |  |  |  |
-| CostSilicon |  |  |  |  |
-| CostTritium |  |  |  |  |
-| EnergyMax |  |  |  |  |
-| EnergyCells |  |  |  |  |
-| EnergyReactor |  |  |  |  |
-| EnergyTransfer |  |  |  |  |
-| IonMax |  |  |  |  |
-| IonCells |  |  |  |  |
-| IonReactor |  |  |  |  |
-| IonTransfer |  |  |  |  |
-| weaponAmmo |  |  |  |  |
-| weaponAmmoProduction |  |  |  |  |
-| Cargo |  |  |  |  |
-| Extractor |  |  |  |  |
-|  |  |  |  |  |
-| CostTime | 2 byte unsigned | /20 -> s |  |  |
-| WeaponTime |  |  | -> Time, wie bei CostTime |  |
-| Hull | 3 byte unsigned | 4 | Für Hüllenpunke und Schildpunkte. |  |
-| WeaponDamage |  |  | -> Hull |  |
-| HullRepair |  |  |  |  |
-| Shields |  |  |  |  |
-| ShieldsLoad |  |  |  |  |
-| Weight | 2 byte signed | 4 | -> Gravitation |  |
-| Thruster | 2 byte unsigned | 4 |  |  |
-| Nozzle | 2 byte signed | 2 | -> Turnrate |  |
-| Turnrate | 2 byte signed | 2 | -> Gleich wie Nozzle |  |
-| Speed | 2 byte unsigned | 3 |  |  |
-| WeaponSpeed |  |  | -> Speed |  |
+| Name                 | Size            | Decimal Places |
+| -------------------- | --------------- | -------------- |
+| Angle                | 2 byte unsigned | 2              |
+|                      |                 |                |
+| Radius               | 3 byte unsigned | 3              |
+| WeaponLoad           | 3 byte unsigned | 3              |
+| Size                 | 3 byte unsigned | 3              |
+|                      |                 |                |
+| Vector               | 4 byte signed   | 5              |
+|                      |                 |                |
+| costEnergy           | 4 byte unsigned | 3              |
+| costIon              | 4 byte unsigned | 3              |
+| CostIron             | 4 byte unsigned | 3              |
+| CostTungsten         | 4 byte unsigned | 3              |
+| CostSilicon          | 4 byte unsigned | 3              |
+| CostTritium          | 4 byte unsigned | 3              |
+| EnergyMax            | 4 byte unsigned | 3              |
+| EnergyCells          | 4 byte unsigned | 3              |
+| EnergyReactor        | 4 byte unsigned | 3              |
+| EnergyTransfer       | 4 byte unsigned | 3              |
+| IonMax               | 4 byte unsigned | 3              |
+| IonCells             | 4 byte unsigned | 3              |
+| IonReactor           | 4 byte unsigned | 3              |
+| IonTransfer          | 4 byte unsigned | 3              |
+| weaponAmmo           | 4 byte unsigned | 3              |
+| weaponAmmoProduction | 4 byte unsigned | 3              |
+| Cargo                | 4 byte unsigned | 3              |
+| Extractor            | 4 byte unsigned | 3              |
+|                      |                 |                |
+| CostTime             | 2 byte unsigned | 0              |
+| WeaponTime           | 2 byte unsigned | 0              |
+|                      |                 |                |
+| Hull                 | 3 byte unsigned | 4              |
+| WeaponDamage         | 3 byte unsigned | 4              |
+| HullRepair           | 3 byte unsigned | 4              |
+| Shields              | 3 byte unsigned | 4              |
+| ShieldsLoad          | 3 byte unsigned | 4              |
+|                      |                 |                |
+| Weight               | 2 byte signed   | 4              |
+| Thruster             | 2 byte unsigned | 4              |
+|                      |                 |                |
+| Nozzle               | 2 byte signed   | 2              |
+| Turnrate             | 2 byte signed   | 2              |
+|                      |                 |                |
+| Speed                | 2 byte unsigned | 3              |
+| WeaponSpeed          | 2 byte unsigned | 3              |
 
