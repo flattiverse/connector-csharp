@@ -11,7 +11,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double CostTungsten;
         public double CostSilicon;
         public double CostTritium;
-        public double CostTime;
+        public ushort CostTime;
         public double Hull;
         public double HullRepair;
         public double Shields;
@@ -33,11 +33,21 @@ namespace Flattiverse.Connector.Hierarchy
         public double Cargo;
         public double Extractor;
         public double WeaponSpeed;
-        public double WeaponTime;
+        public ushort WeaponTime;
         public double WeaponLoad;
         public ushort WeaponAmmo;
         public double WeaponAmmoProduction;
         public bool FreeSpawn;
+        public double NozzleEnergyConsumption;
+        public double ThrusterEnergyConsumption;
+        public double HullRepairEnergyConsumption;
+        public double HullRepairIronConsumption;
+        public double ShieldsIonConsumption;
+        public double ExtractorEnergyConsumption;
+        public double WeaponEnergyConsumption;
+        public double ScannerEnergyConsumption;
+        public double ScannerRange;
+        public double ScannerWidth;
 
         private ShipDesignConfig()
         {
@@ -75,6 +85,16 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = 0;
             WeaponAmmoProduction = 0;
             FreeSpawn = true;
+            NozzleEnergyConsumption = 0;
+            ThrusterEnergyConsumption = 0;
+            HullRepairEnergyConsumption = 0;
+            HullRepairIronConsumption = 0;
+            ShieldsIonConsumption = 0;
+            ExtractorEnergyConsumption = 0;
+            WeaponEnergyConsumption = 0;
+            ScannerEnergyConsumption = 0;
+            ScannerRange = 0;
+            ScannerWidth = 0;
         }
 
         internal ShipDesignConfig(ShipDesignConfig ship)
@@ -113,6 +133,16 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = ship.WeaponAmmo;
             WeaponAmmoProduction = ship.WeaponAmmoProduction;
             FreeSpawn = ship.FreeSpawn;
+            NozzleEnergyConsumption = ship.NozzleEnergyConsumption;
+            ThrusterEnergyConsumption = ship.ThrusterEnergyConsumption;
+            HullRepairEnergyConsumption = ship.HullRepairEnergyConsumption;
+            HullRepairIronConsumption = ship.HullRepairIronConsumption;
+            ShieldsIonConsumption = ship.ShieldsIonConsumption;
+            ExtractorEnergyConsumption = ship.ExtractorEnergyConsumption;
+            WeaponEnergyConsumption = ship.WeaponEnergyConsumption;
+            ScannerEnergyConsumption = ship.ScannerEnergyConsumption;
+            ScannerRange = ship.ScannerRange;
+            ScannerWidth = ship.ScannerWidth;
         }
 
         internal ShipDesignConfig(PacketReader reader)
@@ -124,7 +154,7 @@ namespace Flattiverse.Connector.Hierarchy
             CostTungsten = reader.Read4U(1000);
             CostSilicon = reader.Read4U(1000);
             CostTritium = reader.Read4U(1000);
-            CostTime = reader.Read2U(10);
+            CostTime = reader.ReadUInt16();
             Hull = reader.Read3U(10000);
             HullRepair = reader.Read3U(10000);
             Shields = reader.Read3U(10000);
@@ -151,6 +181,16 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read4U(1000);
             FreeSpawn = reader.ReadBoolean();
+            NozzleEnergyConsumption = reader.Read4U(1000);
+            ThrusterEnergyConsumption = reader.Read4U(1000);
+            HullRepairEnergyConsumption = reader.Read4U(1000);
+            HullRepairIronConsumption = reader.Read4U(1000);
+            ShieldsIonConsumption = reader.Read4U(1000);
+            ExtractorEnergyConsumption = reader.Read4U(1000);
+            WeaponEnergyConsumption = reader.Read4U(1000);
+            ScannerEnergyConsumption = reader.Read4U(1000);
+            ScannerRange = reader.Read3U(1000);
+            ScannerWidth = reader.Read3U(1000);
         }
 
         internal static ShipDesignConfig Default => new ShipDesignConfig();
@@ -188,9 +228,19 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write2U(WeaponSpeed, 1000);
             writer.Write((ushort)WeaponTime);
             writer.Write3U(WeaponLoad, 1000);
-            writer.Write(WeaponAmmo);//TODO: Is that correct?
+            writer.Write(WeaponAmmo);
             writer.Write4U(WeaponAmmoProduction, 1000);
             writer.Write(FreeSpawn);
+            writer.Write4U(NozzleEnergyConsumption, 1000);
+            writer.Write4U(ThrusterEnergyConsumption, 1000);
+            writer.Write4U(HullRepairEnergyConsumption, 1000);
+            writer.Write4U(HullRepairIronConsumption, 1000);
+            writer.Write4U(ShieldsIonConsumption, 1000);
+            writer.Write4U(ExtractorEnergyConsumption, 1000);
+            writer.Write4U(WeaponEnergyConsumption, 1000);
+            writer.Write4U(ScannerEnergyConsumption, 1000);
+            writer.Write3U(ScannerRange, 1000);
+            writer.Write3U(ScannerWidth, 1000);
         }
     }
 }
