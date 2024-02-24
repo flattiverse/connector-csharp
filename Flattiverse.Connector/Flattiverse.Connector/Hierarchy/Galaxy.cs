@@ -23,7 +23,8 @@ public class Galaxy
     private readonly Controllable?[] controllables = new Controllable?[256];
     public readonly UniversalHolder<Controllable> Controllables;
 
-    private Dictionary<byte, Player> players = new Dictionary<byte, Player>();
+    private readonly Player?[] players = new Player?[256];
+    public readonly UniversalHolder<Player> Players;
 
     private readonly SessionHandler sessions;
     private readonly Connection connection;
@@ -40,6 +41,7 @@ public class Galaxy
         ShipsDesigns = new UniversalHolder<ShipDesign>(ships);
         Teams = new UniversalHolder<Team>(teams);
         Controllables = new UniversalHolder<Controllable>(controllables);
+        Players = new UniversalHolder<Player>(players);
 
         connection = new Connection(universe, ConnectionClosed, PacketRecevied);
         sessions = new SessionHandler(connection);
@@ -232,10 +234,10 @@ public class Galaxy
                 break;
             case 0x17://Player removed info
                 { 
-                    if (teams[packet.Header.Id1] is Team && players.TryGetValue(packet.Header.Id0, out Player? p))
+                    if (teams[packet.Header.Id1] is Team && players[packet.Header.Id0] is Player p)
                     {
                         p.Deactivate();
-                        players.Remove(packet.Header.Id0);
+                        players[packet.Header.Id0] = null;
                         Console.WriteLine($"Received player {p.Name} removed");
                         pushEvent(new PlayerRemovedEvent(this, p));
                     }
@@ -243,7 +245,7 @@ public class Galaxy
                 break;
             case 0x18://Controllable info
                 {
-                    if(players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster cl)
+                    if(players[packet.Header.Id1] is Player player && clusters[packet.Header.Id0] is Cluster cl)
                     {
                         ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0, packet.Header.Param1 == 1);
                         player.AddControllableInfo(info);
@@ -253,7 +255,7 @@ public class Galaxy
                 break;
             case 0x19://Controllable removed info
                 {
-                    if (players.TryGetValue(packet.Header.Id1, out Player? player) && clusters[packet.Header.Id0] is Cluster)
+                    if (players[packet.Header.Id1] is Player player && clusters[packet.Header.Id0] is Cluster)
                     {
                         player.RemoveControllableInfo(packet.Header.Param1);
                         Console.WriteLine($"Received controllable remove info");

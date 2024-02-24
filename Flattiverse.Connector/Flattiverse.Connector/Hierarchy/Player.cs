@@ -4,10 +4,10 @@ using System;
 
 namespace Flattiverse.Connector.Hierarchy
 {
-    public class Player
+    public class Player : INamedUnit
     {
         public readonly byte ID;
-        public readonly string Name;
+        private readonly string name;
         public readonly PlayerKind Kind;
         public readonly Team Team;
 
@@ -26,12 +26,17 @@ namespace Flattiverse.Connector.Hierarchy
             Kind = kind;
             Team = team;
             
-            Name = reader.ReadString();
+            name = reader.ReadString();
 
             controllableInfos = new ControllableInfo[256];
             ControllableInfos = new UniversalHolder<ControllableInfo>(controllableInfos);
         }
 
+        /// <summary>
+        /// The name of the player.
+        /// </summary>
+        public string Name => name;
+        
         internal void Deactivate()
         {
             active = false;
@@ -53,7 +58,7 @@ namespace Flattiverse.Connector.Hierarchy
 
         public override string ToString()
         {
-            return $"Player [{ID}] {Name}({Kind})";
+            return $"Player [{ID}] {name}({Kind})";
         }
     }
 }
