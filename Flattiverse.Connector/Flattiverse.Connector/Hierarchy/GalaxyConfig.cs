@@ -9,18 +9,21 @@ namespace Flattiverse.Connector.Hierarchy
         public GameType GameType;
         public int MaxPlayers;
 
+        // TODO MALUK these could all be ushort
         public int MaxPlatformsGalaxy;
         public int MaxProbesGalaxy;
         public int MaxDronesGalaxy;
         public int MaxShipsGalaxy;
         public int MaxBasesGalaxy;
 
+        // TODO MALUK these could all be ushort
         public int MaxPlatformsTeam;
         public int MaxProbesTeam;
         public int MaxDronesTeam;
         public int MaxShipsTeam;
         public int MaxBasesTeam;
 
+        // TODO MALUK these could all be byte
         public int MaxPlatformsPlayer;
         public int MaxProbesPlayer;
         public int MaxDronesPlayer;

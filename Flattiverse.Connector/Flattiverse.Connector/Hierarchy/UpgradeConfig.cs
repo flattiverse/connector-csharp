@@ -13,7 +13,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double CostTungsten;
         public double CostSilicon;
         public double CostTritium;
-        public double CostTime;
+        public double CostTime; // TODO MALUK this is a ushort in ShipDesignConfig
         public double Hull;
         public double HullRepair;
         public double Shields;
@@ -35,7 +35,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double Cargo;
         public double Extractor;
         public double WeaponSpeed;
-        public double WeaponTime;
+        public double WeaponTime; // TODO MALUK this is a ushort in ShipDesignConfig
         public double WeaponLoad;
         public ushort WeaponAmmo;
         public double WeaponAmmoProduction;
@@ -213,7 +213,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write2U(CostTungsten, 100);
             writer.Write2U(CostSilicon, 1);
             writer.Write2U(CostTritium, 10);
-            writer.Write2U(CostTime, 10);
+            writer.Write2U(CostTime, 10); // TODO MALUK read as uint16, written as double 2u
             writer.Write2U(Hull, 10);
             writer.Write2U(HullRepair, 100);
             writer.Write2U(Shields, 10);
