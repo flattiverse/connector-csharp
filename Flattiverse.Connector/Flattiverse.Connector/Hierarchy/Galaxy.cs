@@ -407,6 +407,14 @@ public class Galaxy
 
     internal Player GetPlayer(int playerId) => players[(byte)playerId];
 
+    /// <summary>
+    /// Registers a new ship with the given name and design. The name must obey naming conventions and the chosen design
+    /// must have set FreeSpawn. All ship designs which don't have FreeSpawn set (=false) must be built in game and can't
+    /// be just registered.
+    /// </summary>
+    /// <param name="name">The name of the ship you want to register.</param>
+    /// <param name="design">The design you want to use.</param>
+    /// <returns>The controllable on which the new ship should be based.</returns>
     public async Task<Controllable> RegisterShip(string name, ShipDesign design)
     {
         Session session = await GetSession();
