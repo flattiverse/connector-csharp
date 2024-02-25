@@ -259,9 +259,9 @@ public class Galaxy
                 players[packet.Header.Id0] = null;
                 break;
             case 0x47: // ConstrollableInfo created.
-                Debug.Assert(players[packet.Header.Id1] is null, $"players[{packet.Header.Id1}] not populated.");
-                Debug.Assert(players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] is null, $"players[{packet.Header.Id1}].controllableInfos[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0]!.Name}\".");
-                players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] = new ControllableInfo(this, players[packet.Header.Id1]!, reader, packet.Header.Id0, packet.Header.Param1 == 1);
+                Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] not populated.");
+                Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] already populated by \"{players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!.Name}\".");
+                players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] = new ControllableInfo(this, players[packet.Header.Id0]!, reader, packet.Header.Id1, packet.Header.Param0 == 1);
                 break;
             case 0x57: // ControllableInfo updated.
                 // TODO JOW: Leben.
@@ -270,10 +270,10 @@ public class Galaxy
                 // TODO JOW: Scores.
                 break;
             case 0x77: // ControllableInfo removed.
-                Debug.Assert(players[packet.Header.Id1] is not null, $"players[{packet.Header.Id1}] not populated.");
-                Debug.Assert(players[packet.Header.Id1]!.controllableInfos[packet.Header.Param1] is not null, $"players[{packet.Header.Id1}].controllableInfos[{packet.Header.Param1}] not populated.");
-                players[packet.Header.Id1]!.controllableInfos[packet.Header.Param1]!.Deactivate();
-                players[packet.Header.Id1]!.controllableInfos[packet.Header.Param1] = null;
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
+                Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is not null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] not populated.");
+                players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!.Deactivate();
+                players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] = null;
                 break;
             case 0x48: // Controllable created.
                 Debug.Assert(controllables[packet.Header.Id0] is null, $"controllables[{packet.Header.Id0}] already populated by \"{controllables[packet.Header.Id0]!.Name}\".");

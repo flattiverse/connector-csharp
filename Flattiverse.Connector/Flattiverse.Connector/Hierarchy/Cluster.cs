@@ -43,8 +43,9 @@ public class Cluster : INamedUnit
         active = false;
     }
     
-    public bool Active => active;
+    public bool IsActive => active;
     
+    // TODO JOW: Öffentliche ID's entfernen.
     public int Id => id;
 
     /// <summary>

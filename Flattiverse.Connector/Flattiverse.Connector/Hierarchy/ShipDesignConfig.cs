@@ -26,7 +26,8 @@ namespace Flattiverse.Connector.Hierarchy
         public double IonCells;
         public double IonReactor;
         public double IonTransfer;
-        public double Thruster;
+        public double ThrusterForward;
+        public double ThrusterBackward;
         public double Nozzle;
         public double Speed;
         public double Turnrate;
@@ -73,7 +74,8 @@ namespace Flattiverse.Connector.Hierarchy
             IonCells = 0;
             IonReactor = 0;
             IonTransfer = 0;
-            Thruster = 0;
+            ThrusterForward = 0;
+            ThrusterBackward = 0;
             Nozzle = 0;
             Speed = 0;
             Turnrate = 0;
@@ -121,7 +123,8 @@ namespace Flattiverse.Connector.Hierarchy
             IonCells = ship.IonCells;
             IonReactor = ship.IonReactor;
             IonTransfer = ship.IonTransfer;
-            Thruster = ship.Thruster;
+            ThrusterForward = ship.ThrusterForward;
+            ThrusterBackward = ship.ThrusterBackward;
             Nozzle = ship.Nozzle;
             Speed = ship.Speed;
             Turnrate = ship.Turnrate;
@@ -169,7 +172,8 @@ namespace Flattiverse.Connector.Hierarchy
             IonCells = reader.Read4U(1000);
             IonReactor = reader.Read4U(1000);
             IonTransfer = reader.Read4U(1000);
-            Thruster = reader.Read2U(10000);
+            ThrusterForward = reader.Read2U(10000);
+            ThrusterBackward = reader.Read2U(10000);
             Nozzle = reader.Read2U(100);
             Speed = reader.Read2U(1000);
             Turnrate = reader.Read2U(100);
@@ -220,7 +224,8 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write4U(IonCells, 1000);
             writer.Write4U(IonReactor, 1000);
             writer.Write4U(IonTransfer, 1000);
-            writer.Write2U(Thruster, 10000);
+            writer.Write2U(ThrusterForward, 10000);
+            writer.Write2U(ThrusterBackward, 10000);
             writer.Write2U(Nozzle, 100);
             writer.Write2U(Speed, 1000);
             writer.Write2U(Turnrate, 100);

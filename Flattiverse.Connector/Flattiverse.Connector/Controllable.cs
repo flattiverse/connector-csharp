@@ -94,6 +94,15 @@ namespace Flattiverse.Connector
             shieldsMax = reader.Read3U(10000);
             shieldsLoad = reader.Read3U(10000);
 
+            energyMax = reader.Read4U(1000);
+            energyCells = reader.Read4U(1000);
+            energyReactor = reader.Read4U(1000);
+            energyTransfer = reader.Read4U(1000);
+            ionMax = reader.Read4U(1000);
+            ionCells = reader.Read4U(1000);
+            ionReactor = reader.Read4U(1000);
+            ionTransfer = reader.Read4U(1000);
+
             active = true;
         }
 
@@ -107,6 +116,7 @@ namespace Flattiverse.Connector
             ionCells = reader.Read4U(1000);
             ionReactor = reader.Read4U(1000);
             ionTransfer = reader.Read4U(1000);
+
             thrusterMaxForward = reader.Read2U(10000);
             thrusterMaxBackward = reader.Read2U(10000);
             nozzleMax = reader.Read2S(100);
