@@ -28,8 +28,7 @@ namespace Flattiverse.Connector.MissionSelection
             if(
             !Utils.Traverse(player, out Id, "id") ||
             !Utils.Traverse(player, out Name, "name") ||
-            !Utils.Traverse(player, out string hasAvatar, "hasAvatar") ||
-            !Enum.TryParse(hasAvatar, out HasAvatar) ||
+            !Utils.Traverse(player, out HasAvatar, "hasAvatar") ||
             !Utils.Traverse(player, out Team, "team") ||
             !Utils.Traverse(player, out Kills, "kills") ||
             !Utils.Traverse(player, out Deaths, "deaths") ||
