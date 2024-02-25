@@ -103,6 +103,20 @@ namespace Flattiverse.Connector
             ionReactor = reader.ReadDouble();
             ionTransfer = reader.ReadDouble();
 
+            thrusterMaxForward = reader.ReadDouble();
+            thrusterMaxBackward = reader.ReadDouble();
+            nozzleMax = reader.ReadDouble();
+            speedMax = reader.ReadDouble();
+            cargoMax = reader.ReadDouble();
+            
+            extractorMax = reader.ReadDouble();
+            weaponSpeed = reader.ReadDouble();
+            weaponTime = reader.ReadUInt16();
+            weaponLoad = reader.ReadDouble();
+            weaponDamage = reader.ReadDouble();
+            weaponAmmoMax = reader.ReadDouble();
+            weaponAmmoProduction = reader.ReadDouble();
+
             active = true;
         }
 
