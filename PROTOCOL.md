@@ -91,14 +91,29 @@ If this documentation is not recent, you can find the assignments
 
 Flattiverse implements those commands sent from Server to Connector:
 
-* `0x10`: A galaxy info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x11`: A cluster info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x12`: A region info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x13`: A team info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x14`: A ship info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x15`: A upgrade info you don't know yet. This can either be directly after login as an initial transmission or if one was created, changed or removed.
-* `0x16`: A player info you don't know yet. This can either be directly after login as an initial transmission or if one was created.
-* `0x17`: A player was removed.
+### Hierarchy Update
+
+|   Element \ What   | Create | Update | DynamicUpdate | Remove |
+|:------------------:|:------:|:------:|:-------------:|:------:|
+|      `Galaxy`      | `0x40` | `0x50` |       -       |   -    |
+|     `Cluster`      | `0x41` | `0x51` |       -       | `0x71` |
+|      `Region`      | `0x42` | `0x52` |       -       | `0x72` |
+|       `Team`       | `0x43` | `0x53` |    `0x63`     | `0x73` |
+|    `ShipDesign`    | `0x44` | `0x54` |       -       | `0x74` |
+|   `ShipUpgrade`    | `0x45` | `0x55` |       -       | `0x75` |
+|      `Player`      | `0x46` |   -    |    `0x66`     | `0x76` |
+| `ControllableInfo` | `0x47` | `0x57` |    `0x67`     | `0x77` |
+|   `Controllable`   | `0x48` | `0x58` |    `0x68`     | `0x78` |
+
+`Create` is sent if a new element is created. `Update` is sent, if an element exists already
+and has been updated. Note that the `Update` packet shouldn't contain `readonly` data which
+are already set. `DynamicUpdate` is sent, if dynamic data of such an element changes.
+Examples for this would be a score update of a `Player` or `Team` or a `Position` update of
+a `Controllable`. `Remove` is called if an element gets removed. This also leads to the
+deactivation of the element which makes it return `false` when `IsActive` is called.
+
+### Remaining Updates
+
 * `0x1C`: A new unit has been found.
   * `Param0`: `(byte)UnitKind` - specified the kind of the unit trasferred.
   * `Id0`: `Cluster.ID` - the ID of the cluster this unit is in.
