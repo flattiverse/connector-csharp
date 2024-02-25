@@ -95,7 +95,7 @@ public class GalaxyInfo
             foreach (JsonElement player in players.EnumerateArray())
                 if (player.ValueKind == JsonValueKind.Object)
                 {
-                    PlayerInfo playerResult = new PlayerInfo(player);
+                    PlayerInfo playerResult = new PlayerInfo(player, Teams);
 
                     playersResult.Add(playerResult.Name, playerResult);
                 }
