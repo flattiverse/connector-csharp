@@ -122,6 +122,7 @@ namespace Flattiverse.Connector
             nozzleMax = reader.Read2S(100);
             speedMax = reader.Read2U(1000);
             cargoMax = reader.Read4U(1000);
+            
             extractorMax = reader.Read4U(1000);
             weaponSpeed = reader.Read2U(1000);
             weaponTime = reader.ReadUInt16();
