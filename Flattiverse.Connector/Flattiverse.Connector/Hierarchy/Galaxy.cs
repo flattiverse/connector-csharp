@@ -210,20 +210,20 @@ public class Galaxy
                 clusters[packet.Header.Id0] = null;
                 break;
             case 0x42: // Region created.
-                Debug.Assert(clusters[packet.Header.Id1] is not null, $"clusters[{packet.Header.Id1}] not populated.");
-                Debug.Assert(clusters[packet.Header.Id1]!.regions[packet.Header.Id0] is null, $"clusters[{packet.Header.Id1}].regions[{packet.Header.Id0}] already populated by \"{clusters[packet.Header.Id1]!.regions[packet.Header.Id0]!.Name}\".");
-                clusters[packet.Header.Id1]!.regions[packet.Header.Id0] = new Region(this, clusters[packet.Header.Id1]!, packet.Header.Id0, reader);
+                Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
+                Debug.Assert(clusters[packet.Header.Id0]!.regions[packet.Header.Id1] is null, $"clusters[{packet.Header.Id0}].regions[{packet.Header.Id1}] already populated by \"{clusters[packet.Header.Id0]!.regions[packet.Header.Id1]!.Name}\".");
+                clusters[packet.Header.Id0]!.regions[packet.Header.Id1] = new Region(this, clusters[packet.Header.Id0]!, packet.Header.Id1, reader);
                 break;
             case 0x52: // Region updated.
                 Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
-                Debug.Assert(clusters[packet.Header.Id1]!.regions[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id1}].region[{packet.Header.Id0}] not populated.");
-                clusters[packet.Header.Id1]!.regions[packet.Header.Id0]!.Update(reader); 
+                Debug.Assert(clusters[packet.Header.Id0]!.regions[packet.Header.Id1] is not null, $"clusters[{packet.Header.Id0}].region[{packet.Header.Id1}] not populated.");
+                clusters[packet.Header.Id0]!.regions[packet.Header.Id1]!.Update(reader); 
                 break;
             case 0x72: // Region removed.
                 Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
-                Debug.Assert(clusters[packet.Header.Id1]!.regions[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id1}].region[{packet.Header.Id0}] not populated.");
-                clusters[packet.Header.Id1]!.regions[packet.Header.Id0]!.Deactivate();
-                clusters[packet.Header.Id1]!.regions[packet.Header.Id0] = null;
+                Debug.Assert(clusters[packet.Header.Id0]!.regions[packet.Header.Id1] is not null, $"clusters[{packet.Header.Id0}].region[{packet.Header.Id1}] not populated.");
+                clusters[packet.Header.Id0]!.regions[packet.Header.Id1]!.Deactivate();
+                clusters[packet.Header.Id0]!.regions[packet.Header.Id1] = null;
                 break;
             case 0x43: // Team created.
                 Debug.Assert(teams[packet.Header.Id0] is null, $"teams[{packet.Header.Id0}] already populated by \"{teams[packet.Header.Id0]!.Name}\".");
