@@ -122,6 +122,16 @@ namespace Flattiverse.Connector
 
         internal void Update(PacketReader reader)
         {
+            size = reader.ReadDouble();
+            weight = reader.ReadDouble();
+            
+            activeShipUpgrades = reader.ReadBytes(32);
+            
+            hullMax = reader.ReadDouble();
+            hullRepair = reader.ReadDouble();
+            shieldsMax = reader.ReadDouble();
+            shieldsLoad = reader.ReadDouble();
+
             energyMax = reader.ReadDouble();
             energyCells = reader.ReadDouble();
             energyReactor = reader.ReadDouble();
@@ -142,7 +152,7 @@ namespace Flattiverse.Connector
             weaponTime = reader.ReadUInt16();
             weaponLoad = reader.ReadDouble();
             weaponDamage = reader.ReadDouble();
-            weaponAmmoMax = reader.ReadUInt16();
+            weaponAmmoMax = reader.ReadDouble();
             weaponAmmoProduction = reader.ReadDouble();
         }
 
