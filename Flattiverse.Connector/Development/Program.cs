@@ -18,18 +18,31 @@ internal class Program
 
         // Player key / online
         //Galaxy galaxy = await universe.Join("ws://www.flattiverse.com/game/galaxies/0", "CE43AE41B96111DB66D75AB943A3042755B98F10E6A09AF0D4190B0FFEC13EE8", 0x00);
-        Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", 0x00);
+        //Galaxy galaxy = await universe.Join("ws://127.0.0.1:5000", "7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", 0x00);
 
-        Console.WriteLine($" + Galaxy: {galaxy.Name}");
+        //Console.WriteLine($" + Galaxy: {galaxy.Name}");
 
-        foreach (Team team in galaxy.Teams)
-            Console.WriteLine($"   + Team: {team.Name}");
+        //foreach (Team team in galaxy.Teams)
+        //    Console.WriteLine($"   + Team: {team.Name}");
 
-        foreach (Cluster cluster in galaxy.Clusters)
-            Console.WriteLine($"   + Cluster: {cluster.Name}");
+        //foreach (Cluster cluster in galaxy.Clusters)
+        //    Console.WriteLine($"   + Cluster: {cluster.Name}");
 
-        foreach (Player player in galaxy.Players)
-            Console.WriteLine($"   + Player: {player.Name}");
+        //foreach (Player player in galaxy.Players)
+        //    Console.WriteLine($"   + Player: {player.Name}");
+
+
+        try
+        {
+        universe.Update();
+
+        }
+        catch (Exception e)
+        {
+
+            throw;
+        }
+
 
         await Task.Delay(60000);
     }
