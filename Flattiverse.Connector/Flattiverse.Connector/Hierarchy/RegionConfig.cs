@@ -64,7 +64,6 @@ namespace Flattiverse.Connector.Hierarchy
             StartPropability = reader.ReadDouble();
             RespawnPropability = reader.ReadDouble();
             Protected = reader.ReadBoolean();
-            // TODO JUW: Weil es sich hier um Koordinaten handelt müsste das natürlich auch mittels derer Genauigkeit übertragen werden. Bitte im Connector und Server anpassen.
             Left = reader.ReadDouble();
             Top = reader.ReadDouble();
             Right = reader.ReadDouble();
