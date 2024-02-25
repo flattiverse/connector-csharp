@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net.WebSockets;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
+using Flattiverse.Connector.MissionSelection;
 
 namespace Flattiverse.Connector.Network
 {

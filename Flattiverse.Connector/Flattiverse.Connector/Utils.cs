@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Flattiverse.Connector
@@ -88,6 +89,242 @@ namespace Flattiverse.Connector
                     continue;
 
                 return false;
+            }
+
+            return true;
+        }
+        
+                public static bool Traverse(JsonElement element, out string text, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            text = string.Empty;
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            text = string.Empty;
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            text = string.Empty;
+                            return false;
+                        }
+                        break;
+                    default:
+                        text = string.Empty;
+                        return false;
+                }
+            }
+
+            if (element.ValueKind != JsonValueKind.String)
+            {
+                text = string.Empty;
+                return false;
+            }
+
+            text = element.GetString()!;
+
+            return true;
+        }
+
+        public static bool Traverse(JsonElement element, out double number, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            number = 0.0;
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            number = 0.0;
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            number = 0.0;
+                            return false;
+                        }
+                        break;
+                    default:
+                        number = 0.0;
+                        return false;
+                }
+            }
+
+            return element.TryGetDouble(out number);
+        }
+
+        public static bool Traverse(JsonElement element, out int number, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            number = 0;
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            number = 0;
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            number = 0;
+                            return false;
+                        }
+                        break;
+                    default:
+                        number = 0;
+                        return false;
+                }
+            }
+
+            return element.TryGetInt32(out number);
+        }
+
+        public static bool Traverse(JsonElement element, out bool result, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            result = default;
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            result = default;
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            result = default;
+                            return false;
+                        }
+                        break;
+                    default:
+                        result = default;
+                        return false;
+                }
+            }
+
+            result = element.ValueKind == JsonValueKind.True;
+            
+            return element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False;
+        }
+
+        public static bool Traverse(JsonElement element, out long number, params string[] path)
+        {
+            int pNum;
+
+            foreach (string p in path)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                        {
+                            number = 0;
+                            return false;
+                        }
+
+                        if (pNum < 0 || pNum >= element.GetArrayLength())
+                        {
+                            number = 0;
+                            return false;
+                        }
+
+                        element = element[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!element.TryGetProperty(p, out element))
+                        {
+                            number = 0;
+                            return false;
+                        }
+                        break;
+                    default:
+                        number = 0;
+                        return false;
+                }
+            }
+
+            return element.TryGetInt64(out number);
+        }
+
+        public static bool Traverse(JsonElement element, out JsonElement result, params string[] path)
+        {
+            int pNum;
+            result = element;
+
+            foreach (string p in path)
+            {
+                switch (result.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        if (!int.TryParse(p, out pNum))
+                            return false;
+
+                        if (pNum < 0 || pNum >= result.GetArrayLength())
+                            return false;
+
+                        result = result[pNum];
+                        break;
+                    case JsonValueKind.Object:
+                        if (!result.TryGetProperty(p, out result))
+                            return false;
+
+                        break;
+                    default:
+                        return false;
+                }
             }
 
             return true;
