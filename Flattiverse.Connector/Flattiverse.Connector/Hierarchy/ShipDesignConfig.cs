@@ -37,7 +37,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double WeaponSpeed;
         public ushort WeaponTime;
         public double WeaponLoad;
-        public ushort WeaponAmmo;
+        public double WeaponAmmo;
         public double WeaponAmmoProduction;
         public bool FreeSpawn;
         public double NozzleEnergyConsumption;
@@ -199,7 +199,7 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponSpeed = reader.ReadDouble();
             WeaponTime = reader.ReadUInt16();
             WeaponLoad = reader.ReadDouble();
-            WeaponAmmo = reader.ReadUInt16();
+            WeaponAmmo = reader.ReadDouble();
             WeaponAmmoProduction = reader.ReadDouble();
             FreeSpawn = reader.ReadBoolean();
             

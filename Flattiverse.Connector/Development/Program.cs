@@ -9,8 +9,6 @@ internal class Program
     {
         // A new beginning and a test - again.
 
-        Universe universe = new Universe();
-
         Console.WriteLine("Starting join request");
 
         // Admin key / local host
@@ -19,6 +17,8 @@ internal class Program
         // Player key / online
         //Galaxy galaxy = await universe.Join("ws://www.flattiverse.com/game/galaxies/0", "CE43AE41B96111DB66D75AB943A3042755B98F10E6A09AF0D4190B0FFEC13EE8", 0x00);
 
+        Universe universe = new Universe();
+        
         foreach (KeyValuePair<string, GalaxyInfo> gInfo in universe.Galaxies)
         {
             Console.WriteLine($" -> {gInfo.Key} {gInfo.Value.GameMode}");
@@ -49,6 +49,10 @@ internal class Program
         foreach (Player player in galaxy.Players)
             Console.WriteLine($"   + Player: {player.Name}");
 
+        Controllable ship = await galaxy.RegisterShip("HeartOfGold", galaxy.ShipsDesigns["Cruiser"]);
+        
+        
+        
         await Task.Delay(60000);
     }
 }

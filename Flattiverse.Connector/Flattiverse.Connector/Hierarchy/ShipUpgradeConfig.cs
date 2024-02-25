@@ -38,7 +38,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double WeaponSpeed;
         public ushort WeaponTime;
         public double WeaponLoad;
-        public ushort WeaponAmmo;
+        public double WeaponAmmo;
         public double WeaponAmmoProduction;
         public bool FreeSpawn;
         public double NozzleEnergyConsumption;
@@ -203,9 +203,7 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponSpeed = reader.ReadDouble();
             WeaponTime = reader.ReadUInt16();
             WeaponLoad = reader.ReadDouble();
-            // TODO JUW: WeaponLoad wird hier mit 3U, 3 gelesen, aber im Server mit 3U, 1 geschrieben. Alle Werte müssten wirklich überall gesynced sein, Sorry.
-            // TODO JUW: Bitte auch WeaponAmmo und Production anpassen (siehe Controllable).
-            WeaponAmmo = reader.ReadUInt16();
+            WeaponAmmo = reader.ReadDouble();
             WeaponAmmoProduction = reader.ReadDouble();
             FreeSpawn = reader.ReadBoolean();
             NozzleEnergyConsumption = reader.ReadDouble();

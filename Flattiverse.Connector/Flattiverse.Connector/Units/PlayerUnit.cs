@@ -57,8 +57,8 @@ namespace Flattiverse.Connector.Units
         private double weaponSpeed;
         private ushort weaponTime;
         private double weaponLoad;
-        private ushort weaponAmmo;
-        private ushort weaponAmmoMax;
+        private double weaponAmmo;
+        private double weaponAmmoMax;
         private double weaponAmmoProduction;
 
         private Vector position;
@@ -109,8 +109,8 @@ namespace Flattiverse.Connector.Units
         public double WeaponSpeed => weaponSpeed;
         public ushort WeaponTime => weaponTime;
         public double WeaponLoad => weaponLoad;
-        public ushort WeaponAmmo => weaponAmmo;
-        public ushort WeaponAmmoMax => weaponAmmoMax;
+        public double WeaponAmmo => weaponAmmo;
+        public double WeaponAmmoMax => weaponAmmoMax;
         public double WeaponAmmoProduction => weaponAmmoProduction;
         public Vector Position => position;
         public Vector Movement => movement;
@@ -162,8 +162,8 @@ namespace Flattiverse.Connector.Units
             weaponSpeed = reader.ReadDouble();
             weaponTime = reader.ReadUInt16();
             weaponLoad = reader.ReadDouble();
-            weaponAmmo = reader.ReadUInt16();
-            weaponAmmoMax = reader.ReadUInt16();
+            weaponAmmo = reader.ReadDouble();
+            weaponAmmoMax = reader.ReadDouble();
             weaponAmmoProduction = reader.ReadDouble();
             position = new Vector(reader);
             movement = new Vector(reader);
