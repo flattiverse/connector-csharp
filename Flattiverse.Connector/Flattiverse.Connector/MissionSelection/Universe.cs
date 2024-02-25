@@ -82,4 +82,23 @@ public class Universe
     }
 
     public ReadOnlyDictionary<string, GalaxyInfo> Galaxies => new ReadOnlyDictionary<string, GalaxyInfo>(galaxies);
+    
+    /// <summary>
+    /// Don't use this mathod - or only use it if you need to override what th eUniverse class is doing.
+    /// </summary>
+    /// <param name="uri">The path to the WebSocket endpoint.</param>
+    /// <param name="auth">The auth string.</param>
+    /// <param name="teamId">The team id.</param>
+    /// <returns>The connection to the galaxy.</returns>
+    public async Task<Galaxy> ManualJoin(string uri, string auth, int teamId)
+    {
+        Galaxy galaxy = new Galaxy(this);
+        
+        await galaxy.Connect(uri, auth, (byte)teamId);
+
+        // We wait so that we are sure that we have all meta data.
+        await galaxy.WaitLoginCompleted();
+        
+        return galaxy;
+    }
 }

@@ -184,6 +184,8 @@ public class Galaxy
             return;
         }
 
+        //Console.WriteLine($"RECV'd: {packet}");
+        
         PacketReader reader = packet.Read();
 
         switch (packet.Header.Command)
