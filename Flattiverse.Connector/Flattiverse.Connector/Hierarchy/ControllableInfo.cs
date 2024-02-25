@@ -4,9 +4,9 @@ namespace Flattiverse.Connector.Hierarchy
 {
     public class ControllableInfo : INamedUnit
     {
-        private Cluster cluster;
+        private Galaxy galaxy;
 
-        public readonly int Id; // TODO MALUK Ids usually are 1 or 2 byte large, UniversalHolder is initialized for 256 entries / 1 byte ids
+        public readonly int Id;
 
         private readonly string name;
 
@@ -56,10 +56,10 @@ namespace Flattiverse.Connector.Hierarchy
 
         public string Name => name;
 
-        internal ControllableInfo(Cluster cluster, Player player, PacketReader reader, int id, bool reduced)
+        internal ControllableInfo(Galaxy galaxy, Player player, PacketReader reader, int id, bool reduced)
         {
             active = true;
-            this.cluster = cluster;
+            this.galaxy = galaxy;
             this.player = player;
             Id = id;
             Reduced = reduced;
@@ -67,7 +67,7 @@ namespace Flattiverse.Connector.Hierarchy
             name = reader.ReadString();
 
             shipDesignId = reader.ReadInt32();
-            shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
+            shipDesign = galaxy.ShipsDesigns[shipDesignId];
             
             upgradeIndex = reader.ReadInt32();
 

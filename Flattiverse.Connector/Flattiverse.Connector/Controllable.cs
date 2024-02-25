@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Hierarchy;
+﻿using System.Diagnostics;
+using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.Network;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -7,7 +8,7 @@ namespace Flattiverse.Connector
 {
     public class Controllable : INamedUnit
     {
-        private Cluster cluster;
+        private Galaxy galaxy;
 
         public readonly byte Id;
 
@@ -17,12 +18,11 @@ namespace Flattiverse.Connector
 
         private readonly string name;
 
-        private ShipDesign shipDesign;
+        public readonly ShipDesign ShipDesign;
 
-        public ShipDesign ShipDesign => shipDesign;
-
-        private int shipDesignId;
-        private int upgradeIndex;
+        private byte[] activeShipUpgrades;
+        
+        
         private double hull;
         private double hullMax;
         private double hullRepair;
@@ -42,7 +42,8 @@ namespace Flattiverse.Connector
         private double ionReactor;
         private double ionTransfer;
         private double thruster;
-        private double thrusterMax;
+        private double thrusterMaxForward;
+        private double thrusterMaxBackward;
         private double nozzle;
         private double nozzleMax;
         private double speedMax;
@@ -52,30 +53,102 @@ namespace Flattiverse.Connector
         private double cargoSilicon;
         private double cargoTritium;
         private double cargoMax;
-        private double extractor;
         private double extractorMax;
         private double weaponSpeed;
         private ushort weaponTime;
         private double weaponLoad;
-        private ushort weaponAmmo;
-        private ushort weaponAmmoMax;
+        private double weaponDamage;
+        private double weaponAmmo;
+        private double weaponAmmoMax;
         private double weaponAmmoProduction;
+        private double direction;
 
         private Vector position;
         private Vector movement;
 
         private bool active;
 
-        private bool alive;
+        public bool IsActive => active;
 
-        public bool Active => active;
+        public bool IsAlive => hull > 0;
 
-        public bool Alive => alive;
+        internal Controllable(Galaxy galaxy, byte id, PacketReader reader)
+        {
+            this.galaxy = galaxy;
 
-        public int ShipDesignId => shipDesignId;
-        public int UpgradeIndex => upgradeIndex;
+            Id = id;
+
+            name = reader.ReadString();
+
+            ShipDesign = galaxy.ShipsDesigns[reader.ReadByte()];
+            
+            Debug.Assert(ShipDesign is not null, "Fail loading ship design.");
+
+            size = reader.Read3U(1000);
+            weight = reader.Read2S(10000);
+            
+            activeShipUpgrades = reader.ReadBytes(32);
+            
+            hullMax = reader.Read3U(10000);
+            hullRepair = reader.Read3U(10000);
+            shieldsMax = reader.Read3U(10000);
+            shieldsLoad = reader.Read3U(10000);
+
+            active = true;
+        }
+
+        internal void Update(PacketReader reader)
+        {
+            energyMax = reader.Read4U(1000);
+            energyCells = reader.Read4U(1000);
+            energyReactor = reader.Read4U(1000);
+            energyTransfer = reader.Read4U(1000);
+            ionMax = reader.Read4U(1000);
+            ionCells = reader.Read4U(1000);
+            ionReactor = reader.Read4U(1000);
+            ionTransfer = reader.Read4U(1000);
+            thrusterMaxForward = reader.Read2U(10000);
+            thrusterMaxBackward = reader.Read2U(10000);
+            nozzleMax = reader.Read2S(100);
+            speedMax = reader.Read2U(1000);
+            cargoMax = reader.Read4U(1000);
+            extractorMax = reader.Read4U(1000);
+            weaponSpeed = reader.Read2U(1000);
+            weaponTime = reader.ReadUInt16();
+            weaponLoad = reader.Read3U(1000);
+            weaponDamage = reader.Read3U(10000);
+            weaponAmmoMax = reader.ReadUInt16();
+            weaponAmmoProduction = reader.Read4U(1000);
+        }
+
+        internal void DynamicUpdate(PacketReader reader)
+        {
+            hull = reader.Read3U(10000);
+            shields = reader.Read3U(10000);
+            energy = reader.Read4U(1000);
+            ion = reader.Read4U(1000);
+            thruster = reader.Read2S(10000);
+            nozzle = reader.Read2S(100);
+            turnrate = reader.Read2S(100);
+
+            cargoTungsten = reader.Read4U(1000);
+            cargoIron = reader.Read4U(1000);
+            cargoSilicon = reader.Read4U(1000);
+            cargoTritium = reader.Read4U(1000);
+            weaponAmmo = reader.Read4U(1000);
+            position = new Vector(reader);
+            movement = new Vector(reader);
+            direction = reader.Read2U(100);
+        }
+
+        internal void Deactivate()
+        {
+            active = false;
+        }
+
         public double Hull => hull;
         public double HullMax => hullMax;
+        public double Direction => direction;
         public double HullRepair => hullRepair;
         public double Shields => shields;
         public double ShieldsMax => shieldsMax;
@@ -93,7 +166,8 @@ namespace Flattiverse.Connector
         public double IonReactor => ionReactor;
         public double IonTransfer => ionTransfer;
         public double Thruster => thruster;
-        public double ThrusterMax => thrusterMax;
+        public double ThrusterMaxForward => thrusterMaxForward;
+        public double ThrusterMaxBackward => thrusterMaxBackward;
         public double Nozzle => nozzle;
         public double NozzleMax => nozzleMax;
         public double SpeedMax => speedMax;
@@ -103,113 +177,52 @@ namespace Flattiverse.Connector
         public double CargoSilicon => cargoSilicon;
         public double CargoTritium => cargoTritium;
         public double CargoMax => cargoMax;
-        public double Extractor => extractor;
         public double ExtractorMax => extractorMax;
         public double WeaponSpeed => weaponSpeed;
         public ushort WeaponTime => weaponTime;
         public double WeaponLoad => weaponLoad;
-        public ushort WeaponAmmo => weaponAmmo;
-        public ushort WeaponAmmoMax => weaponAmmoMax;
+        public double WeaponDamage => weaponDamage;
+        public double WeaponAmmo => weaponAmmo;
+        public double WeaponAmmoMax => weaponAmmoMax;
         public double WeaponAmmoProduction => weaponAmmoProduction;
         public Vector Position => position;
         public Vector Movement => movement;
-
-        internal Controllable(Cluster cluster, PacketReader reader)
-        {
-            this.cluster = cluster;
-
-            name = reader.ReadString();
-
-            shipDesignId = reader.ReadInt32();
-            shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
-
-            Id = reader.ReadByte();
-
-            upgradeIndex = reader.ReadInt32();
-            hull = reader.Read2U(10);
-            hullMax = reader.Read2U(10);
-            hullRepair = reader.Read2U(100);
-            shields = reader.Read2U(10);
-            shieldsMax = reader.Read2U(10);
-            shieldsLoad = reader.Read2U(100);
-            size = reader.Read2U(10);
-            weight = reader.Read2S(10000);
-            energy = reader.Read4U(10);
-            energyMax = reader.Read4U(10);
-            energyCells = reader.Read2U(100);
-            energyReactor = reader.Read2U(100);
-            energyTransfer = reader.Read2U(100);
-            ion = reader.Read2U(100);
-            ionMax = reader.Read2U(100);
-            ionCells = reader.Read2U(100);
-            ionReactor = reader.Read2U(1000);
-            ionTransfer = reader.Read2U(1000);
-            thruster = reader.Read2U(10000);
-            thrusterMax = reader.Read2U(10000);
-            nozzle = reader.Read2U(100);
-            nozzleMax = reader.Read2U(100);
-            speedMax = reader.Read2U(100);
-            turnrate = reader.Read2U(100);
-            cargoTungsten = reader.Read4U(1000);
-            cargoIron = reader.Read4U(1000);
-            cargoSilicon = reader.Read4U(1000);
-            cargoTritium = reader.Read4U(1000);
-            cargoMax = reader.Read4U(1000);
-            extractor = reader.Read2U(100);
-            extractorMax = reader.Read2U(100);
-            weaponSpeed = reader.Read2U(10);
-            weaponTime = reader.ReadUInt16();
-            weaponLoad = reader.Read2U(10);
-            weaponAmmo = reader.ReadUInt16();
-            weaponAmmoMax = reader.ReadUInt16();
-            weaponAmmoProduction = reader.Read2U(100000);
-            position = new Vector(reader);
-            movement = new Vector(reader);
-            active = true;
-            alive = false;
-        }
-
+        
         public async Task Kill()
         {
-            if (!alive)
+            if (hull == 0)
                 throw new GameException(0xF5);
 
-            Session session = await cluster.Galaxy.GetSession();
+            Session session = await galaxy.GetSession();
 
             Packet packet = new Packet();
             packet.Header.Command = 0x31;
             packet.Header.Id0 = Id;
-
-            //Server muss controllable updaten
 
             await session.SendWait(packet);
         }
 
         public async Task Continue()
         {
-            if (alive)
+            if (hull > 0)
                 throw new GameException(0xF6);
 
-            Session session = await cluster.Galaxy.GetSession();
+            Session session = await galaxy.GetSession();
 
             Packet packet = new Packet();
             packet.Header.Command = 0x32;
             packet.Header.Id0 = Id;
-
-            //Server muss controllable updaten
 
             await session.SendWait(packet);
         }
 
         public async Task Unregister()
         {
-            Session session = await cluster.Galaxy.GetSession();
+            Session session = await galaxy.GetSession();
 
             Packet packet = new Packet();
             packet.Header.Command = 0x33;
             packet.Header.Id0 = Id;
-
-            //Server muss controllable updaten
 
             await session.SendWait(packet);
         }

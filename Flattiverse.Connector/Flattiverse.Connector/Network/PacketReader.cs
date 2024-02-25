@@ -28,6 +28,19 @@ internal class PacketReader
         return Unsafe.As<byte, sbyte>(ref data[position - 1]);
     }
 
+    public byte[] ReadBytes(int amount)
+    {
+        Debug.Assert(position + amount <= end, "Can't read out of bounds.");
+
+        position += amount;
+
+        byte[] result = new byte[amount];
+        
+        Unsafe.CopyBlock(ref result[0], ref data[position - amount], (uint)amount);
+        
+        return result;
+    }
+
     public byte ReadByte()
     {
         Debug.Assert(position + 1 <= end, "Can't read out of bounds.");

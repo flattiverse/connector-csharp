@@ -13,8 +13,7 @@ namespace Flattiverse.Connector.Hierarchy
 
         private bool active;
 
-        private ControllableInfo?[] controllableInfos;
-
+        internal readonly ControllableInfo?[] controllableInfos;
         public readonly UniversalHolder<ControllableInfo> ControllableInfos;
 
         public bool Active => active;
@@ -28,7 +27,7 @@ namespace Flattiverse.Connector.Hierarchy
             
             name = reader.ReadString();
 
-            controllableInfos = new ControllableInfo[256];
+            controllableInfos = new ControllableInfo?[256];
             ControllableInfos = new UniversalHolder<ControllableInfo>(controllableInfos);
         }
 

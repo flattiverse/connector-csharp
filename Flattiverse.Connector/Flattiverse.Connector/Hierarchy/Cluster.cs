@@ -12,13 +12,13 @@ public class Cluster : INamedUnit
 
     private Dictionary<string, Unit> units;
 
-    private byte id;
+    private bool active;
+    
+    internal byte id;
     private ClusterConfig config;
 
-    private readonly Region?[] regions = new Region?[256];
+    internal readonly Region?[] regions = new Region?[256];
     public readonly UniversalHolder<Region> Regions;
-
-    private Cluster() { }
 
     internal Cluster(Galaxy galaxy, byte id, PacketReader reader)
     {
@@ -33,7 +33,19 @@ public class Cluster : INamedUnit
         Regions = new UniversalHolder<Region>(regions);
     }
 
-    public int ID => id;
+    internal void Update(PacketReader reader)
+    {
+        config = new ClusterConfig(reader);
+    }
+
+    internal void Deactivate()
+    {
+        active = false;
+    }
+    
+    public bool Active => active;
+    
+    public int Id => id;
 
     /// <summary>
     /// The name of the cluster.

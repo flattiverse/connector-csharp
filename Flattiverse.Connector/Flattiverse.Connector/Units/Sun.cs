@@ -53,7 +53,7 @@ namespace Flattiverse.Connector.Units
 
             Packet packet = new Packet();
             packet.Header.Command = 0x50;
-            packet.Header.Id0 = (byte)Cluster.ID;
+            packet.Header.Id0 = (byte)Cluster.id;
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
@@ -67,7 +67,7 @@ namespace Flattiverse.Connector.Units
 
             packet = new Packet();
             packet.Header.Command = 0x52;
-            packet.Header.Id0 = (byte)Cluster.ID;
+            packet.Header.Id0 = (byte)Cluster.id;
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())
@@ -94,7 +94,7 @@ namespace Flattiverse.Connector.Units
 
             Packet packet = new Packet();
             packet.Header.Command = 0x53;
-            packet.Header.Id0 = (byte)Cluster.ID;
+            packet.Header.Id0 = (byte)Cluster.id;
             packet.Header.Param0 = (byte)Kind;
 
             using (PacketWriter writer = packet.Write())

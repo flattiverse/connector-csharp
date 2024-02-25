@@ -152,7 +152,7 @@ And those commands from the client to the server:
 
 
 | Name                 | Size            | Decimal Places |
-| -------------------- | --------------- | -------------- |
+|----------------------|-----------------| -------------- |
 | Angle                | 2 byte unsigned | 2              |
 |                      |                 |                |
 | Radius               | 3 byte unsigned | 3              |
@@ -190,7 +190,8 @@ And those commands from the client to the server:
 | ShieldsLoad          | 3 byte unsigned | 4              |
 |                      |                 |                |
 | Weight               | 2 byte signed   | 4              |
-| Thruster             | 2 byte unsigned | 4              |
+| Thruster             | 2 byte signed   | 4              |
+| ThrusterMax          | 2 byte unsigned | 4              |
 |                      |                 |                |
 | Nozzle               | 2 byte signed   | 2              |
 | Turnrate             | 2 byte signed   | 2              |

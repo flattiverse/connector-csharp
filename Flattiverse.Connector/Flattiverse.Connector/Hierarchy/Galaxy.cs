@@ -14,7 +14,7 @@ public class Galaxy
     private readonly Cluster?[] clusters = new Cluster?[256];
     public readonly UniversalHolder<Cluster> Clusters;
 
-    private readonly ShipDesign?[] ships = new ShipDesign?[256];
+    private readonly ShipDesign?[] shipDesigns = new ShipDesign?[256];
     public readonly UniversalHolder<ShipDesign> ShipsDesigns;
 
     private readonly Team?[] teams = new Team?[33];
@@ -38,7 +38,7 @@ public class Galaxy
     internal Galaxy(Universe universe)
     {
         Clusters = new UniversalHolder<Cluster>(clusters);
-        ShipsDesigns = new UniversalHolder<ShipDesign>(ships);
+        ShipsDesigns = new UniversalHolder<ShipDesign>(shipDesigns);
         Teams = new UniversalHolder<Team>(teams);
         Controllables = new UniversalHolder<Controllable>(controllables);
         Players = new UniversalHolder<Player>(players);
@@ -144,7 +144,7 @@ public class Galaxy
         packet = await session.SendWait(packet);
 
         if (teams[packet.Header.Param0] is not Team team)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+            throw new GameException("Creation successful, but connector didn't receive update yet.");//Should never happen
 
         return team;
     }
@@ -152,9 +152,9 @@ public class Galaxy
     /// <summary>
     /// Creates a ship with given values.
     /// </summary>
-    /// <param name="config"></param>
-    /// <returns></returns>
-    public async Task<ShipDesign> CreateShip(Action<ShipDesignConfig> config)
+    /// <param name="config">The configuration to specify the ship design.</param>
+    /// <returns>The newly created ship design.</returns>
+    public async Task<ShipDesign> CreateShipDesign(Action<ShipDesignConfig> config)
     {
         ShipDesignConfig changes = ShipDesignConfig.Default;
         config(changes);
@@ -169,8 +169,8 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (ships[packet.Header.Param0] is not ShipDesign ship)
-            throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
+        if (shipDesigns[packet.Header.Param0] is not ShipDesign ship)
+            throw new GameException("Creation successful, but connector didn't receive update yet.");//Should never happen
 
         return ship;
     }
@@ -192,75 +192,104 @@ public class Galaxy
             //    break;
 
 
-            case 0x10://Galaxy info
+            case 0x40: // Galaxy created.
+            case 0x50: // Galaxy updated.
                 Update(packet.Header, reader);
-                Console.WriteLine($"Received galaxy {Name} update");
-
                 break;
-            case 0x11://Cluster info
+            case 0x41: // Cluster created.
+                Debug.Assert(clusters[packet.Header.Id0] is null, $"clusters[{packet.Header.Id0}] already populated by \"{clusters[packet.Header.Id0]!.Name}\".");
                 clusters[packet.Header.Id0] = new Cluster(this, packet.Header.Id0, reader);
-                Console.WriteLine($"Received cluster {clusters[packet.Header.Id0]!.Name} update");
-
                 break;
-            case 0x12://Region info
-                if (clusters[packet.Header.Id1] is Cluster cluster)
-                    cluster.ReadRegion(packet.Header.Id0, reader);
-
+            case 0x51: // Cluster updated.
+                Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
+                clusters[packet.Header.Id0]!.Update(reader);
                 break;
-            case 0x13://Team info
+            case 0x71: // Cluster removed.
+                Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
+                clusters[packet.Header.Id0]!.Deactivate();
+                clusters[packet.Header.Id0] = null;
+                break;
+            case 0x42: // Region created.
+                Debug.Assert(clusters[packet.Header.Id1] is not null, $"clusters[{packet.Header.Id1}] not populated.");
+                Debug.Assert(clusters[packet.Header.Id1]!.regions[packet.Header.Id0] is null, $"clusters[{packet.Header.Id1}].regions[{packet.Header.Id0}] already populated by \"{clusters[packet.Header.Id1]!.regions[packet.Header.Id0]!.Name}\".");
+                clusters[packet.Header.Id1]!.regions[packet.Header.Id0] = new Region(this, clusters[packet.Header.Id1]!, packet.Header.Id0, reader);
+                break;
+            case 0x52: // Region updated.
+            case 0x72: // Region removed.
+                // TODO JOW: Diese beiden müssten implementiert werden. Habe das Mal mit Cluster vor gemacht. Bitte auch IsActive und Deactivate() korrekt machen, bzw. checken.
+                break;
+            case 0x43: // Team created.
+                Debug.Assert(teams[packet.Header.Id0] is null, $"teams[{packet.Header.Id0}] already populated by \"{teams[packet.Header.Id0]!.Name}\".");
                 teams[packet.Header.Id0] = new Team(this, packet.Header.Id0, reader);
-                Console.WriteLine($"Received team {teams[packet.Header.Id0]!.Name} update");
-
                 break;
-            case 0x14://Ship info
-                ships[packet.Header.Id0] = new ShipDesign(this, packet.Header.Id0, reader);
-                Console.WriteLine($"Received ship(id={packet.Header.Id0}) {ships[packet.Header.Id0]!.Name} update");
-
+            case 0x53: // Team updated.
+            case 0x63: // Team dynamic update (Score of the team updated.)
+            case 0x73: // Team removed.
+                // TODO JOW: Diese drei müssten implementiert werden, wobei dynamic update wahrscheinlich später erst kommt.
                 break;
-            case 0x15://Upgrade info
-                if (ships[packet.Header.Id1] is ShipDesign ship)
-                    ship.ReadUpgrade(packet.Header.Id0, reader);
-
+            case 0x44: // ShipDesign created.
+                Debug.Assert(shipDesigns[packet.Header.Id0] is null, $"shipDesigns[{packet.Header.Id0}] already populated by \"{shipDesigns[packet.Header.Id0]!.Name}\".");
+                shipDesigns[packet.Header.Id0] = new ShipDesign(this, packet.Header.Id0, reader);
                 break;
-            case 0x16://New player joined info
-                { 
-                    if (teams[packet.Header.Id1] is Team team)
-                    {
-                        players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, team, reader);
-                        Console.WriteLine($"Received player {players[packet.Header.Id0]!.Name} update");
-                        pushEvent(new PlayerAddedEvent(this, players[packet.Header.Id0]!));
-                    }
-                }
+            case 0x54: // ShipDesign updated.
+            case 0x74: // ShipDesign removed.
+                // TODO JOW: Diese zwei müssten implementiert werden.
                 break;
-            case 0x17://Player removed info
-                { 
-                    if (teams[packet.Header.Id1] is Team && players[packet.Header.Id0] is Player p)
-                    {
-                        p.Deactivate();
-                        players[packet.Header.Id0] = null;
-                        Console.WriteLine($"Received player {p.Name} removed");
-                        pushEvent(new PlayerRemovedEvent(this, p));
-                    }
-                }
+            case 0x45: // ShipUpgrade created.            
+                Debug.Assert(shipDesigns[packet.Header.Id1] is not null, $"shipDesigns[{packet.Header.Id1}] not populated.");
+                Debug.Assert(shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0] is null, $"shipDesigns[{packet.Header.Id1}].upgrades[{packet.Header.Id0}] already populated by \"{shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0]!.Name}\".");
+                shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0] = new Upgrade(this, shipDesigns[packet.Header.Id1]!, packet.Header.Id0, reader);
                 break;
-            case 0x18://Controllable info
-                {
-                    if(players[packet.Header.Id1] is Player player && clusters[packet.Header.Id0] is Cluster cl)
-                    {
-                        ControllableInfo info = new ControllableInfo(cl, player, reader, packet.Header.Param0, packet.Header.Param1 == 1);
-                        player.AddControllableInfo(info);
-                        Console.WriteLine($"Received controllable info");
-                    }
-                }
+            case 0x55: // ShipUpgrade updated.
+            case 0x75: // ShipUpgrade removed.
+                // TODO JOW: Diese zwei müssten implementiert werden.
                 break;
-            case 0x19://Controllable removed info
-                {
-                    if (players[packet.Header.Id1] is Player player && clusters[packet.Header.Id0] is Cluster)
-                    {
-                        player.RemoveControllableInfo(packet.Header.Param1);
-                        Console.WriteLine($"Received controllable remove info");
-                    }
-                }
+            case 0x46: // Player created.
+                Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
+                Debug.Assert(teams[packet.Header.Id1] is null, $"teams[{packet.Header.Id1}] already populated by \"{teams[packet.Header.Id1]!.Name}\".");
+                players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, teams[packet.Header.Id1]!, reader);
+                break;
+            case 0x66: // Player dynamic update.
+                // TODO JOW: Wenn wir Scores haben wird das relevant.
+                break;
+            case 0x76: // Player removed.
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
+                players[packet.Header.Id0]!.Deactivate();
+                players[packet.Header.Id0] = null;
+                break;
+            case 0x47: // ConstrollableInfo created.
+                Debug.Assert(players[packet.Header.Id1] is null, $"players[{packet.Header.Id1}] not populated.");
+                Debug.Assert(players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] is null, $"players[{packet.Header.Id1}].controllableInfos[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0]!.Name}\".");
+                players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] = new ControllableInfo(this, players[packet.Header.Id1]!, reader, packet.Header.Param0, packet.Header.Param1 == 1);
+                break;
+            case 0x57: // ControllableInfo updated.
+                // TODO JOW: Leben.
+                break;
+            case 0x67: // ControllableInfo dynamic update.
+                // TODO JOW: Scores.
+                break;
+            case 0x77: // ControllableInfo removed.
+                Debug.Assert(players[packet.Header.Id1] is not null, $"players[{packet.Header.Id1}] not populated.");
+                Debug.Assert(players[packet.Header.Id1]!.controllableInfos[packet.Header.Param1] is not null, $"players[{packet.Header.Id1}].controllableInfos[{packet.Header.Param1}] not populated.");
+                players[packet.Header.Id1]!.controllableInfos[packet.Header.Param1]!.Deactivate();
+                players[packet.Header.Id1]!.controllableInfos[packet.Header.Param1] = null;
+                break;
+            case 0x48: // Controllable created.
+                Debug.Assert(controllables[packet.Header.Id0] is null, $"controllables[{packet.Header.Id0}] already populated by \"{controllables[packet.Header.Id0]!.Name}\".");
+                controllables[packet.Header.Id0] = new Controllable(this, packet.Header.Id0, reader);
+                break;
+            case 0x58: // Controllable update: List of configured upgrades, change of base-data (MaxHull, etc.).
+                Debug.Assert(controllables[packet.Header.Id0] is not null, $"controllables[{packet.Header.Id0}] not populated.");
+                controllables[packet.Header.Id0]!.Update(reader);
+                break;
+            case 0x68: // Controllable dynamics update: Position, movement, energy, hull...
+                Debug.Assert(controllables[packet.Header.Id0] is not null, $"controllables[{packet.Header.Id0}] not populated.");
+                controllables[packet.Header.Id0]!.DynamicUpdate(reader);
+                break;
+            case 0x78: // Controllable removed.
+                Debug.Assert(controllables[packet.Header.Id0] is not null, $"controllables[{packet.Header.Id0}] not populated.");
+                controllables[packet.Header.Id0]!.Deactivate();
+                controllables[packet.Header.Id0] = null;
                 break;
             case 0x1C: // We see a new unit which we didn't see before.
                 {
@@ -375,10 +404,8 @@ public class Galaxy
 
         Packet answerPacket = await session.SendWait(packet);
 
-        Controllable controllable = new Controllable(clusters[packet.Header.Id0]!, answerPacket.Read());
-
-        AddControllable(controllable);
-
-        return controllable;
+        Debug.Assert(controllables[packet.Header.Id0] is not null, $"controllables[{packet.Header.Id0}] is not populated but should be after RegisterShip().");
+        
+        return controllables[packet.Header.Id0]!;
     }
 }
