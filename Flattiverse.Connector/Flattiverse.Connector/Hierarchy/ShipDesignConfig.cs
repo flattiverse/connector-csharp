@@ -181,6 +181,7 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read4U(1000);
             FreeSpawn = reader.ReadBoolean();
+            
             NozzleEnergyConsumption = reader.Read4U(1000);
             ThrusterEnergyConsumption = reader.Read4U(1000);
             HullRepairEnergyConsumption = reader.Read4U(1000);
@@ -190,7 +191,7 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponEnergyConsumption = reader.Read4U(1000);
             ScannerEnergyConsumption = reader.Read4U(1000);
             ScannerRange = reader.Read3U(1000);
-            ScannerWidth = reader.Read3U(1000);
+            ScannerWidth = reader.Read2U(100);
         }
 
         internal static ShipDesignConfig Default => new ShipDesignConfig();
@@ -240,7 +241,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write4U(WeaponEnergyConsumption, 1000);
             writer.Write4U(ScannerEnergyConsumption, 1000);
             writer.Write3U(ScannerRange, 1000);
-            writer.Write3U(ScannerWidth, 1000);
+            writer.Write2U(ScannerWidth, 100);
         }
     }
 }

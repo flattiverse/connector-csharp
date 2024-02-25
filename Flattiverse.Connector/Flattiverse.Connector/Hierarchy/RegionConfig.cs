@@ -46,11 +46,12 @@ namespace Flattiverse.Connector.Hierarchy
             StartPropability = reader.Read2U(100);
             RespawnPropability = reader.Read2U(100);
             Protected = reader.ReadBoolean();
+            // TODO JUW: Weil es sich hier um Koordinaten handelt müsste das natürlich auch mittels derer Genauigkeit übertragen werden. Bitte im Connector und Server anpassen.
             Left = reader.Read2U(100);
             Top = reader.Read2U(100);
             Right = reader.Read2U(100);
             Bottom = reader.Read2U(100);
-            Team = reader.ReadUInt32(); // TODO MALUK TeamId is usually 1 byte
+            Team = reader.ReadUInt32();
         }
 
         internal static RegionConfig Default => new RegionConfig();

@@ -3,10 +3,10 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Hierarchy
 {
-    public class UpgradeConfig
+    public class ShipUpgradeConfig
     {
         public string Name;
-        public Upgrade? PreviousUpgrade;
+        public ShipUpgrade? PreviousUpgrade;
         public double CostEnergy;
         public double CostIon;
         public double CostIron;
@@ -51,7 +51,7 @@ namespace Flattiverse.Connector.Hierarchy
         public double ScannerRange;
         public double ScannerWidth;
 
-        private UpgradeConfig()
+        private ShipUpgradeConfig()
         {
             Name = string.Empty;
             PreviousUpgrade = null;
@@ -100,60 +100,60 @@ namespace Flattiverse.Connector.Hierarchy
             ScannerWidth = 0;
         }
 
-        internal UpgradeConfig(UpgradeConfig upgrade)
+        internal ShipUpgradeConfig(ShipUpgradeConfig shipUpgrade)
         {
-            Name = upgrade.Name;
-            PreviousUpgrade = upgrade.PreviousUpgrade;
-            CostEnergy = upgrade.CostEnergy;
-            CostIon = upgrade.CostIon;
-            CostIron = upgrade.CostIron;
-            CostTungsten = upgrade.CostTungsten;
-            CostSilicon = upgrade.CostSilicon;
-            CostTritium = upgrade.CostTritium;
-            CostTime = upgrade.CostTime;
-            Hull = upgrade.Hull;
-            HullRepair = upgrade.HullRepair;
-            Shields = upgrade.Shields;
-            ShieldsLoad = upgrade.ShieldsLoad;
-            Size = upgrade.Size;
-            Weight = upgrade.Weight;
-            EnergyMax = upgrade.EnergyMax;
-            EnergyCells = upgrade.EnergyCells;
-            EnergyReactor = upgrade.EnergyReactor;
-            EnergyTransfer = upgrade.EnergyTransfer;
-            IonMax = upgrade.IonMax;
-            IonCells = upgrade.IonCells;
-            IonReactor = upgrade.IonReactor;
-            IonTransfer = upgrade.IonTransfer;
-            Thruster = upgrade.Thruster;
-            Nozzle = upgrade.Nozzle;
-            Speed = upgrade.Speed;
-            Turnrate = upgrade.Turnrate;
-            Cargo = upgrade.Cargo;
-            Extractor = upgrade.Extractor;
-            WeaponSpeed = upgrade.WeaponSpeed;
-            WeaponTime = upgrade.WeaponTime;
-            WeaponLoad = upgrade.WeaponLoad;
-            WeaponAmmo = upgrade.WeaponAmmo;
-            WeaponAmmoProduction = upgrade.WeaponAmmoProduction;
-            FreeSpawn = upgrade.FreeSpawn;
-            NozzleEnergyConsumption = upgrade.NozzleEnergyConsumption;
-            ThrusterEnergyConsumption = upgrade.ThrusterEnergyConsumption;
-            HullRepairEnergyConsumption = upgrade.HullRepairEnergyConsumption;
-            HullRepairIronConsumption = upgrade.HullRepairIronConsumption;
-            ShieldsIonConsumption = upgrade.ShieldsIonConsumption;
-            ExtractorEnergyConsumption = upgrade.ExtractorEnergyConsumption;
-            WeaponEnergyConsumption = upgrade.WeaponEnergyConsumption;
-            ScannerEnergyConsumption = upgrade.ScannerEnergyConsumption;
-            ScannerRange = upgrade.ScannerRange;
-            ScannerWidth = upgrade.ScannerWidth;
+            Name = shipUpgrade.Name;
+            PreviousUpgrade = shipUpgrade.PreviousUpgrade;
+            CostEnergy = shipUpgrade.CostEnergy;
+            CostIon = shipUpgrade.CostIon;
+            CostIron = shipUpgrade.CostIron;
+            CostTungsten = shipUpgrade.CostTungsten;
+            CostSilicon = shipUpgrade.CostSilicon;
+            CostTritium = shipUpgrade.CostTritium;
+            CostTime = shipUpgrade.CostTime;
+            Hull = shipUpgrade.Hull;
+            HullRepair = shipUpgrade.HullRepair;
+            Shields = shipUpgrade.Shields;
+            ShieldsLoad = shipUpgrade.ShieldsLoad;
+            Size = shipUpgrade.Size;
+            Weight = shipUpgrade.Weight;
+            EnergyMax = shipUpgrade.EnergyMax;
+            EnergyCells = shipUpgrade.EnergyCells;
+            EnergyReactor = shipUpgrade.EnergyReactor;
+            EnergyTransfer = shipUpgrade.EnergyTransfer;
+            IonMax = shipUpgrade.IonMax;
+            IonCells = shipUpgrade.IonCells;
+            IonReactor = shipUpgrade.IonReactor;
+            IonTransfer = shipUpgrade.IonTransfer;
+            Thruster = shipUpgrade.Thruster;
+            Nozzle = shipUpgrade.Nozzle;
+            Speed = shipUpgrade.Speed;
+            Turnrate = shipUpgrade.Turnrate;
+            Cargo = shipUpgrade.Cargo;
+            Extractor = shipUpgrade.Extractor;
+            WeaponSpeed = shipUpgrade.WeaponSpeed;
+            WeaponTime = shipUpgrade.WeaponTime;
+            WeaponLoad = shipUpgrade.WeaponLoad;
+            WeaponAmmo = shipUpgrade.WeaponAmmo;
+            WeaponAmmoProduction = shipUpgrade.WeaponAmmoProduction;
+            FreeSpawn = shipUpgrade.FreeSpawn;
+            NozzleEnergyConsumption = shipUpgrade.NozzleEnergyConsumption;
+            ThrusterEnergyConsumption = shipUpgrade.ThrusterEnergyConsumption;
+            HullRepairEnergyConsumption = shipUpgrade.HullRepairEnergyConsumption;
+            HullRepairIronConsumption = shipUpgrade.HullRepairIronConsumption;
+            ShieldsIonConsumption = shipUpgrade.ShieldsIonConsumption;
+            ExtractorEnergyConsumption = shipUpgrade.ExtractorEnergyConsumption;
+            WeaponEnergyConsumption = shipUpgrade.WeaponEnergyConsumption;
+            ScannerEnergyConsumption = shipUpgrade.ScannerEnergyConsumption;
+            ScannerRange = shipUpgrade.ScannerRange;
+            ScannerWidth = shipUpgrade.ScannerWidth;
         }
 
-        internal UpgradeConfig(PacketReader reader, ShipDesign ship)
+        internal ShipUpgradeConfig(PacketReader reader, ShipDesign ship)
         {
             Name = reader.ReadString();
 
-            if (reader.ReadNullableByte() is byte previousUpgradeId && ship.upgrades[previousUpgradeId] is Upgrade previousUpgrade)
+            if (reader.ReadNullableByte() is byte previousUpgradeId && ship.upgrades[previousUpgradeId] is ShipUpgrade previousUpgrade)
                 PreviousUpgrade = previousUpgrade;
 
             CostEnergy = reader.Read2U(1);
@@ -186,6 +186,8 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponSpeed = reader.Read2U(10);
             WeaponTime = reader.ReadUInt16();
             WeaponLoad = reader.Read3U(1000);
+            // TODO JUW: WeaponLoad wird hier mit 3U, 3 gelesen, aber im Server mit 3U, 1 geschrieben. Alle Werte müssten wirklich überall gesynced sein, Sorry.
+            // TODO JUW: Bitte auch WeaponAmmo und Production anpassen (siehe Controllable).
             WeaponAmmo = reader.ReadUInt16();
             WeaponAmmoProduction = reader.Read2U(100000);
             FreeSpawn = reader.ReadBoolean();
@@ -198,10 +200,10 @@ namespace Flattiverse.Connector.Hierarchy
             WeaponEnergyConsumption = reader.Read4U(1000);
             ScannerEnergyConsumption = reader.Read4U(1000);
             ScannerRange = reader.Read3U(1000);
-            ScannerWidth = reader.Read3U(1000);
+            ScannerWidth = reader.Read2U(100);
         }
 
-        internal static UpgradeConfig Default => new UpgradeConfig();
+        internal static ShipUpgradeConfig Default => new ShipUpgradeConfig();
 
         internal void Write(PacketWriter writer)
         {
@@ -249,7 +251,7 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write4U(WeaponEnergyConsumption, 1000);
             writer.Write4U(ScannerEnergyConsumption, 1000);
             writer.Write3U(ScannerRange, 1000);
-            writer.Write3U(ScannerWidth, 1000);
+            writer.Write2U(ScannerWidth, 100);
         }
     }
 }

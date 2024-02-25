@@ -6,8 +6,8 @@ namespace Flattiverse.Connector.Hierarchy
     {
         public readonly Galaxy Galaxy;
 
-        internal readonly Upgrade?[] upgrades = new Upgrade?[256];
-        public readonly UniversalHolder<Upgrade> Upgrades;
+        internal readonly ShipUpgrade?[] upgrades = new ShipUpgrade?[256];
+        public readonly UniversalHolder<ShipUpgrade> Upgrades;
 
         private byte id;
         private ShipDesignConfig config;
@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             config = new ShipDesignConfig(reader);
 
-            Upgrades = new UniversalHolder<Upgrade>(upgrades);
+            Upgrades = new UniversalHolder<ShipUpgrade>(upgrades);
         }
 
         public int ID => id;
@@ -71,9 +71,9 @@ namespace Flattiverse.Connector.Hierarchy
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task<Upgrade> CreateUpgrade(Action<UpgradeConfig> config)
+        public async Task<ShipUpgrade> CreateUpgrade(Action<ShipUpgradeConfig> config)
         {
-            UpgradeConfig changes = UpgradeConfig.Default;
+            ShipUpgradeConfig changes = ShipUpgradeConfig.Default;
             config(changes);
 
             Session session = await Galaxy.GetSession();
@@ -87,7 +87,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             packet = await session.SendWait(packet);
 
-            if (upgrades[packet.Header.Param0] is not Upgrade upgrade)
+            if (upgrades[packet.Header.Param0] is not ShipUpgrade upgrade)
                 throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
             return upgrade;
@@ -95,7 +95,7 @@ namespace Flattiverse.Connector.Hierarchy
 
         internal void ReadUpgrade(byte id, PacketReader reader)
         {
-            upgrades[id] = new Upgrade(Galaxy, this, id, reader);
+            upgrades[id] = new ShipUpgrade(Galaxy, this, id, reader);
             Console.WriteLine($"Received upgrade {upgrades[id]!.Name} update for ship {Name}");
         }
     }

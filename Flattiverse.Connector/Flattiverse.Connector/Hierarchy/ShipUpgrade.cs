@@ -2,20 +2,20 @@
 
 namespace Flattiverse.Connector.Hierarchy
 {
-    public class Upgrade : INamedUnit
+    public class ShipUpgrade : INamedUnit
     {
         public readonly Galaxy Galaxy;
-        public readonly ShipDesign Ship;
+        public readonly ShipDesign ShipDesign;
         private byte id;
 
-        private UpgradeConfig config;
+        private ShipUpgradeConfig config;
 
-        internal Upgrade(Galaxy galaxy, ShipDesign ship, byte id, PacketReader reader)
+        internal ShipUpgrade(Galaxy galaxy, ShipDesign shipDesign, byte id, PacketReader reader)
         {
             Galaxy = galaxy;
-            Ship = ship;
+            ShipDesign = shipDesign;
             this.id = id;
-            config = new UpgradeConfig(reader, ship);
+            config = new ShipUpgradeConfig(reader, shipDesign);
         }
 
         public int ID => id;
@@ -23,16 +23,16 @@ namespace Flattiverse.Connector.Hierarchy
         /// The name of the upgrade.
         /// </summary>
         public string Name => config.Name;
-        public UpgradeConfig Config => config;
+        public ShipUpgradeConfig Config => config;
 
         /// <summary>
         /// Sets given values in this upgrade.
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        public async Task Configure(Action<UpgradeConfig> config)
+        public async Task Configure(Action<ShipUpgradeConfig> config)
         {
-            UpgradeConfig changes = new UpgradeConfig(this.config);
+            ShipUpgradeConfig changes = new ShipUpgradeConfig(this.config);
             config(changes);
 
             Session session = await Galaxy.GetSession();

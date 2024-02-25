@@ -217,6 +217,7 @@ public class Galaxy
             case 0x52: // Region updated.
             case 0x72: // Region removed.
                 // TODO JOW: Diese beiden müssten implementiert werden. Habe das Mal mit Cluster vor gemacht. Bitte auch IsActive und Deactivate() korrekt machen, bzw. checken.
+                // TODO JOW: Muss auch im Server implementiert werden.
                 break;
             case 0x43: // Team created.
                 Debug.Assert(teams[packet.Header.Id0] is null, $"teams[{packet.Header.Id0}] already populated by \"{teams[packet.Header.Id0]!.Name}\".");
@@ -238,7 +239,7 @@ public class Galaxy
             case 0x45: // ShipUpgrade created.            
                 Debug.Assert(shipDesigns[packet.Header.Id1] is not null, $"shipDesigns[{packet.Header.Id1}] not populated.");
                 Debug.Assert(shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0] is null, $"shipDesigns[{packet.Header.Id1}].upgrades[{packet.Header.Id0}] already populated by \"{shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0]!.Name}\".");
-                shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0] = new Upgrade(this, shipDesigns[packet.Header.Id1]!, packet.Header.Id0, reader);
+                shipDesigns[packet.Header.Id1]!.upgrades[packet.Header.Id0] = new ShipUpgrade(this, shipDesigns[packet.Header.Id1]!, packet.Header.Id0, reader);
                 break;
             case 0x55: // ShipUpgrade updated.
             case 0x75: // ShipUpgrade removed.
@@ -246,7 +247,7 @@ public class Galaxy
                 break;
             case 0x46: // Player created.
                 Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
-                Debug.Assert(teams[packet.Header.Id1] is null, $"teams[{packet.Header.Id1}] already populated by \"{teams[packet.Header.Id1]!.Name}\".");
+                Debug.Assert(teams[packet.Header.Id1] is not null, $"teams[{packet.Header.Id1}] not populated.");
                 players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, teams[packet.Header.Id1]!, reader);
                 break;
             case 0x66: // Player dynamic update.

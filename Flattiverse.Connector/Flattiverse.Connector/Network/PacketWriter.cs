@@ -24,6 +24,14 @@ internal class PacketWriter : IDisposable
         end = position + 1040;
     }
 
+    public void WriteZeroedBytes(int amount)
+    {
+        Debug.Assert(position + amount < end, "Can't write out of bounds.");
+
+        for (int subPosition = 0; subPosition < amount; subPosition++)
+            data[position++] = 0;
+    }
+
     public void Write(sbyte number)
     {
         Debug.Assert(position + 1 < end, "Can't write out of bounds.");

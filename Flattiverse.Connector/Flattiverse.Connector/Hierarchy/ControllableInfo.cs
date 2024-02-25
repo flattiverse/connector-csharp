@@ -16,11 +16,7 @@ namespace Flattiverse.Connector.Hierarchy
 
         private Player player;
 
-        private int playerId;
-
-        private int shipDesignId;
-
-        private int upgradeIndex;
+        private byte[] upgrades;
 
         private double hull;
         private double hullMax;
@@ -38,9 +34,6 @@ namespace Flattiverse.Connector.Hierarchy
 
         public ShipDesign ShipDesign => shipDesign;
         public Player Player => player;
-        public int PlayerId => playerId;
-        public int ShipDesignId => shipDesignId;
-        public int UpgradeIndex => upgradeIndex;
         public double Hull => hull;
         public double HullMax => hullMax;
         public double Shields => shields;
@@ -66,25 +59,27 @@ namespace Flattiverse.Connector.Hierarchy
 
             name = reader.ReadString();
 
-            shipDesignId = reader.ReadInt32();
-            shipDesign = galaxy.ShipsDesigns[shipDesignId];
+            shipDesign = galaxy.ShipsDesigns[reader.ReadByte()];
             
-            upgradeIndex = reader.ReadInt32();
+            upgrades = reader.ReadBytes(32);
 
-            if(reduced)
+            hullMax = reader.Read2U(10);
+            shieldsMax = reader.Read2U(10);
+            energyMax = reader.Read4U(10);
+            ionMax = reader.Read2U(100);
+
+            if (reduced)
                 return;
 
             hull = reader.Read2U(10);
-            hullMax = reader.Read2U(10);
-
             shields = reader.Read2U(10);
-            shieldsMax = reader.Read2U(10);
-
             energy = reader.Read4U(10);
-            energyMax = reader.Read4U(10);
-
             ion = reader.Read2U(100);
-            ionMax = reader.Read2U(100);
+        }
+
+        internal void Update(PacketReader reader)
+        {
+            
         }
 
         internal void Deactivate()
