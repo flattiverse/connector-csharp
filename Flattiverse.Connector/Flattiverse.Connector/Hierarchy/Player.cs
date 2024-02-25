@@ -26,7 +26,7 @@ namespace Flattiverse.Connector.Hierarchy
             Team = team;
             
             name = reader.ReadString();
-            Console.WriteLine(reader.ReadUInt32()); // Just to read the Ping Value.
+            reader.ReadUInt32(); // Just to read the Ping Value.
 
             controllableInfos = new ControllableInfo?[256];
             ControllableInfos = new UniversalHolder<ControllableInfo>(controllableInfos);

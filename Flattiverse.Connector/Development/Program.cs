@@ -51,7 +51,7 @@ internal class Program
 
         Controllable ship = await galaxy.RegisterShip("HeartOfGold", galaxy.ShipsDesigns["Cruiser"]);
 
-        Console.WriteLine($"Ship: {ship.Name}.");
+        Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.EnergyMax}");
         
         await Task.Delay(60000);
     }
