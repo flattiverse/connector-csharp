@@ -34,7 +34,7 @@ internal class Program
 
         try
         {
-        universe.Update();
+            await universe.Update();
 
         }
         catch (Exception e)

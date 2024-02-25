@@ -133,7 +133,7 @@ namespace Flattiverse.Connector
                 case 0x20: // Action without being alive.
                     return "[0x20] The controllable must be alive to do this action.";
                 case 0x21: // Continue without being dead.
-                    return "[0x20] You need to die first to .Continue().";
+                    return "[0x21] You need to die first to .Continue().";
                 case 0x30: // The requested element doesn't exist.
                     if (info is null)
                         return $"[0x30] The requested element doesn't exist or can't be accessed.";
