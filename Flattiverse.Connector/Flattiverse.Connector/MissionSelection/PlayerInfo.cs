@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Hierarchy;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Xml.Linq;
 
@@ -9,7 +10,7 @@ namespace Flattiverse.Connector.MissionSelection
         public readonly int Id;
         public readonly string Name;
         public readonly bool HasAvatar;
-        public readonly int Team;
+        public readonly TeamInfo Team;
         public readonly int Kills;
         public readonly int Deaths;
         public readonly int Collisions;
@@ -22,14 +23,16 @@ namespace Flattiverse.Connector.MissionSelection
         public readonly int DatePlayedEnd;
 
 
-        
-        public PlayerInfo(JsonElement player)
+
+        public PlayerInfo(JsonElement player, ReadOnlyDictionary<string, TeamInfo> teams)
         {
+            int team;
+            
             if(
             !Utils.Traverse(player, out Id, "id") ||
             !Utils.Traverse(player, out Name, "name") ||
             !Utils.Traverse(player, out HasAvatar, "hasAvatar") ||
-            !Utils.Traverse(player, out Team, "team") ||
+            !Utils.Traverse(player, out team, "team") ||
             !Utils.Traverse(player, out Kills, "kills") ||
             !Utils.Traverse(player, out Deaths, "deaths") ||
             !Utils.Traverse(player, out Collisions, "collisions") ||
@@ -45,6 +48,14 @@ namespace Flattiverse.Connector.MissionSelection
                 throw new GameException(0xF3);
             }
 
+            foreach (KeyValuePair<string, TeamInfo> kvp in teams)
+            {
+                if (kvp.Value.Id == team)
+                {
+                    Team = kvp.Value;
+                    break;
+                }
+            }
 
 
 
