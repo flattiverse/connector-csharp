@@ -24,8 +24,8 @@ namespace Flattiverse.Connector
 
         internal Vector(PacketReader reader)
         {
-            X = reader.Read4S(100000);
-            Y = reader.Read4S(100000);
+            X = reader.ReadDouble();
+            Y = reader.ReadDouble();
         }
 
         internal void Write(PacketWriter writer)
@@ -42,14 +42,14 @@ namespace Flattiverse.Connector
             else if (X > 21470)
                 writer.Write(2147000000);
             else
-                writer.Write4S(X, 100000);
+                writer.Write(X);
 
             if (Y < -21470)
                 writer.Write(-2147000000);
             else if (Y > 21470)
                 writer.Write(2147000000);
             else
-                writer.Write4S(Y, 100000);
+                writer.Write(Y);
         }
 
         public Vector(Vector vectorToCopy)

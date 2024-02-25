@@ -61,14 +61,14 @@ namespace Flattiverse.Connector.Hierarchy
         internal RegionConfig(PacketReader reader)
         {
             Name = reader.ReadString();
-            StartPropability = reader.Read2U(100);
-            RespawnPropability = reader.Read2U(100);
+            StartPropability = reader.ReadDouble();
+            RespawnPropability = reader.ReadDouble();
             Protected = reader.ReadBoolean();
             // TODO JUW: Weil es sich hier um Koordinaten handelt müsste das natürlich auch mittels derer Genauigkeit übertragen werden. Bitte im Connector und Server anpassen.
-            Left = reader.Read2U(100);
-            Top = reader.Read2U(100);
-            Right = reader.Read2U(100);
-            Bottom = reader.Read2U(100);
+            Left = reader.ReadDouble();
+            Top = reader.ReadDouble();
+            Right = reader.ReadDouble();
+            Bottom = reader.ReadDouble();
             Team = reader.ReadUInt32();
         }
 
@@ -77,13 +77,13 @@ namespace Flattiverse.Connector.Hierarchy
         internal void Write(PacketWriter writer)
         {
             writer.Write(Name);
-            writer.Write2U(StartPropability, 100);
-            writer.Write2U(RespawnPropability, 100);
+            writer.Write(StartPropability);
+            writer.Write(RespawnPropability);
             writer.Write(Protected);
-            writer.Write2U(Left, 100);
-            writer.Write2U(Top, 100);
-            writer.Write2U(Right, 100);
-            writer.Write2U(Bottom, 100);
+            writer.Write(Left);
+            writer.Write(Top);
+            writer.Write(Right);
+            writer.Write(Bottom);
             writer.Write(Team);
         }
     }

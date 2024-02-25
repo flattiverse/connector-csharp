@@ -63,18 +63,18 @@ namespace Flattiverse.Connector.Hierarchy
             
             upgrades = reader.ReadBytes(32);
 
-            hullMax = reader.Read2U(10);
-            shieldsMax = reader.Read2U(10);
-            energyMax = reader.Read4U(10);
-            ionMax = reader.Read2U(100);
+            hullMax = reader.ReadDouble();
+            shieldsMax = reader.ReadDouble();
+            energyMax = reader.ReadDouble();
+            ionMax = reader.ReadDouble();
 
             if (reduced)
                 return;
 
-            hull = reader.Read2U(10);
-            shields = reader.Read2U(10);
-            energy = reader.Read4U(10);
-            ion = reader.Read2U(100);
+            hull = reader.ReadDouble();
+            shields = reader.ReadDouble();
+            energy = reader.ReadDouble();
+            ion = reader.ReadDouble();
         }
 
         internal void Update(PacketReader reader)

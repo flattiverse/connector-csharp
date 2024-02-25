@@ -84,72 +84,72 @@ namespace Flattiverse.Connector
             
             Debug.Assert(ShipDesign is not null, "Fail loading ship design.");
 
-            size = reader.Read3U(1000);
-            weight = reader.Read2S(10000);
+            size = reader.ReadDouble();
+            weight = reader.ReadDouble();
             
             activeShipUpgrades = reader.ReadBytes(32);
             
-            hullMax = reader.Read3U(10000);
-            hullRepair = reader.Read3U(10000);
-            shieldsMax = reader.Read3U(10000);
-            shieldsLoad = reader.Read3U(10000);
+            hullMax = reader.ReadDouble();
+            hullRepair = reader.ReadDouble();
+            shieldsMax = reader.ReadDouble();
+            shieldsLoad = reader.ReadDouble();
 
-            energyMax = reader.Read4U(1000);
-            energyCells = reader.Read4U(1000);
-            energyReactor = reader.Read4U(1000);
-            energyTransfer = reader.Read4U(1000);
-            ionMax = reader.Read4U(1000);
-            ionCells = reader.Read4U(1000);
-            ionReactor = reader.Read4U(1000);
-            ionTransfer = reader.Read4U(1000);
+            energyMax = reader.ReadDouble();
+            energyCells = reader.ReadDouble();
+            energyReactor = reader.ReadDouble();
+            energyTransfer = reader.ReadDouble();
+            ionMax = reader.ReadDouble();
+            ionCells = reader.ReadDouble();
+            ionReactor = reader.ReadDouble();
+            ionTransfer = reader.ReadDouble();
 
             isActive = true;
         }
 
         internal void Update(PacketReader reader)
         {
-            energyMax = reader.Read4U(1000);
-            energyCells = reader.Read4U(1000);
-            energyReactor = reader.Read4U(1000);
-            energyTransfer = reader.Read4U(1000);
-            ionMax = reader.Read4U(1000);
-            ionCells = reader.Read4U(1000);
-            ionReactor = reader.Read4U(1000);
-            ionTransfer = reader.Read4U(1000);
+            energyMax = reader.ReadDouble();
+            energyCells = reader.ReadDouble();
+            energyReactor = reader.ReadDouble();
+            energyTransfer = reader.ReadDouble();
+            ionMax = reader.ReadDouble();
+            ionCells = reader.ReadDouble();
+            ionReactor = reader.ReadDouble();
+            ionTransfer = reader.ReadDouble();
 
-            thrusterMaxForward = reader.Read2U(10000);
-            thrusterMaxBackward = reader.Read2U(10000);
-            nozzleMax = reader.Read2S(100);
-            speedMax = reader.Read2U(1000);
-            cargoMax = reader.Read4U(1000);
+            thrusterMaxForward = reader.ReadDouble();
+            thrusterMaxBackward = reader.ReadDouble();
+            nozzleMax = reader.ReadDouble();
+            speedMax = reader.ReadDouble();
+            cargoMax = reader.ReadDouble();
             
-            extractorMax = reader.Read4U(1000);
-            weaponSpeed = reader.Read2U(1000);
+            extractorMax = reader.ReadDouble();
+            weaponSpeed = reader.ReadDouble();
             weaponTime = reader.ReadUInt16();
-            weaponLoad = reader.Read3U(1000);
-            weaponDamage = reader.Read3U(10000);
+            weaponLoad = reader.ReadDouble();
+            weaponDamage = reader.ReadDouble();
             weaponAmmoMax = reader.ReadUInt16();
-            weaponAmmoProduction = reader.Read4U(1000);
+            weaponAmmoProduction = reader.ReadDouble();
         }
 
         internal void DynamicUpdate(PacketReader reader)
         {
-            hull = reader.Read3U(10000);
-            shields = reader.Read3U(10000);
-            energy = reader.Read4U(1000);
-            ion = reader.Read4U(1000);
-            thruster = reader.Read2S(10000);
-            nozzle = reader.Read2S(100);
-            turnrate = reader.Read2S(100);
+            hull = reader.ReadDouble();
+            shields = reader.ReadDouble();
+            energy = reader.ReadDouble();
+            ion = reader.ReadDouble();
+            thruster = reader.ReadDouble();
+            nozzle = reader.ReadDouble();
+            turnrate = reader.ReadDouble();
 
-            cargoTungsten = reader.Read4U(1000);
-            cargoIron = reader.Read4U(1000);
-            cargoSilicon = reader.Read4U(1000);
-            cargoTritium = reader.Read4U(1000);
-            weaponAmmo = reader.Read4U(1000);
+            cargoTungsten = reader.ReadDouble();
+            cargoIron = reader.ReadDouble();
+            cargoSilicon = reader.ReadDouble();
+            cargoTritium = reader.ReadDouble();
+            weaponAmmo = reader.ReadDouble();
             position = new Vector(reader);
             movement = new Vector(reader);
-            direction = reader.Read2U(100);
+            direction = reader.ReadDouble();
         }
 
         internal void Deactivate()
