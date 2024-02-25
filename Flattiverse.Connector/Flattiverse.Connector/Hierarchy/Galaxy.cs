@@ -215,18 +215,32 @@ public class Galaxy
                 clusters[packet.Header.Id1]!.regions[packet.Header.Id0] = new Region(this, clusters[packet.Header.Id1]!, packet.Header.Id0, reader);
                 break;
             case 0x52: // Region updated.
+                Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
+                Debug.Assert(clusters[packet.Header.Id1]!.regions[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id1}].region[{packet.Header.Id0}] not populated.");
+                clusters[packet.Header.Id1]!.regions[packet.Header.Id0]!.Update(reader); 
+                break;
             case 0x72: // Region removed.
-                // TODO JOW: Diese beiden müssten implementiert werden. Habe das Mal mit Cluster vor gemacht. Bitte auch IsActive und Deactivate() korrekt machen, bzw. checken.
-                // TODO JOW: Muss auch im Server implementiert werden.
+                Debug.Assert(clusters[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id0}] not populated.");
+                Debug.Assert(clusters[packet.Header.Id1]!.regions[packet.Header.Id0] is not null, $"clusters[{packet.Header.Id1}].region[{packet.Header.Id0}] not populated.");
+                clusters[packet.Header.Id1]!.regions[packet.Header.Id0]!.Deactivate();
+                clusters[packet.Header.Id1]!.regions[packet.Header.Id0] = null;
                 break;
             case 0x43: // Team created.
                 Debug.Assert(teams[packet.Header.Id0] is null, $"teams[{packet.Header.Id0}] already populated by \"{teams[packet.Header.Id0]!.Name}\".");
                 teams[packet.Header.Id0] = new Team(this, packet.Header.Id0, reader);
                 break;
             case 0x53: // Team updated.
+                Debug.Assert(teams[packet.Header.Id0] is not null, $"teams[{packet.Header.Id0}] not populated.");
+                teams[packet.Header.Id0]!.Update(reader);
+                break;
             case 0x63: // Team dynamic update (Score of the team updated.)
+                Debug.Assert(teams[packet.Header.Id0] is not null, $"teams[{packet.Header.Id0}] not populated.");
+                teams[packet.Header.Id0]!.DynamicUpdate(reader);
+                break;
             case 0x73: // Team removed.
-                // TODO JOW: Diese drei müssten implementiert werden, wobei dynamic update wahrscheinlich später erst kommt.
+                Debug.Assert(teams[packet.Header.Id0] is not null, $"teams[{packet.Header.Id0}] not populated.");
+                teams[packet.Header.Id0]!.Deactivate();
+                teams[packet.Header.Id0] = null;
                 break;
             case 0x44: // ShipDesign created.
                 Debug.Assert(shipDesigns[packet.Header.Id0] is null, $"shipDesigns[{packet.Header.Id0}] already populated by \"{shipDesigns[packet.Header.Id0]!.Name}\".");

@@ -10,6 +10,10 @@ namespace Flattiverse.Connector.Hierarchy
         private byte id;
         private RegionConfig config;
 
+        private bool isActive;
+
+        public bool IsActive => isActive;
+
         internal Region(Galaxy galaxy, Cluster cluster, byte id, PacketReader reader)
         {
             Galaxy = galaxy;
@@ -61,6 +65,16 @@ namespace Flattiverse.Connector.Hierarchy
             packet.Header.Param0 = id;
 
             await session.SendWait(packet);
+        }
+
+        internal void Deactivate()
+        {
+            isActive = false;
+        }
+
+        internal void Update(PacketReader reader)
+        {
+            config = new RegionConfig(reader);
         }
     }
 }

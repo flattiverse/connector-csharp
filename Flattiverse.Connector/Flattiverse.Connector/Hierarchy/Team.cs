@@ -8,6 +8,7 @@ namespace Flattiverse.Connector.Hierarchy
 
         private byte id;
         private TeamConfig config;
+        private bool isActive;
 
         internal Team(Galaxy galaxy, byte id, PacketReader reader)
         {
@@ -23,6 +24,8 @@ namespace Flattiverse.Connector.Hierarchy
         /// </summary>
         public string Name => config.Name;
         public TeamConfig Config => config;
+
+        public bool IsActive => isActive;
 
         /// <summary>
         /// Sets given values in this team.
@@ -59,6 +62,23 @@ namespace Flattiverse.Connector.Hierarchy
             packet.Header.Param0 = id;
 
             await session.SendWait(packet);
+        }
+
+        internal void Update(PacketReader reader)
+        {
+            config = new TeamConfig(reader);
+        }
+
+
+        internal void DynamicUpdate(PacketReader reader)
+        {
+            //TODO
+            //config = new TeamConfig(reader);
+        }
+
+        internal void Deactivate()
+        {
+            isActive = false;
         }
     }
 }
