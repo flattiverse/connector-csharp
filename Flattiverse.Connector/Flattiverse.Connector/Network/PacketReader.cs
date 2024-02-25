@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flattiverse.Connector.Network;
 
-internal class PacketReader
+class PacketReader
 {
     private byte[] data;
     private int position;
@@ -19,6 +19,8 @@ internal class PacketReader
         end = position + packet.Header.Size;
     }
 
+    public int RemainingBytes => end - position;
+    
     public sbyte ReadSByte()
     {
         Debug.Assert(position + 1 <= end, "Can't read out of bounds.");

@@ -355,6 +355,9 @@ public class Galaxy
 //
 //                break;
         }
+        
+        if (reader.RemainingBytes != 0)
+            Console.WriteLine($"Reader on {packet} had {reader.RemainingBytes} bytes which haven't been read.");
     }
 
     private void Update(PacketHeader header, PacketReader reader)

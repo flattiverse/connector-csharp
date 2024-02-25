@@ -50,8 +50,8 @@ internal class Program
             Console.WriteLine($"   + Player: {player.Name}");
 
         Controllable ship = await galaxy.RegisterShip("HeartOfGold", galaxy.ShipsDesigns["Cruiser"]);
-        
-        
+
+        Console.WriteLine($"Ship: {ship.Name}.");
         
         await Task.Delay(60000);
     }
