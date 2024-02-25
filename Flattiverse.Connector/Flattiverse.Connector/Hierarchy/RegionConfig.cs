@@ -1,10 +1,12 @@
 ﻿using Flattiverse.Connector.Network;
+using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
     public class RegionConfig
     {
-        public string Name;
+        private string name;
+
         public double StartPropability;
         public double RespawnPropability;
         public bool Protected;
@@ -13,6 +15,22 @@ namespace Flattiverse.Connector.Hierarchy
         public double Right;
         public double Bottom;
         public uint Team; // TODO MALUK TeamId is usually 1 byte
+
+        /// <summary>
+        /// The name of the configured unit.
+        /// </summary>
+        /// <exception cref="GameException">0x32 may be thrown, if the name violates rules.</exception>
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (!Utils.CheckName64(value))
+                    throw new GameException(0x31);
+
+                name = value;
+            }
+        }
 
         private RegionConfig()
         {

@@ -1,11 +1,12 @@
 ﻿using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
+using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
     public class ShipUpgradeConfig
     {
-        public string Name;
+        private string name;
         public ShipUpgrade? PreviousUpgrade;
         public double CostEnergy;
         public double CostIon;
@@ -50,6 +51,22 @@ namespace Flattiverse.Connector.Hierarchy
         public double ScannerEnergyConsumption;
         public double ScannerRange;
         public double ScannerWidth;
+
+        /// <summary>
+        /// The name of the configured unit.
+        /// </summary>
+        /// <exception cref="GameException">0x32 may be thrown, if the name violates rules.</exception>
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (!Utils.CheckName64(value))
+                    throw new GameException(0x31);
+
+                name = value;
+            }
+        }
 
         private ShipUpgradeConfig()
         {
