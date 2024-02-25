@@ -1,10 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text.Json;
+using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector.MissionSelection;
 
 public class GalaxyInfo
 {
+    public readonly Universe Universe;
+    
     public readonly int Id;
     public readonly string Name;
     public readonly bool SpectatorsAllowed;
@@ -27,14 +30,13 @@ public class GalaxyInfo
     public readonly int MaxShipsPlayer;
     public readonly int MaxBasesPlayer;
 
-    
-
     public readonly ReadOnlyDictionary<string, TeamInfo> Teams;
     public readonly ReadOnlyDictionary<string, PlayerInfo> Players;
 
-    public GalaxyInfo(JsonElement element)
+    public GalaxyInfo(Universe universe, JsonElement element)
     {
-
+        Universe = universe;
+        
         if(
             !Utils.Traverse(element, out Id, "id") ||
             !Utils.Traverse(element, out Name, "name") ||
@@ -103,7 +105,25 @@ public class GalaxyInfo
             throw new GameException(0xF3);
         }
 
-
         Players = new ReadOnlyDictionary<string, PlayerInfo>(playersResult);
+    }
+    
+    /// <summary>
+    /// Joins the galaxy with the specified team.
+    /// </summary>
+    /// <returns>The corresponding connection to the Galaxy. (Maintained by the Galaxy class.)</returns>
+    public async Task<Galaxy> Join(string auth, TeamInfo team)
+    {
+        Galaxy galaxy = new Galaxy(Universe);
+        
+        if (Universe.UseSSL)
+            await galaxy.Connect($"wss://{Universe.BaseURI}/game/galaxies/{Id}", auth, (byte)team.Id);
+        else
+            await galaxy.Connect($"ws://{Universe.BaseURI}/game/galaxies/{Id}", auth, (byte)team.Id);
+
+        // We wait so that we are sure that we have all meta data.
+        await galaxy.WaitLoginCompleted();
+        
+        return galaxy;
     }
 }

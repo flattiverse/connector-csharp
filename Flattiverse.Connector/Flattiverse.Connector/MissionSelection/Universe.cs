@@ -70,7 +70,7 @@ public class Universe
                 foreach (JsonElement element in document.RootElement.EnumerateArray())
                     if (element.ValueKind == JsonValueKind.Object)
                     {
-                        GalaxyInfo rGalaxyInfo = new GalaxyInfo(element);
+                        GalaxyInfo rGalaxyInfo = new GalaxyInfo(this, element);
                         lGalaxies.Add(rGalaxyInfo.Name, rGalaxyInfo);
                     }
 
@@ -82,16 +82,4 @@ public class Universe
     }
 
     public ReadOnlyDictionary<string, GalaxyInfo> Galaxies => new ReadOnlyDictionary<string, GalaxyInfo>(galaxies);
-    
-    public async Task<Galaxy> Join(string uri, string auth, byte teamId)
-    {
-        Galaxy galaxy = new Galaxy(this);
-        
-        await galaxy.Connect(uri, auth, teamId);
-
-        // We wait so that we are sure that we have all meta data.
-        await galaxy.WaitLoginCompleted();
-        
-        return galaxy;
-    }
 }
