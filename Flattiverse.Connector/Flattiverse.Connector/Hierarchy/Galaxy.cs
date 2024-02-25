@@ -261,7 +261,7 @@ public class Galaxy
             case 0x47: // ConstrollableInfo created.
                 Debug.Assert(players[packet.Header.Id1] is null, $"players[{packet.Header.Id1}] not populated.");
                 Debug.Assert(players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] is null, $"players[{packet.Header.Id1}].controllableInfos[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0]!.Name}\".");
-                players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] = new ControllableInfo(this, players[packet.Header.Id1]!, reader, packet.Header.Param0, packet.Header.Param1 == 1);
+                players[packet.Header.Id1]!.controllableInfos[packet.Header.Id0] = new ControllableInfo(this, players[packet.Header.Id1]!, reader, packet.Header.Id0, packet.Header.Param1 == 1);
                 break;
             case 0x57: // ControllableInfo updated.
                 // TODO JOW: Leben.

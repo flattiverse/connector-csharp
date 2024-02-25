@@ -191,7 +191,7 @@ namespace Flattiverse.Connector
         public async Task Kill()
         {
             if (hull == 0)
-                throw new GameException(0xF5);
+                throw new GameException(0x20);
 
             Session session = await galaxy.GetSession();
 
@@ -205,7 +205,7 @@ namespace Flattiverse.Connector
         public async Task Continue()
         {
             if (hull > 0)
-                throw new GameException(0xF6);
+                throw new GameException(0x21);
 
             Session session = await galaxy.GetSession();
 
