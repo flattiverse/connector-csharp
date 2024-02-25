@@ -32,26 +32,26 @@ namespace Flattiverse.Connector.Units.SubComponents
 
             Configuration = configuration;
 
-            InnerRadius = reader.Read3U(1000);
-            OuterRadius = reader.Read3U(1000);
-            AngelFrom = reader.Read2U(100);
-            AngelTo = reader.Read2U(100);
+            InnerRadius = reader.ReadDouble();
+            OuterRadius = reader.ReadDouble();
+            AngelFrom = reader.ReadDouble();
+            AngelTo = reader.ReadDouble();
 
             // 0° - 360°   2U (0-65535)   0-36000   *100 -> /100.
             
             // TODO: MALUK Werte anpassen
-            AdditionalGravity = reader.Read2S(100);
+            AdditionalGravity = reader.ReadDouble();
         }
 
         internal void Write(PacketWriter writer)
         {
-            writer.Write3U(InnerRadius, 1000);
-            writer.Write3U(OuterRadius, 1000);
-            writer.Write2U(AngelFrom, 100);
-            writer.Write2U(AngelTo, 100);
+            writer.Write(InnerRadius);
+            writer.Write(OuterRadius);
+            writer.Write(AngelFrom);
+            writer.Write(AngelTo);
 
             // TODO: MALUK Werte anpassen
-            writer.Write2S(AdditionalGravity, 100);
+            writer.Write(AdditionalGravity);
         }
 
         public void Remove()

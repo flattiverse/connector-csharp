@@ -38,30 +38,30 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            InnerRadius = reader.Read3U(1000);
-            OuterRadius = reader.Read3U(1000);
-            AngelFrom = reader.Read2U(100);
-            AngelTo = reader.Read2U(100);
+            InnerRadius = reader.ReadDouble();
+            OuterRadius = reader.ReadDouble();
+            AngelFrom = reader.ReadDouble();
+            AngelTo = reader.ReadDouble();
 
             // TODO: MALUK Werte anpassen
-            Iron = reader.Read2S(100);
-            Silicon = reader.Read2S(100);
-            Tungsten = reader.Read2S(100);
-            Tritium = reader.Read2S(100);
+            Iron = reader.ReadDouble();
+            Silicon = reader.ReadDouble();
+            Tungsten = reader.ReadDouble();
+            Tritium = reader.ReadDouble();
         }
 
         internal void Write(PacketWriter writer)
         {
-            writer.Write3U(InnerRadius, 1000);
-            writer.Write3U(OuterRadius, 1000);
-            writer.Write2U(AngelFrom, 100);
-            writer.Write2U(AngelTo, 100);
+            writer.Write(InnerRadius);
+            writer.Write(OuterRadius);
+            writer.Write(AngelFrom);
+            writer.Write(AngelTo);
 
             // TODO: MALUK Werte anpassen
-            writer.Write2S(Iron, 100);
-            writer.Write2S(Silicon, 100);
-            writer.Write2S(Tungsten, 100);
-            writer.Write2S(Tritium, 100);
+            writer.Write(Iron);
+            writer.Write(Silicon);
+            writer.Write(Tungsten);
+            writer.Write(Tritium);
         }
 
         public void Remove()

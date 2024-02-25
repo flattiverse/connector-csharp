@@ -16,11 +16,11 @@ namespace Flattiverse.Connector.UnitConfigurations
         {
             position = new Vector(reader);
 
-            radius = reader.Read3U(1000);
+            radius = reader.ReadDouble();
 
             // JAM TODO: Die Anzahl der Digits für verschiedene Wertetypen müssen in der PROTOCOL.md dokumentiert werden.
 
-            gravity = reader.Read4S(10000);
+            gravity = reader.ReadDouble();
 
             // This is a reserve for orbiting units.
             reader.ReadByte();
@@ -32,8 +32,8 @@ namespace Flattiverse.Connector.UnitConfigurations
 
             position.Write(writer);
 
-            writer.Write3U(radius, 1000);
-            writer.Write4S(gravity, 10000);
+            writer.Write(radius);
+            writer.Write(gravity);
 
             // No orbiting configuration.
             writer.Write((byte)0);

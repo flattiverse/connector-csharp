@@ -33,25 +33,25 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            double inner = reader.Read3U(1000);
-            OuterRadius = reader.Read3U(1000);
+            double inner = reader.ReadDouble();
+            OuterRadius = reader.ReadDouble();
             InnerRadius = inner;
-            AngelFrom = reader.Read2U(100);
-            AngelTo = reader.Read2U(100);
+            AngelFrom = reader.ReadDouble();
+            AngelTo = reader.ReadDouble();
 
-            Energy = reader.Read2S(100);
-            Ions = reader.Read2S(100);
+            Energy = reader.ReadDouble();
+            Ions = reader.ReadDouble();
         }
 
         internal void Write(PacketWriter writer)
         {
-            writer.Write3U(InnerRadius, 1000);
-            writer.Write3U(OuterRadius, 1000);
-            writer.Write2U(AngelFrom, 100);
-            writer.Write2U(AngelTo, 100);
+            writer.Write(InnerRadius);
+            writer.Write(OuterRadius);
+            writer.Write(AngelFrom);
+            writer.Write(AngelTo);
 
-            writer.Write2S(Energy, 100);
-            writer.Write2S(Ions, 100);
+            writer.Write(Energy);
+            writer.Write(Ions);
         }
 
         public void Remove()
