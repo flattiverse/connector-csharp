@@ -13,20 +13,36 @@ public class Universe
 
     private Dictionary<string, GalaxyInfo> galaxies = new Dictionary<string, GalaxyInfo>();
 
+    private DateTime lastChecked;
+
     public Universe()
     {
         BaseURI = "www.flattiverse.com";
         UseSSL = true;
+        
+        Update().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     public Universe(bool useSsl, string baseUri)
     {
         UseSSL = useSsl;
         BaseURI = baseUri;
+        
+        Update().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Updates the data in the universe.
+    /// </summary>
+    /// <exception cref="GameException">Thrown, if you call Update() too often.</exception>
+    /// <remarks>Refrain from calling this with a shorter interval than 15 seconds.</remarks>
     public async Task Update()
     {
+        if (DateTime.UtcNow - lastChecked < new TimeSpan(0, 0, 0, 15))
+            throw new GameException(0xEF);
+
+        lastChecked = DateTime.UtcNow;
+        
         using (HttpClient client = new HttpClient())
         {
             HttpResponseMessage response = await client.GetAsync(UseSSL ? $"https://{BaseURI}/api/galaxies/all" : $"http://{BaseURI}/api/galaxies/all");

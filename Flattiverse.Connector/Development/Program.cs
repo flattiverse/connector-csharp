@@ -32,17 +32,18 @@ internal class Program
         //    Console.WriteLine($"   + Player: {player.Name}");
 
 
-        try
+        await universe.Update();
+
+        foreach (KeyValuePair<string, GalaxyInfo> gInfo in universe.Galaxies)
         {
-            await universe.Update();
+            Console.WriteLine($" -> {gInfo.Key} {gInfo.Value.GameMode}");
 
+            foreach (KeyValuePair<string, TeamInfo> tInfo in gInfo.Value.Teams)
+                Console.WriteLine($"   -> {tInfo.Key} {tInfo.Value.Id}");
+
+            foreach (KeyValuePair<string, PlayerInfo> pInfo in gInfo.Value.Players)
+                Console.WriteLine($"   => {pInfo.Key} {pInfo.Value.Id}");
         }
-        catch (Exception e)
-        {
-
-            throw;
-        }
-
 
         await Task.Delay(60000);
     }

@@ -152,7 +152,8 @@ namespace Flattiverse.Connector
                         "[0x35] The unit you have created has been successfully created but deleted or reconfigured while the session of your create command returned.";
                 case 0xE0: // The requested command doesn't exist.
                     return "[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
-                
+                case 0xEF: // Don't flood.
+                    return "[0xEF] Don't flood the server. Read the XML documentation, it will tell you how often you can use a command.";
                 case 0xF0: // Unknown error.
                     if (info is null)
                         return $"[0xF0] An unknown error occurred.";
