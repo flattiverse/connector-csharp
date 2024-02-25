@@ -19,6 +19,7 @@ namespace Flattiverse.Connector.Hierarchy
             Galaxy = galaxy;
             Cluster = cluster;
             this.id = id;
+            isActive = true;
 
             config = new RegionConfig(reader);
         }

@@ -66,9 +66,9 @@ namespace Flattiverse.Connector
         private Vector position;
         private Vector movement;
 
-        private bool active;
+        private bool isActive;
 
-        public bool IsActive => active;
+        public bool IsActive => isActive;
 
         public bool IsAlive => hull > 0;
 
@@ -103,7 +103,7 @@ namespace Flattiverse.Connector
             ionReactor = reader.Read4U(1000);
             ionTransfer = reader.Read4U(1000);
 
-            active = true;
+            isActive = true;
         }
 
         internal void Update(PacketReader reader)
@@ -154,7 +154,7 @@ namespace Flattiverse.Connector
 
         internal void Deactivate()
         {
-            active = false;
+            isActive = false;
         }
 
         public double Hull => hull;

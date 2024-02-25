@@ -27,6 +27,7 @@ public class Cluster : INamedUnit
         units = new Dictionary<string, Unit>();
 
         this.id = id;
+        active = true;
 
         config = new ClusterConfig(reader);
 
