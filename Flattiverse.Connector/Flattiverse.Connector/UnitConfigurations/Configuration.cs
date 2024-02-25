@@ -54,7 +54,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             get => name;
             set
             {
-                if (!Utils.CheckName(value))
+                if (!Utils.CheckName32(value))
                     throw new GameException(0x31);
 
                 name = value;

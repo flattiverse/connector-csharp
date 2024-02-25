@@ -1,10 +1,11 @@
 ﻿using Flattiverse.Connector.Network;
+using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
     public class GalaxyConfig
     {
-        public string Name;
+        private string name;
         public string Description;
         public GameType GameType;
         public int MaxPlayers;
@@ -29,6 +30,22 @@ namespace Flattiverse.Connector.Hierarchy
         public int MaxDronesPlayer;
         public int MaxShipsPlayer;
         public int MaxBasesPlayer;
+
+        /// <summary>
+        /// The name of the configured unit.
+        /// </summary>
+        /// <exception cref="GameException">0x32 may be thrown, if the name violates rules.</exception>
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (!Utils.CheckName32(value))
+                    throw new GameException(0x31);
+
+                name = value;
+            }
+        }
 
         internal GalaxyConfig(GalaxyConfig galaxy)
         {
