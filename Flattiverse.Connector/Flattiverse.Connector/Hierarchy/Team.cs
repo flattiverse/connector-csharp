@@ -1,4 +1,5 @@
 ﻿using Flattiverse.Connector.Network;
+using System;
 
 namespace Flattiverse.Connector.Hierarchy
 {
@@ -14,6 +15,7 @@ namespace Flattiverse.Connector.Hierarchy
         {
             Galaxy = galaxy;
             this.id = id;
+            isActive = true;
 
             config = new TeamConfig(reader);
         }
