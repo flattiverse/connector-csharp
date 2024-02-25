@@ -276,7 +276,7 @@ public class Galaxy
                 players[packet.Header.Id0] = null;
                 break;
             case 0x47: // ConstrollableInfo created.
-                Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] not populated.");
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
                 Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] already populated by \"{players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!.Name}\".");
                 players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] = new ControllableInfo(this, players[packet.Header.Id0]!, reader, packet.Header.Id1, packet.Header.Param0 == 1);
                 break;
