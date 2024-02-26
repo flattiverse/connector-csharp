@@ -18,12 +18,12 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            OuterRadius = 130;
-            InnerRadius = 100;
+            outerRadius = 130;
+            innerRadius = 100;
 
-            AngelFrom = 45;
-            AngelTo = 135;
-            AdditionalGravity = 0.03;
+            angelFrom = 45;
+            angelTo = 135;
+            additionalGravity = 0.03;
         }
 
         internal BlackHoleSection(BlackHoleConfiguration? configuration, PacketReader reader)
@@ -32,15 +32,15 @@ namespace Flattiverse.Connector.Units.SubComponents
 
             Configuration = configuration;
 
-            InnerRadius = reader.ReadDouble();
-            OuterRadius = reader.ReadDouble();
-            AngelFrom = reader.ReadDouble();
-            AngelTo = reader.ReadDouble();
+            innerRadius = reader.ReadDouble();
+            outerRadius = reader.ReadDouble();
+            angelFrom = reader.ReadDouble();
+            angelTo = reader.ReadDouble();
 
             // 0° - 360°   2U (0-65535)   0-36000   *100 -> /100.
             
             // TODO: MALUK Werte anpassen
-            AdditionalGravity = reader.ReadDouble();
+            additionalGravity = reader.ReadDouble();
         }
 
         internal void Write(PacketWriter writer)

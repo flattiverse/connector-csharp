@@ -184,7 +184,8 @@ public class Galaxy
             return;
         }
 
-        //Console.WriteLine($"RECV'd: {packet}");
+        if (packet.Header.Command != 0x20)
+            Console.WriteLine($"RECV'd: {packet}");
         
         PacketReader reader = packet.Read();
 
@@ -193,7 +194,6 @@ public class Galaxy
             //case 0x01://Event
             //    pushEvent(FlattiverseEvent.FromPacketReader(this, packet.Header, reader));
             //    break;
-
 
             case 0x40: // Galaxy created.
             case 0x50: // Galaxy updated.
