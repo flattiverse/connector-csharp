@@ -22,6 +22,9 @@ namespace Flattiverse.Connector.Units
             position = new Vector(reader);
             radius = reader.ReadDouble();
             gravity = reader.ReadDouble();
+
+            // This is a reserve for orbiting units.
+            reader.ReadByte();
         }
 
         internal override void Update(PacketReader reader)
@@ -31,6 +34,9 @@ namespace Flattiverse.Connector.Units
             position = new Vector(reader);
             radius = reader.ReadDouble();
             gravity = reader.ReadDouble();
+
+            // This is a reserve for orbiting units.
+            reader.ReadByte();
         }
 
         public override Cluster Cluster => cluster;
