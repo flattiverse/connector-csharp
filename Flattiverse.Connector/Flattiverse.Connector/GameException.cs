@@ -136,7 +136,7 @@ namespace Flattiverse.Connector
                     return "[0x21] You need to die first to .Continue().";
                 case 0x22: // Unit is currently being deactivated.
                     return "[0x22] You can't do this while the unit is being deactivated.";
-                case 0x23: // Unit is currently being deactivated.
+                case 0x23: // Start locations overcrowded.
                     return "[0x23] All start-locations are currently overcrowded. Try to .Continue() later.";
                 case 0x30: // The requested element doesn't exist.
                     if (info is null)
