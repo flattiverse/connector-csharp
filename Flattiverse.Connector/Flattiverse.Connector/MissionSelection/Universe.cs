@@ -84,7 +84,7 @@ public class Universe
     public ReadOnlyDictionary<string, GalaxyInfo> Galaxies => new ReadOnlyDictionary<string, GalaxyInfo>(galaxies);
     
     /// <summary>
-    /// Don't use this mathod - or only use it if you need to override what th eUniverse class is doing.
+    /// Don't use this method - or only use it if you need to override what the Universe class is doing.
     /// </summary>
     /// <param name="uri">The path to the WebSocket endpoint.</param>
     /// <param name="auth">The auth string.</param>
