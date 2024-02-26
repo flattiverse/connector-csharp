@@ -42,7 +42,8 @@ namespace Flattiverse.Connector.Units
         private double ionReactor;
         private double ionTransfer;
         private double thruster;
-        private double thrusterMax;
+        private double thrusterMaxForward;
+        private double thrusterMaxBackward;
         private double nozzle;
         private double nozzleMax;
         private double speedMax;
@@ -90,7 +91,8 @@ namespace Flattiverse.Connector.Units
         public double IonReactor => ionReactor;
         public double IonTransfer => ionTransfer;
         public double Thruster => thruster;
-        public double ThrusterMax => thrusterMax;
+        public double ThrusterMaxForward => thrusterMaxForward;
+        public double ThrusterMaxBackward => thrusterMaxBackward;
         public double Nozzle => nozzle;
         public double NozzleMax => nozzleMax;
         public double SpeedMax => speedMax;
@@ -143,7 +145,8 @@ namespace Flattiverse.Connector.Units
             ionReactor = reader.ReadDouble();
             ionTransfer = reader.ReadDouble();
             thruster = reader.ReadDouble();
-            thrusterMax = reader.ReadDouble();
+            thrusterMaxForward = reader.ReadDouble();
+            thrusterMaxBackward = reader.ReadDouble();
             nozzle = reader.ReadDouble();
             nozzleMax = reader.ReadDouble();
             speedMax = reader.ReadDouble();
