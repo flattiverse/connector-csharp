@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Flattiverse.Connector;
+using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.MissionSelection;
 
@@ -34,9 +35,9 @@ internal class Program
         Console.WriteLine("And now livedata:");
         Console.ForegroundColor = ConsoleColor.Gray;
         
-        //Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join("7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", universe.Galaxies["Beginners Course"].Teams["Plebs"]);
+        Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join("7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", universe.Galaxies["Beginners Course"].Teams["Plebs"]);
         
-        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", 0);
+        //Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", 0);
 
         Console.WriteLine($" + Galaxy: {galaxy.Name}");
 
@@ -51,7 +52,20 @@ internal class Program
 
         Controllable ship = await galaxy.RegisterShip("HeartOfGold", galaxy.ShipsDesigns["Cruiser"]);
 
-        Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.EnergyMax}");
+        Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.Energy}/{ship.EnergyMax}");
+
+        await ship.Continue();
+
+        Console.WriteLine($"ShipInfo: {galaxy.Players["GhostTyper"].ControllableInfos["HeartOfGold"].Energy}");
+        
+        Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.Energy}/{ship.EnergyMax}");
+
+        while (true)
+        {
+            FlattiverseEvent @event = await galaxy.NextEvent();
+
+            Console.WriteLine(@event);
+        }
         
         await Task.Delay(60000);
     }

@@ -82,6 +82,19 @@ namespace Flattiverse.Connector.Hierarchy
             
         }
 
+        internal void DynamicUpdate(PacketReader reader, bool reduced)
+        {
+            if (reduced)
+                reader.ReadBoolean();
+            else
+            {
+                hull = reader.ReadDouble();
+                shields = reader.ReadDouble();
+                energy = reader.ReadDouble();
+                ion = reader.ReadDouble();
+            }            
+        }
+
         internal void Deactivate()
         {
             active = false;

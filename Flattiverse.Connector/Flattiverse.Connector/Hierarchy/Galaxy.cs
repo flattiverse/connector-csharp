@@ -284,7 +284,9 @@ public class Galaxy
                 // TODO JOW: Leben.
                 break;
             case 0x67: // ControllableInfo dynamic update.
-                // TODO JOW: Scores.
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
+                Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is not null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] not populated.");
+                players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!.DynamicUpdate(reader, packet.Header.Param0 == 1);
                 break;
             case 0x77: // ControllableInfo removed.
                 Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
