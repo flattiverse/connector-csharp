@@ -5,18 +5,15 @@ namespace Flattiverse.Connector.Events
 {
     public class UpdatedUnitEvent : UnitEvent
     {
-        public readonly Unit Unit;
-
-        internal UpdatedUnitEvent(Galaxy galaxy, Unit unit) : base(galaxy)
+        internal UpdatedUnitEvent(Unit unit) : base(unit)
         {
-            Unit = unit;
         }
 
         public override EventKind Kind => EventKind.UnitUpdated;
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} UNIUP The unit {Unit} in cluster {Cluster.Name} was updated.";
+            return $"{Stamp:HH:mm:ss.fff} Unit {Unit.Name} of kind {Unit.Kind} in the cluster {Unit.Cluster.Name} has been updated.";
         }
     }
 }

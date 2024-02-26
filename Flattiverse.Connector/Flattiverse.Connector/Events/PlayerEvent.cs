@@ -12,7 +12,7 @@ namespace Flattiverse.Connector.Events
     {
         public readonly Player Player;
 
-        internal PlayerEvent(Galaxy galaxy, Player player) : base()
+        internal PlayerEvent(Player player)
         {
             Player = player;
         }

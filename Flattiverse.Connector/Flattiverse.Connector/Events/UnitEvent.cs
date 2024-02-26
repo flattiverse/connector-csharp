@@ -1,15 +1,15 @@
 ﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events
 {
     public class UnitEvent : FlattiverseEvent
     {
-        public readonly Cluster Cluster;
+        public readonly Unit Unit;
 
-        internal UnitEvent(Galaxy galaxy/*, JsonElement element*/) : base()
+        internal UnitEvent(Unit unit)
         {
-
-            Cluster = galaxy.Clusters[0];
+            Unit = unit;
         }
     }
 }

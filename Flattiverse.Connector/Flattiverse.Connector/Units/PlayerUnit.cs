@@ -30,7 +30,7 @@ namespace Flattiverse.Connector.Units
         private bool active;
 
         public Player Player => player;
-        public Cluster Cluster => cluster;
+        public override Cluster Cluster => cluster;
         public ControllableInfo ControllableInfo => controllableInfo;
         public double Size => size;
         public double Weight => weight;
@@ -78,6 +78,8 @@ namespace Flattiverse.Connector.Units
             movement = new Vector(reader);
         }
 
+        public override UnitKind Kind => UnitKind.PlayerUnit;
+        
         internal void Deactivate()
         {
             active = false;

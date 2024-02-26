@@ -10,6 +10,8 @@
         UnitVanished = 0x02,
 
         PlayerAdded = 0x03,
-        PlayerRemoved = 0x04
+        PlayerRemoved = 0x04,
+        
+        GalaxyTick = 0x08
     }
 }

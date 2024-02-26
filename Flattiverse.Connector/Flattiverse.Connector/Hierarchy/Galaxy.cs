@@ -266,6 +266,7 @@ public class Galaxy
                 Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
                 Debug.Assert(teams[packet.Header.Id1] is not null, $"teams[{packet.Header.Id1}] not populated.");
                 players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, teams[packet.Header.Id1]!, reader);
+                pushEvent(new PlayerJoinedEvent(players[packet.Header.Id0]!));
                 break;
             case 0x66: // Player dynamic update.
                 // TODO JOW: Wenn wir Scores haben wird das relevant.
@@ -273,6 +274,7 @@ public class Galaxy
             case 0x76: // Player removed.
                 Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
                 players[packet.Header.Id0]!.Deactivate();
+                pushEvent(new PlayerPartedEvent(players[packet.Header.Id0]!));
                 players[packet.Header.Id0] = null;
                 break;
             case 0x47: // ConstrollableInfo created.
@@ -319,7 +321,7 @@ public class Galaxy
                 
                     Unit unit = c.SeeNewUnit((UnitKind)packet.Header.Param0, reader);
                 
-                    pushEvent(new AddedUnitEvent(this, unit));
+                    pushEvent(new AddedUnitEvent(unit));
                 }
                 break;
             case 0x1D: // A unit we see has been updated.
@@ -330,7 +332,7 @@ public class Galaxy
 
                     Unit unit = c.SeeUpdatedUnit(reader);
 
-                    pushEvent(new UpdatedUnitEvent(this, unit));
+                    pushEvent(new UpdatedUnitEvent(unit));
                 }
                 break;
             case 0x1E: // A once known unit vanished.
@@ -341,7 +343,7 @@ public class Galaxy
 
                     Unit unit = c.SeeUnitNoMore(reader.ReadString());
 
-                    pushEvent(new VanishedUnitEvent(this, unit));
+                    pushEvent(new VanishedUnitEvent(unit));
                 }
                 break;
             case 0x20: //Tick completed.
@@ -350,6 +352,7 @@ public class Galaxy
                     loginCompleted.SetResult();
                     loginCompleted = null;
                 }
+                pushEvent(new GalaxyTickEvent());
                 break;
 //            case 0x50://Unit
 //                // TODO: MALUK extend

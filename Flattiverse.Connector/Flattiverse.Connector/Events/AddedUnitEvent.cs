@@ -5,18 +5,15 @@ namespace Flattiverse.Connector.Events
 {
     public class AddedUnitEvent : UnitEvent
     {
-        public readonly Unit Unit;
-
-        internal AddedUnitEvent(Galaxy galaxy, Unit unit) : base(galaxy) 
+        internal AddedUnitEvent(Unit unit) : base(unit) 
         {
-            Unit = unit;
         }
 
         public override EventKind Kind => EventKind.UnitAdded;
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} UNIADD The unit {Unit} was added to the cluster {Cluster.Name}.";
+            return $"{Stamp:HH:mm:ss.fff} Unit {Unit.Name} of kind {Unit.Kind} has been added to the cluster {Unit.Cluster.Name}.";
         }
     }
 }

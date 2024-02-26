@@ -5,18 +5,15 @@ namespace Flattiverse.Connector.Events
 {
     public class VanishedUnitEvent : UnitEvent
     {
-        public readonly Unit Unit;
-
-        internal VanishedUnitEvent(Galaxy galaxy, Unit unit) : base(galaxy)
+        internal VanishedUnitEvent(Unit unit) : base(unit)
         {
-            Unit = unit;
         }
 
         public override EventKind Kind => EventKind.UnitVanished;
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} UNIVAN The unit {Unit} in cluster {Cluster.Name} vanished.";
+            return $"{Stamp:HH:mm:ss.fff} Unit {Unit.Name} of kind {Unit.Kind} has been removed from cluster {Unit.Cluster.Name}.";
         }
     }
 }

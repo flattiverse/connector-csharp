@@ -2,9 +2,9 @@
 
 namespace Flattiverse.Connector.Events
 {
-    public class PlayerAddedEvent : PlayerEvent
+    public class PlayerJoinedEvent : PlayerEvent
     {
-        internal PlayerAddedEvent(Galaxy galaxy, Player player) : base(galaxy, player)
+        internal PlayerJoinedEvent(Player player) : base(player)
         {
         }
 
@@ -12,7 +12,7 @@ namespace Flattiverse.Connector.Events
 
         public override string ToString()
         {
-            return $"{Stamp:HH:mm:ss.fff} PLRADD The player {Player} was removed.";
+            return $"{Stamp:HH:mm:ss.fff} {Player.Name} joined the galaxy on team {Player.Team.Name}.";
         }
     }
 }

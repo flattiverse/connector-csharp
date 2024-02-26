@@ -39,7 +39,7 @@ public class Unit
                 return new Meteoroid(cluster, reader);
             case UnitKind.Buoy:
                 return new Buoy(cluster, reader);
-            case UnitKind.Ship:
+            case UnitKind.PlayerUnit:
                 return new PlayerUnit(cluster, reader);
             default:
                 throw new NotImplementedException($"Unknown UnitKind 0x{(int)kind:X02} ({kind}) in Unit constructor given.");
@@ -138,6 +138,4 @@ public class Unit
     /// Specifies the Kind of the unit.
     /// </summary>
     public virtual UnitKind Kind => throw new NotImplementedException($"Kind should be overwritten in derived class");
-
-    public override string ToString() => base.ToString();
 }
