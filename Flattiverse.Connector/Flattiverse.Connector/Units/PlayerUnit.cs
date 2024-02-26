@@ -21,7 +21,7 @@ namespace Flattiverse.Connector.Units
 
         private int playerId;
         private int shipDesignId;
-        private int upgradeIndex;
+        private byte[] upgradeIndex;
         
         private double hull;
         private double hullMax;
@@ -70,10 +70,6 @@ namespace Flattiverse.Connector.Units
         public ShipDesign ShipDesign => shipDesign;
 
         public Player Player => player;
-
-        public int PlayerId => playerId;
-        public int ShipDesignId => shipDesignId;
-        public int UpgradeIndex => upgradeIndex;
         
         public double Hull => hull;
         public double HullMax => hullMax;
@@ -125,9 +121,9 @@ namespace Flattiverse.Connector.Units
             shipDesign = cluster.Galaxy.ShipsDesigns[shipDesignId];
             player = cluster.Galaxy.GetPlayer(playerId);
 
-            Id = reader.ReadInt32();
+            Id = reader.ReadByte();
 
-            upgradeIndex = reader.ReadInt32();
+            upgradeIndex = reader.ReadBytes(32);
             hull = reader.ReadDouble();
             hullMax = reader.ReadDouble();
             hullRepair = reader.ReadDouble();
@@ -168,6 +164,13 @@ namespace Flattiverse.Connector.Units
             position = new Vector(reader);
             movement = new Vector(reader);
             active = true;
+        }
+
+        internal override void Update(PacketReader reader)
+        {
+            base.Update(reader);
+            
+            
         }
 
         internal void Deactivate()

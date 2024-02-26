@@ -212,8 +212,9 @@ namespace Flattiverse.Connector.Network
                     {
                         packetHandler(new Packet(data, ref position));
                     }
-                    catch
+                    catch (Exception exception)
                     {
+                        Console.WriteLine($"EXCEPTION: {exception.Message}");
                     }
             }
         }
