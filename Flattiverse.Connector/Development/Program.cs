@@ -42,7 +42,7 @@ internal class Program
         
         ThreadPool.QueueUserWorkItem(async delegate
         {
-            Galaxy galaxy2 = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "6df3b734005dcd57efef3deaf87d4675de608afc0555c2e1ed65aba1e04c6600", 0);
+            Galaxy galaxy2 = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "7e8fbecabff144b96c0cfe0baf4bb5e3878c11cad104f9a64645161f9e61ac85", 0);
 
             Controllable ship2 = await galaxy2.RegisterShip("Origin", galaxy2.ShipsDesigns["Cruiser"]);
             
@@ -53,12 +53,6 @@ internal class Program
             // await ship2.SetThrusterNozzle(0, ship2.NozzleMax);
             
             await Task.Delay(5000);
-
-            Player player = galaxy2.Players["GhostTyper"];
-
-            await galaxy.Chat("Hallo Du Schnucki.");
-            await galaxy.Chat("Hallo Du Schnucki.");
-            await galaxy.Chat("Hallo Du Schnucki.");
             
             await ship2.SetThrusterNozzle(0, 0);
             
@@ -112,8 +106,8 @@ internal class Program
                 // if (track is not null)
                 //     Console.WriteLine($"OTHER POSITION={track.Position}, DIRECTION={track.Direction:F}°, THRUSTER={track.Thruster:0.0000}, NOZZLE={track.Nozzle:F}°, TURNRATE={track.Turnrate:F}°, SPEED={track.Movement.Length}");
             }
-            else
-                Console.WriteLine(@event);
+            // else
+            //     Console.WriteLine(@event);
         }
         
         await Task.Delay(60000);
