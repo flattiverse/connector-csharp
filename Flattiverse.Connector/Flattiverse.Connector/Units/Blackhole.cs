@@ -18,6 +18,8 @@ namespace Flattiverse.Connector.Units
 
             for (int position = 0; position < coronas; position++)
                 sections.Add(new BlackHoleSection(null, reader));
+
+            this.sections = new ReadOnlyCollection<BlackHoleSection>(sections);
         }
 
         public ReadOnlyCollection<BlackHoleSection> Sections => sections;
