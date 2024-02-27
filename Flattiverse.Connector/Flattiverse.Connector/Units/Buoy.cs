@@ -3,6 +3,7 @@ using Flattiverse.Connector.Network;
 using Flattiverse.Connector.UnitConfigurations;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +12,21 @@ namespace Flattiverse.Connector.Units
 {
     public class Buoy : CelestialBody
     {
+        private string message;
+        private ReadOnlyCollection<Vector> beacons;
+        
         internal Buoy(Cluster cluster, PacketReader reader) : base(cluster, reader)
         {
+            message = reader.ReadString();
+
+            int size = reader.ReadByte();
+            List<Vector> list = new List<Vector>(size);
+            for (int i = 0; i < size; i++)
+            {
+                list.Add(new Vector(reader));
+            }
+
+            beacons = new ReadOnlyCollection<Vector>(list);
         }
 
         /// <summary>
@@ -60,6 +74,17 @@ namespace Flattiverse.Connector.Units
         internal override void Update(PacketReader reader)
         {
             base.Update(reader);
+            
+            message = reader.ReadString();
+
+            int size = reader.ReadByte();
+            List<Vector> list = new List<Vector>(size);
+            for (int i = 0; i < size; i++)
+            {
+                list.Add(new Vector(reader));
+            }
+
+            beacons = new ReadOnlyCollection<Vector>(list);
         }
 
         /// <summary>
@@ -83,6 +108,17 @@ namespace Flattiverse.Connector.Units
 
         public override UnitKind Kind => UnitKind.Buoy;
 
+        /// <summary>
+        /// The message of the buoy unit.
+        /// </summary>
+        public string Message => message;
+
+        /// <summary>
+        /// Beacons of the Buoy unit. Beacons are locations relative to this Buoy for which the space in between might
+        /// be of interest. 
+        /// </summary>
+        public ReadOnlyCollection<Vector> Beacons => beacons;
+        
         public override string ToString()
         {
             return $"Buoy {Name}";

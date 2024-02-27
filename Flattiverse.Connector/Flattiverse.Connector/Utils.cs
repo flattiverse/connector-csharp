@@ -9,6 +9,22 @@ namespace Flattiverse.Connector
 {
     internal class Utils
     {
+        
+        /// <summary>
+        /// Checks the name. Returns only valid names. Throws a GameException with the code
+        /// GameException.InvalidValue on invalid names.
+        /// </summary>
+        /// <param name="name">The name to check.</param>
+        /// <returns>The name if valid.</returns>
+        public static string CheckedName32OrThrowInvalidValue(string? name)
+        {
+            if (!CheckName32(name))
+            {
+                throw new GameException(GameException.InvalidValue, "Name has to consist of 2 to 32 valid characters.");
+            }
+            return name!;
+        }
+
         /// <summary>
         /// Checks the name.
         /// </summary>
@@ -49,6 +65,76 @@ namespace Flattiverse.Connector
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks the message. Only valid messages are returned. Throws a GameException with the code
+        /// GameException.InvalidValue on invalid names.
+        /// </summary>
+        /// <param name="message">The message to check.</param>
+        /// <returns>The name if valid.</returns>
+        public static string CheckMessageThrowInvalidValue(string? message)
+        {
+            if (!CheckMessage(message))
+            {
+                throw new GameException(GameException.InvalidValue, "The message has to consist of 1 to 512 valid characters.");
+            }
+            return message!;
+        }
+
+    
+        /// <summary>
+        /// Checks the message. Only valid messages are returned. Throws a GameException with the code
+        /// GameException.InvalidValue on invalid names.
+        /// </summary>
+        /// <param name="message">The message to check.</param>
+        /// <returns>The name if valid.</returns>
+        public static bool CheckMessage(string? message)
+        {
+            if (message is null || message.Length < 1 || message.Length > 512)
+                return false;
+
+            if (message.StartsWith(' ') || message.EndsWith(' '))
+                return false;
+
+            foreach (char c in message)
+            {
+                if (c >= 32 && c <= 126)
+                    continue;
+
+                if (c >= 192 && c <= 214)
+                    continue;
+
+                if (c >= 216 && c <= 246)
+                    continue;
+
+                if (c >= 248 && c <= 687)
+                    continue;
+
+                if (c == '€' || c == '‚' || c == '„' || c == '…' || c == '‰' || c == '‹' || c == '›' || c == '™' ||
+                    c == '•' || c == '¢' || c == '£' || c == '¡' || c == '¤' || c == '¥' || c == '©' || c == '®' ||
+                    c == '±' || c == '²' || c == '³' || c == 'µ' || c == '¿' || c == '«' || c == '»')
+                    continue;
+
+                return false;
+            }
+
+            return true;
+        }
+        
+        /// <summary>
+        /// Checks the name. Returns only valid names. Throws a GameException with the code
+        /// GameException.InvalidValue on invalid names.
+        /// </summary>
+        /// <param name="name">The name to check.</param>
+        /// <returns>The name if valid.</returns>
+        public static string CheckedName64OrThrowInvalidValue(string? name)
+        {
+            if (!CheckName64(name))
+            {
+                throw new GameException(GameException.InvalidValue, "Name has to consist of 2 to 64 valid characters.");
+            }
+            return name!;
         }
 
 
