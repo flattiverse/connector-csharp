@@ -33,8 +33,8 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            outerRadius = reader.ReadDouble();
             innerRadius = reader.ReadDouble();
+            outerRadius = reader.ReadDouble();
             angleFrom = reader.ReadDouble();
             angleTo = reader.ReadDouble();
 
