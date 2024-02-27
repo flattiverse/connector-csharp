@@ -71,6 +71,26 @@ namespace Flattiverse.Connector.Hierarchy
             config = new TeamConfig(reader);
         }
 
+        /// <summary>
+        /// Sends a chat message to the team.
+        /// </summary>
+        /// <param name="message">A message with a maximum of 512 chars.</param>
+        /// <exception cref="GameException"></exception>
+        public async Task Chat(string message)
+        {
+            if (!Utils.CheckMessage(message))
+                throw new GameException(0x31);
+            
+            Session session = await Galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x21;
+            packet.Header.Id0 = id;
+
+            packet.Header.Size = (ushort)System.Text.Encoding.UTF8.GetBytes(message.AsSpan(), packet.Payload.AsSpan(8, 1024));
+
+            await session.SendWait(packet);
+        }
 
         internal void DynamicUpdate(PacketReader reader)
         {

@@ -154,6 +154,8 @@ namespace Flattiverse.Connector
                 case 0x35: // Unit has been created but wasn't there when the session returned.
                     return
                         "[0x35] The unit you have created has been successfully created but deleted or reconfigured while the session of your create command returned.";
+                case 0x36: // Floodprotection.
+                    return "[0x36] Don't flood.";
                 case 0xE0: // The requested command doesn't exist.
                     return "[0xE0] Unauthorized request. You probably aren't the right kind of client: Player, Spectator or Admin.";
                 case 0xEF: // Don't flood.

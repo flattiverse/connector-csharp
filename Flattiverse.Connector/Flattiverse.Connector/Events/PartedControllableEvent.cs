@@ -4,7 +4,7 @@ namespace Flattiverse.Connector.Events;
 
 public class PartedControllableEvent : ControllableEvent
 {
-    public PartedControllableEvent(Player player, ControllableInfo info) : base(player, info)
+    internal PartedControllableEvent(Player player, ControllableInfo info) : base(player, info)
     {
     }
 
