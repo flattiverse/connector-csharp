@@ -32,15 +32,15 @@ namespace Flattiverse.Connector.Units
         public Player Player => player;
         public override Cluster Cluster => cluster;
         public ControllableInfo ControllableInfo => controllableInfo;
-        public double Size => size;
+        public override double Radius => size;
         public double Weight => weight;
         public double Thruster => thruster;
         public double Nozzle => nozzle;
         public double Turnrate => turnrate;
         public double WeaponAmmo => weaponAmmo;
-        public double Direction => direction;
-        public Vector Position => position;
-        public Vector Movement => movement;
+        public override double Direction => direction;
+        public override Vector Position => position;
+        public override Vector Movement => movement;
         public bool Active => active;
 
         internal PlayerUnit(Cluster cluster, PacketReader reader) : base(reader)
