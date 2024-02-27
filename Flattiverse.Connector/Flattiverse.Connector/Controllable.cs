@@ -117,6 +117,9 @@ namespace Flattiverse.Connector
             weaponAmmoMax = reader.ReadDouble();
             weaponAmmoProduction = reader.ReadDouble();
 
+            position = Vector.Null;
+            movement = Vector.Null;
+
             active = true;
         }
 
