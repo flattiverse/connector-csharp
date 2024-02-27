@@ -10,7 +10,10 @@ namespace Flattiverse.Connector.UnitConfigurations
 
         private double gravity;
 
-        protected internal CelestialBodyConfiguration() : base() { }
+        protected internal CelestialBodyConfiguration() : base()
+        {
+            position = Vector.Null;
+        }
 
         internal CelestialBodyConfiguration(PacketReader reader) : base(reader)
         {
