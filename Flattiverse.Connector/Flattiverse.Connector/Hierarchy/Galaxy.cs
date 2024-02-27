@@ -188,10 +188,18 @@ public class Galaxy
 
         switch (packet.Header.Command)
         {
-            //case 0x01://Event
-            //    pushEvent(FlattiverseEvent.FromPacketReader(this, packet.Header, reader));
-            //    break;
-
+            case 0x30: // Message to player.
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
+                pushEvent(new PlayerChatEvent(packet, players[packet.Header.Id0]!));
+                break;
+            case 0x31: // Message to team.
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
+                pushEvent(new TeamChatEvent(packet, players[packet.Header.Id0]!));
+                break;
+            case 0x32: // Message to Galaxy.
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
+                pushEvent(new GalaxyChatEvent(packet, players[packet.Header.Id0]!));
+                break;
             case 0x40: // Galaxy created.
             case 0x50: // Galaxy updated.
                 Update(packet.Header, reader);
@@ -262,7 +270,7 @@ public class Galaxy
             case 0x46: // Player created.
                 Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
                 Debug.Assert(teams[packet.Header.Id1] is not null, $"teams[{packet.Header.Id1}] not populated.");
-                players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, teams[packet.Header.Id1]!, reader);
+                players[packet.Header.Id0] = new Player(this, packet.Header.Id0, (PlayerKind)packet.Header.Param0, teams[packet.Header.Id1]!, reader);
                 pushEvent(new JoinedPlayerEvent(players[packet.Header.Id0]!));
                 break;
             case 0x66: // Player dynamic update.
@@ -360,8 +368,28 @@ public class Galaxy
 //                break;
         }
         
-        if (reader.RemainingBytes != 0)
+        if (reader.RemainingBytes != 0 && (packet.Header.Command < 0x30 || packet.Header.Command > 0x32))
             Console.WriteLine($"Reader on {packet} had {reader.RemainingBytes} bytes which haven't been read.");
+    }
+
+    /// <summary>
+    /// Sends a chat message to the player.
+    /// </summary>
+    /// <param name="message">A message with a maximum of 512 chars.</param>
+    /// <exception cref="GameException"></exception>
+    public async Task Chat(string message)
+    {            
+        if (!Utils.CheckMessage(message))
+            throw new GameException(0x31);
+            
+        Session session = await GetSession();
+
+        Packet packet = new Packet();
+        packet.Header.Command = 0x22;
+
+        packet.Header.Size = (ushort)System.Text.Encoding.UTF8.GetBytes(message.AsSpan(), packet.Payload.AsSpan(8, 1024));
+
+        await session.SendWait(packet);
     }
 
     private void Update(PacketHeader header, PacketReader reader)

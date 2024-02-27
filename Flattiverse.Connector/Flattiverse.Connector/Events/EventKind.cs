@@ -15,6 +15,10 @@
         JoinedControllable = 0x08,
         PartedControllable = 0x09,
         
+        PlayerChat = 0x0C,
+        TeamChat = 0x0D,
+        GalaxyChat = 0x0E,
+        
         GalaxyTick = 0xFF
     }
 }

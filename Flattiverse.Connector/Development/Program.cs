@@ -38,7 +38,7 @@ internal class Program
         
         //Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join("7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", universe.Galaxies["Beginners Course"].Teams["Plebs"]);
 
-        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "71e5dc90ad20e51e63a94a63d671f80a03a45507679fdaec34a01394de033fef", 0);
+        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", 0);
         
         ThreadPool.QueueUserWorkItem(async delegate
         {
@@ -54,13 +54,11 @@ internal class Program
             
             await Task.Delay(5000);
 
-            await ship2.SetThruster(ship2.ThrusterMaxForward);
-            
-            await Task.Delay(5000);
+            Player player = galaxy2.Players["GhostTyper"];
 
-            await ship2.SetNozzle(ship2.NozzleMax);
-            
-            await Task.Delay(5000);
+            await galaxy.Chat("Hallo Du Schnucki.");
+            await galaxy.Chat("Hallo Du Schnucki.");
+            await galaxy.Chat("Hallo Du Schnucki.");
             
             await ship2.SetThrusterNozzle(0, 0);
             
@@ -109,10 +107,10 @@ internal class Program
             
             if (@event.Kind == EventKind.GalaxyTick)
             {
-                Console.WriteLine($"  OWN POSITION={ship.Position}, DIRECTION={ship.Direction:F}°, THRUSTER={ship.Thruster:0.0000}, NOZZLE={ship.Nozzle:F}°, TURNRATE={ship.Turnrate:F}°, SPEED={ship.Movement.Length}");
-                
-                if (track is not null)
-                    Console.WriteLine($"OTHER POSITION={track.Position}, DIRECTION={track.Direction:F}°, THRUSTER={track.Thruster:0.0000}, NOZZLE={track.Nozzle:F}°, TURNRATE={track.Turnrate:F}°, SPEED={track.Movement.Length}");
+                // Console.WriteLine($"  OWN POSITION={ship.Position}, DIRECTION={ship.Direction:F}°, THRUSTER={ship.Thruster:0.0000}, NOZZLE={ship.Nozzle:F}°, TURNRATE={ship.Turnrate:F}°, SPEED={ship.Movement.Length}");
+                //
+                // if (track is not null)
+                //     Console.WriteLine($"OTHER POSITION={track.Position}, DIRECTION={track.Direction:F}°, THRUSTER={track.Thruster:0.0000}, NOZZLE={track.Nozzle:F}°, TURNRATE={track.Turnrate:F}°, SPEED={track.Movement.Length}");
             }
             else
                 Console.WriteLine(@event);

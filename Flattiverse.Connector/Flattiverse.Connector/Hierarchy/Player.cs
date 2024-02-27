@@ -6,6 +6,8 @@ namespace Flattiverse.Connector.Hierarchy
 {
     public class Player : INamedUnit
     {
+        public readonly Galaxy Galaxy;
+        
         public readonly byte ID;
         private readonly string name;
         public readonly PlayerKind Kind;
@@ -18,8 +20,9 @@ namespace Flattiverse.Connector.Hierarchy
 
         public bool Active => active;
 
-        internal Player(byte id, PlayerKind kind, Team team, PacketReader reader)
+        internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, PacketReader reader)
         {
+            Galaxy = galaxy;
             active = true;
             ID = id;
             Kind = kind;
@@ -55,10 +58,34 @@ namespace Flattiverse.Connector.Hierarchy
                 controllableInfos[id] = null;
             }
         }
+        
+        /// <summary>
+        /// Sends a chat message to the player.
+        /// </summary>
+        /// <param name="message">A message with a maximum of 512 chars.</param>
+        /// <exception cref="GameException"></exception>
+        public async Task Chat(string message)
+        {
+            if (!active)
+                throw new GameException(0x22);
+            
+            if (!Utils.CheckMessage(message))
+                throw new GameException(0x31);
+            
+            Session session = await Galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x20;
+            packet.Header.Id0 = ID;
+
+            packet.Header.Size = (ushort)System.Text.Encoding.UTF8.GetBytes(message.AsSpan(), packet.Payload.AsSpan(8, 1024));
+
+            await session.SendWait(packet);
+        }
 
         public override string ToString()
         {
-            return $"Player [{ID}] {name}({Kind})";
+            return $"Player [{ID}] {name} ({Kind})";
         }
     }
 }

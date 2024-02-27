@@ -4,7 +4,7 @@ namespace Flattiverse.Connector.Events;
 
 public class JoinedControllableEvent : ControllableEvent
 {
-    public JoinedControllableEvent(Player player, ControllableInfo info) : base(player, info)
+    internal JoinedControllableEvent(Player player, ControllableInfo info) : base(player, info)
     {
     }
 

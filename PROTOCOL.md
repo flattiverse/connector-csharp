@@ -121,10 +121,16 @@ deactivation of the element which makes it return `false` when `IsActive` is cal
 * `0x1D`: A already found unit has been updated.
 * `0x1E`: A unit which has been seen in the past is now not seen any more.
 * `0x20`: Round committed.
+* `0x30`: Message to `Player`.
+* `0x31`: Message to `Team`.
+* `0x32`: Message to `Galaxy`.
 * `0xFF` (in a session): An error occurred which processing the session.
 
 And those commands from the client to the server:
 
+* `0x20`: Send Message to `Player`.
+* `0x21`: Send Message to `Team`.
+* `0x22`: Send Message to `Galaxy`.
 * `0x33`: Unregister Controllable.
 * `0x34`: Set Thruster.
 * `0x35`: Set Nozzle.
