@@ -9,7 +9,6 @@ namespace Flattiverse.Connector
 {
     internal class Utils
     {
-        
         /// <summary>
         /// Checks the name. Returns only valid names. Throws a GameException with the code
         /// GameException.InvalidValue on invalid names.
@@ -22,6 +21,7 @@ namespace Flattiverse.Connector
             {
                 throw new GameException(GameException.InvalidValue, "Name has to consist of 2 to 32 valid characters.");
             }
+
             return name!;
         }
 
@@ -77,12 +77,14 @@ namespace Flattiverse.Connector
         {
             if (!CheckMessage(message))
             {
-                throw new GameException(GameException.InvalidValue, "The message has to consist of 1 to 512 valid characters.");
+                throw new GameException(GameException.InvalidValue,
+                    "The message has to consist of 1 to 512 valid characters.");
             }
+
             return message!;
         }
 
-    
+
         /// <summary>
         /// Checks the message. Only valid messages are returned. Throws a GameException with the code
         /// GameException.InvalidValue on invalid names.
@@ -121,7 +123,7 @@ namespace Flattiverse.Connector
 
             return true;
         }
-        
+
         /// <summary>
         /// Checks the name. Returns only valid names. Throws a GameException with the code
         /// GameException.InvalidValue on invalid names.
@@ -134,6 +136,7 @@ namespace Flattiverse.Connector
             {
                 throw new GameException(GameException.InvalidValue, "Name has to consist of 2 to 64 valid characters.");
             }
+
             return name!;
         }
 
@@ -179,8 +182,8 @@ namespace Flattiverse.Connector
 
             return true;
         }
-        
-                public static bool Traverse(JsonElement element, out string text, params string[] path)
+
+        public static bool Traverse(JsonElement element, out string text, params string[] path)
         {
             int pNum;
 
@@ -209,6 +212,7 @@ namespace Flattiverse.Connector
                             text = string.Empty;
                             return false;
                         }
+
                         break;
                     default:
                         text = string.Empty;
@@ -256,6 +260,7 @@ namespace Flattiverse.Connector
                             number = 0.0;
                             return false;
                         }
+
                         break;
                     default:
                         number = 0.0;
@@ -295,6 +300,7 @@ namespace Flattiverse.Connector
                             number = 0;
                             return false;
                         }
+
                         break;
                     default:
                         number = 0;
@@ -334,6 +340,7 @@ namespace Flattiverse.Connector
                             result = default;
                             return false;
                         }
+
                         break;
                     default:
                         result = default;
@@ -342,7 +349,7 @@ namespace Flattiverse.Connector
             }
 
             result = element.ValueKind == JsonValueKind.True;
-            
+
             return element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False;
         }
 
@@ -375,6 +382,7 @@ namespace Flattiverse.Connector
                             number = 0;
                             return false;
                         }
+
                         break;
                     default:
                         number = 0;
@@ -411,37 +419,6 @@ namespace Flattiverse.Connector
                     default:
                         return false;
                 }
-            }
-
-            return true;
-        }
-        
-        public static bool CheckMessage(string? message)
-        {
-            if (message is null || message.Length < 1 || message.Length > 512)
-                return false;
-
-            if (message.StartsWith(' ') || message.EndsWith(' '))
-                return false;
-
-            foreach (char c in message)
-            {
-                if (c >= 32 && c <= 126)
-                    continue;
-
-                if (c >= 192 && c <= 214)
-                    continue;
-
-                if (c >= 216 && c <= 246)
-                    continue;
-
-                if (c >= 248 && c <= 687)
-                    continue;
-
-                if (c == '€' || c == '‚' || c == '„' || c == '…' || c == '‰' || c == '‹' || c == '›' || c == '™' || c == '•' || c == '¢' || c == '£' || c == '¡' || c == '¤' || c == '¥' || c == '©' || c == '®' || c == '±' || c == '²' || c == '³' || c == 'µ' || c == '¿' || c == '«' || c == '»')
-                    continue;
-
-                return false;
             }
 
             return true;
