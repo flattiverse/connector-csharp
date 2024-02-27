@@ -6,18 +6,48 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector
 {
+    /// <summary>
+    /// The controllable class represents the ship you are currently controlling.
+    /// </summary>
+    /// <remarks>
+    /// The server only knows about PlayerUnits.
+    /// It does not know about the concept of a controllable.
+    /// The client however has 2 distinct views of the PlayerUnit:
+    /// 1. The Controllable, which is the ship you are currently controlling. It has the most information about the ship.
+    /// 2. The PlayerUnit, which is a view of other ships and will be visible when scanned (enemies) or transmited (friends).
+    /// </remarks>
+    /// <seealso cref="Units.PlayerUnit" />
     public class Controllable : INamedUnit
     {
         private Galaxy galaxy;
 
+        /// <summary>
+        /// A local unique identifier for the controllable. This is not the same as the player id.
+        /// Used to differantiate between multiple controllables of the same player.
+        /// </summary>
         public readonly byte Id;
 
+        /// <summary>
+        /// The name of the controllable.
+        /// </summary>
         public string Name => name;
 
+        /// <summary>
+        /// The player id of the controllable. 
+        /// This is not the same as the controllable id.
+        /// No two players within the same galaxy have the same id.
+        /// </summary>
+        /// <remarks>
+        /// Ids will be reused when a player leaves the galaxy and a new player joins.
+        /// </remarks>
         private readonly byte playerId;
 
         private readonly string name;
 
+        /// <summary>
+        /// The ship design of the controllable.
+        /// Currently unimplemented.
+        /// </summary>
         public readonly ShipDesign ShipDesign;
 
         private byte[] activeShipUpgrades;
@@ -68,8 +98,14 @@ namespace Flattiverse.Connector
 
         private bool active;
 
+        /// <summary>
+        /// You will 
+        /// </summary>
         public bool IsActive => active;
 
+        /// <summary>
+        /// this 
+        ///
         public bool IsAlive => hull > 0;
 
         internal Controllable(Galaxy galaxy, byte id, PacketReader reader)
