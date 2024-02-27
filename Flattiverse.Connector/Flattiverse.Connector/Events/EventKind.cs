@@ -9,9 +9,12 @@
         UnitUpdated = 0x01,
         UnitVanished = 0x02,
 
-        PlayerAdded = 0x03,
-        PlayerRemoved = 0x04,
+        JoinedPlayer = 0x04,
+        PartedPlayer = 0x05,
         
-        GalaxyTick = 0x08
+        JoinedControllable = 0x08,
+        PartedControllable = 0x09,
+        
+        GalaxyTick = 0xFF
     }
 }

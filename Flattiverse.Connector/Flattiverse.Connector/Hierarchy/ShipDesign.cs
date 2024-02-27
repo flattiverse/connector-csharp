@@ -96,7 +96,6 @@ namespace Flattiverse.Connector.Hierarchy
         internal void ReadUpgrade(byte id, PacketReader reader)
         {
             upgrades[id] = new ShipUpgrade(Galaxy, this, id, reader);
-            Console.WriteLine($"Received upgrade {upgrades[id]!.Name} update for ship {Name}");
         }
     }
 }

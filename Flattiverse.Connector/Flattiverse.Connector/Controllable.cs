@@ -220,8 +220,10 @@ namespace Flattiverse.Connector
         public double WeaponAmmo => weaponAmmo;
         public double WeaponAmmoMax => weaponAmmoMax;
         public double WeaponAmmoProduction => weaponAmmoProduction;
-        public Vector Position => position;
-        public Vector Movement => movement;
+        public Vector Position => new Vector(position);
+        public Vector Movement => new Vector(movement);
+
+        public bool Alive => hull > 0;
         
         public async Task Kill()
         {
@@ -251,13 +253,106 @@ namespace Flattiverse.Connector
             await session.SendWait(packet);
         }
 
-        public async Task Unregister()
+        // public async Task Unregister()
+        // {
+        //     Session session = await galaxy.GetSession();
+        //
+        //     Packet packet = new Packet();
+        //     packet.Header.Command = 0x33;
+        //     packet.Header.Id0 = Id;
+        //
+        //     await session.SendWait(packet);
+        // }
+
+        /// <summary>
+        /// Sets the thruster and nozzle of the ship at the same time. Please note, that you need to stay within the limits
+        /// of your ships configuration. A positive thruster value will make your ship advance forward. A negative thruster
+        /// value negative. Usually a ship is designed to be faster when flying forward.
+        /// </summary>
+        /// <param name="thruster">The thruster value or 0 if you want to disable the thruster.</param>
+        /// <param name="nozzle">The nozzle value or 0, if you want to disable turning.</param>
+        public async Task SetThrusterNozzle(double thruster, double nozzle)
         {
+            if (!active)
+                throw new GameException(0x22);
+                
+            if (hull == 0)
+                throw new GameException(0x20);
+            
+            if (!double.IsFinite(thruster) || !double.IsFinite(nozzle) || thruster < ThrusterMaxBackward * -1.05 ||
+                thruster > ThrusterMaxForward * 1.05 || nozzle < NozzleMax * -1.05 || nozzle > NozzleMax * 1.05)
+                throw new GameException(0x31);
+            
             Session session = await galaxy.GetSession();
 
             Packet packet = new Packet();
-            packet.Header.Command = 0x33;
+            packet.Header.Command = 0x36;
             packet.Header.Id0 = Id;
+
+            using (PacketWriter writer = packet.Write())
+            {
+                writer.Write(thruster);
+                writer.Write(nozzle);
+            }
+
+            await session.SendWait(packet);
+        }
+        
+        /// <summary>
+        /// Sets the thruster of the ship. Please note, that you need to stay within the limits
+        /// of your ships configuration. A positive thruster value will make your ship advance forward. A negative thruster
+        /// value negative. Usually a ship is designed to be faster when flying forward.
+        /// </summary>
+        /// <param name="thruster">The thruster value or 0 if you want to disable the thruster.</param>
+        public async Task SetThruster(double thruster)
+        {
+            if (!active)
+                throw new GameException(0x22);
+                
+            if (hull == 0)
+                throw new GameException(0x20);
+            
+            if (!double.IsFinite(thruster) || thruster < ThrusterMaxBackward * -1.05 ||
+                thruster > ThrusterMaxForward * 1.05)
+                throw new GameException(0x31);
+            
+            Session session = await galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x34;
+            packet.Header.Id0 = Id;
+
+            using (PacketWriter writer = packet.Write())
+                writer.Write(thruster);
+
+            await session.SendWait(packet);
+        }
+        
+        /// <summary>
+        /// Sets the nozzle of the ship. Please note, that you need to stay within the limits
+        /// of your ships configuration. A positive nozzle value will increase the Angle, a negative
+        /// decrease.
+        /// </summary>
+        /// <param name="nozzle">The nozzle value or 0, if you want to disable turning.</param>
+        public async Task SetNozzle(double nozzle)
+        {
+            if (!active)
+                throw new GameException(0x22);
+                
+            if (hull == 0)
+                throw new GameException(0x20);
+            
+            if (!double.IsFinite(nozzle) || nozzle < NozzleMax * -1.05 || nozzle > NozzleMax * 1.05)
+                throw new GameException(0x31);
+            
+            Session session = await galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x35;
+            packet.Header.Id0 = Id;
+
+            using (PacketWriter writer = packet.Write())
+                writer.Write(nozzle);
 
             await session.SendWait(packet);
         }

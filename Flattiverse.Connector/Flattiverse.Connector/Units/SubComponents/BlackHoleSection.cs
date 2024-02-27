@@ -7,8 +7,8 @@ namespace Flattiverse.Connector.Units.SubComponents
     {
         private double innerRadius;
         private double outerRadius;
-        private double angelFrom;
-        private double angelTo;
+        private double angleFrom;
+        private double angleTo;
 
         private double additionalGravity;
 
@@ -21,37 +21,31 @@ namespace Flattiverse.Connector.Units.SubComponents
             outerRadius = 130;
             innerRadius = 100;
 
-            angelFrom = 45;
-            angelTo = 135;
+            angleFrom = 45;
+            angleTo = 135;
             additionalGravity = 0.03;
         }
 
         internal BlackHoleSection(BlackHoleConfiguration? configuration, PacketReader reader)
         {
-            // JAM TODO: Hierfür (shift bei verschiedenen Werten) einheitliche Doku in PROTOCOL.md und inkonsistenzen finden und fixen.
-
             Configuration = configuration;
 
             innerRadius = reader.ReadDouble();
             outerRadius = reader.ReadDouble();
-            angelFrom = reader.ReadDouble();
-            angelTo = reader.ReadDouble();
-
-            // 0° - 360°   2U (0-65535)   0-36000   *100 -> /100.
+            angleFrom = reader.ReadDouble();
+            angleTo = reader.ReadDouble();
             
-            // TODO: MALUK Werte anpassen
             additionalGravity = reader.ReadDouble();
         }
 
         internal void Write(PacketWriter writer)
         {
-            writer.Write(InnerRadius);
-            writer.Write(OuterRadius);
-            writer.Write(AngelFrom);
-            writer.Write(AngelTo);
+            writer.Write(innerRadius);
+            writer.Write(outerRadius);
+            writer.Write(angleFrom);
+            writer.Write(angleTo);
 
-            // TODO: MALUK Werte anpassen
-            writer.Write(AdditionalGravity);
+            writer.Write(additionalGravity);
         }
 
         public void Remove()
@@ -122,7 +116,7 @@ namespace Flattiverse.Connector.Units.SubComponents
         /// <param name="from">The from (left) radius.</param>
         /// <param name="to">The to (right) radius.</param>
         /// <exception cref="GameException">Thrown, if you don't have permission to do this or the values are invalid.</exception>
-        public void SetAngels(double from, double to)
+        public void SetAngles(double from, double to)
         {
             if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || from > 360.0 || from == to)
                 throw new GameException(0x31);
@@ -133,16 +127,16 @@ namespace Flattiverse.Connector.Units.SubComponents
             if (Configuration is null)
                 throw new GameException(0x34);
 
-            angelFrom = from;
-            angelTo = to;
+            angleFrom = from;
+            angleTo = to;
         }
 
         /// <summary>
         /// The left angle, when you look from the middle point of the sun to the section.
         /// </summary>
-        public double AngelFrom
+        public double AngleFrom
         {
-            get => angelFrom;
+            get => angleFrom;
             set
             {
                 if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0 || value > 360.0)
@@ -151,16 +145,16 @@ namespace Flattiverse.Connector.Units.SubComponents
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                angelFrom = value;
+                angleFrom = value;
             }
         }
 
         /// <summary>
         /// The right angle, when you look from the middle point of the sun to the section.
         /// </summary>
-        public double AngelTo
+        public double AngleTo
         {
-            get => angelTo;
+            get => angleTo;
             set
             {
                 if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0 || value < 0.0)
@@ -169,7 +163,7 @@ namespace Flattiverse.Connector.Units.SubComponents
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                angelTo = value;
+                angleTo = value;
             }
         }
 

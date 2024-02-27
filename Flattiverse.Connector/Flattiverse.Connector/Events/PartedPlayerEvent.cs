@@ -2,13 +2,13 @@
 
 namespace Flattiverse.Connector.Events
 {
-    public class PlayerPartedEvent : PlayerEvent
+    public class PartedPlayerEvent : PlayerEvent
     {
-        internal PlayerPartedEvent(Player player) : base(player)
+        internal PartedPlayerEvent(Player player) : base(player)
         {
         }
 
-        public override EventKind Kind => EventKind.PlayerRemoved;
+        public override EventKind Kind => EventKind.PartedPlayer;
 
         public override string ToString()
         {

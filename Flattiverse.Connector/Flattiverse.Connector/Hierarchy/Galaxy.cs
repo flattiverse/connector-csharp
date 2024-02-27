@@ -183,9 +183,6 @@ public class Galaxy
             sessions.Answer(packet);
             return;
         }
-
-        if (packet.Header.Command != 0x20)
-            Console.WriteLine($"RECV'd: {packet}");
         
         PacketReader reader = packet.Read();
 
@@ -266,7 +263,7 @@ public class Galaxy
                 Debug.Assert(players[packet.Header.Id0] is null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
                 Debug.Assert(teams[packet.Header.Id1] is not null, $"teams[{packet.Header.Id1}] not populated.");
                 players[packet.Header.Id0] = new Player(packet.Header.Id0, (PlayerKind)packet.Header.Param0, teams[packet.Header.Id1]!, reader);
-                pushEvent(new PlayerJoinedEvent(players[packet.Header.Id0]!));
+                pushEvent(new JoinedPlayerEvent(players[packet.Header.Id0]!));
                 break;
             case 0x66: // Player dynamic update.
                 // TODO JOW: Wenn wir Scores haben wird das relevant.
@@ -274,13 +271,14 @@ public class Galaxy
             case 0x76: // Player removed.
                 Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] already populated by \"{players[packet.Header.Id0]!.Name}\".");
                 players[packet.Header.Id0]!.Deactivate();
-                pushEvent(new PlayerPartedEvent(players[packet.Header.Id0]!));
+                pushEvent(new PartedPlayerEvent(players[packet.Header.Id0]!));
                 players[packet.Header.Id0] = null;
                 break;
             case 0x47: // ConstrollableInfo created.
                 Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
                 Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] already populated by \"{players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!.Name}\".");
                 players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] = new ControllableInfo(this, players[packet.Header.Id0]!, reader, packet.Header.Id1, packet.Header.Param0 == 1);
+                pushEvent(new JoinedControllableEvent(players[packet.Header.Id0]!, players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!));
                 break;
             case 0x57: // ControllableInfo updated.
                 // TODO JOW: Leben.
@@ -294,6 +292,7 @@ public class Galaxy
                 Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
                 Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is not null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] not populated.");
                 players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!.Deactivate();
+                pushEvent(new PartedControllableEvent(players[packet.Header.Id0]!, players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1]!));
                 players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] = null;
                 break;
             case 0x48: // Controllable created.

@@ -3,6 +3,7 @@ using Flattiverse.Connector;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.MissionSelection;
+using Flattiverse.Connector.Units;
 
 internal class Program
 {
@@ -36,8 +37,40 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.Gray;
         
         //Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join("7da8b2443edf6477a71d788a3dba46c51fba7f7fe89435f223f972ac5fc80a8e", universe.Galaxies["Beginners Course"].Teams["Plebs"]);
-        
+
         Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "71e5dc90ad20e51e63a94a63d671f80a03a45507679fdaec34a01394de033fef", 0);
+        
+        ThreadPool.QueueUserWorkItem(async delegate
+        {
+            Galaxy galaxy2 = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "6df3b734005dcd57efef3deaf87d4675de608afc0555c2e1ed65aba1e04c6600", 0);
+
+            Controllable ship2 = await galaxy2.RegisterShip("Origin", galaxy2.ShipsDesigns["Cruiser"]);
+            
+            await ship2.Continue();
+            
+            // await Task.Delay(5000);
+
+            // await ship2.SetThrusterNozzle(0, ship2.NozzleMax);
+            
+            await Task.Delay(5000);
+
+            await ship2.SetThruster(ship2.ThrusterMaxForward);
+            
+            await Task.Delay(5000);
+
+            await ship2.SetNozzle(ship2.NozzleMax);
+            
+            await Task.Delay(5000);
+            
+            await ship2.SetThrusterNozzle(0, 0);
+            
+            while (true)
+            {
+                await galaxy2.NextEvent();
+            }
+        });
+
+        await Task.Delay(3000);
 
         Console.WriteLine($" + Galaxy: {galaxy.Name}");
 
@@ -60,11 +93,29 @@ internal class Program
         
         Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.Energy}/{ship.EnergyMax}");
 
+        PlayerUnit? track = null;
+        
         while (true)
         {
             FlattiverseEvent @event = await galaxy.NextEvent();
 
-            Console.WriteLine(@event);
+            switch (@event)
+            {
+                case AddedUnitEvent newUnitEvent:
+                    if (newUnitEvent.Unit.Name == "Origin")
+                        track = (PlayerUnit)newUnitEvent.Unit;
+                    break;
+            }
+            
+            if (@event.Kind == EventKind.GalaxyTick)
+            {
+                Console.WriteLine($"  OWN POSITION={ship.Position}, DIRECTION={ship.Direction:F}°, THRUSTER={ship.Thruster:0.0000}, NOZZLE={ship.Nozzle:F}°, TURNRATE={ship.Turnrate:F}°, SPEED={ship.Movement.Length}");
+                
+                if (track is not null)
+                    Console.WriteLine($"OTHER POSITION={track.Position}, DIRECTION={track.Direction:F}°, THRUSTER={track.Thruster:0.0000}, NOZZLE={track.Nozzle:F}°, TURNRATE={track.Turnrate:F}°, SPEED={track.Movement.Length}");
+            }
+            else
+                Console.WriteLine(@event);
         }
         
         await Task.Delay(60000);

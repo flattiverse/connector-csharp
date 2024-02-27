@@ -7,8 +7,8 @@ namespace Flattiverse.Connector.Units.SubComponents
     {
         private double innerRadius;
         private double outerRadius;
-        private double angelFrom;
-        private double angelTo;
+        private double angleFrom;
+        private double angleTo;
 
         private double energy;
         private double ions;
@@ -19,14 +19,14 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            OuterRadius = 130;
-            InnerRadius = 100;
+            outerRadius = 130;
+            innerRadius = 100;
 
-            AngelFrom = 45;
-            AngelTo = 135;
+            angleFrom = 45;
+            angleTo = 135;
 
-            Energy = 4;
-            Ions = 0;
+            energy = 4;
+            ions = 0;
         }
 
         internal SunSection(SunConfiguration? configuration, PacketReader reader)
@@ -35,8 +35,8 @@ namespace Flattiverse.Connector.Units.SubComponents
 
             outerRadius = reader.ReadDouble();
             innerRadius = reader.ReadDouble();
-            angelFrom = reader.ReadDouble();
-            angelTo = reader.ReadDouble();
+            angleFrom = reader.ReadDouble();
+            angleTo = reader.ReadDouble();
 
             energy = reader.ReadDouble();
             ions = reader.ReadDouble();
@@ -46,8 +46,8 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             writer.Write(innerRadius);
             writer.Write(outerRadius);
-            writer.Write(angelFrom);
-            writer.Write(angelTo);
+            writer.Write(angleFrom);
+            writer.Write(angleTo);
 
             writer.Write(energy);
             writer.Write(ions);
@@ -134,16 +134,16 @@ namespace Flattiverse.Connector.Units.SubComponents
             if (Configuration is null)
                 throw new GameException(0x34);
 
-            angelFrom = from;
-            angelTo = to;
+            angleFrom = from;
+            angleTo = to;
         }
 
         /// <summary>
         /// The left angle, when you look from the middle point of the sun to the section.
         /// </summary>
-        public double AngelFrom
+        public double AngleFrom
         {
-            get => angelFrom;
+            get => angleFrom;
             set
             {
                 if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0 || value > 360.0)
@@ -152,16 +152,16 @@ namespace Flattiverse.Connector.Units.SubComponents
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                angelFrom = value;
+                angleFrom = value;
             }
         }
 
         /// <summary>
         /// The right angle, when you look from the middle point of the sun to the section.
         /// </summary>
-        public double AngelTo
+        public double AngleTo
         {
-            get => angelTo;
+            get => angleTo;
             set
             {
                 if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0 || value < 0.0)
@@ -170,7 +170,7 @@ namespace Flattiverse.Connector.Units.SubComponents
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                angelTo = value;
+                angleTo = value;
             }
         }
 

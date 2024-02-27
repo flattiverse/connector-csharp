@@ -7,8 +7,8 @@ namespace Flattiverse.Connector.Units.SubComponents
     {
         private double innerRadius;
         private double outerRadius;
-        private double angelFrom;
-        private double angelTo;
+        private double angleFrom;
+        private double angleTo;
 
         private double iron;
         private double silicon;
@@ -21,17 +21,16 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             Configuration = configuration;
 
-            OuterRadius = 130;
-            InnerRadius = 100;
+            outerRadius = 130;
+            innerRadius = 100;
 
-            AngelFrom = 45;
-            AngelTo = 135;
+            angleFrom = 45;
+            angleTo = 135;
 
-            // TODO: MALUK Werte anpassen
-            Iron = 1;
-            Silicon = 1;
-            Tungsten = 1;
-            Tritium = 1;
+            iron = 20;
+            silicon = 6;
+            tungsten = 0;
+            tritium = 0;
         }
 
         internal HarvestableSection(HarvestableConfiguration? configuration, PacketReader reader)
@@ -40,8 +39,8 @@ namespace Flattiverse.Connector.Units.SubComponents
 
             InnerRadius = reader.ReadDouble();
             OuterRadius = reader.ReadDouble();
-            AngelFrom = reader.ReadDouble();
-            AngelTo = reader.ReadDouble();
+            AngleFrom = reader.ReadDouble();
+            AngleTo = reader.ReadDouble();
 
             // TODO: MALUK Werte anpassen
             Iron = reader.ReadDouble();
@@ -54,8 +53,8 @@ namespace Flattiverse.Connector.Units.SubComponents
         {
             writer.Write(InnerRadius);
             writer.Write(OuterRadius);
-            writer.Write(AngelFrom);
-            writer.Write(AngelTo);
+            writer.Write(AngleFrom);
+            writer.Write(AngleTo);
 
             // TODO: MALUK Werte anpassen
             writer.Write(Iron);
@@ -132,7 +131,7 @@ namespace Flattiverse.Connector.Units.SubComponents
         /// <param name="from">The from (left) radius.</param>
         /// <param name="to">The to (right) radius.</param>
         /// <exception cref="GameException">Thrown, if you don't have permission to do this or the values are invalid.</exception>
-        public void SetAngels(double from, double to)
+        public void SetAngles(double from, double to)
         {
             if (double.IsInfinity(from) || double.IsNaN(from) || from < 0.0 || from > 360.0 || from == to)
                 throw new GameException(0x31);
@@ -143,16 +142,16 @@ namespace Flattiverse.Connector.Units.SubComponents
             if (Configuration is null)
                 throw new GameException(0x34);
 
-            angelFrom = from;
-            angelTo = to;
+            angleFrom = from;
+            angleTo = to;
         }
 
         /// <summary>
         /// The left angle, when you look from the middle point of the sun to the section.
         /// </summary>
-        public double AngelFrom
+        public double AngleFrom
         {
-            get => angelFrom;
+            get => angleFrom;
             set
             {
                 if (double.IsInfinity(value) || double.IsNaN(value) || value < 0.0 || value > 360.0)
@@ -161,16 +160,16 @@ namespace Flattiverse.Connector.Units.SubComponents
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                angelFrom = value;
+                angleFrom = value;
             }
         }
 
         /// <summary>
         /// The right angle, when you look from the middle point of the sun to the section.
         /// </summary>
-        public double AngelTo
+        public double AngleTo
         {
-            get => angelTo;
+            get => angleTo;
             set
             {
                 if (double.IsInfinity(value) || double.IsNaN(value) || value > 360.0 || value < 0.0)
@@ -179,7 +178,7 @@ namespace Flattiverse.Connector.Units.SubComponents
                 if (Configuration is null)
                     throw new GameException(0x34);
 
-                angelTo = value;
+                angleTo = value;
             }
         }
 

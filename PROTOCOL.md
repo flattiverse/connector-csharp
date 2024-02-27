@@ -125,6 +125,10 @@ deactivation of the element which makes it return `false` when `IsActive` is cal
 
 And those commands from the client to the server:
 
+* `0x33`: Unregister Controllable.
+* `0x34`: Set Thruster.
+* `0x35`: Set Nozzle.
+* `0x36`: Set Thruster and Nozzle.
 * `0x40`: Configure galaxy
 * `0x41`: Add new cluster
 * `0x42`: Configure cluster

@@ -2,13 +2,13 @@
 
 namespace Flattiverse.Connector.Events
 {
-    public class PlayerJoinedEvent : PlayerEvent
+    public class JoinedPlayerEvent : PlayerEvent
     {
-        internal PlayerJoinedEvent(Player player) : base(player)
+        internal JoinedPlayerEvent(Player player) : base(player)
         {
         }
 
-        public override EventKind Kind => EventKind.PlayerAdded;
+        public override EventKind Kind => EventKind.JoinedPlayer;
 
         public override string ToString()
         {

@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.Network
         private readonly CancellationTokenSource cancellationSource;
         private CancellationToken cancellationToken;
 
-        private const string version = "1";
+        private const string version = "2";
 
         private object sync;
 
@@ -134,8 +134,6 @@ namespace Flattiverse.Connector.Network
                     return;
                 }
 
-                //Console.WriteLine($"{DateTime.UtcNow:yyyy.MM.dd HH:mm:ss.fff} recv: count={result.Count}, messageType={result.MessageType}.");
-
                 if (result.MessageType != WebSocketMessageType.Binary)
                 {
                     switch (result.MessageType)
@@ -213,9 +211,7 @@ namespace Flattiverse.Connector.Network
                         packetHandler(new Packet(data, ref position));
                     }
                     catch (Exception exception)
-                    {
-                        Console.WriteLine($"EXCEPTION: {exception.Message}");
-                    }
+                    { }
             }
         }
 

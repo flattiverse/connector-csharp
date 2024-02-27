@@ -339,7 +339,6 @@ public class Cluster : INamedUnit
     internal void ReadRegion(byte id, PacketReader reader)
     {
         regions[id] = new Region(Galaxy, this, id, reader);
-        Console.WriteLine($"Received upgrade {regions[id]!.Name} update for cluster {Name}");
     }
 
     internal bool TryGetUnit(string name, [NotNullWhen(true)] out Unit? unit) => units.TryGetValue(name, out unit);
