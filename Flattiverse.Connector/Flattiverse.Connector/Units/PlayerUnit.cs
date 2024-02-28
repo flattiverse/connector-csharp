@@ -41,7 +41,7 @@ namespace Flattiverse.Connector.Units
         public override double Direction => direction;
         public override Vector Position => position;
         public override Vector Movement => movement;
-        public bool Active => active;
+        public bool IsActive => active;
 
         internal PlayerUnit(Cluster cluster, PacketReader reader) : base(reader)
         {
