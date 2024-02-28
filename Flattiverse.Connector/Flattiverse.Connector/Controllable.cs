@@ -19,18 +19,7 @@ namespace Flattiverse.Connector
     /// <seealso cref="Units.PlayerUnit" />
     public class Controllable : INamedUnit
     {
-        private Galaxy galaxy;
-
-        /// <summary>
-        /// The player id of the controllable. 
-        /// This is not the same as the controllable id.
-        /// No two players within the same galaxy have the same id.
-        /// </summary>
-        /// <remarks>
-        /// Ids will be reused when a player leaves the galaxy and a new player joins.
-        /// </remarks>
-        private readonly byte playerId;
-
+        private readonly Galaxy galaxy;
         private readonly string name;
 
         private byte[] activeShipUpgrades;
@@ -41,8 +30,8 @@ namespace Flattiverse.Connector
         private double shields;
         private double shieldsMax;
         private double shieldsLoad;
-        private double size;
-        private double weight;
+        private double radius;
+        private double gravity;
         private double energy;
         private double energyMax;
         private double energyCells;
@@ -92,8 +81,8 @@ namespace Flattiverse.Connector
             
             Debug.Assert(ShipDesign is not null, "Fail loading ship design.");
 
-            size = reader.ReadDouble();
-            weight = reader.ReadDouble();
+            radius = reader.ReadDouble();
+            gravity = reader.ReadDouble();
             
             activeShipUpgrades = reader.ReadBytes(32);
             
@@ -133,8 +122,8 @@ namespace Flattiverse.Connector
 
         internal void Update(PacketReader reader)
         {
-            size = reader.ReadDouble();
-            weight = reader.ReadDouble();
+            radius = reader.ReadDouble();
+            gravity = reader.ReadDouble();
             
             activeShipUpgrades = reader.ReadBytes(32);
             
@@ -266,14 +255,14 @@ namespace Flattiverse.Connector
         public double ShieldsLoad => shieldsLoad;
 
         /// <summary>
-        /// The size of the ship. Also affects the hitbox of the ship.
+        /// The radius of the ship. Also affects the hitbox of the ship.
         /// </summary>
-        public double Size => size;
+        public double Radius => radius;
 
         /// <summary>
-        /// The weight of the ship. Affects the acceleration and deceleration of the ship.
+        /// The gravity of the ship. Affects the acceleration and deceleration of the ship.
         /// </summary>
-        public double Weight => weight;
+        public double Gravity => gravity;
 
         /// <summary>
         /// The current energy value of the ship.
