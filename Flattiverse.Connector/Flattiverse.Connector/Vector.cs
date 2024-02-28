@@ -88,6 +88,8 @@ namespace Flattiverse.Connector
             }
         }
 
+        public double LengthSquared => X * X + Y * Y;
+
         public double Length
         {
             get
