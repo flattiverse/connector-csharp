@@ -8,8 +8,14 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Events
 {
+    /// <summary>
+    /// Event that is raised when the server updates you about other players.
+    /// </summary>
     public class PlayerEvent : FlattiverseEvent
     {
+        /// <summary>
+        /// The player that the infos are about.
+        /// </summary>
         public readonly Player Player;
 
         internal PlayerEvent(Player player)
