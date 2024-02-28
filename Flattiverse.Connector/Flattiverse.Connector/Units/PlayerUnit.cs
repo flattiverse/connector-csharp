@@ -1,23 +1,17 @@
 ﻿using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.Network;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
     public class PlayerUnit : Unit
     {
-        private Cluster cluster;
+        private readonly Cluster cluster;
+        private readonly Player player;
+        private readonly ControllableInfo controllableInfo;
 
-        private Player player;
-        private ControllableInfo controllableInfo;
+        private readonly double radius;
+        private readonly double gravity;
 
-        private double size;
-        private double weight;
         private double thruster;
         private double nozzle;
         private double turnrate;
@@ -30,17 +24,11 @@ namespace Flattiverse.Connector.Units
         private bool active;
 
         public Player Player => player;
-        public override Cluster Cluster => cluster;
         public ControllableInfo ControllableInfo => controllableInfo;
-        public override double Radius => size;
-        public double Weight => weight;
         public double Thruster => thruster;
         public double Nozzle => nozzle;
         public double Turnrate => turnrate;
         public double WeaponAmmo => weaponAmmo;
-        public override double Direction => direction;
-        public override Vector Position => position;
-        public override Vector Movement => movement;
         public bool IsActive => active;
 
         internal PlayerUnit(Cluster cluster, PacketReader reader) : base(reader)
@@ -48,10 +36,10 @@ namespace Flattiverse.Connector.Units
             this.cluster = cluster;
 
             player = cluster.Galaxy.GetPlayer(reader.ReadByte());
-            controllableInfo = this.player.ControllableInfos[reader.ReadByte()];
+            controllableInfo = player.ControllableInfos[reader.ReadByte()];
 
-            size = reader.ReadDouble();
-            weight = reader.ReadDouble();
+            radius = reader.ReadDouble();
+            gravity = reader.ReadDouble();
             thruster = reader.ReadDouble();
             nozzle = reader.ReadDouble();
             turnrate = reader.ReadDouble();
@@ -77,7 +65,14 @@ namespace Flattiverse.Connector.Units
             position = new Vector(reader);
             movement = new Vector(reader);
         }
-
+        
+        public override double Direction => direction;
+        public override Vector Position => position;
+        public override Vector Movement => movement;
+        public override Cluster Cluster => cluster;
+        public override double Radius => radius; 
+        public override double Gravity => gravity;
+        public override Team Team => Player.Team;
         public override UnitKind Kind => UnitKind.PlayerUnit;
         
         internal void Deactivate()
