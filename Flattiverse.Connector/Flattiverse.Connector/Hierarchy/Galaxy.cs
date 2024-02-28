@@ -366,6 +366,9 @@ public class Galaxy
 //                Console.WriteLine($"Received {(UnitKind)packet.Header.Param0} {packet.Header.Id0} update");
 //
 //                break;
+            default:
+                Console.WriteLine($"Received unexpected Command=0x{packet.Header.Command:02X}");
+                break;
         }
         
         if (reader.RemainingBytes != 0 && (packet.Header.Command < 0x30 || packet.Header.Command > 0x32))
