@@ -6,8 +6,15 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Hierarchy;
 
+/// <summary>
+/// This is a sub map of the Galaxy which is usually used to create logical groups of game units
+/// within galaxies to optimize unit movement and collision processing.
+/// </summary>
 public class Cluster : INamedUnit
 {
+    /// <summary>
+    /// The galaxy this cluster is part of.
+    /// </summary>
     public readonly Galaxy Galaxy;
 
     private Dictionary<string, Unit> units;
@@ -18,6 +25,10 @@ public class Cluster : INamedUnit
     private ClusterConfig config;
 
     internal readonly Region?[] regions = new Region?[256];
+
+    /// <summary>
+    /// The subregions of the cluster.
+    /// </summary>
     public readonly UniversalHolder<Region> Regions;
 
     internal Cluster(Galaxy galaxy, byte id, PacketReader reader)
@@ -44,9 +55,14 @@ public class Cluster : INamedUnit
         active = false;
     }
     
+    /// <summary>
+    /// This flag indicates if the cluster is active and part of the simulation.
+    /// </summary>
     public bool IsActive => active;
     
-    // TODO JOW: Öffentliche ID's entfernen.
+    /// <summary>
+    /// TODO JOW: Öffentliche ID's entfernen.
+    /// </summary>
     public int Id => id;
 
     /// <summary>
@@ -54,6 +70,9 @@ public class Cluster : INamedUnit
     /// </summary>
     public string Name => config.Name;
 
+    /// <summary>
+    /// The configuration the cluster will use
+    /// </summary>
     public ClusterConfig Config => config;
 
     /// <summary>
