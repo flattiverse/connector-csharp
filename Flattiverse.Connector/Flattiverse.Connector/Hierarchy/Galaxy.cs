@@ -373,7 +373,7 @@ public class Galaxy
     }
 
     /// <summary>
-    /// Sends a chat message to the player.
+    /// Sends a chat message to all players in this galaxy.
     /// </summary>
     /// <param name="message">A message with a maximum of 512 chars.</param>
     /// <exception cref="GameException"></exception>
