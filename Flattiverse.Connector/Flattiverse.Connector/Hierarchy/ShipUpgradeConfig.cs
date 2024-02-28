@@ -19,8 +19,8 @@ namespace Flattiverse.Connector.Hierarchy
         public double HullRepair;
         public double Shields;
         public double ShieldsLoad;
-        public double Size;
-        public double Weight;
+        public double Radius;
+        public double Gravity;
         public double EnergyMax;
         public double EnergyCells;
         public double EnergyReactor;
@@ -83,8 +83,8 @@ namespace Flattiverse.Connector.Hierarchy
             HullRepair = 0;
             Shields = 0;
             ShieldsLoad = 0;
-            Size = 0;
-            Weight = 0;
+            Radius = 0;
+            Gravity = 0;
             EnergyMax = 0;
             EnergyCells = 0;
             EnergyReactor = 0;
@@ -132,8 +132,8 @@ namespace Flattiverse.Connector.Hierarchy
             HullRepair = shipUpgrade.HullRepair;
             Shields = shipUpgrade.Shields;
             ShieldsLoad = shipUpgrade.ShieldsLoad;
-            Size = shipUpgrade.Size;
-            Weight = shipUpgrade.Weight;
+            Radius = shipUpgrade.Radius;
+            Gravity = shipUpgrade.Gravity;
             EnergyMax = shipUpgrade.EnergyMax;
             EnergyCells = shipUpgrade.EnergyCells;
             EnergyReactor = shipUpgrade.EnergyReactor;
@@ -184,8 +184,8 @@ namespace Flattiverse.Connector.Hierarchy
             HullRepair = reader.ReadDouble();
             Shields = reader.ReadDouble();
             ShieldsLoad = reader.ReadDouble();
-            Size = reader.ReadDouble();
-            Weight = reader.ReadDouble();
+            Radius = reader.ReadDouble();
+            Gravity = reader.ReadDouble();
             EnergyMax = reader.ReadDouble();
             EnergyCells = reader.ReadDouble();
             EnergyReactor = reader.ReadDouble();
@@ -235,8 +235,8 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write(HullRepair);
             writer.Write(Shields);
             writer.Write(ShieldsLoad);
-            writer.Write(Size);
-            writer.Write(Weight);
+            writer.Write(Radius);
+            writer.Write(Gravity);
             writer.Write(EnergyMax);
             writer.Write(EnergyCells);
             writer.Write(EnergyReactor);
