@@ -22,17 +22,6 @@ namespace Flattiverse.Connector
         private Galaxy galaxy;
 
         /// <summary>
-        /// A local unique identifier for the controllable. This is not the same as the player id.
-        /// Used to differantiate between multiple controllables of the same player.
-        /// </summary>
-        public readonly byte Id;
-
-        /// <summary>
-        /// The name of the controllable.
-        /// </summary>
-        public string Name => name;
-
-        /// <summary>
         /// The player id of the controllable. 
         /// This is not the same as the controllable id.
         /// No two players within the same galaxy have the same id.
@@ -44,14 +33,7 @@ namespace Flattiverse.Connector
 
         private readonly string name;
 
-        /// <summary>
-        /// The ship design of the controllable.
-        /// Currently unimplemented.
-        /// </summary>
-        public readonly ShipDesign ShipDesign;
-
         private byte[] activeShipUpgrades;
-        
         
         private double hull;
         private double hullMax;
@@ -97,16 +79,6 @@ namespace Flattiverse.Connector
         private Vector movement;
 
         private bool active;
-
-        /// <summary>
-        /// You will 
-        /// </summary>
-        public bool IsActive => active;
-
-        /// <summary>
-        /// this 
-        ///
-        public bool IsAlive => hull > 0;
 
         internal Controllable(Galaxy galaxy, byte id, PacketReader reader)
         {
@@ -220,50 +192,315 @@ namespace Flattiverse.Connector
             active = false;
         }
 
-        public double Hull => hull;
-        public double HullMax => hullMax;
-        public double Direction => direction;
-        public double HullRepair => hullRepair;
-        public double Shields => shields;
-        public double ShieldsMax => shieldsMax;
-        public double ShieldsLoad => shieldsLoad;
-        public double Size => size;
-        public double Weight => weight;
-        public double Energy => energy;
-        public double EnergyMax => energyMax;
-        public double EnergyCells => energyCells;
-        public double EnergyReactor => energyReactor;
-        public double EnergyTransfer => energyTransfer;
-        public double Ion => ion;
-        public double IonMax => ionMax;
-        public double IonCells => ionCells;
-        public double IonReactor => ionReactor;
-        public double IonTransfer => ionTransfer;
-        public double Thruster => thruster;
-        public double ThrusterMaxForward => thrusterMaxForward;
-        public double ThrusterMaxBackward => thrusterMaxBackward;
-        public double Nozzle => nozzle;
-        public double NozzleMax => nozzleMax;
-        public double SpeedMax => speedMax;
-        public double Turnrate => turnrate;
-        public double CargoTungsten => cargoTungsten;
-        public double CargoIron => cargoIron;
-        public double CargoSilicon => cargoSilicon;
-        public double CargoTritium => cargoTritium;
-        public double CargoMax => cargoMax;
-        public double ExtractorMax => extractorMax;
-        public double WeaponSpeed => weaponSpeed;
-        public ushort WeaponTime => weaponTime;
-        public double WeaponLoad => weaponLoad;
-        public double WeaponDamage => weaponDamage;
-        public double WeaponAmmo => weaponAmmo;
-        public double WeaponAmmoMax => weaponAmmoMax;
-        public double WeaponAmmoProduction => weaponAmmoProduction;
-        public Vector Position => new Vector(position);
-        public Vector Movement => new Vector(movement);
+        /// <summary>
+        /// The ship design of the controllable.
+        /// Currently unimplemented.
+        /// </summary>
+        public readonly ShipDesign ShipDesign;
 
-        public bool Alive => hull > 0;
+        /// <summary>
+        /// The name of the controllable.
+        /// </summary>
+        public string Name => name;
+
+        /// <summary>
+        /// A local unique identifier for the controllable. This is not the same as the player id.
+        /// Used to differantiate between multiple controllables of the same player.
+        /// </summary>
+        public readonly byte Id;
+
+        /// <summary>
+        /// This flag indicates if the controllable is able to be interacted with.
+        /// </summary>
+        /// <remarks>
+        /// If it is inactive and you try to interact with it, you will get a GameException.
+        /// </remarks>
+        public bool IsActive => active;
+
+        /// <summary>
+        /// This flag indicates if the controllable can receive commands other than continue and dispose.
+        /// </summary>
+        public bool IsAlive => hull > 0;
+
+        /// <summary>
+        /// If the hull reaches 0, the ship will be destroyed and the player will be able to continue with a new ship.
+        /// </summary>
+        public double Hull => hull;
+
+        /// <summary>
+        /// The maximum hull of the ship.
+        /// </summary>
+        public double HullMax => hullMax;
+
+        /// <summary>
+        /// The direction of the ship in degrees (NOT radians!).
+        /// </summary>
+        public double Direction => direction;
+
+        /// <summary>
+        /// The rate at which the hull is repaired. Consumes Iron and Energy.
+        /// </summary>
+        /// <remarks>
+        /// Repairing is only possible while the ship is not using any other energy consuming functions.
+        /// (e.g. Thruster, Weapons, Shields, etc.)
+        /// </remarks>
+        public double HullRepair => hullRepair;
+
+        /// <summary>
+        /// The current shield value of the ship.
+        /// It will be depleted before the hull is damaged.
+        /// </summary>
+        /// <remarks>
+        /// Depending on a value in ShipDesign you may need Ion to recharge the shields.
+        /// </remarks>
+        public double Shields => shields;
+
+        /// <summary>
+        /// The maximum shield value of the ship.
+        /// </summary>
+        public double ShieldsMax => shieldsMax;
+
+        /// <summary>
+        /// The rate at which the shields are recharged.
+        /// </summary>
+        public double ShieldsLoad => shieldsLoad;
+
+        /// <summary>
+        /// The size of the ship. Also affects the hitbox of the ship.
+        /// </summary>
+        public double Size => size;
+
+        /// <summary>
+        /// The weight of the ship. Affects the acceleration and deceleration of the ship.
+        /// </summary>
+        public double Weight => weight;
+
+        /// <summary>
+        /// The current energy value of the ship.
+        /// It can be gained via sections/coronas around suns or via the energy reactor of stations.
+        /// </summary>
+        /// <remarks>
+        /// Energy is used for the thruster and the weapons.
+        /// It can also be used to repair the hull or recharge the Shields.
+        /// </remarks>
+        public double Energy => energy;
+
+        /// <summary>
+        /// The maximum energy value of the ship.
+        /// </summary>
+        public double EnergyMax => energyMax;
+
+        /// <summary>
+        /// This is a multiplier for the rate of energy gain from suns and stations.
+        /// </summary>
+        public double EnergyCells => energyCells;
+
+        /// <summary>
+        /// Used by stations to produce energy.
+        /// </summary>
+        public double EnergyReactor => energyReactor;
+
+        /// <summary>
+        /// The rate at which energy can be transferred to other ships.
+        /// </summary>
+        /// <remarks>
+        /// All ships can transfer energy to other ships.
+        /// When doing this, a corona will be created around the ship,
+        /// which can be used by other ships to gain energy, even enemies.
+        /// </remarks>
+        public double EnergyTransfer => energyTransfer;
+
+        /// <summary>
+        /// The current ion value of the ship.
+        /// Ion is used to recharge the shields.
+        /// </summary>
+        /// <remarks>
+        /// Ios can be gained via corona secions configured in the map.
+        /// </remarks>
+        public double Ion => ion;
+
+        /// <summary>
+        /// The maximum ion value of the ship.
+        /// </summary>
+        public double IonMax => ionMax;
+
+        /// <summary>
+        /// This is a multiplier for the rate of ion gain from corona sections.
+        /// </summary>
+        public double IonCells => ionCells;
+
+        /// <summary>
+        /// Used by stations to produce ion.
+        /// </summary>
+        public double IonReactor => ionReactor;
+
+        /// <summary>
+        /// The rate at which ion can be transferred to other ships.
+        /// </summary>
+        /// <remarks>
+        /// All ships can transfer ion to other ships.
+        /// When doing this, a corona will be created around the ship,
+        /// which can be used by other ships to gain ion, even enemies.
+        /// </remarks>
+        public double IonTransfer => ionTransfer;
+
+        /// <summary>
+        /// The current thruster value of the ship.
+        /// Can either be positive or negative.
+        /// This is the ships forward/backward acceleration in km/tick².
+        /// </summary>
+        /// <remarks>
+        /// A positive thruster value will make your ship advance forward relative to its orientation.
+        /// A negative thruster value will make your ship advance backwards relative to its orientation.
+        /// The negative value is usually limited to smaller value than the positive one.
+        /// </remarks>
+        public double Thruster => thruster;
+
+        /// <summary>
+        /// The maximum forward thruster value of the ship.
+        /// </summary>
+        public double ThrusterMaxForward => thrusterMaxForward;
+
+        /// <summary>
+        /// The maximum backward thruster value of the ship.
+        /// </summary>
+        /// <remarks>
+        /// The negative value is usually limited to smaller value than the positive one.
+        /// </remarks>
+        public double ThrusterMaxBackward => thrusterMaxBackward;
         
+        /// <summary>
+        /// The current nozzle value of the ship.
+        /// Can either be positive or negative.
+        /// This is the ships turning/angular acceleration in degrees/tick².
+        /// </summary>
+        /// <remarks>
+        /// A positive nozzle value will increase the Angle, a negative decrease.
+        /// </remarks>
+        public double Nozzle => nozzle;
+        
+        /// <summary>
+        /// The maximum nozzle value of the ship.
+        /// As opposed to the thruster this is symmetrical
+        /// </summary>
+        public double NozzleMax => nozzleMax;
+
+        /// <summary>
+        /// The maximum speed of the ship.
+        /// </summary>
+        /// <remarks>
+        /// Past this speed the velocity will be dampened by 10% per tick.
+        /// You can still accelerate to go slightly faster, but at the cost of more energy.
+        /// </remarks>
+        public double SpeedMax => speedMax;
+
+        /// <summary>
+        /// The turnrate of the ship in degrees/tick.
+        /// This is the current angular velocity of the ship.
+        /// Can be positive or negative.
+        /// </summary>
+        public double Turnrate => turnrate;
+
+        /// <summary>
+        /// The maximum turnrate of the ship in degrees/tick.
+        /// Past this value the turnrate will be dampened by 30% per tick.
+        /// You can still accelerate to turn slightly faster, but at the cost of more energy.
+        /// </summary>
+        public double TurnrateMax => turnrate;
+
+        /// <summary>
+        /// This is used for upgrades of the ship.
+        /// The cost of thes upgrades is defined in the map.
+        /// </summary>
+        public double CargoTungsten => cargoTungsten;
+
+        /// <summary>
+        /// This is used for ship repairs.
+        /// The cost of thes repairs is defined ShipDesign and influenced by upgrades.
+        /// </summary>
+        public double CargoIron => cargoIron;
+
+        /// <summary>
+        /// This is used for ship upgrades.
+        /// The cost of thes upgrades is defined in the map.
+        /// </summary>
+        public double CargoSilicon => cargoSilicon;
+
+        /// <summary>
+        /// This is used for ship upgrades.
+        /// The cost of thes upgrades is defined in the map.
+        /// </summary>
+        public double CargoTritium => cargoTritium;
+
+        /// <summary>
+        /// The maximum cummulative cargo of the ship.
+        /// </summary>
+        /// <remarks>
+        /// The materials factored in are Tungsten, Iron, Silicon and Tritium.
+        /// </remarks>
+        public double CargoMax => cargoMax;
+
+        /// <summary>
+        /// The maximum amount of resources that can be extracted from resource sections.
+        /// </summary>
+        /// <remarks>
+        /// Resource sections are defined in the map.
+        /// They are found around planets and moons.
+        /// </remarks>
+        public double ExtractorMax => extractorMax;
+
+        /// <summary>
+        /// The speed of the weapon projectile.
+        /// </summary>
+        public double WeaponSpeed => weaponSpeed;
+
+        /// <summary>
+        /// The fuse time of the weapon projectile.
+        /// </summary>
+        public ushort WeaponTime => weaponTime;
+
+        /// <summary>
+        /// The damage radius of the weapon projectile.
+        /// </summary>
+        public double WeaponLoad => weaponLoad;
+
+        /// <summary>
+        /// The damage of the weapon projectile.
+        /// </summary>
+        public double WeaponDamage => weaponDamage;
+
+        /// <summary>
+        /// The current ammunition reserve of the weapon.
+        /// </summary>
+        public double WeaponAmmo => weaponAmmo;
+
+        /// <summary>
+        /// The maximum ammount of ammunition the ship can carry.
+        /// </summary>
+        public double WeaponAmmoMax => weaponAmmoMax;
+
+        /// <summary>
+        /// The rate at which the weapon ammunition is produced.
+        /// </summary>
+        public double WeaponAmmoProduction => weaponAmmoProduction;
+
+        /// <summary>
+        /// The position of the ship in the galaxy.
+        /// These are absolute coordinates.
+        /// </summary>
+        public Vector Position => new Vector(position);
+
+        /// <summary>
+        /// The current velocity of the ship.
+        /// </summary>
+        public Vector Movement => new Vector(movement);
+        
+        /// <summary>
+        /// Allows the ship to self destruct.
+        /// </summary>
+        /// <exception cref="GameException">
+        /// Thrown when the ship is already dead.
+        /// </exception>
         public async Task Kill()
         {
             if (hull == 0)
@@ -278,6 +515,12 @@ namespace Flattiverse.Connector
             await session.SendWait(packet);
         }
 
+        /// <summary>
+        /// When the ship is dead or when entering a new galaxy, continue will spawn a new ship.
+        /// </summary>
+        /// <exception cref="GameException">
+        /// Thrown when the ship is already alive.
+        /// </exception>
         public async Task Continue()
         {
             if (hull > 0)
