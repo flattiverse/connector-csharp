@@ -210,7 +210,7 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (shipDesigns[packet.Header.Param0] is not ShipDesign ship)
+        if (shipDesigns[packet.Header.Id0] is not ShipDesign ship)
             throw new GameException("Creation successful, but connector didn't receive update yet.");//Should never happen
 
         return ship;
