@@ -70,7 +70,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             Packet packet = new Packet();
             packet.Header.Command = 0x45;
-            packet.Header.Param0 = id;
+            packet.Header.Id0 = id;
 
             using (PacketWriter writer = packet.Write())
                 changes.Write(writer);
@@ -88,7 +88,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             Packet packet = new Packet();
             packet.Header.Command = 0x46;
-            packet.Header.Param0 = id;
+            packet.Header.Id0 = id;
 
             await session.SendWait(packet);
         }
