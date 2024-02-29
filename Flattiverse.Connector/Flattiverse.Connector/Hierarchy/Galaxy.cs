@@ -205,10 +205,10 @@ public class Galaxy
                 switch ((DestructionReason)packet.Header.Param0)
                 {
                     case DestructionReason.Shutdown:
-                        pushEvent(new ControllableShutdownEvent(controllables[packet.Header.Id0]!));
+                        pushEvent(new ShutdownControllableDestroyedEvent(controllables[packet.Header.Id0]!));
                         break;
                     case DestructionReason.SelfDestruction:
-                        pushEvent(new ControllableSelfDesctructionEvent(controllables[packet.Header.Id0]!));
+                        pushEvent(new SelfDesctructionControllableDestroyedEvent(controllables[packet.Header.Id0]!));
                         break;
                     case DestructionReason.Collision:
                         if (packet.Header.Param1 == (byte) UnitKind.PlayerUnit)

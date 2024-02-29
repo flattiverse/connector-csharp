@@ -2,9 +2,9 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
 
-public class ControllableShutdownEvent : ControllableDestroyedEvent
+public class ShutdownControllableDestroyedEvent : ControllableDestroyedEvent
 {
-    public ControllableShutdownEvent(Controllable controllable) : base(controllable)
+    public ShutdownControllableDestroyedEvent(Controllable controllable) : base(controllable)
     {
     }
 
