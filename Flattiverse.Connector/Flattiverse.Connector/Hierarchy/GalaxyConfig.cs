@@ -3,32 +3,146 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// This is a contains the configuration parameters of a galaxy.
+    /// </summary>
     public class GalaxyConfig
     {
         private string name;
+
+        /// <summary>
+        /// A textual description of the galaxy.
+        /// </summary>
         public string Description;
+
+        /// <summary>
+        /// The game mode of the galaxy.
+        /// </summary>
+        /// <remarks>
+        /// Can be Mission, STF, Domination or Race
+        /// </remarks>
         public GameMode Mode;
+
+        /// <summary>
+        /// The maximum amount of concurrent players in the galaxy.
+        /// </summary>
         public int MaxPlayers;
 
         // TODO MALUK these could all be ushort
+        /// <summary>
+        /// Maximum amount of platforms in the galaxy.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxPlatformsGalaxy;
+
+        /// <summary>
+        /// Maximum amount of probes in the galaxy.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxProbesGalaxy;
+
+        /// <summary>
+        /// Maximum amount of drones in the galaxy.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxDronesGalaxy;
+
+        /// <summary>
+        /// Maximum amount of ships in the galaxy.
+        /// </summary>
         public int MaxShipsGalaxy;
+
+        /// <summary>
+        /// Maximum amount of bases in the galaxy.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxBasesGalaxy;
 
         // TODO MALUK these could all be ushort
+        /// <summary>
+        /// Maximum amount of platforms per team.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxPlatformsTeam;
+
+        /// <summary>
+        /// Maximum amount of probes per team.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxProbesTeam;
+
+        /// <summary>
+        /// Maximum amount of drones per team.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxDronesTeam;
+
+        /// <summary>
+        /// Maximum amount of ships per team.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxShipsTeam;
+
+        /// <summary>
+        /// Maximum amount of bases per team.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxBasesTeam;
 
         // TODO MALUK these could all be byte
+        /// <summary>
+        /// Maximum amount of platforms per player.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxPlatformsPlayer;
+
+        /// <summary>
+        /// Maximum amount of probes per player.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxProbesPlayer;
+
+        /// <summary>
+        /// Maximum amount of drones per player.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxDronesPlayer;
+
+        /// <summary>
+        /// Maximum amount of ships per player.
+        /// </summary>
         public int MaxShipsPlayer;
+
+        /// <summary>
+        /// Maximum amount of bases per player.
+        /// </summary>
+        /// <remarks>
+        /// Unused.
+        /// </remarks>
         public int MaxBasesPlayer;
 
         /// <summary>
