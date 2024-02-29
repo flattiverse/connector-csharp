@@ -40,6 +40,7 @@ internal class Program
 
         Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", 0);
         
+        /*
         ThreadPool.QueueUserWorkItem(async delegate
         {
             Galaxy galaxy2 = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "7e8fbecabff144b96c0cfe0baf4bb5e3878c11cad104f9a64645161f9e61ac85", 0);
@@ -61,6 +62,7 @@ internal class Program
                 await galaxy2.NextEvent();
             }
         });
+        */
 
         await Task.Delay(3000);
 
@@ -85,6 +87,8 @@ internal class Program
         
         Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.Energy}/{ship.EnergyMax}");
 
+        //await ship.SetThruster(0.001);
+        
         PlayerUnit? track = null;
         
         while (true)
@@ -101,10 +105,10 @@ internal class Program
             
             if (@event.Kind == EventKind.GalaxyTick)
             {
-                // Console.WriteLine($"  OWN POSITION={ship.Position}, DIRECTION={ship.Direction:F}°, THRUSTER={ship.Thruster:0.0000}, NOZZLE={ship.Nozzle:F}°, TURNRATE={ship.Turnrate:F}°, SPEED={ship.Movement.Length}");
-                //
-                // if (track is not null)
-                //     Console.WriteLine($"OTHER POSITION={track.Position}, DIRECTION={track.Direction:F}°, THRUSTER={track.Thruster:0.0000}, NOZZLE={track.Nozzle:F}°, TURNRATE={track.Turnrate:F}°, SPEED={track.Movement.Length}");
+                Console.WriteLine($"  OWN POSITION={ship.Position}, DIRECTION={ship.Direction:F}°, THRUSTER={ship.Thruster:0.0000}, NOZZLE={ship.Nozzle:F}°, TURNRATE={ship.Turnrate:F}°, SPEED={ship.Movement.Length:0.000}, ENERGY={ship.Energy}");
+                
+                if (track is not null)
+                    Console.WriteLine($"OTHER POSITION={track.Position}, DIRECTION={track.Direction:F}°, THRUSTER={track.Thruster:0.0000}, NOZZLE={track.Nozzle:F}°, TURNRATE={track.Turnrate:F}°, SPEED={track.Movement.Length:0.000}");
             }
             // else
             //     Console.WriteLine(@event);

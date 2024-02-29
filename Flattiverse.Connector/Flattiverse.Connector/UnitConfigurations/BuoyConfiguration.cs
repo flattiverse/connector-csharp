@@ -20,11 +20,11 @@ namespace Flattiverse.Connector.UnitConfigurations
             message = Utils.CheckMessageThrowInvalidValue(reader.ReadString());
 
             byte size = reader.ReadByte();
+            
             beacons = new List<Vector>(size);
+            
             for (int i = 0; i < size; i++)
-            {
                 beacons.Add(new Vector(reader));
-            }
         }
 
         internal override void Write(PacketWriter writer)

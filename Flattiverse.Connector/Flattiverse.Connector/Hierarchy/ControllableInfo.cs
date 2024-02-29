@@ -30,6 +30,8 @@ namespace Flattiverse.Connector.Hierarchy
         private double ion;
         private double ionMax;
 
+        private bool alive;
+
         private bool active;
 
         public ShipDesign ShipDesign => shipDesign;
@@ -45,6 +47,8 @@ namespace Flattiverse.Connector.Hierarchy
         public double Ion => ion;
         public double IonMax => ionMax;
 
+        public bool IsAlive => alive;
+        
         public bool Active => active;
 
         public string Name => name;
@@ -79,16 +83,16 @@ namespace Flattiverse.Connector.Hierarchy
 
         internal void Update(PacketReader reader)
         {
-            
         }
 
         internal void DynamicUpdate(PacketReader reader, bool reduced)
         {
             if (reduced)
-                reader.ReadBoolean();
+                alive = reader.ReadBoolean();
             else
             {
                 hull = reader.ReadDouble();
+                alive = hull > 0;
                 shields = reader.ReadDouble();
                 energy = reader.ReadDouble();
                 ion = reader.ReadDouble();
