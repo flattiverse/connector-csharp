@@ -158,7 +158,7 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (clusters[packet.Header.Param0] is not Cluster cluster)
+        if (clusters[packet.Header.Id0] is not Cluster cluster)
             throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return cluster;
