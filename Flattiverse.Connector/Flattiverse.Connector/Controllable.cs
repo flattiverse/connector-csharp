@@ -484,7 +484,7 @@ namespace Flattiverse.Connector
         /// </summary>
         public Vector Movement => new Vector(movement);
         
-        /// <summary>
+        /*/// <summary>
         /// Allows the ship to self destruct.
         /// </summary>
         /// <exception cref="GameException">
@@ -502,7 +502,7 @@ namespace Flattiverse.Connector
             packet.Header.Id0 = Id;
 
             await session.SendWait(packet);
-        }
+        }*/
 
         /// <summary>
         /// When the ship is dead or when entering a new galaxy, continue will spawn a new ship.

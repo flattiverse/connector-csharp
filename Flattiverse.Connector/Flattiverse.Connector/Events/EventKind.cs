@@ -16,7 +16,7 @@
         UnitUpdated = 0x01,
 
         /// <summary>
-        /// The unit went ouside scanning cone.
+        /// The unit went outside scanning cone.
         /// </summary>
         UnitVanished = 0x02,
 
@@ -54,6 +54,26 @@
         /// Someone wrote a message in the galaxy chat.
         /// </summary>
         GalaxyChat = 0x0E,
+
+        /// <summary>
+        /// A controllable died by shutting down. 
+        /// </summary>
+        DeathByShutdown = 0x10,
+
+        /// <summary>
+        /// A controllable died because the player decided to auto destruct the unit. 
+        /// </summary>
+        DeathBySelfDestruction = 0x11,
+
+        /// <summary>
+        /// A controllable died by colliding with a neutral unit. 
+        /// </summary>
+        DeathByNeutralCollision = 0x12,
+        
+        /// <summary>
+        /// A controllable died by colliding with another controllable. 
+        /// </summary>
+        DeathByControllableCollision = 0x13,
         
         /// <summary>
         /// The server processed a tick.

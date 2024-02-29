@@ -124,6 +124,10 @@ deactivation of the element which makes it return `false` when `IsActive` is cal
 * `0x30`: Message to `Player`.
 * `0x31`: Message to `Team`.
 * `0x32`: Message to `Galaxy`.
+* `0x34`: `ShutdownControllableDestroyedEvent` message.
+* `0x35`: `SelfDestructionControllableDestroyedEvent` message.
+* `0x36`: `NeutralCollisionControllableDestroyedEvent` message.
+* `0x37`: `ControllableCollisionControllableDestroyedEvent` message.
 * `0xFF` (in a session): An error occurred which processing the session.
 
 And those commands from the client to the server:
