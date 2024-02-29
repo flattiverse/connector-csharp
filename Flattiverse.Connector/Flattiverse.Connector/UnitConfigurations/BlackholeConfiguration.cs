@@ -33,7 +33,7 @@ namespace Flattiverse.Connector.UnitConfigurations
         }
 
         /// <summary>
-        /// 
+        /// A readonly collection of the sections belonging the black hole.
         /// </summary>
         public ReadOnlyCollection<BlackHoleSection> Sections =>
             new ReadOnlyCollection<BlackHoleSection>(new List<BlackHoleSection>(sections));
@@ -59,7 +59,7 @@ namespace Flattiverse.Connector.UnitConfigurations
         }
 
         /// <summary>
-        /// Removes a section from the black hole.
+        /// Removes the section from the black hole.
         /// </summary>
         /// <remarks>
         /// Only available to admins.
