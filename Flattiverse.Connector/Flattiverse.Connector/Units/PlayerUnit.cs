@@ -25,6 +25,10 @@ namespace Flattiverse.Connector.Units
         private Vector position;
         private Vector movement;
 
+        private double scanDirection;
+        private double scanLength;
+        private bool scanActive;
+
         private bool active;
 
         /// <summary>
@@ -79,6 +83,21 @@ namespace Flattiverse.Connector.Units
         /// </summary>
         public bool IsActive => active;
 
+        /// <summary>
+        /// The direction in which the scanner of this unit currently points to.
+        /// </summary>
+        public double ScanDirection => scanDirection;
+
+        /// <summary>
+        /// The currently configured reach of the scanner of this unit.
+        /// </summary>
+        public double ScanLength => scanLength;
+
+        /// <summary>
+        /// Whether the unit's scanner is currently active.
+        /// </summary>
+        public bool ScanActive => scanActive;
+
         internal PlayerUnit(Cluster cluster, PacketReader reader) : base(reader)
         {
             this.cluster = cluster;
@@ -97,6 +116,10 @@ namespace Flattiverse.Connector.Units
             position = new Vector(reader);
             movement = new Vector(reader);
 
+            scanDirection = reader.ReadDouble();
+            scanLength = reader.ReadDouble();
+            scanActive = reader.ReadBoolean();
+
             active = true;
         }
 
@@ -112,6 +135,10 @@ namespace Flattiverse.Connector.Units
             direction = reader.ReadDouble();
             position = new Vector(reader);
             movement = new Vector(reader);
+
+            scanDirection = reader.ReadDouble();
+            scanLength = reader.ReadDouble();
+            scanActive = reader.ReadBoolean();
         }
 
         /// <inheritdoc/>        
