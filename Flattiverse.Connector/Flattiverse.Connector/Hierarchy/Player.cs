@@ -4,21 +4,49 @@ using System;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// A player that is registered in a galaxy and can register ships in a cluster.
+    /// </summary>
     public class Player : INamedUnit
     {
+        /// <summary>
+        /// The galaxy the player is in.
+        /// </summary>
         public readonly Galaxy Galaxy;
         
+        /// <summary>
+        /// The ID of the player. This is unique in the galaxy.
+        /// </summary>
         public readonly byte ID;
+
         private readonly string name;
+
+        /// <summary>
+        /// The kind of the player.
+        /// </summary>
+        /// <remarks>
+        /// Can be Player, Spectator or Admin.
+        /// </remarks>
         public readonly PlayerKind Kind;
+
+        /// <summary>
+        /// The team the player belongs to.
+        /// </summary>
         public readonly Team Team;
 
         private bool active;
 
         internal readonly ControllableInfo?[] controllableInfos;
+
+        /// <summary>
+        /// A collection of all controllable infos the player knows about.
+        /// </summary>
         public readonly UniversalHolder<ControllableInfo> ControllableInfos;
 
-        public bool Active => active;
+        /// <summary>
+        /// This flag indicates if the player is still part of the active simulation.
+        /// </summary>
+        public bool IsActive => active;
 
         internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, PacketReader reader)
         {
@@ -83,6 +111,7 @@ namespace Flattiverse.Connector.Hierarchy
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Player [{ID}] {name} ({Kind})";
