@@ -4,6 +4,9 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The base configuration of a unit.
+    /// </summary>
     public class Configuration
     {
         private string name;
@@ -43,6 +46,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             writer.Write(name);
         }
 
+        /// <inheritdoc/>
         public virtual UnitKind Kind => UnitKind.Sun;
 
         /// <summary>
