@@ -648,5 +648,70 @@ namespace Flattiverse.Connector
 
             await session.SendWait(packet);
         }
+
+        public async Task EnableScanner()
+        {
+            if (!active)
+                throw new GameException(0x22);
+                
+            if (hull == 0)
+                throw new GameException(0x20);
+            
+            Session session = await galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x3A;
+            packet.Header.Id0 = Id;
+            packet.Header.Param0 = 1; // state enabled
+
+            await session.SendWait(packet);
+        }
+
+        public async Task DisableScanner()
+        {
+            if (!active)
+                throw new GameException(0x22);
+                
+            if (hull == 0)
+                throw new GameException(0x20);
+            
+            Session session = await galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x3A;
+            packet.Header.Id0 = Id;
+            packet.Header.Param0 = 0; // state disabled
+
+            await session.SendWait(packet);
+        }
+
+        public async Task SetScanner(double direction, double range)
+        {
+            if (!active)
+                throw new GameException(0x22);
+                
+            if (hull == 0)
+                throw new GameException(0x20);
+            
+            if (!double.IsFinite(direction) || direction < 0.0 || direction > 360.0)
+                throw new GameException(0x31);
+            
+            if (!double.IsFinite(range) || range < 0.0 || range > ShipDesign.Config.ScannerRange * 1.05)
+                throw new GameException(0x31);
+            
+            Session session = await galaxy.GetSession();
+
+            Packet packet = new Packet();
+            packet.Header.Command = 0x3B;
+            packet.Header.Id0 = Id;
+
+            using (PacketWriter writer = packet.Write())
+            {
+                writer.Write(direction);
+                writer.Write(range);
+            }
+            
+            await session.SendWait(packet);
+        }
     }
 }
