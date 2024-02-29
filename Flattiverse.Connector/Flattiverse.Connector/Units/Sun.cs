@@ -7,6 +7,10 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// A sun. Suns have sections which are central to the sun's position.
+    /// These sections give energy, ions or both to players.
+    /// </summary>
     public class Sun : CelestialBody
     {
         private ReadOnlyCollection<SunSection> sections;
@@ -103,8 +107,10 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Sun;
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Sun {Name}";

@@ -3,11 +3,35 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// The configuration used by a team.
+    /// </summary>
     public class TeamConfig
     {
         private string name;
+
+        /// <summary>
+        /// The red color channel of the team.
+        /// </summary>
+        /// <remarks>
+        /// The range is limited to 0-255
+        /// </remarks>
         public int Red;
+
+        /// <summary>
+        /// The green color channel of the team.
+        /// </summary>
+        /// <remarks>
+        /// The range is limited to 0-255
+        /// </remarks>
         public int Green;
+
+        /// <summary>
+        /// The blue color channel of the team.
+        /// </summary>
+        /// <remarks>
+        /// The range is limited to 0-255
+        /// </remarks>
         public int Blue;
 
         /// <summary>

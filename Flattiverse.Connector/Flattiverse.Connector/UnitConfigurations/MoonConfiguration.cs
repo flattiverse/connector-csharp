@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The configuration of a moon.
+    /// </summary>
     public class MoonConfiguration : HarvestableConfiguration
     {
         internal MoonConfiguration() : base() { }
@@ -24,6 +27,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             //TODO
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Moon;
 
         internal static MoonConfiguration Default => new MoonConfiguration();

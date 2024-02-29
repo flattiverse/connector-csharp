@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// A meteoroid. A harvestable unit that can be mined for resources.
+    /// Smaller than planets and moons.
+    /// </summary>
     public class Meteoroid : Harvestable
     {
         internal Meteoroid(Cluster cluster, PacketReader reader) : base(cluster, reader)
@@ -81,8 +85,10 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc />
         public override UnitKind Kind => UnitKind.Meteoroid;
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"Meteoriod {Name}";

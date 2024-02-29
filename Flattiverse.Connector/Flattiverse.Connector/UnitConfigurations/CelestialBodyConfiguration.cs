@@ -2,6 +2,9 @@
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The configuration of a celestial body.
+    /// </summary>
     public class CelestialBodyConfiguration : Configuration
     {
         private Vector position;
@@ -42,6 +45,9 @@ namespace Flattiverse.Connector.UnitConfigurations
             writer.Write((byte)0);
         }
 
+        /// <summary>
+        /// The world space position of the celestial body.
+        /// </summary>
         public Vector Position
         {
             get => new Vector(position);
@@ -54,6 +60,9 @@ namespace Flattiverse.Connector.UnitConfigurations
             }
         }
 
+        /// <summary>
+        /// The radius of the celestial body.
+        /// </summary>
         public double Radius
         {
             get => radius;
@@ -66,6 +75,9 @@ namespace Flattiverse.Connector.UnitConfigurations
             }
         }
 
+        /// <summary>
+        /// The gravity of the celestial body.
+        /// </summary>
         public double Gravity
         {
             get => gravity;

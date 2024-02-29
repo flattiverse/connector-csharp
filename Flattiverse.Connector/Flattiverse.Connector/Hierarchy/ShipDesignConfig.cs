@@ -82,7 +82,7 @@ namespace Flattiverse.Connector.Hierarchy
         /// </summary>
         public double Radius;
 
-        /// <summary>.Controllable
+        /// <summary>
         /// The gravity of the ship. Affects the acceleration and deceleration of the ship.
         /// </summary>
         public double Gravity;

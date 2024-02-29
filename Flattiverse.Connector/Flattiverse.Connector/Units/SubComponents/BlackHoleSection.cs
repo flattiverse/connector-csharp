@@ -3,6 +3,13 @@ using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units.SubComponents
 {
+    /// <summary>
+    /// A section of a black hole and are central to the black hole's position.
+    /// Players in this section will experience additional gravity.
+    /// </summary>
+    /// <remarks>
+    /// This can be used as a slingshot to accelerate your units.
+    /// </remarks>
     public class BlackHoleSection
     {
         private double innerRadius;
@@ -48,6 +55,10 @@ namespace Flattiverse.Connector.Units.SubComponents
             writer.Write(additionalGravity);
         }
 
+        /// <summary>
+        /// Removes this section from the configuration.
+        /// </summary>
+        /// <exception cref="GameException">Thrown, if you don't have permission to do this.</exception>
         public void Remove()
         {
             Configuration?.sections.Remove(this);

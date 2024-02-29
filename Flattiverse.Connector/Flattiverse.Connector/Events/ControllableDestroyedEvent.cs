@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Network;
+﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
@@ -9,13 +10,19 @@ namespace Flattiverse.Connector.Events;
 public abstract class ControllableDestroyedEvent : FlattiverseEvent
 {
     /// <summary>
-    /// Your affected Controllable.
+    /// The player that lost the Controllable.
     /// </summary>
-    public readonly Controllable Controllable;
+    public readonly Player Player;
+    
+    /// <summary>
+    /// The affected ControllableInfo.
+    /// </summary>
+    public readonly ControllableInfo ControllableInfo;
 
-    internal ControllableDestroyedEvent(Controllable controllable)
+    internal ControllableDestroyedEvent(Player player, ControllableInfo controllableInfo)
     {
-        Controllable = controllable;
+        Player = player;
+        ControllableInfo = controllableInfo;
     }
     
     /// <summary>

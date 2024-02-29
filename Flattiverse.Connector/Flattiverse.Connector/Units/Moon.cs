@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// A moon. A harvestable unit that can be mined for resources.
+    /// Smaller than planets but bigger than meteoroids.
+    /// </summary>
     public class Moon : Harvestable
     {
         internal Moon(Cluster cluster, PacketReader reader) : base(cluster, reader)
@@ -81,8 +85,10 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Moon;
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Moon {Name}";

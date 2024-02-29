@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Network;
+﻿using Flattiverse.Connector.Hierarchy;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
@@ -18,7 +19,7 @@ public class NeutralCollisionControllableDestroyedEvent : ControllableDestroyedE
     /// </summary>
     public readonly string UnitName;
 
-    internal NeutralCollisionControllableDestroyedEvent(Controllable controllable, UnitKind unitKind, PacketReader reader) : base(controllable)
+    internal NeutralCollisionControllableDestroyedEvent(Player player, ControllableInfo controllableInfo, UnitKind unitKind, PacketReader reader) : base(player, controllableInfo)
     {
         UnitKind = unitKind;
         UnitName = reader.ReadString();

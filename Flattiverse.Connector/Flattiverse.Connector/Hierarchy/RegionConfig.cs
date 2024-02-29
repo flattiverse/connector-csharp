@@ -3,17 +3,52 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// This is a contains the configuration parameters of a region.
+    /// </summary>
+    /// <see cref="Region" />
     public class RegionConfig
     {
         private string name;
 
+        /// <summary>
+        /// The probability between 0 and 1 that a unit will spawn in this region when continue is called.
+        /// </summary>
         public double StartPropability;
+
+        /// <summary>
+        /// Unused.
+        /// </summary>
         public double RespawnPropability;
+
+        /// <summary>
+        /// Unimplemented.
+        /// </summary>
         public bool Protected;
+
+        /// <summary>
+        /// The left border of the region.
+        /// </summary>
         public double Left;
+
+        /// <summary>
+        /// The top border of the region.
+        /// </summary>
         public double Top;
+
+        /// <summary>
+        /// The right border of the region.
+        /// </summary>
         public double Right;
+
+        /// <summary>
+        /// The bottom border of the region.
+        /// </summary>
         public double Bottom;
+
+        /// <summary>
+        /// The team the region belongs to.
+        /// </summary>
         public uint Team; // TODO MALUK TeamId is usually 1 byte
 
         /// <summary>

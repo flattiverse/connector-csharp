@@ -6,15 +6,28 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.MissionSelection;
 
+/// <summary>
+/// Information about a galaxy.
+/// </summary>
 public class Universe
 {
+    /// <summary>
+    /// The base URI of the universe.
+    /// </summary>
     public readonly string BaseURI;
+
+    /// <summary>
+    /// If the universe uses SSL.
+    /// </summary>
     public readonly bool UseSSL;
 
     private Dictionary<string, GalaxyInfo> galaxies = new Dictionary<string, GalaxyInfo>();
 
     private DateTime lastChecked;
 
+    /// <summary>
+    /// Creates a new universe via default constructor.
+    /// </summary>
     public Universe()
     {
         BaseURI = "www.flattiverse.com";
@@ -23,6 +36,9 @@ public class Universe
         Update().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Creates a new universe via custom constructor.
+    /// </summary>
     public Universe(bool useSsl, string baseUri)
     {
         UseSSL = useSsl;
@@ -81,6 +97,9 @@ public class Universe
         }
     }
 
+    /// <summary>
+    /// The galaxies in the universe.
+    /// </summary>
     public ReadOnlyDictionary<string, GalaxyInfo> Galaxies => new ReadOnlyDictionary<string, GalaxyInfo>(galaxies);
     
     /// <summary>

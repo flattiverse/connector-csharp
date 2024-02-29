@@ -4,35 +4,135 @@ using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector.MissionSelection;
 
+/// <summary>
+/// Information about a galaxy.
+/// </summary>
+/// <remarks>
+/// A galaxy is a game instance in the universe.
+/// </remarks>
 public class GalaxyInfo
 {
+    /// <summary>
+    /// The universe this galaxy belongs to.
+    /// </summary>
     public readonly Universe Universe;
     
+    /// <summary>
+    /// The unique identifier of the galaxy.
+    /// </summary>
     public readonly int Id;
+
+    /// <summary>
+    /// The name of the galaxy.
+    /// </summary>
+    /// <remarks>
+    /// SAFETY: Make sure this name is unique in the universe.
+    /// </remarks>
     public readonly string Name;
+
+    /// <summary>
+    /// If spectators are allowed in this galaxy.
+    /// </summary>
     public readonly bool SpectatorsAllowed;
+
+    /// <summary>
+    /// The game mode the galaxy uses.
+    /// </summary>
     public readonly GameMode GameMode;
+
+    /// <summary>
+    /// The maximum amount of players allowed in this galaxy.
+    /// </summary>
     public readonly int MaxPlayers;
+
+    /// <summary>
+    /// The maximum amount of platforms allowed in this galaxy.
+    /// </summary>
     public readonly int MaxPlatformsUniverse;
+
+    /// <summary>
+    /// The maximum amount of probes allowed in this galaxy.
+    /// </summary>
     public readonly int MaxProbesUniverse;
+
+    /// <summary>
+    /// The maximum amount of drones allowed in this galaxy.
+    /// </summary>
     public readonly int MaxDronesUniverse;
+
+    /// <summary>
+    /// The maximum amount of ships allowed in this galaxy.
+    /// </summary>
     public readonly int MaxShipsUniverse;
+
+    /// <summary>
+    /// The maximum amount of bases allowed in this galaxy.
+    /// </summary>
     public readonly int MaxBasesUniverse;
+
+    /// <summary>
+    /// The maximum amount of platforms allowed per team in this galaxy.
+    /// </summary>
     public readonly int MaxPlatformsTeam;
+
+    /// <summary>
+    /// The maximum amount of probes allowed per team in this galaxy.
+    /// </summary>
     public readonly int MaxProbesTeam;
+
+    /// <summary>
+    /// The maximum amount of drones allowed per team in this galaxy.
+    /// </summary>
     public readonly int MaxDronesTeam;
+
+    /// <summary>
+    /// The maximum amount of ships allowed per team in this galaxy.
+    /// </summary>
     public readonly int MaxShipsTeam;
 
+    /// <summary>
+    /// The maximum amount of bases allowed per team in this galaxy.
+    /// </summary>
     public readonly int MaxBasesTeam;
+
+    /// <summary>
+    /// The maximum amount of platforms allowed per player in this galaxy.
+    /// </summary>
     public readonly int MaxPlatformsPlayer;
+
+    /// <summary>
+    /// The maximum amount of probes allowed per player in this galaxy.
+    /// </summary>
     public readonly int MaxProbesPlayer;
+
+    /// <summary>
+    /// The maximum amount of drones allowed per player in this galaxy.
+    /// </summary>
     public readonly int MaxDronesPlayer;
+
+    /// <summary>
+    /// The maximum amount of ships allowed per player in this galaxy.
+    /// </summary>
     public readonly int MaxShipsPlayer;
+
+    /// <summary>
+    /// The maximum amount of bases allowed per player in this galaxy.
+    /// </summary>
     public readonly int MaxBasesPlayer;
 
+    /// <summary>
+    /// The teams in this galaxy.
+    /// </summary>
     public readonly ReadOnlyDictionary<string, TeamInfo> Teams;
+
+    /// <summary>
+    /// The players in this galaxy.
+    /// </summary>
     public readonly ReadOnlyDictionary<string, PlayerInfo> Players;
 
+    /// <summary>
+    /// Constructs a new galaxy info.
+    /// </summary>
     public GalaxyInfo(Universe universe, JsonElement element)
     {
         Universe = universe;

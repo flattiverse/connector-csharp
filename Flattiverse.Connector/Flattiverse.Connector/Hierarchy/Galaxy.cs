@@ -241,28 +241,38 @@ public class Galaxy
                 pushEvent(new GalaxyChatEvent(packet, players[packet.Header.Id0]!));
                 break;
             case 0x34: // Controllable Destroyed
-                Debug.Assert(controllables[packet.Header.Id0] is not null, $"controllables[{packet.Header.Id0}] is not populated");
+                Debug.Assert(players[packet.Header.Id0] is not null, $"players[{packet.Header.Id0}] not populated.");
+                Debug.Assert(players[packet.Header.Id0]!.controllableInfos[packet.Header.Id1] is not null, $"players[{packet.Header.Id0}].controllableInfos[{packet.Header.Id1}] not populated.");
+                
                 switch ((DestructionReason)packet.Header.Param0)
                 {
                     case DestructionReason.Shutdown:
-                        pushEvent(new ShutdownControllableDestroyedEvent(controllables[packet.Header.Id0]!));
+                        pushEvent(new ShutdownControllableDestroyedEvent(
+                            players[packet.Header.Id0]!,
+                            players[packet.Header.Id0]!.controllableInfos[packet.Header.Id0]!
+                        ));
                         break;
                     case DestructionReason.SelfDestruction:
-                        pushEvent(new SelfDesctructionControllableDestroyedEvent(controllables[packet.Header.Id0]!));
+                        pushEvent(new SelfDesctructionControllableDestroyedEvent(
+                            players[packet.Header.Id0]!,
+                            players[packet.Header.Id0]!.controllableInfos[packet.Header.Id0]!
+                        ));
                         break;
                     case DestructionReason.Collision:
                         if (packet.Header.Param1 == (byte) UnitKind.PlayerUnit)
                         {
                             Debug.Assert(players[packet.Header.Id1] is not null, $"players[{packet.Header.Id1}] is not populated");
                             pushEvent(new PlayerCollisionControllableDestroyedEvent(
-                                controllables[packet.Header.Id0]!,
-                                players[packet.Header.Id1]!,
+                                players[packet.Header.Id0]!,
+                                players[packet.Header.Id0]!.controllableInfos[packet.Header.Id0]!,
+                                this,
                                 reader
                             ));
                         }
                         else
                             pushEvent(new NeutralCollisionControllableDestroyedEvent(
-                                controllables[packet.Header.Id0]!,
+                                players[packet.Header.Id0]!,
+                                players[packet.Header.Id0]!.controllableInfos[packet.Header.Id0]!,
                                 (UnitKind)packet.Header.Param1,
                                 reader
                             ));

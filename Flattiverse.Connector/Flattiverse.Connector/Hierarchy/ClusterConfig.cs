@@ -6,6 +6,7 @@ namespace Flattiverse.Connector.Hierarchy
     /// <summary>
     /// The configuration used by a cluster.
     /// </summary>
+    /// <see cref="Cluster" />
     public class ClusterConfig
     {
         private string name;

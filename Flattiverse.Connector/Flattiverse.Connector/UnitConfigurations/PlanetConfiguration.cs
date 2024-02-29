@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The configuration of a planet.
+    /// </summary>
     public class PlanetConfiguration : HarvestableConfiguration
     {
         private PlanetConfiguration() : base() { }
@@ -24,6 +27,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             //TODO
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Planet;
 
         internal static PlanetConfiguration Default => new PlanetConfiguration();

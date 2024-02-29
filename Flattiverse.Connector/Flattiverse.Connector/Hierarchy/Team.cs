@@ -3,8 +3,14 @@ using System;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// For game mods that require teams, this class contains the configuration parameters of a team.
+    /// </summary>
     public class Team : INamedUnit
     {
+        /// <summary>
+        /// The galaxy this team belongs to.
+        /// </summary>
         public readonly Galaxy Galaxy;
 
         private byte id;
@@ -20,13 +26,25 @@ namespace Flattiverse.Connector.Hierarchy
             config = new TeamConfig(reader);
         }
 
+        /// <summary>
+        /// The ID of the team. This is unique in the galaxy.
+        /// </summary>
         public int ID => id;
+
         /// <summary>
         /// The name of the team.
         /// </summary>
         public string Name => config.Name;
+
+        /// <summary>
+        /// The configuration of the team.
+        /// It contains the actual values of the team.
+        /// </summary>
         public TeamConfig Config => config;
 
+        /// <summary>
+        /// This flag indicates if the team is still part of the active simulation.
+        /// </summary>
         public bool IsActive => isActive;
 
         /// <summary>

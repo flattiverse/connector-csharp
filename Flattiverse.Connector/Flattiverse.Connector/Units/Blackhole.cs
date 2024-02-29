@@ -6,6 +6,12 @@ using System.Collections.ObjectModel;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// Black holes have a strong gravitational pull.
+    /// </summary>
+    /// <remarks>
+    /// They can be used to change the direction of your units without using energy.
+    /// </remarks>
     public class BlackHole : CelestialBody
     {
         internal ReadOnlyCollection<BlackHoleSection> sections;
@@ -22,6 +28,13 @@ namespace Flattiverse.Connector.Units
             this.sections = new ReadOnlyCollection<BlackHoleSection>(sections);
         }
 
+        /// <summary>
+        /// Sections of this black hole.
+        /// These are areas with additional gravity.
+        /// </summary>
+        /// <remarks>
+        /// Can be used as slingshot to accelerate your units.
+        /// </remarks>
         public ReadOnlyCollection<BlackHoleSection> Sections => sections;
 
         /// <summary>
@@ -100,8 +113,10 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.BlackHole;
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Blackhole {Name}";

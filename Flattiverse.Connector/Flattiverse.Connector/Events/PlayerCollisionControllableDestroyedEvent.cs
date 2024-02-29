@@ -9,19 +9,25 @@ public class PlayerCollisionControllableDestroyedEvent: ControllableDestroyedEve
 {
 
     /// <summary>
-    /// The other Player that collided with your Controllable.
+    /// The other Player that collided with the Controllable.
     /// </summary>
     public readonly Player OtherPlayer;
     
     /// <summary>
-    /// The name of the other players unit that collided with your Controllable.
+    /// The other Controllable that collided with the Controllable.
     /// </summary>
-    public readonly string OtherUnitName;
+    public readonly ControllableInfo OtherControllableInfo;
     
-    internal PlayerCollisionControllableDestroyedEvent(Controllable controllable, Player otherPlayer, PacketReader reader) : base(controllable)
+    internal PlayerCollisionControllableDestroyedEvent(Player player, ControllableInfo controllableInfo, Galaxy galaxy, PacketReader reader) : base(player, controllableInfo)
     {
-        OtherPlayer = otherPlayer;
-        OtherUnitName = reader.ReadString();
+        byte playerId = reader.ReadByte();
+        byte controllableInfoId = reader.ReadByte();
+        
+        Debug.Assert(galaxy.GetPlayer(playerId) is not null, $"players[{playerId}] not populated.");
+        Debug.Assert(galaxy.GetPlayer(playerId).controllableInfos[controllableInfoId] is not null, $"players[{playerId}].controllableInfos[{controllableInfoId}] not populated.");
+        
+        OtherPlayer = galaxy.GetPlayer(playerId);
+        OtherControllableInfo = OtherPlayer.controllableInfos[controllableInfoId]!;
     }
 
     public override EventKind Kind => EventKind.DeathByControllableCollision;

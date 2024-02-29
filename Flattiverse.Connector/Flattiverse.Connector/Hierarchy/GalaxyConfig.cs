@@ -6,6 +6,7 @@ namespace Flattiverse.Connector.Hierarchy
     /// <summary>
     /// This is a contains the configuration parameters of a galaxy.
     /// </summary>
+    /// <see cref="Galaxy" />
     public class GalaxyConfig
     {
         private string name;

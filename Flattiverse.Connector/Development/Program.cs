@@ -37,35 +37,73 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.Gray;
         
         //Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join("28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", universe.Galaxies["Beginners Course"].Teams["Plebs"]);
+        // Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "71e5dc90ad20e51e63a94a63d671f80a03a45507679fdaec34a01394de033fef", 0);
+        // Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join(Environment.GetEnvironmentVariable("API_KEY")!, universe.Galaxies["Beginners Course"].Teams["Plebs"]);
+        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5001", Environment.GetEnvironmentVariable("API_KEY")!, 0);
+        // Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", 0);
 
-        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", 0);
+        // var buoy = (Buoy)galaxy.Clusters[0].units["BerndGustav"];
+        // await buoy.Configure(config =>
+        // {
+        //     config.ClearBeacons();
+        //     config.Message = "Hier haust Mr Gustav do not cross the line";
+        // });
+        // return;
         
-        /*
-        ThreadPool.QueueUserWorkItem(async delegate
+        //await galaxy.Clusters[0].CreateBuoy(config =>
+        //{
+        //    config.Name = "BerndGustav";
+        //    config.Message = "Ja was";
+        //        
+        //    var beacon = config.AddBeacon();
+        //    beacon.X = 100.0;
+        //    beacon.Y = 100.0;
+        //
+        //    var beacon2 = config.AddBeacon();
+        //    beacon2.X = -5.0;
+        //    beacon2.Y = -2.5;
+        //});
+        //return;
+        
+        //ThreadPool.QueueUserWorkItem(async delegate
+        //{
+        //    Galaxy galaxy2 = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "7e8fbecabff144b96c0cfe0baf4bb5e3878c11cad104f9a64645161f9e61ac85", 0);
+//
+        //    
+        //    Controllable ship2 = await galaxy2.RegisterShip("Origin", galaxy2.ShipsDesigns["Cruiser"]);
+        //    
+        //    await ship2.Continue();
+        //    
+        //    // await Task.Delay(5000);
+//
+        //    // await ship2.SetThrusterNozzle(0, ship2.NozzleMax);
+        //    
+        //    await Task.Delay(5000);
+        //    
+        //    await ship2.SetThrusterNozzle(0, 0);
+        //    
+        //    while (true)
+        //    {
+        //        await galaxy2.NextEvent();
+        //    }
+        //});
         {
-            Galaxy galaxy2 = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "7e8fbecabff144b96c0cfe0baf4bb5e3878c11cad104f9a64645161f9e61ac85", 0);
-
-            Controllable ship2 = await galaxy2.RegisterShip("Origin", galaxy2.ShipsDesigns["Cruiser"]);
-            
-            await ship2.Continue();
-            
-            // await Task.Delay(5000);
-
-            // await ship2.SetThrusterNozzle(0, ship2.NozzleMax);
-            
-            await Task.Delay(5000);
-            
-            await ship2.SetThrusterNozzle(0, 0);
-            
-            while (true)
-            {
-                await galaxy2.NextEvent();
+            await Task.Delay(3000);
+            Controllable shiap = await galaxy.RegisterShip(
+                Environment.GetEnvironmentVariable("SHIP_NAME") ?? "MaHeartMaSoul", galaxy.ShipsDesigns["Cruiser"]);
+            await shiap.Continue();
+            // await shiap.Kill();
+        }
+        while (true)
+        {
+            var @event = await galaxy.NextEvent();
+            if (@event.Kind != EventKind.GalaxyTick) {
+                Console.WriteLine($"{@event}");
+                   
             }
-        });
-        */
-
-        await Task.Delay(3000);
-
+            // await Task.Delay(3000);
+        }
+        
         Console.WriteLine($" + Galaxy: {galaxy.Name}");
 
         foreach (Team team in galaxy.Teams)
@@ -77,13 +115,13 @@ internal class Program
         foreach (Player player in galaxy.Players)
             Console.WriteLine($"   + Player: {player.Name}");
 
-        Controllable ship = await galaxy.RegisterShip("HeartOfGold", galaxy.ShipsDesigns["Cruiser"]);
+        Controllable ship = await galaxy.RegisterShip(Environment.GetEnvironmentVariable("SHIP_NAME")?? "MaHeartMaSoul", galaxy.ShipsDesigns["Cruiser"]);
 
         Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.Energy}/{ship.EnergyMax}");
 
         await ship.Continue();
 
-        Console.WriteLine($"ShipInfo: {galaxy.Players["GhostTyper"].ControllableInfos["HeartOfGold"].Energy}");
+        // Console.WriteLine($"ShipInfo: {galaxy.Players["kellerkindt"].ControllableInfos["MaHeartMaSoul"].Energy}");
         
         Console.WriteLine($"Ship: {ship.Name}, maxEnergy={ship.Energy}/{ship.EnergyMax}");
 

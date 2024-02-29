@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// Cosmetic unit that can be used to mark locations in the universe.
+    /// </summary>
     public class Buoy : CelestialBody
     {
         private string message;
@@ -106,6 +109,7 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Buoy;
 
         /// <summary>
@@ -118,7 +122,8 @@ namespace Flattiverse.Connector.Units
         /// be of interest. 
         /// </summary>
         public ReadOnlyCollection<Vector> Beacons => beacons;
-        
+
+        /// <inheritdoc/>        
         public override string ToString()
         {
             return $"Buoy {Name}";

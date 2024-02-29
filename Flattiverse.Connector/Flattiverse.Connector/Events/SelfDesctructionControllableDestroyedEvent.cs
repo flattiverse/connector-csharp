@@ -1,10 +1,11 @@
+using Flattiverse.Connector.Hierarchy;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
 
 public class SelfDesctructionControllableDestroyedEvent : ControllableDestroyedEvent
 {
-    public SelfDesctructionControllableDestroyedEvent(Controllable controllable) : base(controllable)
+    public SelfDesctructionControllableDestroyedEvent(Player player, ControllableInfo controllableInfo) : base(player, controllableInfo)
     {
     }
 

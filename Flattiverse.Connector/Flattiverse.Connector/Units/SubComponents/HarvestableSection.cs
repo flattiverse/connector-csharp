@@ -3,6 +3,14 @@ using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units.SubComponents
 {
+    /// <summary>
+    /// Players within these sections can collect resources based on its Configuration.
+    /// It may contain all 4 types of collactaqble resources being Iron, Silicon, Tungsten and Tritium.
+    /// </summary>
+    /// <remarks>
+    /// The collection speed of these resources is based on your ShipConfiguration and your upgrades.
+    /// Doing so will consume energy.
+    /// </remarks>
     public class HarvestableSection
     {
         private double innerRadius;
@@ -63,6 +71,10 @@ namespace Flattiverse.Connector.Units.SubComponents
             writer.Write(Tritium);
         }
 
+        /// <summary>
+        /// Removes this section from the configuration.
+        /// </summary>
+        /// <exception cref="GameException">Thrown, if you don't have permission to do this.</exception>
         public void Remove()
         {
             Configuration?.sections.Remove(this);
