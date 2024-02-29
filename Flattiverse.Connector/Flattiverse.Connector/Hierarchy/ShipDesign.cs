@@ -20,7 +20,7 @@ namespace Flattiverse.Connector.Hierarchy
         /// </summary>
         public readonly UniversalHolder<ShipUpgrade> Upgrades;
 
-        private byte id;
+        internal byte id;
         private ShipDesignConfig config;
 
         internal ShipDesign(Galaxy galaxy, byte id, PacketReader reader)
@@ -99,7 +99,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             Packet packet = new Packet();
             packet.Header.Command = 0x4D;
-            packet.Header.Param0 = id;
+            packet.Header.Id0 = id;
 
             using (PacketWriter writer = packet.Write())
                 changes.Write(writer);

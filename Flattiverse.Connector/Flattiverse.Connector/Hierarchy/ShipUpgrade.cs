@@ -63,7 +63,8 @@ namespace Flattiverse.Connector.Hierarchy
 
             Packet packet = new Packet();
             packet.Header.Command = 0x4E;
-            packet.Header.Param0 = id;
+            packet.Header.Id0 = id;
+            packet.Header.Id1 = ShipDesign.id;
 
             using (PacketWriter writer = packet.Write())
                 changes.Write(writer);
@@ -81,7 +82,8 @@ namespace Flattiverse.Connector.Hierarchy
 
             Packet packet = new Packet();
             packet.Header.Command = 0x4F;
-            packet.Header.Param0 = id;
+            packet.Header.Id0 = id;
+            packet.Header.Id1 = ShipDesign.id;
 
             await session.SendWait(packet);
         }
