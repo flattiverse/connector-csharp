@@ -74,7 +74,9 @@ namespace Flattiverse.Connector.Units
         public override double Gravity => gravity;
         public override Team Team => Player.Team;
         public override UnitKind Kind => UnitKind.PlayerUnit;
-        
+
+        public override Mobility Mobility => Mobility.Mobile;
+
         internal void Deactivate()
         {
             active = false;
