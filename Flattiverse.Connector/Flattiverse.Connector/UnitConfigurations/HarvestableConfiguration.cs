@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The configuration of a harvestable unit.
+    /// </summary>
     public class HarvestableConfiguration : CelestialBodyConfiguration
     {
         internal readonly List<HarvestableSection> sections = new List<HarvestableSection>();
@@ -33,9 +36,21 @@ namespace Flattiverse.Connector.UnitConfigurations
                 sections[section].Write(writer);
         }
 
+        /// <summary>
+        /// all sections of the harvestable unit.
+        /// </summary>
         public ReadOnlyCollection<HarvestableSection> Sections =>
             new ReadOnlyCollection<HarvestableSection>(new List<HarvestableSection>(sections));
 
+
+        /// <summary>
+        /// Adds a new circular section.
+        /// </summary>
+        /// <returns cref="HarvestableSection"> The circular section that was added</returns>
+        /// <exception cref="GameException"></exception>
+        /// <remarks>
+        /// Only available to admins.
+        /// </remarks>
         public HarvestableSection AddSection()
         {
             if (sections.Count >= 16)
@@ -48,6 +63,12 @@ namespace Flattiverse.Connector.UnitConfigurations
             return section;
         }
 
+        /// <summary>
+        /// Removes the section.
+        /// </summary>
+        /// <remarks>
+        /// Only available to admins.
+        /// </remarks>
         public void ClearSections()
         {
             sections.Clear();
