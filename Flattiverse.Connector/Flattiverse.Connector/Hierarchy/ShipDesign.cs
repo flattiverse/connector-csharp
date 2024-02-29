@@ -106,7 +106,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             packet = await session.SendWait(packet);
 
-            if (upgrades[packet.Header.Param0] is not ShipUpgrade upgrade)
+            if (upgrades[packet.Header.Id0] is not ShipUpgrade upgrade)
                 throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
             return upgrade;
