@@ -2,10 +2,26 @@
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// Ship upgrades improve the capabilities of a ship.
+    /// </summary>
+    /// <remarks>
+    /// These represent deltas to the <see cref="ShipDesign" />.
+    /// </remarks>
+    /// <see cref="ShipDesign" />
     public class ShipUpgrade : INamedUnit
     {
+
+        /// <summary>
+        /// The galaxy this upgrade can be used in.
+        /// </summary>
         public readonly Galaxy Galaxy;
+
+        /// <summary>
+        /// The ship design this upgrade is for.
+        /// </summary>
         public readonly ShipDesign ShipDesign;
+
         private byte id;
 
         private ShipUpgradeConfig config;
@@ -18,11 +34,19 @@ namespace Flattiverse.Connector.Hierarchy
             config = new ShipUpgradeConfig(reader, shipDesign);
         }
 
+        /// <summary>
+        /// The ID of the upgrade. This is unique per ship design.
+        /// </summary>
         public int ID => id;
+
         /// <summary>
         /// The name of the upgrade.
         /// </summary>
         public string Name => config.Name;
+
+        /// <summary>
+        /// The configuration of the upgrade.
+        /// </summary>
         public ShipUpgradeConfig Config => config;
 
         /// <summary>
