@@ -194,7 +194,7 @@ namespace Flattiverse.Connector
 
         /// <summary>
         /// A local unique identifier for the controllable. This is not the same as the player id.
-        /// Used to differantiate between multiple controllables of the same player.
+        /// Used to differentiate between multiple controllables of the same player.
         /// </summary>
         public readonly byte Id;
 
@@ -212,13 +212,16 @@ namespace Flattiverse.Connector
         public bool IsAlive => hull > 0;
 
         /// <summary>
-        /// If the hull reaches 0, the ship will be destroyed and the player will be able to continue with a new ship.
+        /// The hull level of the controllable.
+        /// If it reaches 0, the controllable is destroyed.
+        /// The player can call continue to respawn the controllable.
         /// </summary>
         public double Hull => hull;
 
         /// <summary>
-        /// The maximum hull of the ship.
+        /// The maximum hull level of the ship.
         /// </summary>
+        /// <seealso cref="Hull" />
         public double HullMax => hullMax;
 
         /// <summary>
@@ -247,6 +250,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The maximum shield value of the ship.
         /// </summary>
+        /// <seealso cref="Shields" />
         public double ShieldsMax => shieldsMax;
 
         /// <summary>
@@ -277,6 +281,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The maximum energy value of the ship.
         /// </summary>
+        /// <seealso cref="Energy" />
         public double EnergyMax => energyMax;
 
         /// <summary>
@@ -311,6 +316,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The maximum ion value of the ship.
         /// </summary>
+        /// <seealso cref="Ion" />
         public double IonMax => ionMax;
 
         /// <summary>
@@ -324,7 +330,7 @@ namespace Flattiverse.Connector
         public double IonReactor => ionReactor;
 
         /// <summary>
-        /// The rate at which ion can be transferred to other ships.
+        /// The rate at which ion can be transferred to other ships per tick.
         /// </summary>
         /// <remarks>
         /// All ships can transfer ion to other ships.
@@ -348,6 +354,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The maximum forward thruster value of the ship.
         /// </summary>
+        /// <seealso cref="Thruster" />
         public double ThrusterMaxForward => thrusterMaxForward;
 
         /// <summary>
@@ -356,6 +363,7 @@ namespace Flattiverse.Connector
         /// <remarks>
         /// The negative value is usually limited to smaller value than the positive one.
         /// </remarks>
+        /// <seealso cref="Thruster" />
         public double ThrusterMaxBackward => thrusterMaxBackward;
         
         /// <summary>
@@ -372,6 +380,7 @@ namespace Flattiverse.Connector
         /// The maximum nozzle value of the ship.
         /// As opposed to the thruster this is symmetrical
         /// </summary>
+        /// <seealso cref="Nozzle" />
         public double NozzleMax => nozzleMax;
 
         /// <summary>
@@ -381,6 +390,7 @@ namespace Flattiverse.Connector
         /// Past this speed the velocity will be dampened by 10% per tick.
         /// You can still accelerate to go slightly faster, but at the cost of more energy.
         /// </remarks>
+        /// <seealso cref="Movement" />
         public double SpeedMax => speedMax;
 
         /// <summary>
@@ -395,6 +405,7 @@ namespace Flattiverse.Connector
         /// Past this value the turnrate will be dampened by 30% per tick.
         /// You can still accelerate to turn slightly faster, but at the cost of more energy.
         /// </summary>
+        /// <seealso cref="Turnrate" />
         public double TurnrateMax => turnrate;
 
         /// <summary>
@@ -427,10 +438,14 @@ namespace Flattiverse.Connector
         /// <remarks>
         /// The materials factored in are Tungsten, Iron, Silicon and Tritium.
         /// </remarks>
+        /// <seealso cref="CargoTungsten" />
+        /// <seealso cref="CargoIron" />
+        /// <seealso cref="CargoSilicon" />
+        /// <seealso cref="CargoTritium" />
         public double CargoMax => cargoMax;
 
         /// <summary>
-        /// The maximum amount of resources that can be extracted from resource sections.
+        /// The maximum amount of resources that can be extracted from resource sections per tick.
         /// </summary>
         /// <remarks>
         /// Resource sections are defined in the map.
