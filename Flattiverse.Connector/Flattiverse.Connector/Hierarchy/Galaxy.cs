@@ -467,9 +467,10 @@ public class Galaxy
             writer.Write(name);
 
         Packet answerPacket = await session.SendWait(packet);
-
-        Debug.Assert(controllables[packet.Header.Id0] is not null, $"controllables[{packet.Header.Id0}] is not populated but should be after RegisterShip().");
         
-        return controllables[packet.Header.Id0]!;
+        Controllable? controllable = controllables[answerPacket.Header.Id0];
+        Debug.Assert(controllable is null, $"controllables[{answerPacket.Header.Id0}] is not populated but should be after RegisterShip().");
+        
+        return controllable!;
     }
 }
