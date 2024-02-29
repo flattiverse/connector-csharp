@@ -2,6 +2,10 @@
 
 namespace Flattiverse.Connector.Hierarchy;
 
+/// <summary>
+/// A generic collection type for NamedUnits.
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
 {
     private readonly T?[] data;
@@ -116,6 +120,7 @@ public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
         return GetEnumerator();
     }
     
+    /// <inheritdoc/>
     public IEnumerator<T> GetEnumerator()
     {
         foreach (T? t in data)
