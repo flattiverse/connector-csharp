@@ -89,7 +89,7 @@ public class Cluster : INamedUnit
 
         Packet packet = new Packet();
         packet.Header.Command = 0x42;
-        packet.Header.Param0 = id;
+        packet.Header.Id0 = id;
 
         using (PacketWriter writer = packet.Write())
             changes.Write(writer);
@@ -143,7 +143,7 @@ public class Cluster : INamedUnit
 
         Packet packet = new Packet();
         packet.Header.Command = 0x43;
-        packet.Header.Param0 = id;
+        packet.Header.Id0 = id;
 
         await session.SendWait(packet);
     }
