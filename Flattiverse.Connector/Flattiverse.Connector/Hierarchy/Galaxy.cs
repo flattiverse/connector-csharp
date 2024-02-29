@@ -469,7 +469,7 @@ public class Galaxy
         Packet answerPacket = await session.SendWait(packet);
         
         Controllable? controllable = controllables[answerPacket.Header.Id0];
-        Debug.Assert(controllable is null, $"controllables[{answerPacket.Header.Id0}] is not populated but should be after RegisterShip().");
+        Debug.Assert(controllable is not null, $"controllables[{answerPacket.Header.Id0}] is not populated but should be after RegisterShip().");
         
         return controllable!;
     }
