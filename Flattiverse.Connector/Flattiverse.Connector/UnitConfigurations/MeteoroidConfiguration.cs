@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The configuration of a meteoroid.
+    /// </summary>
     public class MeteoroidConfiguration : HarvestableConfiguration
     {
         private MeteoroidConfiguration() : base() { }
@@ -24,6 +27,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             //TODO
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Meteoroid;
 
         internal static MeteoroidConfiguration Default => new MeteoroidConfiguration();
