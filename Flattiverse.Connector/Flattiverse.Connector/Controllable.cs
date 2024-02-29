@@ -43,12 +43,13 @@ namespace Flattiverse.Connector
         private double ionReactor;
         private double ionTransfer;
         private double thruster;
-        private double thrusterMaxForward;
-        private double thrusterMaxBackward;
+        private double thrusterForwardMax;
+        private double thrusterBackwardMax;
         private double nozzle;
         private double nozzleMax;
         private double speedMax;
         private double turnrate;
+        private double turnrateMax;
         private double cargoTungsten;
         private double cargoIron;
         private double cargoSilicon;
@@ -100,8 +101,8 @@ namespace Flattiverse.Connector
             ionReactor = reader.ReadDouble();
             ionTransfer = reader.ReadDouble();
 
-            thrusterMaxForward = reader.ReadDouble();
-            thrusterMaxBackward = reader.ReadDouble();
+            thrusterForwardMax = reader.ReadDouble();
+            thrusterBackwardMax = reader.ReadDouble();
             nozzleMax = reader.ReadDouble();
             speedMax = reader.ReadDouble();
             cargoMax = reader.ReadDouble();
@@ -141,8 +142,8 @@ namespace Flattiverse.Connector
             ionReactor = reader.ReadDouble();
             ionTransfer = reader.ReadDouble();
 
-            thrusterMaxForward = reader.ReadDouble();
-            thrusterMaxBackward = reader.ReadDouble();
+            thrusterForwardMax = reader.ReadDouble();
+            thrusterBackwardMax = reader.ReadDouble();
             nozzleMax = reader.ReadDouble();
             speedMax = reader.ReadDouble();
             cargoMax = reader.ReadDouble();
@@ -236,6 +237,7 @@ namespace Flattiverse.Connector
         /// Repairing is only possible while the ship is not using any other energy consuming functions.
         /// (e.g. Thruster, Weapons, Shields, etc.)
         /// </remarks>
+        /// <seealso cref="Hull" />
         public double HullRepair => hullRepair;
 
         /// <summary>
@@ -256,6 +258,7 @@ namespace Flattiverse.Connector
         /// <summary>
         /// The rate at which the shields are recharged.
         /// </summary>
+        /// <seealso cref="Shields" />
         public double ShieldsLoad => shieldsLoad;
 
         /// <summary>
@@ -287,11 +290,13 @@ namespace Flattiverse.Connector
         /// <summary>
         /// This is a multiplier for the rate of energy gain from suns and stations.
         /// </summary>
+        /// <seealso cref="Energy" />
         public double EnergyCells => energyCells;
 
         /// <summary>
         /// Used by stations to produce energy.
         /// </summary>
+        /// <seealso cref="Energy" />
         public double EnergyReactor => energyReactor;
 
         /// <summary>
@@ -302,6 +307,7 @@ namespace Flattiverse.Connector
         /// When doing this, a corona will be created around the ship,
         /// which can be used by other ships to gain energy, even enemies.
         /// </remarks>
+        /// <seealso cref="Energy" />
         public double EnergyTransfer => energyTransfer;
 
         /// <summary>
@@ -355,7 +361,7 @@ namespace Flattiverse.Connector
         /// The maximum forward thruster value of the ship.
         /// </summary>
         /// <seealso cref="Thruster" />
-        public double ThrusterMaxForward => thrusterMaxForward;
+        public double ThrusterForwardMax => thrusterForwardMax;
 
         /// <summary>
         /// The maximum backward thruster value of the ship.
@@ -364,7 +370,7 @@ namespace Flattiverse.Connector
         /// The negative value is usually limited to smaller value than the positive one.
         /// </remarks>
         /// <seealso cref="Thruster" />
-        public double ThrusterMaxBackward => thrusterMaxBackward;
+        public double ThrusterBackwardMax => thrusterBackwardMax;
         
         /// <summary>
         /// The current nozzle value of the ship.
@@ -406,7 +412,7 @@ namespace Flattiverse.Connector
         /// You can still accelerate to turn slightly faster, but at the cost of more energy.
         /// </summary>
         /// <seealso cref="Turnrate" />
-        public double TurnrateMax => turnrate;
+        public double TurnrateMax => turnrateMax;
 
         /// <summary>
         /// This is used for upgrades of the ship.
@@ -454,14 +460,14 @@ namespace Flattiverse.Connector
         public double ExtractorMax => extractorMax;
 
         /// <summary>
-        /// The speed of the weapon projectile.
+        /// The maximum speed of the weapon projectile.
         /// </summary>
-        public double WeaponSpeed => weaponSpeed;
+        public double WeaponSpeedMax => weaponSpeed;
 
         /// <summary>
-        /// The fuse time of the weapon projectile.
+        /// The maximum fuse time of the weapon projectile.
         /// </summary>
-        public ushort WeaponTime => weaponTime;
+        public ushort WeaponTimeMax => weaponTime;
 
         /// <summary>
         /// The damage radius of the weapon projectile.
@@ -565,8 +571,8 @@ namespace Flattiverse.Connector
             if (hull == 0)
                 throw new GameException(0x20);
             
-            if (!double.IsFinite(thruster) || !double.IsFinite(nozzle) || thruster < ThrusterMaxBackward * -1.05 ||
-                thruster > ThrusterMaxForward * 1.05 || nozzle < NozzleMax * -1.05 || nozzle > NozzleMax * 1.05)
+            if (!double.IsFinite(thruster) || !double.IsFinite(nozzle) || thruster < ThrusterBackwardMax * -1.05 ||
+                thruster > ThrusterForwardMax * 1.05 || nozzle < NozzleMax * -1.05 || nozzle > NozzleMax * 1.05)
                 throw new GameException(0x31);
             
             Session session = await galaxy.GetSession();
@@ -598,8 +604,8 @@ namespace Flattiverse.Connector
             if (hull == 0)
                 throw new GameException(0x20);
             
-            if (!double.IsFinite(thruster) || thruster < ThrusterMaxBackward * -1.05 ||
-                thruster > ThrusterMaxForward * 1.05)
+            if (!double.IsFinite(thruster) || thruster < ThrusterBackwardMax * -1.05 ||
+                thruster > ThrusterForwardMax * 1.05)
                 throw new GameException(0x31);
             
             Session session = await galaxy.GetSession();

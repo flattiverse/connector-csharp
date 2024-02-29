@@ -3,52 +3,276 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// ShipDesignConfig contains the base parameters of a ship.
+    /// </summary>
     public class ShipDesignConfig
     {
         private string name;
+
+        /// <summary>
+        /// The Energy cost of the controllable if FreeSpawn is false.
+        /// </summary>
         public double CostEnergy;
+
+        /// <summary>
+        /// The ion cost of the controllable if FreeSpawn is false.
+        /// </summary>
         public double CostIon;
+
+        /// <summary>
+        /// The iron cost of the controllable if FreeSpawn is false.
+        /// </summary>
         public double CostIron;
+
+        /// <summary>
+        /// The tungsten cost of the controllable if FreeSpawn is false.
+        /// </summary>
         public double CostTungsten;
+
+        /// <summary>
+        /// The silicon cost of the controllable if FreeSpawn is false.
+        /// </summary>
         public double CostSilicon;
+
+        /// <summary>
+        /// The tritium cost of the controllable if FreeSpawn is false.
+        /// </summary>
         public double CostTritium;
+
+        /// <summary>
+        /// The time it takes to build the controllable if FreeSpawn is false.
+        /// </summary>
         public ushort CostTime;
+
+        /// <summary>
+        /// The hull level of the controllable.
+        /// If it reaches 0, the controllable is destroyed.
+        /// The player can call continue to respawn the controllable.
+        /// </summary>
         public double Hull;
+
+        /// <summary>
+        /// The rate at which the hull is repaired. Consumes Iron and Energy.
+        /// </summary>
+        /// <remarks>
+        /// Repairing is only possible while the ship is not using any other energy consuming functions.
+        /// (e.g. Thruster, Weapons, Shields, etc.)
+        /// </remarks>
+        /// <seealso cref="Hull" />
         public double HullRepair;
+
+        /// <summary>
+        /// The current shield value of the ship.
+        /// It will be depleted before the hull is damaged.
+        /// </summary>
+        /// <remarks>
+        /// Depending on a value in ShipDesign you may need Ion to recharge the shields.
+        /// </remarks>
         public double Shields;
+
+        /// <summary>
+        /// The rate at which the shields are recharged.
+        /// </summary>
+        /// <seealso cref="Shields" />
         public double ShieldsLoad;
+
+        /// <summary>
+        /// The radius of the ship. Also affects the hitbox of the ship.
+        /// </summary>
         public double Radius;
+
+        /// <summary>.Controllable
+        /// The gravity of the ship. Affects the acceleration and deceleration of the ship.
+        /// </summary>
         public double Gravity;
+
+        /// <summary>
+        /// The current energy value of the ship.
+        /// It can be gained via sections/coronas around suns or via the energy reactor of stations.
+        /// </summary>
+        /// <remarks>
+        /// Energy is used for the thruster and the weapons.
+        /// It can also be used to repair the hull or recharge the Shields.
+        /// </remarks>
         public double EnergyMax;
+
+        /// <summary>
+        /// This is a multiplier for the rate of energy gain from suns and stations.
+        /// </summary>
         public double EnergyCells;
+
+        /// <summary>
+        /// Used by stations to produce energy.
+        /// </summary>
         public double EnergyReactor;
+
+        /// <summary>
+        /// The rate at which energy can be transferred to other ships.
+        /// </summary>
+        /// <remarks>
+        /// All ships can transfer energy to other ships.
+        /// When doing this, a corona will be created around the ship,
+        /// which can be used by other ships to gain energy, even enemies.
+        /// </remarks>
         public double EnergyTransfer;
+
+        /// <summary>
+        /// The maximum ion value of the ship.
+        /// </summary>
         public double IonMax;
+
+        /// <summary>
+        /// This is a multiplier for the rate of ion gain from corona sections.
+        /// </summary>
         public double IonCells;
+
+        /// <summary>
+        /// Used by stations to produce ion.
+        /// </summary>
         public double IonReactor;
+
+        /// <summary>
+        /// The rate at which ion can be transferred to other ships per tick.
+        /// </summary>
+        /// <remarks>
+        /// All ships can transfer ion to other ships.
+        /// When doing this, a corona will be created around the ship,
+        /// which can be used by other ships to gain ion, even enemies.
+        /// </remarks>
         public double IonTransfer;
-        public double ThrusterForward;
-        public double ThrusterBackward;
-        public double Nozzle;
-        public double Speed;
-        public double Turnrate;
-        public double Cargo;
-        public double Extractor;
-        public double WeaponSpeed;
-        public ushort WeaponTime;
+
+        /// <summary>
+        /// The maximum forward thruster value of the ship.
+        /// </summary>
+        public double ThrusterForwardMax;
+
+        /// <summary>
+        /// The maximum backward thruster value of the ship.
+        /// </summary>
+        /// <remarks>
+        /// The negative value is usually limited to smaller value than the positive one.
+        /// </remarks>
+        public double ThrusterBackwardMax;
+
+        /// <summary>
+        /// The maximum nozzle value of the ship.
+        /// As opposed to the thruster this is symmetrical
+        /// </summary>
+        public double NozzleMax;
+
+        /// <summary>
+        /// The maximum speed of the ship.
+        /// </summary>
+        /// <remarks>
+        /// Past this speed the velocity will be dampened by 10% per tick.
+        /// You can still accelerate to go slightly faster, but at the cost of more energy.
+        /// </remarks>
+        public double SpeedMax;
+
+        /// <summary>
+        /// The maximum turnrate of the ship in degrees/tick.
+        /// Past this value the turnrate will be dampened by 30% per tick.
+        /// You can still accelerate to turn slightly faster, but at the cost of more energy.
+        /// </summary>
+        public double TurnrateMax;
+
+        /// <summary>
+        /// The maximum cummulative cargo of the ship.
+        /// </summary>
+        /// <remarks>
+        /// The materials factored in are Tungsten, Iron, Silicon and Tritium.
+        /// </remarks>
+        public double CargoMax;
+
+        /// <summary>
+        /// The maximum amount of resources that can be extracted from resource sections per tick.
+        /// </summary>
+        /// <remarks>
+        /// Resource sections are defined in the map.
+        /// They are found around planets and moons.
+        /// </remarks>
+        public double ExtractorMax;
+
+        /// <summary>
+        /// The speed of the weapon projectile.
+        /// </summary>
+        public double WeaponSpeedMax;
+
+        /// <summary>
+        /// The maximum fuse time of the weapon projectile.
+        /// </summary>
+        public ushort WeaponTimeMax;
+
+        /// <summary>
+        /// The damage radius of the weapon projectile.
+        /// </summary>
         public double WeaponLoad;
-        public double WeaponAmmo;
+
+        /// <summary>
+        /// The maximum ammount of ammunition the ship can carry.
+        /// </summary>
+        public double WeaponAmmoMax;
+
+        /// <summary>
+        /// The rate at which the weapon ammunition is produced.
+        /// </summary>
         public double WeaponAmmoProduction;
+
+        /// <summary>
+        /// If true, the ship can be spawned without any cost.
+        /// </summary>
         public bool FreeSpawn;
+
+        /// <summary>
+        /// The energy consumption of the nozzle per tick.
+        /// </summary>
         public double NozzleEnergyConsumption;
+
+        /// <summary>
+        /// The energy consumption of the thruster per tick.
+        /// </summary>
         public double ThrusterEnergyConsumption;
+
+        /// <summary>
+        /// The energy consumption of the hull repair per tick.
+        /// </summary>
         public double HullRepairEnergyConsumption;
+
+        /// <summary>
+        /// The iron consumption of the hull repair per tick.
+        /// </summary>
+        /// 
         public double HullRepairIronConsumption;
+        
+        /// <summary>
+        /// The ion consumption of the shields per tick.
+        /// </summary>
         public double ShieldsIonConsumption;
+
+        /// <summary>
+        /// The energy consumption of the extractor per tick.
+        /// </summary>
         public double ExtractorEnergyConsumption;
+        
+        /// <summary>
+        /// The energy consumption of the weapon per shot.
+        /// </summary>
         public double WeaponEnergyConsumption;
+
+        /// <summary>
+        /// The energy consumption of the scanner per tick.
+        /// </summary>
         public double ScannerEnergyConsumption;
+        
+        /// <summary>
+        /// The range of the scanner. Affects energy consumption.
+        /// </summary>
         public double ScannerRange;
+
+        /// <summary>
+        /// The width of the scanner. Affects energy consumption.
+        /// </summary>
         public double ScannerWidth;
 
         /// <summary>
@@ -91,17 +315,17 @@ namespace Flattiverse.Connector.Hierarchy
             IonCells = 0;
             IonReactor = 0;
             IonTransfer = 0;
-            ThrusterForward = 0;
-            ThrusterBackward = 0;
-            Nozzle = 0;
-            Speed = 0;
-            Turnrate = 0;
-            Cargo = 0;
-            Extractor = 0;
-            WeaponSpeed = 0;
-            WeaponTime = 0;
+            ThrusterForwardMax = 0;
+            ThrusterBackwardMax = 0;
+            NozzleMax = 0;
+            SpeedMax = 0;
+            TurnrateMax = 0;
+            CargoMax = 0;
+            ExtractorMax = 0;
+            WeaponSpeedMax = 0;
+            WeaponTimeMax = 0;
             WeaponLoad = 0;
-            WeaponAmmo = 0;
+            WeaponAmmoMax = 0;
             WeaponAmmoProduction = 0;
             FreeSpawn = true;
             NozzleEnergyConsumption = 0;
@@ -140,17 +364,17 @@ namespace Flattiverse.Connector.Hierarchy
             IonCells = ship.IonCells;
             IonReactor = ship.IonReactor;
             IonTransfer = ship.IonTransfer;
-            ThrusterForward = ship.ThrusterForward;
-            ThrusterBackward = ship.ThrusterBackward;
-            Nozzle = ship.Nozzle;
-            Speed = ship.Speed;
-            Turnrate = ship.Turnrate;
-            Cargo = ship.Cargo;
-            Extractor = ship.Extractor;
-            WeaponSpeed = ship.WeaponSpeed;
-            WeaponTime = ship.WeaponTime;
+            ThrusterForwardMax = ship.ThrusterForwardMax;
+            ThrusterBackwardMax = ship.ThrusterBackwardMax;
+            NozzleMax = ship.NozzleMax;
+            SpeedMax = ship.SpeedMax;
+            TurnrateMax = ship.TurnrateMax;
+            CargoMax = ship.CargoMax;
+            ExtractorMax = ship.ExtractorMax;
+            WeaponSpeedMax = ship.WeaponSpeedMax;
+            WeaponTimeMax = ship.WeaponTimeMax;
             WeaponLoad = ship.WeaponLoad;
-            WeaponAmmo = ship.WeaponAmmo;
+            WeaponAmmoMax = ship.WeaponAmmoMax;
             WeaponAmmoProduction = ship.WeaponAmmoProduction;
             FreeSpawn = ship.FreeSpawn;
             NozzleEnergyConsumption = ship.NozzleEnergyConsumption;
@@ -189,17 +413,17 @@ namespace Flattiverse.Connector.Hierarchy
             IonCells = reader.ReadDouble();
             IonReactor = reader.ReadDouble();
             IonTransfer = reader.ReadDouble();
-            ThrusterForward = reader.ReadDouble();
-            ThrusterBackward = reader.ReadDouble();
-            Nozzle = reader.ReadDouble();
-            Speed = reader.ReadDouble();
-            Turnrate = reader.ReadDouble();
-            Cargo = reader.ReadDouble();
-            Extractor = reader.ReadDouble();
-            WeaponSpeed = reader.ReadDouble();
-            WeaponTime = reader.ReadUInt16();
+            ThrusterForwardMax = reader.ReadDouble();
+            ThrusterBackwardMax = reader.ReadDouble();
+            NozzleMax = reader.ReadDouble();
+            SpeedMax = reader.ReadDouble();
+            TurnrateMax = reader.ReadDouble();
+            CargoMax = reader.ReadDouble();
+            ExtractorMax = reader.ReadDouble();
+            WeaponSpeedMax = reader.ReadDouble();
+            WeaponTimeMax = reader.ReadUInt16();
             WeaponLoad = reader.ReadDouble();
-            WeaponAmmo = reader.ReadDouble();
+            WeaponAmmoMax = reader.ReadDouble();
             WeaponAmmoProduction = reader.ReadDouble();
             FreeSpawn = reader.ReadBoolean();
             
@@ -241,17 +465,17 @@ namespace Flattiverse.Connector.Hierarchy
             writer.Write(IonCells);
             writer.Write(IonReactor);
             writer.Write(IonTransfer);
-            writer.Write(ThrusterForward);
-            writer.Write(ThrusterBackward);
-            writer.Write(Nozzle);
-            writer.Write(Speed);
-            writer.Write(Turnrate);
-            writer.Write(Cargo);
-            writer.Write(Extractor);
-            writer.Write(WeaponSpeed);
-            writer.Write(WeaponTime);
+            writer.Write(ThrusterForwardMax);
+            writer.Write(ThrusterBackwardMax);
+            writer.Write(NozzleMax);
+            writer.Write(SpeedMax);
+            writer.Write(TurnrateMax);
+            writer.Write(CargoMax);
+            writer.Write(ExtractorMax);
+            writer.Write(WeaponSpeedMax);
+            writer.Write(WeaponTimeMax);
             writer.Write(WeaponLoad);
-            writer.Write(WeaponAmmo);
+            writer.Write(WeaponAmmoMax);
             writer.Write(WeaponAmmoProduction);
             writer.Write(FreeSpawn);
             writer.Write(NozzleEnergyConsumption);
