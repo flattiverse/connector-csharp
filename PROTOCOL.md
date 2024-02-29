@@ -124,10 +124,10 @@ deactivation of the element which makes it return `false` when `IsActive` is cal
 * `0x30`: Message to `Player`.
 * `0x31`: Message to `Team`.
 * `0x32`: Message to `Galaxy`.
-* `0x34`: `ShutdownControllableDestroyedEvent` message.
-* `0x35`: `SelfDestructionControllableDestroyedEvent` message.
-* `0x36`: `NeutralCollisionControllableDestroyedEvent` message.
-* `0x37`: `ControllableCollisionControllableDestroyedEvent` message.
+* `0x34`: `ControllableDestroyedEvent` message.
+  * `Id0`: `Player.ID` - The id of the player for whom the controllable died.
+  * `Id1`: `Controllable.ID` - the id of the controllable (within the player) that died.
+  * `Param0`: `(byte)DestructionReason` - The reason for the death.
 * `0xFF` (in a session): An error occurred which processing the session.
 
 And those commands from the client to the server:
