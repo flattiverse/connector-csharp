@@ -6,6 +6,9 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Hierarchy;
 
+/// <summary>
+/// This is a map where you can register to play on.
+/// </summary>
 public class Galaxy
 {
     private ushort id;
@@ -13,18 +16,38 @@ public class Galaxy
     private GalaxyConfig config;
 
     private readonly Cluster?[] clusters = new Cluster?[256];
+
+    /// <summary>
+    /// Readonly collection of all clusters in this galaxy.
+    /// </summary>
     public readonly UniversalHolder<Cluster> Clusters;
 
     private readonly ShipDesign?[] shipDesigns = new ShipDesign?[256];
+
+    /// <summary>
+    /// The possible ship designs players can use to register a new ship.
+    /// </summary>
     public readonly UniversalHolder<ShipDesign> ShipsDesigns;
 
     private readonly Team?[] teams = new Team?[33];
+
+    /// <summary>
+    /// Readonly collection of all teams in this galaxy.
+    /// </summary>
     public readonly UniversalHolder<Team> Teams;
 
     private readonly Controllable?[] controllables = new Controllable?[256];
+
+    /// <summary>
+    /// Readonly collection of all controllables in this galaxy.
+    /// </summary>
     public readonly UniversalHolder<Controllable> Controllables;
 
     private readonly Player?[] players = new Player?[256];
+
+    /// <summary>
+    /// Readonly collection of all players in this galaxy.
+    /// </summary>
     public readonly UniversalHolder<Player> Players;
 
     private readonly SessionHandler sessions;
@@ -48,8 +71,22 @@ public class Galaxy
         sessions = new SessionHandler(connection);
     }
 
+    /// <summary>
+    /// The ID of the galaxy. Unique per Universe.
+    /// </summary>
     public int ID => id;
+
+    /// <summary>
+    /// The name of the galaxy.
+    /// </summary>
+    /// <remarks>
+    /// SAFETY: Make sure this is unique in the universe, because it can also be used to address the galaxy.
+    /// </remarks>
     public string Name => config.Name;
+
+    /// <summary>
+    /// The configuration values of the galaxy.
+    /// </summary>
     public GalaxyConfig Config => config;
 
     internal async Task Connect(string uri, string auth, byte team)
@@ -67,6 +104,9 @@ public class Galaxy
         return await sessions.Get();
     }
 
+    /// <summary>
+    /// Suspend until the login process has been completed.
+    /// </summary>
     public async Task WaitLoginCompleted()
     {
         TaskCompletionSource tSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -457,6 +497,10 @@ public class Galaxy
         }
     }
 
+    /// <summary>
+    /// Get the next event from the galaxy.
+    /// </summary>
+    /// <returns></returns>
     public async Task<FlattiverseEvent> NextEvent()
     {
         FlattiverseEvent? @event;
