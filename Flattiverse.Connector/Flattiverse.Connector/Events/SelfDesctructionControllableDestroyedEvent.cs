@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Events;
 /// </summary>
 public class SelfDesctructionControllableDestroyedEvent : ControllableDestroyedEvent
 {
-    public SelfDesctructionControllableDestroyedEvent(Player player, ControllableInfo controllableInfo) : base(player, controllableInfo)
+    internal SelfDesctructionControllableDestroyedEvent(Player player, ControllableInfo controllableInfo) : base(player, controllableInfo)
     {
     }
 

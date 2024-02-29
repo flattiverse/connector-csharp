@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Events;
 /// </summary>
 public class ShutdownControllableDestroyedEvent : ControllableDestroyedEvent
 {
-    public ShutdownControllableDestroyedEvent(Player player, ControllableInfo controllable) : base(player, controllable)
+    internal ShutdownControllableDestroyedEvent(Player player, ControllableInfo controllable) : base(player, controllable)
     {
     }
 
