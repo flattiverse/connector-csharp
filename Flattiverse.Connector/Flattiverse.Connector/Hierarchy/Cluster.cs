@@ -162,14 +162,14 @@ public class Cluster : INamedUnit
 
         Packet packet = new Packet();
         packet.Header.Command = 0x44;
-        packet.Header.Param0 = id;
+        packet.Header.Id0 = id;
 
         using (PacketWriter writer = packet.Write())
             changes.Write(writer);
 
         await session.SendWait(packet);
 
-        if (regions[packet.Header.Param0] is not Region region)
+        if (regions[packet.Header.Id0] is not Region region)
             throw new GameException("Creation successfull, but connector didn't receive update yet.");//Should never happen
 
         return region;
