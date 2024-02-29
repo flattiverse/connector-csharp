@@ -3,12 +3,20 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
 
-public class ControllableDestroyedEvent : FlattiverseEvent
+public abstract class ControllableDestroyedEvent : FlattiverseEvent
 {
-    public readonly DestructionReason Reason;
+    /// <summary>
+    /// Your affected Controllable.
+    /// </summary>
+    public readonly Controllable Controllable;
 
-    internal ControllableDestroyedEvent(PacketReader reader)
+    internal ControllableDestroyedEvent(Controllable controllable)
     {
-        Reason = (DestructionReason)reader.ReadByte();
+        Controllable = controllable;
     }
+    
+    /// <summary>
+    /// The reason for the death of your Controllable.
+    /// </summary>
+    public abstract DestructionReason Reason { get; }
 }

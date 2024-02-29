@@ -3,6 +3,6 @@
 public enum DestructionReason
 {
     Shutdown,
-    Suicide,
+    SelfDestruction,
     Collision
 }
