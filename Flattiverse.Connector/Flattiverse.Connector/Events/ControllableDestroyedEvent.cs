@@ -3,6 +3,9 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
 
+/// <summary>
+/// This event is fired when a controllable is destroyed.
+/// </summary>
 public abstract class ControllableDestroyedEvent : FlattiverseEvent
 {
     /// <summary>
