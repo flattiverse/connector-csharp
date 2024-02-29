@@ -8,16 +8,32 @@ using System.Threading.Tasks;
 
 namespace Flattiverse.Connector
 {
+    /// <summary>
+    /// The vector class used by flattiverse
+    /// </summary>
     public class Vector
     {
+        /// <summary>
+        /// The null or zero vector, with both elements set to zero.
+        /// </summary>
         public static Vector Null => new Vector();
 
         private static double tolerance = 0.000015;
 
+        /// <summary>
+        /// The X component of the vector.
+        /// </summary>
         public double X;
+
+        /// <summary>
+        /// The Y component of the vector.
+        /// </summary>
         public double Y;
         private double lastAngle;
 
+        /// <summary>
+        /// The default constructor.
+        /// </summary>
         public Vector()
         {
         }
@@ -52,23 +68,38 @@ namespace Flattiverse.Connector
                 writer.Write(Y);
         }
 
+        /// <summary>
+        /// The copy constructor.
+        /// </summary>
         public Vector(Vector vectorToCopy)
         {
             X = vectorToCopy.X;
             Y = vectorToCopy.Y;
         }
 
+        /// <summary>
+        /// The constructor with the X and Y components.
+        /// </summary>
         public Vector(double x, double y)
         {
             X = x;
             Y = y;
         }
         
+        /// <summary>
+        /// Construct a vector from polar coordinates.
+        /// </summary>
+        /// <param name="angle"></param>
+        /// <param name="length"></param>
+        /// <returns cref="Vector"></returns>
         public static Vector FromAngleLength(double angle, double length)
         {
             return new Vector(Math.Cos(angle * Math.PI / 180f) * length, Math.Sin(angle * Math.PI / 180f) * length);
         }
 
+        /// <summary>
+        /// The polar angle of a vector
+        /// </summary>
         public double Angle
         {
             get
@@ -88,8 +119,14 @@ namespace Flattiverse.Connector
             }
         }
 
+        /// <summary>
+        /// The squared length of the vector.
+        /// </summary>
         public double LengthSquared => X * X + Y * Y;
 
+        /// <summary>
+        /// The length of the vector.
+        /// </summary>
         public double Length
         {
             get
@@ -118,6 +155,10 @@ namespace Flattiverse.Connector
             }
         }
 
+        /// <summary>
+        /// Rotates a vector by an angle
+        /// </summary>
+        /// <param name="angle"></param>
         public void RotatedBy(double angle)
         {
             double alpha = angle * Math.PI / 180;
@@ -127,6 +168,11 @@ namespace Flattiverse.Connector
             X = x;
         }
 
+        /// <summary>
+        /// The angle between two vectors
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns cref="double"></returns>
         public double AngleFrom(Vector? v)
         {
             if (v is null)
@@ -140,6 +186,10 @@ namespace Flattiverse.Connector
             return deg;
         }
 
+        /// <summary>
+        /// Component wise addition of two vectors
+        /// </summary>
+        /// <returns cref="Vector"></returns>
         public static Vector operator +(Vector? l, Vector? r)
         {
             if (l is null && r is null)
@@ -154,6 +204,12 @@ namespace Flattiverse.Connector
             return new Vector(l.X + r.X, l.Y + r.Y);
         }
 
+        /// <summary>
+        /// Component wise subtraction of two vectors
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="Vector"></returns>
         public static Vector operator -(Vector? l, Vector? r)
         {
             if (l is null && r is null)
@@ -168,6 +224,12 @@ namespace Flattiverse.Connector
             return new Vector(l.X - r.X, l.Y - r.Y);
         }
 
+        /// <summary>
+        /// Component wise multiplication of two vectors with a scalar
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="factor"></param>
+        /// <returns cref="Vector"></returns>
         public static Vector operator *(Vector? vector, double factor)
         {
             if (vector is null)
@@ -181,6 +243,12 @@ namespace Flattiverse.Connector
             return resultingVector;
         }
 
+        /// <summary>
+        /// Component wise division of two vectors with a scalar
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="divisor"></param>
+        /// <returns cref="Vector"></returns>
         public static Vector operator /(Vector? vector, double divisor)
         {
             if (vector is null)
@@ -189,6 +257,10 @@ namespace Flattiverse.Connector
             return new Vector(vector.X / divisor, vector.Y / divisor);
         }
 
+        /// <summary>
+        /// Equality check between vectors
+        /// </summary>
+        /// <returns cref="bool"></returns>
         public static bool operator ==(Vector? l, Vector? r)
         {
             if (l is null && r is null)
@@ -200,6 +272,12 @@ namespace Flattiverse.Connector
             return l - r < tolerance;
         }
 
+        /// <summary>
+        /// Equality check between the length of a vector and a scalar
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator ==(Vector? l, double r)
         {
             if (l is null)
@@ -210,6 +288,12 @@ namespace Flattiverse.Connector
             return length - tolerance < r && length + tolerance > r;
         }
 
+        /// <summary>
+        /// Greater than check between vector lengths
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator >(Vector? l, Vector? r)
         {
             if (l is null)
@@ -221,16 +305,34 @@ namespace Flattiverse.Connector
             return l.X * l.X + l.Y * l.Y > r.X * r.X + r.Y * r.Y;
         }
 
+        /// <summary>
+        /// Inequality check between vectors
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator !=(Vector? l, Vector? r)
         {
             return !(l == r);
         }
 
+        /// <summary>
+        /// Inequality check between the length of a vector and a scalar
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator !=(Vector? l, double r)
         {
             return !(l == r);
         }
 
+        /// <summary>
+        /// Greater than check between two vectors
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator <(Vector? l, Vector? r)
         {
             if (l is null && r is null)
@@ -245,6 +347,12 @@ namespace Flattiverse.Connector
             return l.X * l.X + l.Y * l.Y < r.X * r.X + r.Y * r.Y;
         }
 
+        /// <summary>
+        /// Greater than check between the length of a vector and a scalar
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator >(Vector? l, double r)
         {
             if (l is null)
@@ -253,6 +361,12 @@ namespace Flattiverse.Connector
             return l.X * l.X + l.Y * l.Y > r * r;
         }
 
+        /// <summary>
+        /// Less than check between the length of a vector and a scalar
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="r"></param>
+        /// <returns cref="bool"></returns>
         public static bool operator <(Vector? l, double r)
         {
             if (l is null)
@@ -261,8 +375,17 @@ namespace Flattiverse.Connector
             return l.X * l.X + l.Y * l.Y < r * r;
         }
 
+        /// <summary>
+        /// Indicates if the vector contains any invalid values
+        /// </summary>
         public bool IsDamaged => double.IsInfinity(X) || double.IsNaN(X) || double.IsInfinity(Y) || double.IsNaN(Y);
 
+        /// <summary>
+        /// The squared distance between two vectors
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns cref="double"></returns>
         public static double SquaredDistance(Vector? a, Vector? b)
         {
             if (a is null && b is null)
@@ -277,6 +400,12 @@ namespace Flattiverse.Connector
             return (b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y);
         }
 
+        /// <summary>
+        /// The distance between two vectors
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns cref="double"></returns>
         public static double Distance(Vector? a, Vector? b)
         {
             if (a is null)
@@ -288,6 +417,7 @@ namespace Flattiverse.Connector
             return Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -318,11 +448,13 @@ namespace Flattiverse.Connector
             return sb.ToString();
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is Vector && this == (Vector)obj;
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return base.GetHashCode();
