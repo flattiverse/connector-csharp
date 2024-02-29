@@ -5,25 +5,87 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.MissionSelection
 {
+    /// <summary>
+    /// Information about a player.
+    /// </summary>
     public class PlayerInfo
     {
+        /// <summary>
+        /// The id of the player. It is unique in the galaxy.
+        /// </summary>
         public readonly int Id;
+
+        /// <summary>
+        /// The name of the player.
+        /// </summary>
+        /// <remarks>
+        /// SAFETY: Make sure this name is unique in the galaxy.
+        /// </remarks>
         public readonly string Name;
+
+        /// <summary>
+        /// If the player has an avatar.
+        /// </summary>
         public readonly bool HasAvatar;
+
+        /// <summary>
+        /// The team the player is in.
+        /// </summary>
         public readonly TeamInfo Team;
+
+        /// <summary>
+        /// The amount of kills the player has.
+        /// </summary>
         public readonly int Kills;
+
+        /// <summary>
+        /// The amount of deaths the player has.
+        /// </summary>
         public readonly int Deaths;
+
+        /// <summary>
+        /// The amount of collisions the player has had.
+        /// </summary>
         public readonly int Collisions;
+
+        /// <summary>
+        /// The amount of kills the player has in the current session.
+        /// </summary>
         public readonly int SessionKills;
+
+        /// <summary>
+        /// The amount of deaths the player has in the current session.
+        /// </summary>
         public readonly int SessionDeaths;
+
+        /// <summary>
+        /// The amount of collisions the player has had in the current session.
+        /// </summary>
         public readonly int SessionCollisions;
+        
+        /// <summary>
+        /// The rank of the player.
+        /// </summary>
         public readonly int Rank;
+
+        /// <summary>
+        /// The PvP score of the player.
+        /// </summary>
         public readonly int PvPScore;
+        
+        /// <summary>
+        /// The date the player started playing.
+        /// </summary>
         public readonly int DatePlayedStart;
+
+        /// <summary>
+        /// The date the player stopped playing.
+        /// </summary>
         public readonly int DatePlayedEnd;
 
-
-
+        /// <summary>
+        /// Creates a new player info.
+        /// </summary>
         public PlayerInfo(JsonElement player, ReadOnlyDictionary<string, TeamInfo> teams)
         {
             int team;
@@ -56,9 +118,6 @@ namespace Flattiverse.Connector.MissionSelection
                     break;
                 }
             }
-
-
-
         }
     }
 }

@@ -5,6 +5,9 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Events;
 
+/// <summary>
+/// This event is raised, if a player collided with a controllable and destroyed it.
+/// </summary>
 public class PlayerCollisionControllableDestroyedEvent: ControllableDestroyedEvent
 {
 
@@ -30,7 +33,9 @@ public class PlayerCollisionControllableDestroyedEvent: ControllableDestroyedEve
         OtherControllableInfo = OtherPlayer.controllableInfos[controllableInfoId]!;
     }
 
+    /// <inheritdoc/>
     public override EventKind Kind => EventKind.DeathByControllableCollision;
     
+    /// <inheritdoc/>
     public override DestructionReason Reason => DestructionReason.Collision;
 }
