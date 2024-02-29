@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.Network
         private readonly CancellationTokenSource cancellationSource;
         private CancellationToken cancellationToken;
 
-        private const string version = "3";
+        private const string version = "4";
 
         private object sync;
 
