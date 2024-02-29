@@ -184,7 +184,7 @@ public class Galaxy
 
         packet = await session.SendWait(packet);
 
-        if (teams[packet.Header.Param0] is not Team team)
+        if (teams[packet.Header.Id0] is not Team team)
             throw new GameException("Creation successful, but connector didn't receive update yet.");//Should never happen
 
         return team;
