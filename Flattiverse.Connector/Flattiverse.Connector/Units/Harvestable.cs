@@ -5,6 +5,10 @@ using System.Collections.ObjectModel;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// A harvestable celestial body.
+    /// Resources can be gathered from this body.
+    /// </summary>
     public class Harvestable : CelestialBody
     {
         internal ReadOnlyCollection<HarvestableSection> sections;
@@ -35,7 +39,10 @@ namespace Flattiverse.Connector.Units
             sections = new ReadOnlyCollection<HarvestableSection> (tSections);
         }
 
-
+        /// <summary>
+        /// Sections of this harvestable.
+        /// These are areas with resources.
+        /// </summary>
         public ReadOnlyCollection<HarvestableSection> Sections => sections;
 
     }

@@ -3,6 +3,10 @@ using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// Player units are controlled by other players.
+    /// Can be either firend or enemy based on team affilitaion.
+    /// </summary>
     public class PlayerUnit : Unit
     {
         private readonly Cluster cluster;

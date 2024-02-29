@@ -125,7 +125,8 @@ public class Unit
     public virtual double VisibleRangeMultiplier => 1.0;
 
     /// <summary>
-    /// This specifies of what kind this unit is.
+    /// This specifies the mobility of the unit.
+    /// It can be still (fixed at a point), steady (fixed trajectory), or moving (free to move in any direction).
     /// </summary>
     public virtual Mobility Mobility => Mobility.Still;
 

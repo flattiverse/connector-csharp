@@ -11,6 +11,10 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// A planet. A harvestable unit that can be mined for resources.
+    /// The biggest harvestable unit.
+    /// </summary>
     public class Planet : Harvestable
     {
         internal Planet(Cluster cluster, PacketReader reader) : base(cluster, reader)
@@ -84,8 +88,10 @@ namespace Flattiverse.Connector.Units
             await session.SendWait(packet);
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Planet;
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Planet {Name}";

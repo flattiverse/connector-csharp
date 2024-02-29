@@ -3,6 +3,13 @@ using Flattiverse.Connector.UnitConfigurations;
 
 namespace Flattiverse.Connector.Units.SubComponents
 {
+    /// <summary>
+    /// A section of the sun and are central to the sun's position.
+    /// Players in this section will collect additional energy and ions.
+    /// </summary>
+    /// <remarks>
+    /// The speed of collecting these resources is based on your ShipConfiguration and your upgrades.
+    /// </remarks>
     public class SunSection
     {
         private double innerRadius;
@@ -53,6 +60,10 @@ namespace Flattiverse.Connector.Units.SubComponents
             writer.Write(ions);
         }
 
+        /// <summary>
+        /// Removes this section from the configuration.
+        /// </summary>
+        /// <exception cref="GameException">Thrown, if you don't have permission to do this.</exception>
         public void Remove()
         {
             Configuration?.sections.Remove(this);

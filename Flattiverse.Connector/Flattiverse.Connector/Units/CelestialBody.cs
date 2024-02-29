@@ -5,6 +5,9 @@ using System.Diagnostics.Metrics;
 
 namespace Flattiverse.Connector.Units
 {
+    /// <summary>
+    /// The base class all celestial bodies are derived from.
+    /// </summary>
     public class CelestialBody : Unit
     {
         private Vector position;
@@ -39,14 +42,19 @@ namespace Flattiverse.Connector.Units
             reader.ReadByte();
         }
 
+        /// <inheritdoc/>
         public override Cluster Cluster => cluster;
 
+        /// <inheritdoc/>
         public override double Gravity => gravity;
 
+        /// <inheritdoc/>
         public override double Radius => radius;
 
+        /// <inheritdoc/>
         public override Vector Position => position;
 
+        /// <inheritdoc/>
         public override Mobility Mobility => Mobility.Still;
     }
 }
