@@ -2,11 +2,22 @@
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// ShipDesign contains the base parameters of a ship.
+    /// </summary>
+    /// <seealso cref="ShipDesignConfig"/>
     public class ShipDesign : INamedUnit
     {
+        /// <summary>
+        /// The galaxy the ship design is valid for.
+        /// </summary>
         public readonly Galaxy Galaxy;
 
         internal readonly ShipUpgrade?[] upgrades = new ShipUpgrade?[256];
+
+        /// <summary>
+        /// Readonly collection of ship upgrades.
+        /// </summary>
         public readonly UniversalHolder<ShipUpgrade> Upgrades;
 
         private byte id;
@@ -22,11 +33,19 @@ namespace Flattiverse.Connector.Hierarchy
             Upgrades = new UniversalHolder<ShipUpgrade>(upgrades);
         }
 
+        /// <summary>
+        /// The index into the galaxy's ship design list.
+        /// </summary>
         public int ID => id;
+        
         /// <summary>
         /// The name of the ship.
         /// </summary>
         public string Name => config.Name;
+
+        /// <summary>
+        /// The actual base parameters of the ship.
+        /// </summary>
         public ShipDesignConfig Config => config;
 
         /// <summary>
