@@ -4,6 +4,8 @@ using Flattiverse.Connector.Hierarchy;
 
 namespace Flattiverse.Connector.MissionSelection;
 
+/// <summary>
+/// 
 public class GalaxyInfo
 {
     public readonly Universe Universe;
