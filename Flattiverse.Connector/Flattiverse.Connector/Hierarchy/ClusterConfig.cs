@@ -3,6 +3,9 @@ using System.Xml.Linq;
 
 namespace Flattiverse.Connector.Hierarchy
 {
+    /// <summary>
+    /// The configuration used by a cluster.
+    /// </summary>
     public class ClusterConfig
     {
         private string name;
