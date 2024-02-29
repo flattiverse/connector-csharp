@@ -7,7 +7,7 @@ namespace Flattiverse.Connector.Hierarchy
     {
         private string name;
         public string Description;
-        public GameType GameType;
+        public GameMode Mode;
         public int MaxPlayers;
 
         // TODO MALUK these could all be ushort
@@ -51,7 +51,7 @@ namespace Flattiverse.Connector.Hierarchy
         {
             Name = galaxy.Name;
             Description = galaxy.Description;
-            GameType = galaxy.GameType;
+            Mode = galaxy.Mode;
             MaxPlayers = galaxy.MaxPlayers;
 
             MaxPlatformsGalaxy = galaxy.MaxPlatformsGalaxy;
@@ -77,7 +77,7 @@ namespace Flattiverse.Connector.Hierarchy
         {
             Name = reader.ReadString();
             Description = reader.ReadString();
-            GameType = (GameType)reader.ReadByte();
+            Mode = (GameMode)reader.ReadByte();
             MaxPlayers = reader.ReadByte();
             MaxPlatformsGalaxy = reader.ReadUInt16();
             MaxProbesGalaxy = reader.ReadUInt16();
@@ -100,7 +100,7 @@ namespace Flattiverse.Connector.Hierarchy
         {
             writer.Write(Name);
             writer.Write(Description);
-            writer.Write((byte)GameType);
+            writer.Write((byte)Mode);
             writer.Write(MaxPlayers);
             writer.Write(MaxPlatformsGalaxy);
             writer.Write(MaxProbesGalaxy);
