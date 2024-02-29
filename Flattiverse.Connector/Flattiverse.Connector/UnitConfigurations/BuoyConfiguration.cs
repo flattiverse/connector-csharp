@@ -4,6 +4,9 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.UnitConfigurations
 {
+    /// <summary>
+    /// The configuration of a buoy.
+    /// </summary>
     public class BuoyConfiguration : CelestialBodyConfiguration
     {
         private string message;
@@ -39,6 +42,7 @@ namespace Flattiverse.Connector.UnitConfigurations
             }
         }
 
+        /// <inheritdoc/>
         public override UnitKind Kind => UnitKind.Buoy;
         internal static BuoyConfiguration Default => new BuoyConfiguration();
         
