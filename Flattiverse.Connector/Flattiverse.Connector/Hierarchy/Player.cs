@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.Hierarchy
         /// <summary>
         /// The ID of the player. This is unique in the galaxy.
         /// </summary>
-        public readonly byte ID;
+        public readonly byte Id;
 
         private readonly string name;
 
@@ -52,7 +52,7 @@ namespace Flattiverse.Connector.Hierarchy
         {
             Galaxy = galaxy;
             active = true;
-            ID = id;
+            Id = id;
             Kind = kind;
             Team = team;
             
@@ -104,7 +104,7 @@ namespace Flattiverse.Connector.Hierarchy
 
             Packet packet = new Packet();
             packet.Header.Command = 0x20;
-            packet.Header.Id0 = ID;
+            packet.Header.Id0 = Id;
 
             packet.Header.Size = (ushort)System.Text.Encoding.UTF8.GetBytes(message.AsSpan(), packet.Payload.AsSpan(8, 1024));
 
@@ -114,7 +114,7 @@ namespace Flattiverse.Connector.Hierarchy
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"Player [{ID}] {name} ({Kind})";
+            return $"Player [{Id}] {name} ({Kind})";
         }
     }
 }
