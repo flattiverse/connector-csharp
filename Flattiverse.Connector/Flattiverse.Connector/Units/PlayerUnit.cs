@@ -27,6 +27,7 @@ namespace Flattiverse.Connector.Units
 
         private double scanDirection;
         private double scanLength;
+        private double scanWidth;
         private bool scanActive;
 
         private bool active;
@@ -94,6 +95,11 @@ namespace Flattiverse.Connector.Units
         public double ScanLength => scanLength;
 
         /// <summary>
+        /// The currently configured width (in degree) of the scanner of this unit.
+        /// </summary>
+        public double ScanWidth => scanWidth;
+
+        /// <summary>
         /// Whether the unit's scanner is currently active.
         /// </summary>
         public bool ScanActive => scanActive;
@@ -118,6 +124,7 @@ namespace Flattiverse.Connector.Units
 
             scanDirection = reader.ReadDouble();
             scanLength = reader.ReadDouble();
+            scanWidth = reader.ReadDouble();
             scanActive = reader.ReadBoolean();
 
             active = true;
@@ -138,6 +145,7 @@ namespace Flattiverse.Connector.Units
 
             scanDirection = reader.ReadDouble();
             scanLength = reader.ReadDouble();
+            scanWidth = reader.ReadDouble();
             scanActive = reader.ReadBoolean();
         }
 

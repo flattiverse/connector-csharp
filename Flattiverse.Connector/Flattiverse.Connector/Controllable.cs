@@ -685,7 +685,7 @@ namespace Flattiverse.Connector
             await session.SendWait(packet);
         }
 
-        public async Task SetScanner(double direction, double range)
+        public async Task SetScanner(double range, double width, double direction)
         {
             if (!active)
                 throw new GameException(0x22);
@@ -693,10 +693,15 @@ namespace Flattiverse.Connector
             if (hull == 0)
                 throw new GameException(0x20);
             
-            if (!double.IsFinite(direction) || direction < 0.0 || direction > 360.0)
+            if (!double.IsFinite(direction) || direction < -360.0 || direction > 720.0)
                 throw new GameException(0x31);
+
+            direction = (direction + 720.0) % 360.0;
             
-            if (!double.IsFinite(range) || range < 0.0 || range > ShipDesign.Config.ScannerRange * 1.05)
+            if (!double.IsFinite(range) || range < 60.0 || range > ShipDesign.Config.ScannerRange * 1.05)
+                throw new GameException(0x31);
+
+            if (!double.IsFinite(width) || width < 0.0 || width > ShipDesign.Config.ScannerWidth * 1.05)
                 throw new GameException(0x31);
             
             Session session = await galaxy.GetSession();
@@ -709,6 +714,7 @@ namespace Flattiverse.Connector
             {
                 writer.Write(direction);
                 writer.Write(range);
+                writer.Write(width);
             }
             
             await session.SendWait(packet);
