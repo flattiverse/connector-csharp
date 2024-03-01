@@ -112,6 +112,12 @@ namespace Flattiverse.Connector.Hierarchy
             return upgrade;
         }
 
+
+        internal void Update(PacketReader reader)
+        {
+            config = new ShipDesignConfig(reader);
+        }
+
         internal void ReadUpgrade(byte id, PacketReader reader)
         {
             upgrades[id] = new ShipUpgrade(Galaxy, this, id, reader);

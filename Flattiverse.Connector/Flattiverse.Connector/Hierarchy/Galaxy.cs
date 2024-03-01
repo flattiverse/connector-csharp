@@ -334,8 +334,12 @@ public class Galaxy
                 shipDesigns[packet.Header.Id0] = new ShipDesign(this, packet.Header.Id0, reader);
                 break;
             case 0x54: // ShipDesign updated.
+                Debug.Assert(shipDesigns[packet.Header.Id0] is not null, $"shipDesigns[{packet.Header.Id0}] populated.");
+                shipDesigns[packet.Header.Id0]!.Update(reader);
+                break;
             case 0x74: // ShipDesign removed.
-                // TODO JOW: Diese zwei müssten implementiert werden.
+                Debug.Assert(shipDesigns[packet.Header.Id0] is not null, $"shipDesigns[{packet.Header.Id0}] populated.");
+                shipDesigns[packet.Header.Id0] = null;
                 break;
             case 0x45: // ShipUpgrade created.            
                 Debug.Assert(shipDesigns[packet.Header.Id1] is not null, $"shipDesigns[{packet.Header.Id1}] not populated.");
