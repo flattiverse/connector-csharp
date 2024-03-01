@@ -701,7 +701,7 @@ namespace Flattiverse.Connector
             if (!double.IsFinite(range) || range < 60.0 || range > ShipDesign.Config.ScannerRange * 1.05)
                 throw new GameException(0x31);
 
-            if (!double.IsFinite(width) || width < 0.0 || width > ShipDesign.Config.ScannerWidth * 1.05)
+            if (!double.IsFinite(width) || width < 10.0 || width > ShipDesign.Config.ScannerWidth * 1.05)
                 throw new GameException(0x31);
             
             Session session = await galaxy.GetSession();
