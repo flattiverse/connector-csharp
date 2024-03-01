@@ -649,6 +649,16 @@ namespace Flattiverse.Connector
             await session.SendWait(packet);
         }
 
+        /// <summary>
+        /// Turns on the ships scanner
+        /// Without it you have a limitid visibility range.
+        /// </summary>
+        /// <remarks>
+        /// The scanner scans in a cone in front of the ship.
+        /// You can set its parameters with <see cref="SetScanner"/>
+        /// </remarks>
+        /// <returns></returns>
+        /// <exception cref="GameException"></exception>
         public async Task EnableScanner()
         {
             if (!active)
@@ -667,6 +677,11 @@ namespace Flattiverse.Connector
             await session.SendWait(packet);
         }
 
+        /// <summary>
+        /// Disables the scanner previously enabled via <see cref="EnableScanner"/>
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="GameException"></exception>
         public async Task DisableScanner()
         {
             if (!active)
