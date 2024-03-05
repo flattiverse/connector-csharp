@@ -3,7 +3,9 @@
 ################################################################################
 
 /Flattiverse.Connector/.vs
+/Flattiverse.Connector/.idea
 /.vs
+/.idea
 /Flattiverse.Connector/Development/bin
 /Flattiverse.Connector/Development/obj
 /Flattiverse.Connector/Flattiverse.Connector/bin
