@@ -54,6 +54,8 @@ public class Galaxy
     private readonly Connection connection;
 
     private TaskCompletionSource? loginCompleted;
+    private byte loggedInPlayerId = 0xFF;
+    private PlayerKind? loggedInPlayerKind;
 
     private readonly Queue<FlattiverseEvent> pendingEvents = new Queue<FlattiverseEvent>();
     private readonly Queue<TaskCompletionSource<FlattiverseEvent>> pendingEventWaiters = new Queue<TaskCompletionSource<FlattiverseEvent>>();
@@ -88,6 +90,16 @@ public class Galaxy
     /// The configuration values of the galaxy.
     /// </summary>
     public GalaxyConfig Config => config;
+
+    /// <summary>
+    /// The player that is logged in for this connection to the Galaxy. This value is null for spectators and admins.
+    /// </summary>
+    public Player? LoggedInPlayer => players[loggedInPlayerId];
+
+    /// <summary>
+    /// The player-kind that is logged in for this connection to the Galaxy.
+    /// </summary>
+    public PlayerKind LoggedInPlayerKind => (PlayerKind)loggedInPlayerKind!;
 
     internal async Task Connect(string uri, string auth, byte team)
     {
@@ -443,6 +455,10 @@ public class Galaxy
                     loginCompleted = null;
                 }
                 pushEvent(new GalaxyTickEvent());
+                break;
+            case 0x21: // Set Logged-In Player
+                loggedInPlayerId = packet.Header.Id0; // either valid for 'player' or invalid (and thus 0xFF) for 'spectator' and 'admin'
+                loggedInPlayerKind = (PlayerKind)packet.Header.Param0;
                 break;
 //            case 0x50://Unit
 //                // TODO: MALUK extend

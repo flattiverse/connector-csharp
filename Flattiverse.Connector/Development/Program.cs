@@ -39,9 +39,11 @@ internal class Program
         //Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join("28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", universe.Galaxies["Beginners Course"].Teams["Plebs"]);
         // Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "71e5dc90ad20e51e63a94a63d671f80a03a45507679fdaec34a01394de033fef", 0);
         // Galaxy galaxy = await universe.Galaxies["Beginners Course"].Join(Environment.GetEnvironmentVariable("API_KEY")!, universe.Galaxies["Beginners Course"].Teams["Plebs"]);
-        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5001", Environment.GetEnvironmentVariable("API_KEY")!, 0);
+        Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000", Environment.GetEnvironmentVariable("API_KEY")!, 0);
         // Galaxy galaxy = await universe.ManualJoin("ws://127.0.0.1:5000/game/galaxies/0", "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", 0);
 
+        Console.WriteLine($"Logged in as {galaxy.LoggedInPlayerKind}: Name={galaxy.LoggedInPlayer?.Name}");
+        
         // var buoy = (Buoy)galaxy.Clusters[0].units["BerndGustav"];
         // await buoy.Configure(config =>
         // {
