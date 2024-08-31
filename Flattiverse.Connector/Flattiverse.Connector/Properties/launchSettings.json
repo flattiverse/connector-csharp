@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Flattiverse.Connector": {
-      "commandName": "Project",
-      "commandLineArgs": "0"
-    }
-  }
-}
