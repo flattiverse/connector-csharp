@@ -14,5 +14,6 @@ enum CommandParameterKind
     String = 0x20,
     GameMode = 0x40,
     PlayerKind = 0x41,
-    Team = 0x80
+    Team = 0x80,
+    Player = 0x81
 }

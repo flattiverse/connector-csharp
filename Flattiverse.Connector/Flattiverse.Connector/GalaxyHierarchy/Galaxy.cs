@@ -181,15 +181,6 @@ public class Galaxy : IDisposable
         PushEvent(new ConnectionTerminatedEvent(reason));
     }
     
-    internal bool TryGetTeam(byte id, [NotNullWhen(true)] out Team? team)
-    {
-        Debug.Assert(id < 33, "Invalid id for teams.");
-        
-        team = _teams[id];
-
-        return team is not null;
-    }
-    
     /// <summary>
     /// Yourself.
     /// </summary>
@@ -221,19 +212,19 @@ public class Galaxy : IDisposable
     public int MaxSpectators => _maxSpectators;
     
     /// <summary>
-    /// The maximum amount of toital ships allowed in the galaxy.
+    /// The maximum amount of total ships allowed in the galaxy.
     /// </summary>
-    public int GalaxyMaxProbes => _galaxyMaxTotalShips;
+    public int GalaxyMaxTotalShips => _galaxyMaxTotalShips;
 
     /// <summary>
     /// The maximum amount of classic style ships allowed in the galaxy.
     /// </summary>
-    public int GalaxyMaxDrones => _galaxyMaxClassicShips;
+    public int GalaxyMaxClassicShips => _galaxyMaxClassicShips;
 
     /// <summary>
     /// The maximum amount of new style ships allowed in the galaxy.
     /// </summary>
-    public int GalaxyMaxShips => _galaxyMaxNewShips;
+    public int GalaxyMaxNewShips => _galaxyMaxNewShips;
 
     /// <summary>
     /// The maximum amount of bases allowed in the galaxy.
@@ -243,17 +234,17 @@ public class Galaxy : IDisposable
     /// <summary>
     /// The maximum amount of total ships allowed per team in the galaxy.
     /// </summary>
-    public int TeamMaxProbes => _teamMaxTotalShips;
+    public int TeamMaxTotalShips => _teamMaxTotalShips;
 
     /// <summary>
     /// The maximum amount of classic style ships allowed per team in the galaxy.
     /// </summary>
-    public int TeamMaxDrones => _teamMaxClassicShips;
+    public int TeamMaxClassicShips => _teamMaxClassicShips;
 
     /// <summary>
     /// The maximum amount of new style ships allowed per team in the galaxy.
     /// </summary>
-    public int TeamMaxShips => _teamMaxNewShips;
+    public int TeamMaxNewShips => _teamMaxNewShips;
 
     /// <summary>
     /// The maximum amount of bases allowed per team in the galaxy.
@@ -263,17 +254,17 @@ public class Galaxy : IDisposable
     /// <summary>
     /// The maximum amount of total ships allowed per player in the galaxy.
     /// </summary>
-    public int PlayerMaxProbes => _playerMaxTotalShips;
+    public int PlayerMaxTotalShips => _playerMaxTotalShips;
 
     /// <summary>
     /// The maximum amount of classic style ships allowed per player in the galaxy.
     /// </summary>
-    public int PlayerMaxDrones => _playerMaxClassicShips;
+    public int PlayerMaxClassicShips => _playerMaxClassicShips;
 
     /// <summary>
     /// The maximum amount of new style ships allowed per player in the galaxy.
     /// </summary>
-    public int PlayerMaxShips => _playerMaxNewShips;
+    public int PlayerMaxNewShips => _playerMaxNewShips;
 
     /// <summary>
     /// The maximum amount of bases allowed per player in the galaxy.

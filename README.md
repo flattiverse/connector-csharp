@@ -17,7 +17,7 @@ Each `Exception` possible in the game has a number. Here is a list:
 * `0x10` (`SpecifiedElementNotFoundGameException`): Thrown if an element with specified index or name doesn't exist.
 * `0x11` (`CantCallThisConcurrentGameException`): Thrown, if you try to access a method in parallel. 
 ## Packets
-Those packet commands are used to transfer necessary data:
+Those packet commands are used to transfer necessary data from the galaxy to the client:
 * `0x00`: Ping request.
 * `0x01`: Update `Galaxy` info.
 * `0x02`: Create or update `Team`.
@@ -28,3 +28,11 @@ Those packet commands are used to transfer necessary data:
 * `0x11`: Update `Player`.
 * `0x13`: Deactivate `Player`.
 * `0xC0`: `GalaxyTickEvent`.
+* `0xC4`: Message received which has been sent to the `Galaxy`.
+* `0xC5`: Message received which has been sent to your `Team`.
+* `0xC6`: Message received which has been sent ti you.
+
+With those packet commands clients call commands in the galaxy:
+* `0xC4` (players only): Send a message to the galaxy.
+* `0xC5` (players only): Send a message to all members of a team.
+* `0xC6` (players only): Send a message to a player.

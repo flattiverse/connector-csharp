@@ -56,6 +56,9 @@ class CommandParameter
             case { } t when t == typeof(Team):
                 Kind = CommandParameterKind.Team;
                 break;
+            case { } t when t == typeof(Player):
+                Kind = CommandParameterKind.Player;
+                break;
             default:
                 throw new ArgumentException($"Unknown parameter type: {info.ParameterType}");
         }
@@ -174,9 +177,18 @@ class CommandParameter
                 value = null;
                 return false;
             case CommandParameterKind.Team:
-                if (reader.Read(out byte tId) && galaxy.TryGetTeam(tId, out Team? tValue))
+                if (reader.Read(out byte tId) && galaxy.Teams.TryGet(tId, out Team? tValue))
                 {
                     value = tValue;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            case CommandParameterKind.Player:
+                if (reader.Read(out byte pId) && galaxy.Players.TryGet(pId, out Player? pValue))
+                {
+                    value = pValue;
                     return true;
                 }
 
