@@ -27,3 +27,4 @@ Those packet commands are used to transfer necessary data:
 * `0x10`: Create `Player`.
 * `0x11`: Update `Player`.
 * `0x13`: Deactivate `Player`.
+* `0xC0`: `GalaxyTickEvent`.

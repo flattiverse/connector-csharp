@@ -60,8 +60,6 @@ public class Galaxy : IDisposable
     public readonly UniversalHolder<Team> Teams;
     public readonly UniversalHolder<Cluster> Clusters;
     public readonly UniversalHolder<Player> Players;
-
-    public readonly string DebugName;
     
     /// <summary>
     /// Connectes to a galaxy on a specific URI.
@@ -137,7 +135,7 @@ public class Galaxy : IDisposable
 
         Session session = connection.InitializeInitialSession();
         
-        Galaxy galaxy = new Galaxy(debugName, connection);
+        Galaxy galaxy = new Galaxy(connection);
 
         PacketReaderCopy packet = await session.GetReplyOrThrow();
 
@@ -154,10 +152,8 @@ public class Galaxy : IDisposable
         return galaxy;
     }
 
-    private Galaxy(string debugName, Connection connection)
+    private Galaxy(Connection connection)
     {
-        DebugName = debugName;
-        
         _connection = connection;
         _connection.Disconnected += ConnectionDisconnected;
         
@@ -359,10 +355,7 @@ public class Galaxy : IDisposable
             {
                 if (reader.Session > 0)
                     if (_connection.SessionReply(reader))
-                    {
-                        Console.WriteLine($"[{DebugName}] SessionReply #{reader.Session}, len={reader.Size}.");
                         continue;
-                    }
                     else
                     {
                         _connection.Close("Received reply to a session which doesn't exist.");
@@ -371,8 +364,6 @@ public class Galaxy : IDisposable
 
                 try
                 {
-                    Console.WriteLine($"[{DebugName}] Command 0x{reader.Command:X02}, len={reader.Size}.");
-                    
                     if (!router.Call(reader))
                     {
                         _connection.Close($"Command not found: 0x{reader.Command:X02}.");
@@ -411,8 +402,6 @@ public class Galaxy : IDisposable
     {
         Debug.Assert(id < 193, "Id out of bounds.");
         Debug.Assert(_players[id] is not null, "Player at Id not setup.");
-     
-        Console.WriteLine($"[{DebugName}] Setup self at {id}.");
         
         _player = _players[id]!;
     }
@@ -507,6 +496,8 @@ public class Galaxy : IDisposable
         Debug.Assert(_players[id] is null, "Player does already exist.");
 
         _players[id] = new Player(id, kind, team, name, ping);
+        
+        PushEvent(new JoinedPlayerEvent(_players[id]!));
     }
     
     [Command(0x11)]
@@ -525,7 +516,16 @@ public class Galaxy : IDisposable
         Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
 
         _players[id]!.Deactivate();
+        
+        PushEvent(new PartedPlayerEvent(_players[id]!));
+        
         _players[id] = null;
+    }
+    
+    [Command(0xC0)]
+    private void UniverseTick(int number)
+    {
+        PushEvent(new GalaxyTickEvent(number));
     }
 
     public void Dispose()

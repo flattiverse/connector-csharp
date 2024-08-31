@@ -45,6 +45,11 @@ public class Player : INamedUnit
     public string Name => _name;
     
     /// <summary>
+    /// true, if the player is still used/connected to the game server.
+    /// </summary>
+    public bool Active => _active;
+    
+    /// <summary>
     /// The ping in ms of the player.
     /// </summary>
     public float Ping => _ping;

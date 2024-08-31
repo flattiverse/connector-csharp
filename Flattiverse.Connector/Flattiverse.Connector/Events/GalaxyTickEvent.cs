@@ -8,12 +8,16 @@ public class GalaxyTickEvent : FlattiverseEvent
     /// <inheritdoc/>
     public override EventKind Kind => EventKind.GalaxyTick;
 
-    internal GalaxyTickEvent()
-    { }
+    /// <summary>
+    /// Specifies 
+    /// </summary>
+    public readonly int Tick;
+
+    internal GalaxyTickEvent(int tick)
+    {
+        Tick = tick;
+    }
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return $"{Stamp:HH:mm:ss.fff} Tick/Tack.";
-    }
+    public override string ToString() => $"{Stamp:HH:mm:ss.fff} Tick/Tack #{Tick}.";
 }
