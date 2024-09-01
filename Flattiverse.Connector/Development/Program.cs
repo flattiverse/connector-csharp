@@ -8,8 +8,8 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        Galaxy galaxy1 = await Galaxy.Connect("ws://www.flattiverse.com/somewhere", "SOME_AUTH_KEY", "Test").ConfigureAwait(false);
-        Galaxy galaxy2 = await Galaxy.Connect("ws://www.flattiverse.com/somewhere").ConfigureAwait(false);
+        Galaxy galaxy1 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0", "SOME_AUTH_KEY", "Test").ConfigureAwait(false);
+        Galaxy galaxy2 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0").ConfigureAwait(false);
 
         Console.WriteLine($" * {galaxy1.Name} / [{galaxy1.Player.Id}] {galaxy1.Player.Name} / {galaxy1.Player.Team.Name} / {galaxy1.Player.Kind}");
 
