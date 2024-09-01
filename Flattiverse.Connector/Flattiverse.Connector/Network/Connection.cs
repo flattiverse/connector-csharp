@@ -30,8 +30,6 @@ class Connection
     
     public delegate void DisconnectedHandler(string reason);
     public event DisconnectedHandler? Disconnected;
-
-    private Galaxy? _galaxy;
     
     public Connection(WebSocket socket, int sendBufferSize)
     {
@@ -229,7 +227,7 @@ class Connection
                         await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye.",
                             CancellationToken.None).ConfigureAwait(false);
                     }
-                    catch (Exception exception)
+                    catch
                     { }
 
                 if (_socket.CloseStatus.HasValue)

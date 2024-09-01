@@ -28,6 +28,9 @@ public class Player : INamedUnit
 
     private bool _active;
     
+    /// <summary>
+    /// The galaxy (connection to flattiverse) the player belongs to.
+    /// </summary>
     public readonly Galaxy Galaxy;
 
     internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, string name, float ping)
@@ -45,6 +48,10 @@ public class Player : INamedUnit
         _active = true;
     }
     
+    /// <summary>
+    /// Sends a private chat message to the player.
+    /// </summary>
+    /// <param name="message">The message ot send.</param>
     public async Task Chat(string message)
     {
         PacketWriter writer = new PacketWriter(new byte[2052]);

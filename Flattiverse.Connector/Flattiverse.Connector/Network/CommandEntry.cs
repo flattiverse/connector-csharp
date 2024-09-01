@@ -8,7 +8,7 @@ class CommandEntry
     public readonly byte Command;
 
     private List<CommandParameter> _parameters;
-    private object[] _executedParameters;
+    private object?[] _executedParameters;
 
     private readonly MethodInfo _methodInfo;
     private readonly Galaxy _galaxy;

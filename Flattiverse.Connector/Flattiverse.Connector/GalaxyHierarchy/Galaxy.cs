@@ -57,8 +57,19 @@ public class Galaxy : IDisposable
     private TaskCompletionSource? _eventsTcs;
     private readonly object _eventsSync;
 
+    /// <summary>
+    /// Represents all teams in the galaxy.
+    /// </summary>
     public readonly UniversalHolder<Team> Teams;
+    
+    /// <summary>
+    /// Represents all clusters in the galaxy.
+    /// </summary>
     public readonly UniversalHolder<Cluster> Clusters;
+    
+    /// <summary>
+    /// Represents all players in the galaxy.
+    /// </summary>
     public readonly UniversalHolder<Player> Players;
     
     /// <summary>
@@ -397,6 +408,10 @@ public class Galaxy : IDisposable
         _player = _players[id]!;
     }
 
+    /// <summary>
+    /// Send a chat message to the galaxy.
+    /// </summary>
+    /// <param name="message">The chat message to send.</param>
     public async Task Chat(string message)
     {
         PacketWriter writer = new PacketWriter(new byte[2052]);
@@ -548,6 +563,9 @@ public class Galaxy : IDisposable
         PushEvent(new PlayerChatPlayerEvent(player, message, this.Player));
     }
 
+    /// <summary>
+    /// Call dispose to close the connection to the galaxy.
+    /// </summary>
     public void Dispose()
     {
         Connection.Close("You disposed the connection.");

@@ -2,6 +2,9 @@
 
 namespace Flattiverse.Connector.Events;
 
+/// <summary>
+/// This event is received when some kind of chat is received.
+/// </summary>
 public class ChatPlayerEvent : PlayerEvent
 {
     /// <summary>

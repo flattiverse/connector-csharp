@@ -12,8 +12,7 @@ class CommandParameter
 
     public CommandParameter(ParameterInfo info)
     {
-        if (info.Name is not null)
-            Name = info.Name;
+        Name = info.Name!;
 
         switch (info.ParameterType)
         {

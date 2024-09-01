@@ -10,6 +10,9 @@ namespace Flattiverse.Connector;
 /// </summary>
 public class GameException : Exception
 {
+    /// <summary>
+    /// The error number of the exception.
+    /// </summary>
     public readonly int ErrorNumber;
 
     internal GameException(int errorNumber) : base ($"[0x{errorNumber:X02}] Unknown error message.")
