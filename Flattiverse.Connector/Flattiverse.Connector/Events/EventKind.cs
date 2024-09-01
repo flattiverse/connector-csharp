@@ -16,6 +16,21 @@ public enum EventKind : byte
     PlayerParted = 0x11,
     
     /// <summary>
+    /// You received a galaxy chat message.
+    /// </summary>
+    ChatGalaxy = 0xC4,
+    
+    /// <summary>
+    /// You received a team chat message.
+    /// </summary>
+    ChatTeam = 0xC5,
+    
+    /// <summary>
+    /// You received a private message of a team member.
+    /// </summary>
+    ChatPlayer = 0xC6,
+    
+    /// <summary>
     /// The connection has been terminated.
     /// </summary>
     ConnectionTerminated = 0xF0,

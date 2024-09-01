@@ -1,4 +1,6 @@
-﻿namespace Flattiverse.Connector.GalaxyHierarchy;
+﻿using Flattiverse.Connector.Network;
+
+namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
 /// Represents a team.
@@ -18,8 +20,11 @@ public class Team : INamedUnit
     
     private bool _active;
 
-    internal Team(byte id, string name, byte red, byte green, byte blue)
+    public readonly Galaxy Galaxy;
+
+    internal Team(Galaxy galaxy, byte id, string name, byte red, byte green, byte blue)
     {
+        Galaxy = galaxy;
         Id = id;
         
         _name = name;
@@ -31,6 +36,18 @@ public class Team : INamedUnit
         _active = true;
     }
 
+    public async Task Chat(string message)
+    {
+        PacketWriter writer = new PacketWriter(new byte[2052]);
+
+        writer.Command = 0xC5;
+        
+        writer.Write(Id);
+        writer.Write(message);
+        
+        await Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+    }
+    
     internal void Update(string name, byte red, byte green, byte blue)
     {
         _name = name;

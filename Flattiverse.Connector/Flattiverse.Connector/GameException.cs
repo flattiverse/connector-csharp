@@ -29,7 +29,8 @@ public class GameException : Exception
 
     internal static bool TryParseGameException(PacketReader packetReader, [NotNullWhen(true)] out GameException? exception)
     {
-        byte various0;
+        byte bte;
+        string str;
         
         if (packetReader.Command == 0xFF && packetReader.Read(out byte code))
             switch (code)
@@ -44,8 +45,8 @@ public class GameException : Exception
                     exception = new AuthFailedGameException();
                     return true;
                 case 0x04:
-                    if (packetReader.Read(out various0))
-                        exception = new WrongAccountStateGameException((AccountStatus)various0);
+                    if (packetReader.Read(out bte))
+                        exception = new WrongAccountStateGameException((AccountStatus)bte);
                     else
                         exception = new WrongAccountStateGameException();
                     return true;
@@ -53,9 +54,9 @@ public class GameException : Exception
                     exception = new InvalidOrMissingTeamGameException();
                     return true;
                 case 0x08:
-                    if (packetReader.Read(out various0))
+                    if (packetReader.Read(out bte))
                     {
-                        exception = new ServerFullOfPlayerKindGameException((PlayerKind)various0);
+                        exception = new ServerFullOfPlayerKindGameException((PlayerKind)bte);
                         return true;
                     }
 
@@ -73,6 +74,18 @@ public class GameException : Exception
                 case 0x11:
                     exception = new CantCallThisConcurrentGameException();
                     return true;
+                case 0x12:
+                    if (packetReader.Read(out bte) && packetReader.Read(out str))
+                    {
+                        exception = new InvalidArgumentGameException((InvalidArgumentKind)bte, str);
+                        return true;
+                    }
+                    
+                    exception = null;
+                    return false;
+                case 0x13:
+                    exception = new PermissionFailedGameException();
+                    return false;
             }
 
         exception = null;

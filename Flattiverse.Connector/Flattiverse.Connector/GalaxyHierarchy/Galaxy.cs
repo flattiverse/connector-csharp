@@ -49,7 +49,7 @@ public class Galaxy : IDisposable
     
     private readonly Player?[] _players;
     
-    private readonly Connection _connection;
+    internal readonly Connection Connection;
 
     private Player _player;
 
@@ -69,7 +69,7 @@ public class Galaxy : IDisposable
     /// <param name="team">This should be the name of the team you want to join or null if the galaxy should chose
     /// the team for you (or if only one team exists).</param>
     /// <returns>The galaxy you have connected to.</returns>
-    public static async Task<Galaxy> Connect(string debugName, string uri, string? auth = null, string? team = null)
+    public static async Task<Galaxy> Connect(string uri, string? auth = null, string? team = null)
     {
         Uri parsedUri;
         ClientWebSocket? socket = null;
@@ -154,13 +154,13 @@ public class Galaxy : IDisposable
 
     private Galaxy(Connection connection)
     {
-        _connection = connection;
-        _connection.Disconnected += ConnectionDisconnected;
+        Connection = connection;
+        Connection.Disconnected += ConnectionDisconnected;
         
         _teams = new Team?[33];
         _clusters = new Cluster?[64];
 
-        _teams[32] = new Team(32, "Spectators", 128, 128, 128);
+        _teams[32] = new Team(this, 32, "Spectators", 128, 128, 128);
         
         _players = new Player?[193];
 
@@ -313,8 +313,8 @@ public class Galaxy : IDisposable
         lock (_eventsSync)
             if (_events.TryDequeue(out @event))
                 return @event;
-            else if (_connection.Disposed)
-                throw new ConnectionTerminatedGameException(_connection.CloseReason);
+            else if (Connection.Disposed)
+                throw new ConnectionTerminatedGameException(Connection.CloseReason);
             else if (_eventsTcs is not null)
                 throw new CantCallThisConcurrentGameException();
             else
@@ -328,8 +328,8 @@ public class Galaxy : IDisposable
         lock (_eventsSync)
             if (_events.TryDequeue(out @event))
                 return @event;
-            else if (_connection.Disposed)
-                throw new ConnectionTerminatedGameException(_connection.CloseReason);
+            else if (Connection.Disposed)
+                throw new ConnectionTerminatedGameException(Connection.CloseReason);
 
         throw new CantCallThisConcurrentGameException();
     }
@@ -341,15 +341,15 @@ public class Galaxy : IDisposable
 
         CommandRouter router = new CommandRouter(this);
 
-        while (await _connection.TryRead(reader).ConfigureAwait(false))
+        while (await Connection.TryRead(reader).ConfigureAwait(false))
             do
             {
                 if (reader.Session > 0)
-                    if (_connection.SessionReply(reader))
+                    if (Connection.SessionReply(reader))
                         continue;
                     else
                     {
-                        _connection.Close("Received reply to a session which doesn't exist.");
+                        Connection.Close("Received reply to a session which doesn't exist.");
                         return;
                     }
 
@@ -357,19 +357,19 @@ public class Galaxy : IDisposable
                 {
                     if (!router.Call(reader))
                     {
-                        _connection.Close($"Command not found: 0x{reader.Command:X02}.");
+                        Connection.Close($"Command not found: 0x{reader.Command:X02}.");
                         return;
                     }
                 }
                 catch (Exception exception)
                 {
-                    _connection.Close($"Error while executing command 0x{reader.Command:X02}: {exception.Message}");
+                    Connection.Close($"Error while executing command 0x{reader.Command:X02}: {exception.Message}");
                     return;
                 }
 
             } while (reader.Next());
         
-        _connection.Close("Read failed.");
+        Connection.Close("Read failed.");
     }
 
     private void DeactivateAll()
@@ -396,6 +396,17 @@ public class Galaxy : IDisposable
         
         _player = _players[id]!;
     }
+
+    public async Task Chat(string message)
+    {
+        PacketWriter writer = new PacketWriter(new byte[2052]);
+
+        writer.Command = 0xC4;
+        
+        writer.Write(message);
+        
+        await Connection.SendSessionRequestAndGetReply(writer);
+    }
     
     [Command(0x00)]
     private void PingPong(ushort challenge)
@@ -404,8 +415,8 @@ public class Galaxy : IDisposable
         
         writer.Write(challenge);
         
-        _connection.Send(writer);
-        _connection.Flush();
+        Connection.Send(writer);
+        Connection.Flush();
     }
     
     [Command(0x01)]
@@ -441,7 +452,7 @@ public class Galaxy : IDisposable
         Team? team = _teams[id];
         
         if (team is null)
-            _teams[id] = new Team(id, name, red, green, blue);
+            _teams[id] = new Team(this, id, name, red, green, blue);
         else
             team.Update(name, red, green, blue);
     }
@@ -486,7 +497,7 @@ public class Galaxy : IDisposable
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is null, "Player does already exist.");
 
-        _players[id] = new Player(id, kind, team, name, ping);
+        _players[id] = new Player(this, id, kind, team, name, ping);
         
         PushEvent(new JoinedPlayerEvent(_players[id]!));
     }
@@ -518,10 +529,28 @@ public class Galaxy : IDisposable
     {
         PushEvent(new GalaxyTickEvent(number));
     }
+    
+    [Command(0xC4)]
+    private void ChatGalaxy(Player player, string message)
+    {
+        PushEvent(new GalaxyChatPlayerEvent(player, message, this));
+    }
+    
+    [Command(0xC5)]
+    private void ChatTeam(Player player, string message)
+    {
+        PushEvent(new TeamChatPlayerEvent(player, message, this.Player.Team));
+    }
+    
+    [Command(0xC6)]
+    private void ChatPlayer(Player player, string message)
+    {
+        PushEvent(new PlayerChatPlayerEvent(player, message, this.Player));
+    }
 
     public void Dispose()
     {
-        _connection.Close("You disposed the connection.");
+        Connection.Close("You disposed the connection.");
         
         // Give all background processes enough time to update all states.
         Thread.Sleep(10);
