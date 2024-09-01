@@ -59,6 +59,9 @@ class CommandParameter
             case { } t when t == typeof(Player):
                 Kind = CommandParameterKind.Player;
                 break;
+            case { } t when t == typeof(PacketWriter):
+                Kind = CommandParameterKind.PacketWriter;
+                break;
             default:
                 throw new ArgumentException($"Unknown parameter type: {info.ParameterType}");
         }
@@ -192,6 +195,9 @@ class CommandParameter
                     return true;
                 }
 
+                value = null;
+                return false;
+            case CommandParameterKind.PacketWriter:
                 value = null;
                 return false;
             default:
