@@ -1,7 +1,7 @@
 ﻿namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Specified why a PlayerUnit has been destroyed.
+/// Specifies why a PlayerUnit has been destroyed.
 /// </summary>
 public enum PlayerUnitDestroyedReason
 {

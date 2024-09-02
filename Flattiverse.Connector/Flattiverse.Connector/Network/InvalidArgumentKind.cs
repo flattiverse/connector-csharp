@@ -18,11 +18,11 @@ public enum InvalidArgumentKind : byte
     /// </summary>
     TooLarge = 0x02,
     /// <summary>
-    /// The arguments value doesn't match name constraint.
+    /// The arguments value doesn't match the name constraint.
     /// </summary>
     NameConstraint = 0x03,
     /// <summary>
-    /// The arguments value doesn't match chat message constraiont.
+    /// The arguments value doesn't match the chat message constraint.
     /// </summary>
     ChatConstraint = 0x04,
     /// <summary>
