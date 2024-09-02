@@ -14,7 +14,10 @@ enum CommandParameterKind
     String = 0x20,
     GameMode = 0x40,
     PlayerKind = 0x41,
+    UnitKind = 0x42,
     Team = 0x80,
     Player = 0x81,
+    Cluster = 0x82,
+    PacketReader = 0xFE,
     PacketWriter = 0xFF
 }

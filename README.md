@@ -18,3 +18,4 @@ Here is a step-by-step list of what to do:
 7. Do all of this in a Windows Forms GUI application. (Or if you are a pro, use ASCII art, DirectX, OpenGL, Vulcan, or a game engine like Unity.) You'll need some sort of graphical output to see things at the end, including chat messages and who's in the game.
 8. Note: Ask your neighbors if you have questions, use tools like Visual Studio's Object Catalog (`CTRL`+`ALT`+`J` with default settings), and as a last resort ask Harald. Never ask me.
 9. Rudimentary flying will be available in the afternoon.
+10. This version sends you a planet and is an intermediate step to flying around. Draw the planet in your radar view.

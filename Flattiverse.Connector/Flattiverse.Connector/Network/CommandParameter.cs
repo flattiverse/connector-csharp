@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Flattiverse.Connector.GalaxyHierarchy;
+using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Network;
 
@@ -52,11 +53,20 @@ class CommandParameter
             case { } t when t == typeof(PlayerKind):
                 Kind = CommandParameterKind.PlayerKind;
                 break;
+            case { } t when t == typeof(UnitKind):
+                Kind = CommandParameterKind.UnitKind;
+                break;
             case { } t when t == typeof(Team):
                 Kind = CommandParameterKind.Team;
                 break;
             case { } t when t == typeof(Player):
                 Kind = CommandParameterKind.Player;
+                break;
+            case { } t when t == typeof(Cluster):
+                Kind = CommandParameterKind.Cluster;
+                break;
+            case { } t when t == typeof(PacketReader):
+                Kind = CommandParameterKind.PacketReader;
                 break;
             case { } t when t == typeof(PacketWriter):
                 Kind = CommandParameterKind.PacketWriter;
@@ -178,6 +188,15 @@ class CommandParameter
 
                 value = null;
                 return false;
+            case CommandParameterKind.UnitKind:
+                if (reader.Read(out byte uk))
+                {
+                    value = (UnitKind)uk;
+                    return true;
+                }
+
+                value = null;
+                return false;
             case CommandParameterKind.Team:
                 if (reader.Read(out byte tId) && galaxy.Teams.TryGet(tId, out Team? tValue))
                 {
@@ -196,9 +215,21 @@ class CommandParameter
 
                 value = null;
                 return false;
+            case CommandParameterKind.Cluster:
+                if (reader.Read(out byte cId) && galaxy.Clusters.TryGet(cId, out Cluster? cValue))
+                {
+                    value = cValue;
+                    return true;
+                }
+
+                value = null;
+                return false;
             case CommandParameterKind.PacketWriter:
                 value = null;
                 return false;
+            case CommandParameterKind.PacketReader:
+                value = reader;
+                return true;
             default:
                 value = null;
                 return false;

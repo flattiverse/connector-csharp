@@ -2,6 +2,7 @@
 using Flattiverse.Connector.Account;
 using Flattiverse.Connector.GalaxyHierarchy;
 using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector;
 
@@ -88,6 +89,15 @@ public class GameException : Exception
                     return false;
                 case 0x13:
                     exception = new PermissionFailedGameException();
+                    return true;
+                case 0x20:
+                    exception = new YouNeedToContinueFirstGameException();
+                    return true;
+                case 0x21:
+                    exception = new YouNeedToDieFirstGameException();
+                    return true;
+                case 0x22:
+                    exception = new AllStartLocationsAreOvercrowded();
                     return true;
             }
 

@@ -36,6 +36,21 @@ public enum EventKind : byte
     ControllableInfoClosed = 0x2F,
     
     /// <summary>
+    /// You see a new unit.
+    /// </summary>
+    NewUnit = 0x30,
+    
+    /// <summary>
+    /// An existing unit has been updated.
+    /// </summary>
+    UpdatedUnit = 0x31,
+    
+    /// <summary>
+    /// You don't see the unit anymore.
+    /// </summary>
+    RemovedUnit = 0x3F,
+    
+    /// <summary>
     /// You received a galaxy chat message.
     /// </summary>
     ChatGalaxy = 0xC4,

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net.WebSockets;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
                                // Disabled because fields are guaranteed to be setup after the class instance is
@@ -16,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "1";
+    private const string Version = "2";
     
     private string _name;
     
@@ -537,6 +538,19 @@ public class Galaxy : IDisposable
         PushEvent(new PartedPlayerEvent(_players[id]!));
         
         _players[id] = null;
+    }
+
+    [Command(0x30)]
+    private void UnitNew(Cluster cluster, string name, UnitKind kind, PacketReader reader)
+    {
+        Unit? unit;
+
+        if (!Unit.TryReadUnit(kind, cluster, name, reader, out unit))
+            throw new InvalidDataException("Couldn't parse unit.");
+        
+        cluster.AddUnit(unit);
+        
+        PushEvent(new NewUnitFlattiverseEvent(unit));
     }
     
     [Command(0xC0)]
