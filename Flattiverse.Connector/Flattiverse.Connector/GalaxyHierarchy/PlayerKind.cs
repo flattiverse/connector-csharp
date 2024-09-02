@@ -3,6 +3,7 @@
 /// <summary>
 /// Specifies the kind of the client connected to the server.
 /// </summary>
+[Flags]
 public enum PlayerKind
 {
     /// <summary>

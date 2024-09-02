@@ -88,7 +88,7 @@ public class GameException : Exception
                     return false;
                 case 0x13:
                     exception = new PermissionFailedGameException();
-                    return false;
+                    return true;
             }
 
         exception = null;

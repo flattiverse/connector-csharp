@@ -28,6 +28,13 @@ public class Player : INamedUnit
 
     private bool _active;
     
+    internal ControllableInfo?[] _controllableInfos;
+    
+    /// <summary>
+    /// Holds infos about all PlayerUnits this player controls.
+    /// </summary>
+    public readonly UniversalHolder<ControllableInfo> ControllableInfos;
+    
     /// <summary>
     /// The galaxy (connection to flattiverse) the player belongs to.
     /// </summary>
@@ -46,6 +53,10 @@ public class Player : INamedUnit
         
         _ping = ping;
         _active = true;
+
+        _controllableInfos = new ControllableInfo?[256];
+        
+        ControllableInfos = new UniversalHolder<ControllableInfo>(_controllableInfos);
     }
     
     /// <summary>

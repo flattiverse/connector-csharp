@@ -16,6 +16,26 @@ public enum EventKind : byte
     PlayerParted = 0x11,
     
     /// <summary>
+    /// A PlayerUnit has been registered.
+    /// </summary>
+    ControllableInfoRegistered = 0x20,
+    
+    /// <summary>
+    /// A PlayerUnit did continue the game.
+    /// </summary>
+    ControllableInfoContinued = 0x21,
+    
+    /// <summary>
+    /// A PlayerUnit was destroyed.
+    /// </summary>
+    ControllableInfoDestroyed = 0x22,
+    
+    /// <summary>
+    /// A PlayerUnit was unregistered.
+    /// </summary>
+    ControllableInfoClosed = 0x2F,
+    
+    /// <summary>
     /// You received a galaxy chat message.
     /// </summary>
     ChatGalaxy = 0xC4,

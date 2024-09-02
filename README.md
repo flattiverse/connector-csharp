@@ -1,40 +1,20 @@
 # Flattiverse.Connector
 This is the flattiverse C# reference implementation of the connector. This library
 can be used to connect to a flattiverse galaxy.
-# Derive implementations from this one.
-Here are some useful lists.
-## GameExceptions
-Each `Exception` possible in the game has a number. Here is a list:
-* `0x01` (`CantConnectGameException`): Thrown, if the specified uri couldn't be reached.
-* `0x02` (`InvalidProtocolVersionGameException`): Thrown, if you try to connect to an galaxy with an incompatible version.
-* `0x03` (`AuthFailedGameException`): Thrown, if the authentication failed. (Missing or wrong API key.)
-* `0x04` (`WrongAccountStateGameException`): Thrown, if the account isn't opted in, is banned or deleted.
-* `0x05` (`InvalidOrMissingTeamGameException`): Thrown, if you didn't specify a team or if the specified team doesn't exist.
-* `0x08` (`ServerFullOfPlayerKindGameException`): Thrown, if the specified PlayerKind doesn't have available slots on the server.
-* `0x0C` (`SessionsExhaustedGameException`): Thrown, if you open more then 255 simultaneous requests.
-* `0x0D` (`InvalidDataGameException`): Thrown, if the server did send some ambiguous data. 
-* `0x0F` (`ConnectionTerminatedGameException`): Thrown, if you try to do something after the connection has been closed.
-* `0x10` (`SpecifiedElementNotFoundGameException`): Thrown if an element with specified index or name doesn't exist.
-* `0x11` (`CantCallThisConcurrentGameException`): Thrown, if you try to access a method in parallel.
-* `0x12` (`InvalidArgumentGameException`): Thrown if you did specify a wrong parameter.
-* `0x13` (`PermissionFailedGameException`): Thrown if you tried to call a command to which your PlayerKind doesn't have access.
-## Packets
-Those packet commands are used to transfer necessary data from the galaxy to the client:
-* `0x00`: Ping request.
-* `0x01`: Update `Galaxy` info.
-* `0x02`: Create or update `Team`.
-* `0x03`: Deactivate `Team`.
-* `0x06`: Create or update `Cluster`.
-* `0x07`: Deactivate `Cluster`.
-* `0x10`: Create `Player`.
-* `0x11`: Update `Player`.
-* `0x13`: Deactivate `Player`.
-* `0xC0`: `GalaxyTickEvent`.
-* `0xC4`: Message received which has been sent to the `Galaxy`.
-* `0xC5`: Message received which has been sent to your `Team`.
-* `0xC6`: Message received which has been sent ti you.
+# Derive implementations from [IMPLEMENTERS.md](IMPLEMENTERS.md).
+If you are a developer and want to implement your own connector, see [IMPLEMENTERS.md](IMPLEMENTERS.md).
+# How to get started.
+Also known as: What to do as a student at the Hochschule Esslingen summer school C# course.
 
-With those packet commands clients call commands in the galaxy:
-* `0xC4` (players only): Send a message to the galaxy.
-* `0xC5` (players only): Send a message to all members of a team.
-* `0xC6` (players only): Send a message to a player.
+*First of all, I'm very sorry that I started a complete rewrite of Flattiverse again, and of course I'm not finished yet. There are several reasons and excuses, but I don't want to bother you. But if you want to complain, ask yourself this: Why didn't you help me not to fail in this attempt?*
+
+Here is a step-by-step list of what to do:
+1. Register an account at the [flattiverse homepage](https://flattiverse.com/). Do not use an email address associated with Microsoft (hotmail.com, outlook.com, live.com, etc.).
+2. Create an API key after you complete the opt-in process.
+3. Download or add the [Flattiverse.Connector](https://www.nuget.org/packages/Flattiverse.Connector) to your project via nuget.
+4. Go to the store and get me some Landliebe chocolate milk.
+5. See the sample code in [the `Development` projects Program.cs](Flattiverse.Connector/Development/Program.cs) on how to do things.
+6. Currently only chat is implemented. But you can see other players join and see other people's chat messages and get events like the galaxy's heartbeat. Your first task is to implement this so that you can comfortably communicate with others and see which players are there and which aren't.
+7. Do all of this in a Windows Forms GUI application. (Or if you are a pro, use ASCII art, DirectX, OpenGL, Vulcan, or a game engine like Unity.) You'll need some sort of graphical output to see things at the end, including chat messages and who's in the game.
+8. Note: Ask your neighbors if you have questions, use tools like Visual Studio's Object Catalog (`CTRL`+`ALT`+`J` with default settings), and as a last resort ask Harald. Never ask me.
+9. Rudimentary flying will be available in the afternoon.

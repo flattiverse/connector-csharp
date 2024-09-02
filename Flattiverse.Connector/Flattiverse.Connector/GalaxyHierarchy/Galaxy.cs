@@ -16,7 +16,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "0";
+    private const string Version = "1";
     
     private string _name;
     
@@ -526,7 +526,7 @@ public class Galaxy : IDisposable
         _players[id]!.Update(ping);
     }
     
-    [Command(0x13)]
+    [Command(0x1F)]
     private void DeactivatePlayer(byte id)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
