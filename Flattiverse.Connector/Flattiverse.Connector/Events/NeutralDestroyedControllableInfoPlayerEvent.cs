@@ -4,7 +4,7 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// A PlayerUnit got destroyed by colission with a neutral unit.
+/// A PlayerUnit got destroyed by collision with a neutral unit.
 /// </summary>
 public class NeutralDestroyedControllableInfoPlayerEvent : DestroyedControllableInfoPlayerEvent
 {
