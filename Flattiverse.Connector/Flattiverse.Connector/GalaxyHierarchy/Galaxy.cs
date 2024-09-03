@@ -678,7 +678,7 @@ public class Galaxy : IDisposable
     {
         if (cluster.RemoveUnit(name, out Unit? unit))
         {
-            PushEvent(new NewUnitFlattiverseEvent(unit));
+            PushEvent(new RemovedUnitFlattiverseEvent(unit));
             return;
         }
         
