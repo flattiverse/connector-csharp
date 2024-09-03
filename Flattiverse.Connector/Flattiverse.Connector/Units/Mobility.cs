@@ -1,7 +1,7 @@
 ﻿namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Specified the mobility of an unit.
+/// Specified the mobility of a unit.
 /// </summary>
 public enum Mobility
 {
