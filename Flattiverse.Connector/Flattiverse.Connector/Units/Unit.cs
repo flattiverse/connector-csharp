@@ -6,14 +6,14 @@ using InvalidDataException = System.IO.InvalidDataException;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Represents a unit in Flattiverse. Each unit in an Cluster derives from this class. This class has
+/// Represents a unit in Flattiverse. Each unit in a Cluster derives from this class. This class has
 /// properties and methods which most units have in common. Derived classes overwrite those properties
 /// and methods, other properties and methods are added via interfaces.
 /// </summary>
 public class Unit
 {
     /// <summary>
-    /// This is the name of the unit. An unit can't change her name after it has been setup.
+    /// This is the name of the unit. A unit can't change her name after it has been set up.
     /// </summary>
     public readonly string Name;
 
@@ -55,7 +55,7 @@ public class Unit
     public virtual float Angle => 0f;
 
     /// <summary>
-    /// If true other unity can hide behind this unit.
+    /// If true, other units can hide behind this unit.
     /// </summary>
     public virtual bool IsMasking => true;
     
