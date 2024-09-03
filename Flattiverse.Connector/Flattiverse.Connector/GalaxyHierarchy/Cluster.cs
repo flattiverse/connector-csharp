@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -42,14 +43,24 @@ public class Cluster : INamedUnit
         _active = false;
     }
 
+    internal bool UpdateUnit(string name, PacketReader reader, [NotNullWhen(true)] out Unit? unit)
+    {
+        if (!_units.TryGetValue(name, out unit))
+            return false;
+
+        unit.UpdateMovement(reader);
+
+        return true;
+    }
+    
     internal void AddUnit(Unit unit)
     {
         _units.Add(unit.Name, unit);
     }
 
-    internal void RemoveUnit(Unit unit)
+    internal bool RemoveUnit(string name, [NotNullWhen(true)] out Unit? unit)
     {
-        _units.Remove(unit.Name);
+        return _units.Remove(name, out unit);
     }
 
     internal bool GetUnit([NotNullWhen(true)] out Unit? unit)

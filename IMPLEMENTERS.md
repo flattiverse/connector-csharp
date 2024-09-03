@@ -33,7 +33,9 @@ Those packet commands are used to transfer necessary data from the galaxy to the
 * `0x1F`: Deactivate `Player`.
 * `0x20`: Create `ControllableInfo`.
 * `0x21`: Set `ControllableInfo` Alive. (Continued.)
-* `0x22`: Set `ControllableInfo` Dead with reason.
+* `0x22`: Set `ControllableInfo` dead with reason.
+* `0x23`: Set `ControllableInfo` dead by Collision.
+* `0x24`: Set `ControllableInfo` dead by OtherPlayer.
 * `0x2F`: Deactivate `ControllableInfo`.
 * `0x30`: You see a new `Unit` in the `Cluster`.
 * `0x31`: `Position`, `Movement` and maybe `Direction` of the `Unit` has been updated.

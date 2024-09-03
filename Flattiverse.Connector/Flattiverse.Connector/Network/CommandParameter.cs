@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Flattiverse.Connector.Events;
 using Flattiverse.Connector.GalaxyHierarchy;
 using Flattiverse.Connector.Units;
 
@@ -55,6 +56,9 @@ class CommandParameter
                 break;
             case { } t when t == typeof(UnitKind):
                 Kind = CommandParameterKind.UnitKind;
+                break;
+            case { } t when t == typeof(PlayerUnitDestroyedReason):
+                Kind = CommandParameterKind.PlayerUnitDestroyedReason;
                 break;
             case { } t when t == typeof(Team):
                 Kind = CommandParameterKind.Team;
@@ -195,6 +199,15 @@ class CommandParameter
                 if (reader.Read(out byte uk))
                 {
                     value = (UnitKind)uk;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            case CommandParameterKind.PlayerUnitDestroyedReason:
+                if (reader.Read(out byte pudr))
+                {
+                    value = (PlayerUnitDestroyedReason)pudr;
                     return true;
                 }
 

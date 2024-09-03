@@ -40,4 +40,12 @@ public class PlayerUnit : Unit
     
     /// <inheritdoc/>
     public override Mobility Mobility => Mobility.Mobile;
+
+    internal override void UpdateMovement(PacketReader reader)
+    {
+        base.UpdateMovement(reader);
+        
+        Vector.FromReader(reader, out _position);
+        Vector.FromReader(reader, out _movement);
+    }
 }

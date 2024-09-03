@@ -75,9 +75,15 @@ public class Controllable : IDisposable, INamedUnit
     /// <summary>
     /// Call this to continue the game with this unit after you are dead or when you have created the unit.
     /// </summary>
-    public void Continue()
+    public async Task Continue()
     {
-        
+        PacketWriter writer = new PacketWriter(new byte[1]);
+
+        writer.Command = 0x84;
+    
+        writer.Write(Id);
+    
+        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
     }
 
     internal void Deactivate()
@@ -89,9 +95,15 @@ public class Controllable : IDisposable, INamedUnit
     /// <summary>
     /// Call this to suicide (=self destroy).
     /// </summary>
-    public void Kill()
+    public async Task Suicide()
     {
-        
+        PacketWriter writer = new PacketWriter(new byte[1]);
+
+        writer.Command = 0x85;
+    
+        writer.Write(Id);
+    
+        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
     }
     
     /// <summary>
@@ -119,5 +131,19 @@ public class Controllable : IDisposable, INamedUnit
                 controllable = null;
                 return false;
         }
+    }
+
+    internal void Deceased()
+    {
+        _alive = false;
+        
+        _position = Vector.Null;
+        _movement = Vector.Null;
+    }
+
+    internal void Updated(PacketReader reader)
+    {
+        if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
+            throw new InvalidDataException("Couldan't read ControllableUpdate.");
     }
 }

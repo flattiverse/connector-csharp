@@ -108,6 +108,9 @@ public class Unit
             case UnitKind.Planet:
                 unit = new Planet(cluster, name, reader);
                 return true;
+            case UnitKind.ClassicShipPlayerUnit:
+                unit = new ClassicShipPlayerUnit(cluster, name, reader);
+                return true;
         }
     }
 
@@ -118,5 +121,9 @@ public class Unit
     public virtual Unit Clone()
     {
         throw new InvalidOperationException("Should be overwritten from derived class.");
+    }
+
+    internal virtual void UpdateMovement(PacketReader reader)
+    {
     }
 }

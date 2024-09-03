@@ -34,7 +34,13 @@ class Program
         ClassicShipControllable ship = await galaxy1.CreateClassicShip("Suuupi");
 
         Console.WriteLine($" * NEW CONTROLLABLE: {ship.Name}, id={ship.Id}");
-            
+
+        await ship.Continue();
+
+        await Task.Delay(1000);
+        
+        await ship.Suicide();
+        
         // ship.Dispose();
         
         await galaxy1.Chat("Halli hallo Universum.");

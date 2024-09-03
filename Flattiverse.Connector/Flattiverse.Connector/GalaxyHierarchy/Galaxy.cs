@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "3";
+    private const string Version = "4";
     
     private string _name;
     
@@ -585,6 +585,28 @@ public class Galaxy : IDisposable
 
         throw new InvalidDataException("Server did send invalid data.");
     }
+    
+    [Command(0x21)]
+    private void ControllableInfoAlive(Player player, byte id)
+    {
+        ControllableInfo? controllable = player._controllableInfos[id];
+
+        if (controllable is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo.");
+
+        controllable.SetAlive();
+    }
+    
+    [Command(0x22)]
+    private void ControllableInfoDeadByReason(Player player, byte id, PlayerUnitDestroyedReason reason)
+    {
+        ControllableInfo? controllable = player._controllableInfos[id];
+
+        if (controllable is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo.");
+
+        controllable.SetDead(reason);
+    }
 
     [Command(0x2F)]
     private void ControllableInfoRemoved(Player player, byte id)
@@ -612,6 +634,18 @@ public class Galaxy : IDisposable
         throw new InvalidDataException("Server did send invalid data.");
     }
     
+    [Command(0x81)]
+    private void ControllableDeceased(Controllable controllable)
+    {
+        controllable.Deceased();
+    }    
+    
+    [Command(0x82)]
+    private void ControllableDeceased(Controllable controllable, PacketReader reader)
+    {
+        controllable.Updated(reader);
+    }
+    
     [Command(0x8F)]
     private void ControllableRemoved(Controllable controllable)
     {
@@ -630,6 +664,25 @@ public class Galaxy : IDisposable
         cluster.AddUnit(unit);
         
         PushEvent(new NewUnitFlattiverseEvent(unit));
+    }
+       
+    [Command(0x31)]
+    private void UnitUpdatedMovement(Cluster cluster, string name, PacketReader reader)
+    {
+        if (cluster.UpdateUnit(name, reader, out Unit? unit))
+            PushEvent(new UpdatedUnitFlattiverseEvent(unit));
+    }
+    
+    [Command(0x3F)]
+    private void UnitRemoved(Cluster cluster, string name)
+    {
+        if (cluster.RemoveUnit(name, out Unit? unit))
+        {
+            PushEvent(new NewUnitFlattiverseEvent(unit));
+            return;
+        }
+        
+        Debug.Fail("Removed non existent unit.");
     }
     
     [Command(0xC0)]

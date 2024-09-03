@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -66,6 +67,34 @@ public class ControllableInfo : INamedUnit
     {
         _active = false;
         _alive = false;
+    }
+
+    internal void SetAlive()
+    {
+        _alive = true;
+        
+        Galaxy.PushEvent(new ContinuedControllableInfoPlayerEvent(Player, this));
+    }
+
+    internal void SetDeadByNeutralColission(PlayerUnitDestroyedReason reason, UnitKind kind, string collider)
+    {
+        _alive = false;
+        
+        Galaxy.PushEvent(new NeutralDestroyedControllableInfoPlayerEvent(Player, this, kind, collider));
+    }
+
+    /*internal void SetDeadByNeutralColission(PlayerUnitDestroyedReason reason, UnitKind kind, string collider)
+    {
+        _alive = false;
+        
+        Galaxy.PushEvent(new PlayerUnitDestroyedControllableInfoPlayerEvent(Player, this, kind, collider));
+    }*/
+    
+    internal void SetDead(PlayerUnitDestroyedReason reason)
+    {
+        _alive = false;
+        
+        Galaxy.PushEvent(new DestroyedControllableInfoPlayerEvent(Player, this, reason));
     }
 
     internal static bool New(UnitKind kind, Player player, byte id, string name, bool alive, [NotNullWhen(true)] out ControllableInfo? info)
