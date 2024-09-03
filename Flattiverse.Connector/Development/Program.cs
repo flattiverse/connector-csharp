@@ -35,7 +35,7 @@ class Program
 
         Console.WriteLine($" * NEW CONTROLLABLE: {ship.Name}, id={ship.Id}");
             
-        ship.Dispose();
+        // ship.Dispose();
         
         await galaxy1.Chat("Halli hallo Universum.");
         await galaxy1.Player.Chat("Halli hallo Player.");
@@ -43,14 +43,18 @@ class Program
         
         galaxy1.Dispose();
 
+        Console.WriteLine($" => Hip now inactive? {!ship.Active}");
+        
         Console.WriteLine("\nEvents von galaxy1:");
 
         FlattiverseEvent? @event;
         
+        galaxy2.Dispose();
+        
         try
         {
             while (true)
-                Console.WriteLine(await galaxy1.NextEvent().ConfigureAwait(false));
+                Console.WriteLine(await galaxy2.NextEvent().ConfigureAwait(false));
         }
         catch (Exception exception)
         {

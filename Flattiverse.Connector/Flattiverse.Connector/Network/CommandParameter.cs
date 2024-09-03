@@ -65,6 +65,9 @@ class CommandParameter
             case { } t when t == typeof(Cluster):
                 Kind = CommandParameterKind.Cluster;
                 break;
+            case { } t when t == typeof(Controllable):
+                Kind = CommandParameterKind.Controllable;
+                break;
             case { } t when t == typeof(PacketReader):
                 Kind = CommandParameterKind.PacketReader;
                 break;
@@ -219,6 +222,15 @@ class CommandParameter
                 if (reader.Read(out byte cId) && galaxy.Clusters.TryGet(cId, out Cluster? cValue))
                 {
                     value = cValue;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            case CommandParameterKind.Controllable:
+                if (reader.Read(out byte conId) && galaxy.Controllables.TryGet(conId, out Controllable? controllable))
+                {
+                    value = controllable;
                     return true;
                 }
 

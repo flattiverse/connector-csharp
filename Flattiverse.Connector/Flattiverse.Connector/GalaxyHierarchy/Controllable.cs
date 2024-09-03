@@ -80,6 +80,12 @@ public class Controllable : IDisposable, INamedUnit
         
     }
 
+    internal void Deactivate()
+    {
+        _active = false;
+        _alive = false;
+    }
+    
     /// <summary>
     /// Call this to suicide (=self destroy).
     /// </summary>

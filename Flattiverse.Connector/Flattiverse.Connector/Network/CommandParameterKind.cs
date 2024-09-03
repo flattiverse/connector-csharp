@@ -18,6 +18,7 @@ enum CommandParameterKind
     Team = 0x80,
     Player = 0x81,
     Cluster = 0x82,
+    Controllable = 0x88,
     PacketReader = 0xFE,
     PacketWriter = 0xFF
 }

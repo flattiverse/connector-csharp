@@ -612,6 +612,13 @@ public class Galaxy : IDisposable
         throw new InvalidDataException("Server did send invalid data.");
     }
     
+    [Command(0x8F)]
+    private void ControllableRemoved(Controllable controllable)
+    {
+        controllable.Deactivate();
+        _controllables[controllable.Id] = null;
+    }
+    
     [Command(0x30)]
     private void UnitNew(Cluster cluster, string name, UnitKind kind, PacketReader reader)
     {
