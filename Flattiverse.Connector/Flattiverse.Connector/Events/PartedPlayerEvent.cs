@@ -15,5 +15,5 @@ public class PartedPlayerEvent : PlayerEvent
     }
     
     /// <inheritdoc/>
-    public override string ToString() => $"{Stamp:HH:mm:ss.fff} \"{Player}\" parted the galaxy with team {Player.Team.Name} as {Player.Kind}.";
+    public override string ToString() => $"{Stamp:HH:mm:ss.fff} \"{Player.Name}\" parted the galaxy with team {Player.Team.Name} as {Player.Kind}.";
 }

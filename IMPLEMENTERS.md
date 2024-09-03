@@ -15,6 +15,8 @@ Each `Exception` possible in the game has a number. Here is a list:
 * `0x11` (`CantCallThisConcurrentGameException`): Thrown, if you try to access a method in parallel.
 * `0x12` (`InvalidArgumentGameException`): Thrown if you did specify a wrong parameter.
 * `0x13` (`PermissionFailedGameException`): Thrown if you tried to call a command to which your PlayerKind doesn't have access.
+* `0x14` (`FloodcontrolTriggeredGameException`): Thrown, if you flood the chat somehow.
+* `0x15` (`UnitConstraintViolationGameException`): Thrown, if you try to register too many ships.
 * `0x20` (`YouNeedToContinueFirstGameException`): Thrown, if the Controllable you want to control is dead.
 * `0x21` (`YouNeedToDieFirstGameException`): Thrown, if you are not dead but try to continue.
 * `0x22` (`AllStartLocationsAreOvercrowded`): Thrown, if theres too many traffic on the start locations.
@@ -36,10 +38,14 @@ Those packet commands are used to transfer necessary data from the galaxy to the
 * `0x30`: You see a new `Unit` in the `Cluster`.
 * `0x31`: `Position`, `Movement` and maybe `Direction` of the `Unit` has been updated.
 * `0x3F`: You don't see the `Unit` any more.
+* `0x80`: There is a new `Controllable`.
+* `0x81`: `Controllable` deceased.
+* `0x82`: `Controllable` data has been updated and is alive.
+* `0x8F`: `Controllable` has been deactivated.
 * `0xC0`: `GalaxyTickEvent`.
 * `0xC4`: Message received which has been sent to the `Galaxy`.
 * `0xC5`: Message received which has been sent to your `Team`.
-* `0xC6`: Message received which has been sent ti you.
+* `0xC6`: Message received which has been sent to you.
 
 With those packet commands clients call commands in the galaxy:
 * `0xC4` (players only): Send a message to the galaxy.

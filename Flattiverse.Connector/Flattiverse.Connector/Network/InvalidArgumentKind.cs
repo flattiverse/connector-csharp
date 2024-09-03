@@ -28,7 +28,11 @@ public enum InvalidArgumentKind : byte
     /// <summary>
     /// The specified entity has not been found.
     /// </summary>
-    EntityNotFound = 0xFC,
+    EntityNotFound = 0xFB,
+    /// <summary>
+    /// The specified name is already taken.
+    /// </summary>
+    NameInUse = 0xFC,
     /// <summary>
     /// The arguments value did contain a Not a Number value.
     /// </summary>

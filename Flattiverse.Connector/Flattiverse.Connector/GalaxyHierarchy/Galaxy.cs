@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "2";
+    private const string Version = "3";
     
     private string _name;
     
@@ -49,6 +49,7 @@ public class Galaxy : IDisposable
     private readonly Cluster?[] _clusters;
     
     private readonly Player?[] _players;
+    private readonly Controllable?[] _controllables;
     
     internal readonly Connection Connection;
 
@@ -72,6 +73,11 @@ public class Galaxy : IDisposable
     /// Represents all players in the galaxy.
     /// </summary>
     public readonly UniversalHolder<Player> Players;
+    
+    /// <summary>
+    /// Represents all units that you control.
+    /// </summary>
+    public readonly UniversalHolder<Controllable> Controllables;
     
     /// <summary>
     /// Connectes to a galaxy on a specific URI.
@@ -171,6 +177,7 @@ public class Galaxy : IDisposable
         
         _teams = new Team?[33];
         _clusters = new Cluster?[64];
+        _controllables = new Controllable?[192];
 
         _teams[32] = new Team(this, 32, "Spectators", 128, 128, 128);
         
@@ -182,6 +189,7 @@ public class Galaxy : IDisposable
         Teams = new UniversalHolder<Team>(_teams);
         Clusters = new UniversalHolder<Cluster>(_clusters);
         Players = new UniversalHolder<Player>(_players);
+        Controllables = new UniversalHolder<Controllable>(_controllables);
 
         ThreadPool.QueueUserWorkItem(async delegate { await Receiver(); });
     }
@@ -423,6 +431,29 @@ public class Galaxy : IDisposable
         
         await Connection.SendSessionRequestAndGetReply(writer);
     }
+
+    /// <summary>
+    /// Creates a classic style ship.
+    /// </summary>
+    /// <returns>The controllable of the ship.</returns>
+    public async Task<ClassicShipControllable> CreateClassicShip(string name)
+    {
+        if (!Utils.CheckName(name))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.NameConstraint, "name");
+        
+        PacketWriter writer = new PacketWriter(new byte[65]);
+
+        writer.Command = 0x80;
+        
+        writer.Write(name);
+        
+        PacketReaderCopy result = await Connection.SendSessionRequestAndGetReply(writer);
+        
+        if (result.Read(out byte id) && _controllables[id] is ClassicShipControllable controllable)
+            return controllable;
+        
+        throw new InvalidDataException("This shouldn't have happened: Couldn't read controllable id or there was no proper controllable.");
+    }
     
     [Command(0x00)]
     private void PingPong(ushort challenge)
@@ -492,7 +523,7 @@ public class Galaxy : IDisposable
         Cluster? cluster = _clusters[id];
         
         if (cluster is null)
-            _clusters[id] = new Cluster(id, name);
+            _clusters[id] = new Cluster(this, id, name);
         else
             cluster.Update(name);
     }
@@ -540,6 +571,47 @@ public class Galaxy : IDisposable
         _players[id] = null;
     }
 
+    [Command(0x20)]
+    private void ControllableInfoNew(Player player, UnitKind kind, byte id, string name, byte alive)
+    {
+        if (ControllableInfo.New(kind, player, id, name, alive == 0x01, out ControllableInfo? info))
+        {
+            player._controllableInfos[id] = info;
+            
+            PushEvent(new RegisteredControllableInfoPlayerEvent(player, info));
+            
+            return;
+        }
+
+        throw new InvalidDataException("Server did send invalid data.");
+    }
+
+    [Command(0x2F)]
+    private void ControllableInfoRemoved(Player player, byte id)
+    {
+        ControllableInfo? controllableInfo = player._controllableInfos[id];
+
+        if (controllableInfo is not null)
+        {
+            PushEvent(new ClosedControllableInfoPlayerEvent(player, controllableInfo));
+            player._controllableInfos[id] = null;
+        }
+        else
+            Debug.Fail("Removed non existent controllable info.");
+    }
+    
+    [Command(0x80)]
+    private void ControllableNew(UnitKind kind, byte id, string name, PacketReader reader)
+    {
+        if (Controllable.New(kind, _clusters[0]!, id, name, reader, out Controllable? info))
+        {
+            _controllables[id] = info;
+            return;
+        }
+
+        throw new InvalidDataException("Server did send invalid data.");
+    }
+    
     [Command(0x30)]
     private void UnitNew(Cluster cluster, string name, UnitKind kind, PacketReader reader)
     {

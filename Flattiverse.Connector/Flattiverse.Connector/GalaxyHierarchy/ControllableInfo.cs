@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Units;
+﻿using System.Diagnostics.CodeAnalysis;
+using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
@@ -60,4 +61,26 @@ public class ControllableInfo : INamedUnit
     /// Specifies the kind of the PlayerUnit.
     /// </summary>
     public virtual UnitKind Kind => throw new InvalidOperationException("Must be implemented in the derived class.");
+
+    internal void Deactivate()
+    {
+        _active = false;
+        _alive = false;
+    }
+
+    internal static bool New(UnitKind kind, Player player, byte id, string name, bool alive, [NotNullWhen(true)] out ControllableInfo? info)
+    {
+        switch (kind)
+        {
+            case UnitKind.ClassicShipPlayerUnit:
+                info = new ClassicShipControllableInfo(player.Galaxy, player, id, name, alive);
+                return true;
+            case UnitKind.NewShipPlayerUnit:
+                info = new NewShipControllableInfo(player.Galaxy, player, id, name, alive);
+                return true;
+            default:
+                info = null;
+                return false;
+        }
+    }
 }

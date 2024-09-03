@@ -100,5 +100,9 @@ public class Player : INamedUnit
         _ping = -1;
         
         _active = false;
+
+        foreach (ControllableInfo? controllableInfo in _controllableInfos)
+            if (controllableInfo is not null)
+                controllableInfo.Deactivate();
     }
 }

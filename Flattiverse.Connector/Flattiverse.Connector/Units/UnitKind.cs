@@ -28,7 +28,7 @@ public enum UnitKind : byte
     /// <summary>
     /// Represents a classical player ship.
     /// </summary>
-    ClassicalShipPlayerUnit = 0xF0,
+    ClassicShipPlayerUnit = 0xF0,
     /// <summary>
     /// Represents a new style player ship.
     /// </summary>

@@ -8,13 +8,13 @@ public enum Mobility
     /// <summary>
     /// The unit doesn't move at all.
     /// </summary>
-    Still = 0x00,
+    Still = 0x01,
     /// <summary>
     /// The unit has a steady movement.
     /// </summary>
-    Steady = 0x01,
+    Steady = 0x02,
     /// <summary>
     /// The unit is mobile.
     /// </summary>
-    Mobile = 0x02
+    Mobile = 0x04
 }

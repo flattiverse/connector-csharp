@@ -90,6 +90,12 @@ public class GameException : Exception
                 case 0x13:
                     exception = new PermissionFailedGameException();
                     return true;
+                case 0x14:
+                    exception = new FloodcontrolTriggeredGameException();
+                    return true;
+                case 0x15:
+                    exception = new UnitConstraintViolationGameException();
+                    return true;
                 case 0x20:
                     exception = new YouNeedToContinueFirstGameException();
                     return true;

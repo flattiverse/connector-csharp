@@ -35,8 +35,10 @@ public class InvalidArgumentGameException : GameException
                 return $"[0x12] Parameter \"{parameter}\" doesn't match the name constraint.";
             case InvalidArgumentKind.EntityNotFound:
                 return $"[0x12] Parameter \"{parameter}\" doesn't point to an existing entity.";
+            case InvalidArgumentKind.NameInUse:
+                return $"[0x12] Parameter \"{parameter}\" references a name which is already in use.";
             case InvalidArgumentKind.ChatConstraint:
-                return $"[0x12] Parameter \"{parameter}\" doesn't match thegit  chat message constraint.";
+                return $"[0x12] Parameter \"{parameter}\" doesn't match the chat message constraint.";
             case InvalidArgumentKind.ContainedNaN:
                 return $"[0x12] Parameter \"{parameter}\" contained a \"Not a Number\" value.";
             case InvalidArgumentKind.ContainedInfinity:

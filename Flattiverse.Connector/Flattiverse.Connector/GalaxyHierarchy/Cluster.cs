@@ -13,13 +13,19 @@ public class Cluster : INamedUnit
     /// </summary>
     public readonly byte Id;
 
+    /// <summary>
+    /// The galaxy this cluster is in.
+    /// </summary>
+    public readonly Galaxy Galaxy;
+    
     private string _name;
     private bool _active;
     
     private Dictionary<string, Unit> _units;
 
-    internal Cluster(byte id, string name)
+    internal Cluster(Galaxy galaxy, byte id, string name)
     {
+        Galaxy = galaxy;
         Id = id;
         _name = name;
         

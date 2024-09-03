@@ -18,47 +18,31 @@ public class Unit
     public readonly string Name;
 
     /// <summary>
-    /// The radius of the unit.
-    /// </summary>
-    protected float _radius;
-    
-    /// <summary>
-    /// The position of the unit.
-    /// </summary>
-    protected Vector _position;
-
-    /// <summary>
     /// The cluster this unit is in.
     /// </summary>
     protected Cluster _cluster;
 
-    internal Unit(Cluster cluster, string name, PacketReader reader)
+    internal Unit(Cluster cluster, string name)
     {
         _cluster = cluster;
         Name = name;
-
-        if (!reader.Read(out _radius) || !Vector.FromReader(reader, out _position))
-            throw new InvalidDataException("Couldn't read Unit.");
     }
 
     internal Unit(Unit unit)
     {
         _cluster = unit._cluster;
         Name = unit.Name;
-
-        _radius = unit._radius;
-        _position = unit._position;
     }
     
     /// <summary>
     /// The radius of the unit.
     /// </summary>
-    public virtual float Radius => _radius;
+    public virtual float Radius => 3f;
     
     /// <summary>
     /// The position of the unit.
     /// </summary>
-    public virtual Vector Position => new Vector(_position);
+    public virtual Vector Position => Vector.Null;
     
     /// <summary>
     /// The movement of the unit.
