@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "4";
+    private const string Version = "5";
     
     private string _name;
     
@@ -574,6 +574,8 @@ public class Galaxy : IDisposable
     [Command(0x20)]
     private void ControllableInfoNew(Player player, UnitKind kind, byte id, string name, byte alive)
     {
+        Console.WriteLine("ControllableInfoNew");
+        
         if (ControllableInfo.New(kind, player, id, name, alive == 0x01, out ControllableInfo? info))
         {
             player._controllableInfos[id] = info;
@@ -589,6 +591,8 @@ public class Galaxy : IDisposable
     [Command(0x21)]
     private void ControllableInfoAlive(Player player, byte id)
     {
+        Console.WriteLine("ControllableInfoAlive");
+        
         ControllableInfo? controllable = player._controllableInfos[id];
 
         if (controllable is null)
@@ -678,7 +682,7 @@ public class Galaxy : IDisposable
     {
         if (cluster.RemoveUnit(name, out Unit? unit))
         {
-            PushEvent(new NewUnitFlattiverseEvent(unit));
+            PushEvent(new RemovedUnitFlattiverseEvent(unit));
             return;
         }
         

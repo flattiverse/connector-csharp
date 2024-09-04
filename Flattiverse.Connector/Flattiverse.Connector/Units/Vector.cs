@@ -11,11 +11,6 @@ public class Vector
     private const double GradStep = Math.PI / 180.0;
     
     /// <summary>
-    /// A null (0, 0) vector.
-    /// </summary>
-    public static readonly Vector Null = new Vector();
-
-    /// <summary>
     /// The X component of the vector.
     /// </summary>
     public float X;
@@ -41,7 +36,7 @@ public class Vector
 
         if (!reader.Read(out x) || !reader.Read(out y))
         {
-            vector = Null;
+            vector = new Vector();;
             return false;
         }
 

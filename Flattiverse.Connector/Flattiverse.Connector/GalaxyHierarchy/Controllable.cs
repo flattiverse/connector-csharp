@@ -15,7 +15,7 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public readonly byte Id;
     
-    private Cluster _cluster;
+    protected Cluster _cluster;
     
     private bool _active;
     
@@ -77,6 +77,8 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public async Task Continue()
     {
+        Console.WriteLine("Continue Start.");
+        
         PacketWriter writer = new PacketWriter(new byte[1]);
 
         writer.Command = 0x84;
@@ -84,6 +86,8 @@ public class Controllable : IDisposable, INamedUnit
         writer.Write(Id);
     
         await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        
+        Console.WriteLine("Continue End.");
     }
 
     internal void Deactivate()
@@ -137,13 +141,15 @@ public class Controllable : IDisposable, INamedUnit
     {
         _alive = false;
         
-        _position = Vector.Null;
-        _movement = Vector.Null;
+        _position = new Vector();;
+        _movement = new Vector();;
     }
 
     internal void Updated(PacketReader reader)
     {
         if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
             throw new InvalidDataException("Couldan't read ControllableUpdate.");
+
+        _alive = true;
     }
 }

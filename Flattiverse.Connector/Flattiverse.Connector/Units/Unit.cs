@@ -42,12 +42,12 @@ public class Unit
     /// <summary>
     /// The position of the unit.
     /// </summary>
-    public virtual Vector Position => Vector.Null;
+    public virtual Vector Position => new Vector();
     
     /// <summary>
     /// The movement of the unit.
     /// </summary>
-    public virtual Vector Movement => Vector.Null;
+    public virtual Vector Movement => new Vector();
     
     /// <summary>
     /// The direction the unit is looking into.

@@ -5,7 +5,7 @@
 /// </summary>
 public class SpecifiedElementNotFoundGameException : GameException
 {
-    internal SpecifiedElementNotFoundGameException() : base(0x05, "[0x05] No or non-existent team specified.")
+    internal SpecifiedElementNotFoundGameException() : base(0x10, "[0x10] Specified element not found.")
     {
     }
 }
