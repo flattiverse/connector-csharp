@@ -76,19 +76,19 @@ public class ControllableInfo : INamedUnit
         Galaxy.PushEvent(new ContinuedControllableInfoPlayerEvent(Player, this));
     }
 
-    internal void SetDeadByNeutralColission(PlayerUnitDestroyedReason reason, UnitKind kind, string collider)
+    internal void SetDeadByNeutralColission(UnitKind kind, string collider)
     {
         _alive = false;
         
         Galaxy.PushEvent(new NeutralDestroyedControllableInfoPlayerEvent(Player, this, kind, collider));
     }
 
-    /*internal void SetDeadByNeutralColission(PlayerUnitDestroyedReason reason, UnitKind kind, string collider)
+    internal void SetDeadByPlayerShip(PlayerUnitDestroyedReason reason, ControllableInfo info)
     {
         _alive = false;
         
-        Galaxy.PushEvent(new PlayerUnitDestroyedControllableInfoPlayerEvent(Player, this, kind, collider));
-    }*/
+        Galaxy.PushEvent(new PlayerUnitDestroyedControllableInfoPlayerEvent(Player, this, reason, info));
+    }
     
     internal void SetDead(PlayerUnitDestroyedReason reason)
     {

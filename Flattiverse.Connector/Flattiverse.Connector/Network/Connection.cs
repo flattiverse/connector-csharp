@@ -71,6 +71,8 @@ class Connection
 
         packet.Session = session.Id;
 
+        Debug.WriteLine($" => SENDING REQUEST FOR SESSION #{packet.Session:X02}: COMMAND 0x{packet.Command:X02}.");
+        
         lock (_sync)
         {
             if (!_sendBufferA.Send(packet))

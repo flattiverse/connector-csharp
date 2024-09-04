@@ -77,8 +77,6 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public async Task Continue()
     {
-        Console.WriteLine("Continue Start.");
-        
         PacketWriter writer = new PacketWriter(new byte[1]);
 
         writer.Command = 0x84;
@@ -86,8 +84,6 @@ public class Controllable : IDisposable, INamedUnit
         writer.Write(Id);
     
         await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
-        
-        Console.WriteLine("Continue End.");
     }
 
     internal void Deactivate()

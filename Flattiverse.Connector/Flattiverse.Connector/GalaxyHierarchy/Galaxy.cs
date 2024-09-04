@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "5";
+    private const string Version = "6";
     
     private string _name;
     
@@ -366,9 +366,13 @@ public class Galaxy : IDisposable
             {
                 if (reader.Session > 0)
                     if (Connection.SessionReply(reader))
+                    {
+                        Debug.WriteLine($" => SESSION #{reader.Session:X02}: REPLY OK.");
                         continue;
+                    }
                     else
                     {
+                        Debug.WriteLine($" => SESSION #{reader.Session:X02}: SESSION NOT FOUND..");
                         Connection.Close("Received reply to a session which doesn't exist.");
                         return;
                     }
@@ -574,8 +578,6 @@ public class Galaxy : IDisposable
     [Command(0x20)]
     private void ControllableInfoNew(Player player, UnitKind kind, byte id, string name, byte alive)
     {
-        Console.WriteLine("ControllableInfoNew");
-        
         if (ControllableInfo.New(kind, player, id, name, alive == 0x01, out ControllableInfo? info))
         {
             player._controllableInfos[id] = info;
@@ -591,8 +593,6 @@ public class Galaxy : IDisposable
     [Command(0x21)]
     private void ControllableInfoAlive(Player player, byte id)
     {
-        Console.WriteLine("ControllableInfoAlive");
-        
         ControllableInfo? controllable = player._controllableInfos[id];
 
         if (controllable is null)
@@ -610,6 +610,29 @@ public class Galaxy : IDisposable
             throw new InvalidDataException("Server did send a non existent ControllableInfo.");
 
         controllable.SetDead(reason);
+    }
+
+    [Command(0x23)]
+    private void ControllableInfoDeadByNeutralCollision(Player player, byte id, UnitKind unitKind, string name)
+    {
+        ControllableInfo? controllable = player._controllableInfos[id];
+
+        if (controllable is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo.");
+
+        controllable.SetDeadByNeutralColission(unitKind, name);
+    }
+
+    [Command(0x24)]
+    private void ControllableInfoDeadByPlayerUnit(Player player, byte id, PlayerUnitDestroyedReason reason, Player causer, byte causerControllableId)
+    {
+        ControllableInfo? controllable = player._controllableInfos[id];
+        ControllableInfo? causerControllable = player._controllableInfos[causerControllableId];
+
+        if (controllable is null || causerControllable is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo.");
+
+        controllable.SetDeadByPlayerShip(reason, causerControllable);
     }
 
     [Command(0x2F)]

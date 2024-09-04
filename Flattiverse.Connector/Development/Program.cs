@@ -18,9 +18,10 @@ class Program
 
         await ship.Continue();
 
-        await ship.Move(new Vector(2, 0));
+        for (int i = 0; i < 200; i++)
+            await ship.Move(new Vector(0.1f, 0));
         
-        for (int i = 0; i < 25; i++)
+        for (int i = 0; i < 5000; i++)
         {
             FlattiverseEvent e = await galaxy1.NextEvent();
 
