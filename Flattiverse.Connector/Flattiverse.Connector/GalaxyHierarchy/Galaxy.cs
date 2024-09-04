@@ -623,7 +623,7 @@ public class Galaxy : IDisposable
     private void ControllableInfoDeadByPlayerUnit(Player player, byte id, PlayerUnitDestroyedReason reason, Player causer, byte causerControllableId)
     {
         ControllableInfo? controllable = player._controllableInfos[id];
-        ControllableInfo? causerControllable = player._controllableInfos[causerControllableId];
+        ControllableInfo? causerControllable = causer._controllableInfos[causerControllableId];
 
         if (controllable is null || causerControllable is null)
             throw new InvalidDataException("Server did send a non existent ControllableInfo.");
