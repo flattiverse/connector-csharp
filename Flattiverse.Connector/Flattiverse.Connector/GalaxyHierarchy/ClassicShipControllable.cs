@@ -14,7 +14,7 @@ public class ClassicShipControllable : Controllable
     }
     
     /// <summary>
-    /// Call this to move your ship. This vector will be the impulse you ship gets every tick until you specify a new vector. Length of 0 will turn off your engines.
+    /// Call this to move your ship. This vector will be the impulse your ship gets every tick until you specify a new vector. Length of 0 will turn off your engines.
     /// </summary>
     public async Task Move(Vector movement)
     {
