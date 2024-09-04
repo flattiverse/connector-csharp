@@ -71,8 +71,6 @@ class Connection
 
         packet.Session = session.Id;
 
-        Debug.WriteLine($" => SENDING REQUEST FOR SESSION #{packet.Session:X02}: COMMAND 0x{packet.Command:X02}.");
-        
         lock (_sync)
         {
             if (!_sendBufferA.Send(packet))
@@ -311,6 +309,9 @@ class Connection
             lock (_sync)
                 (_sendBufferA, _sendBufferB) = (_sendBufferB, _sendBufferA);
 
+            if (!_sendBufferB.HasData)
+                continue;
+            
             try
             {
                 await _socket.SendAsync(_sendBufferB.Buffer, WebSocketMessageType.Binary, true, _cancellation).ConfigureAwait(false);

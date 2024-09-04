@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "6";
+    private const string Version = "7";
     
     private string _name;
     
@@ -366,13 +366,9 @@ public class Galaxy : IDisposable
             {
                 if (reader.Session > 0)
                     if (Connection.SessionReply(reader))
-                    {
-                        Debug.WriteLine($" => SESSION #{reader.Session:X02}: REPLY OK.");
                         continue;
-                    }
                     else
                     {
-                        Debug.WriteLine($" => SESSION #{reader.Session:X02}: SESSION NOT FOUND..");
                         Connection.Close("Received reply to a session which doesn't exist.");
                         return;
                     }
