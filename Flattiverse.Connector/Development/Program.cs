@@ -18,7 +18,7 @@ class Program
 
         await ship.Continue();
 
-        ThreadPool.QueueUserWorkItem(async delegate
+        /*ThreadPool.QueueUserWorkItem(async delegate
         {
             for (int i = 0; i < 200; i++)
                 await ship.Move(new Vector(0, 0));
@@ -30,7 +30,7 @@ class Program
                 await ship.Move(new Vector(-0.1f, 0));
         });
 
-        for (int i = 0; i < 200; i++)
+        for (int i = 0; i < 200; i++)*/
             await ship.Move(new Vector(0.1f, 0));
 
         for (int i = 0; i < 5000; i++)

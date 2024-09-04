@@ -41,7 +41,7 @@ class PacketReader
         _basePosition += 4 + Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]);
         _position = 0;
 
-        return _basePosition + 4 + Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]) <= _dataSize;
+        return _basePosition + 4 <= _dataSize && _basePosition + 4 + Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]) <= _dataSize;
     }
 
     public byte Command => _data[_basePosition];
