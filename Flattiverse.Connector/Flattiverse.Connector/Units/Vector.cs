@@ -87,7 +87,7 @@ public class Vector
     /// </summary>
     public float Angle
     {
-        get => (float)((Math.Atan2(Y, X) * GradStep + 360.0) % 360.0);
+        get => (float)((Math.Atan2(Y, X) / GradStep + 360.0) % 360.0);
         set
         {
             double alpha = value * GradStep;
