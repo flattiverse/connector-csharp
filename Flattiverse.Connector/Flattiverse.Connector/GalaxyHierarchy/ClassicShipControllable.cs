@@ -44,7 +44,7 @@ public class ClassicShipControllable : Controllable
     }
 
     /// <summary>
-    /// Shoots a shot into the specified direction and with the specified parameter. Please not that you can only shoot
+    /// Shoots a shot into the specified direction and with the specified parameters. Please note that you can only shoot
     /// one shot per tick.
     /// </summary>
     /// <param name="relativeMovement">The direction in which the shot will fly. [0.1f; 3f]</param>
