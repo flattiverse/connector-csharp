@@ -69,12 +69,12 @@ public class Explosion : Unit
     public override UnitKind Kind => UnitKind.Explosion;
 
     /// <summary>
-    /// Defines weather this explosion is in the damage phase or not.
+    /// Defines whether this explosion is in the damage phase or not.
     /// </summary>
     public bool DamagePhase => !_secondPhase;
     
     /// <summary>
-    /// Defines weather this explosion is in the shockwave phase or not.
+    /// Defines whether this explosion is in the shockwave phase or not.
     /// </summary>
     public bool ShockWavePhase => _secondPhase;
 
