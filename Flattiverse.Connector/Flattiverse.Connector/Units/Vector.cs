@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class Vector
 {
-    private const double GradStep = Math.PI / 180.0;
+    private const float GradStep = MathF.PI / 180.0f;
     
     /// <summary>
     /// The X component of the vector.
@@ -79,7 +79,7 @@ public class Vector
     /// <returns>The vector</returns>
     public static Vector FromAngleLength(float angle, float length)
     {
-        return new Vector((float)(Math.Cos(angle * GradStep) * length), (float)(Math.Sin(angle * GradStep) * length));
+        return new Vector(MathF.Cos(angle * GradStep) * length, MathF.Sin(angle * GradStep) * length);
     }
 
     /// <summary>
@@ -87,14 +87,14 @@ public class Vector
     /// </summary>
     public float Angle
     {
-        get => (float)((Math.Atan2(Y, X) / GradStep + 360.0) % 360.0);
+        get => (MathF.Atan2(Y, X) / GradStep + 360.0f) % 360.0f;
         set
         {
-            double alpha = value * GradStep;
-            double length = Math.Sqrt(X * X + Y * Y);
+            float alpha = value * GradStep;
+            float length = MathF.Sqrt(X * X + Y * Y);
 
-            X = (float)(length * Math.Cos(alpha));
-            Y = (float)(length * Math.Sin(alpha));
+            X = length * MathF.Cos(alpha);
+            Y = length * MathF.Sin(alpha);
         }
     }
 
@@ -108,7 +108,7 @@ public class Vector
     /// </summary>
     public float Length
     {
-        get => (float)Math.Sqrt(X * X + Y * Y);
+        get => MathF.Sqrt(X * X + Y * Y);
         set
         {
             if (X == 0 && Y == 0)
@@ -118,7 +118,7 @@ public class Vector
             }
             else
             {
-                float lengthFactor = value / (float)Math.Sqrt(X * X + Y * Y);
+                float lengthFactor = value / MathF.Sqrt(X * X + Y * Y);
 
                 X *= lengthFactor;
                 Y *= lengthFactor;
@@ -130,13 +130,13 @@ public class Vector
     /// Rotates the vector by an angle.
     /// </summary>
     /// <param name="angle">The nagle to rotate the vector.</param>
-    public void RotatedBy(double angle)
+    public void RotatedBy(float angle)
     {
-        double alpha = angle * GradStep;
+        float alpha = angle * GradStep;
 
-        float x = (float)(Math.Cos(alpha) * X - Math.Sin(alpha) * Y);
+        float x = MathF.Cos(alpha) * X - MathF.Sin(alpha) * Y;
 
-        Y = (float)(Math.Sin(alpha) * X + Math.Cos(alpha) * Y);
+        Y = MathF.Sin(alpha) * X + MathF.Cos(alpha) * Y;
         X = x;
     }
 
@@ -150,12 +150,12 @@ public class Vector
         if (v is null)
             return Angle;
 
-        double deg = ((Math.Atan2(v.Y, v.X) * GradStep + 360.0) % 360.0) - ((Math.Atan2(Y, X) * GradStep + 360.0) % 360.0);
+        float deg = (MathF.Atan2(v.Y, v.X) * GradStep + 360.0f) % 360.0f - (MathF.Atan2(Y, X) * GradStep + 360.0f) % 360.0f;
 
         if (deg < 0)
             deg += 360;
 
-        return (float)deg;
+        return deg;
     }
 
     /// <summary>
@@ -207,7 +207,7 @@ public class Vector
     /// <returns>true if the vector is round about the length.</returns>
     public static bool operator ==(Vector l, float r)
     {
-        double length = Math.Sqrt(l.X * l.X + l.Y * l.Y);
+        float length = MathF.Sqrt(l.X * l.X + l.Y * l.Y);
 
         return length - 0.00015 < r && length + 0.00015 > r;
     }
@@ -280,7 +280,7 @@ public class Vector
     /// <param name="b">The second vector.</param>
     /// <returns>The distance.</returns>
     public static float Distance(Vector a, Vector b) =>
-        (float)Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
+        MathF.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
 
     /// <summary>
     /// Returns the vector represented in string form.
