@@ -111,6 +111,9 @@ public class Unit
             case UnitKind.Shot:
                 unit = new Shot(cluster, name, reader);
                 return true;
+            case UnitKind.Explosion:
+                unit = new Explosion(cluster, name, reader);
+                return true;
             case UnitKind.ClassicShipPlayerUnit:
                 unit = new ClassicShipPlayerUnit(cluster, name, reader);
                 return true;

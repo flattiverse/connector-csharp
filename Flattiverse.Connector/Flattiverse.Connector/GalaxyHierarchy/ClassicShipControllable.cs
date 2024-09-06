@@ -44,8 +44,16 @@ public class ClassicShipControllable : Controllable
     }
 
     /// <summary>
-    /// Call this to move your ship. This vector will be the impulse your ship gets every tick until you specify a new vector. Length of 0 will turn off your engines.
+    /// Shoots a shot into the specified direction and with the specified parameter. Please not that you can only shoot
+    /// one shot per tick.
     /// </summary>
+    /// <param name="relativeMovement">The direction in which the shot will fly. [0.1f; 3f]</param>
+    /// <param name="ticks">The ticks how long the shot will fly. [3; 140]</param>
+    /// <param name="load">The explosion size when ticks did reach 0. [3; 25]</param>
+    /// <param name="damage">The damage the shot should inflict. [0.1f; 3f]</param>
+    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the unit doesn't exist.</exception>
+    /// <exception cref="YouNeedToContinueFirstGameException">Thrown, if the unit is dead.</exception>
+    /// <exception cref="InvalidArgumentGameException">Thrown, if one of the specified arguments doesn't match limit boundaries.</exception>
     public async Task Shoot(Vector relativeMovement, ushort ticks, float load, float damage)
     {
         if (!Active)
@@ -98,7 +106,7 @@ public class ClassicShipControllable : Controllable
     }
 
     /// <inheritdoc/>
-    public override float Gravity => 14f;
+    public override float Gravity => 0.0012f;
     
     /// <inheritdoc/>
     public override float Size => 14f;
