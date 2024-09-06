@@ -29,7 +29,7 @@ class CommandRouter
     public bool Call(PacketReader reader)
     {
         CommandEntry? entry = _commands[reader.Command];
-
+        
         if (entry is null)
             return false;
         

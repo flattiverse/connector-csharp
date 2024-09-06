@@ -9,8 +9,8 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        // Galaxy galaxy0 = await Galaxy.Connect("ws://127.0.0.1:5000", "98F41DE299619CB6AE3588EB94A2E48EC2B47D13EB6594BA2D6D82E42FD77F46", "Pink").ConfigureAwait(false);
-        Galaxy galaxy1 = await Galaxy.Connect("ws://127.0.0.1:5000", "28A00943F2C0181A0C5DB3F4DE3E23E987A4C060CC39F45DCB6ED2A86F00EAC5", "Green").ConfigureAwait(false);
+        Galaxy galaxy1 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0", "SOME_AUTH_KEY", "Pink").ConfigureAwait(false);
+        Galaxy galaxy2 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0").ConfigureAwait(false);
 
         // await galaxy0.Chat("Halli, Hallo. :D");
         

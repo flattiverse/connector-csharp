@@ -46,7 +46,13 @@ public class Explosion : Unit
         
         _position = new Vector(unit._position);
     }
-    
+
+    /// <inheritdoc/>
+    public override Unit Clone()
+    {
+        return new Explosion(this);
+    }
+
     /// <inheritdoc/>
     public override Vector Position => _position;
     
