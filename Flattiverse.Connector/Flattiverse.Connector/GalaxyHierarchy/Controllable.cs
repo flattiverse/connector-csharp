@@ -133,6 +133,16 @@ public class Controllable : IDisposable, INamedUnit
         }
     }
 
+    /// <summary>
+    /// The gravity this controllable has.
+    /// </summary>
+    public virtual float Gravity => 0.0012f;
+    
+    /// <summary>
+    /// The size (Radius) of the controllable.
+    /// </summary>
+    public virtual float Size => 14f;
+    
     internal void Deceased()
     {
         _alive = false;

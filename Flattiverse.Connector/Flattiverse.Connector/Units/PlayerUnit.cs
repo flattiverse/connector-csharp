@@ -8,7 +8,14 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class PlayerUnit : Unit
 {
+    /// <summary>
+    /// Represents the player which controlls the PlayerUnit.
+    /// </summary>
     public readonly Player Player;
+    
+    /// <summary>
+    /// Represents the ControllableInfo of this PlayerUnit.
+    /// </summary>
     public readonly ControllableInfo ControllableInfo;
     
     private Vector _position;
@@ -37,6 +44,9 @@ public class PlayerUnit : Unit
     
     /// <inheritdoc/>
     public override Vector Movement => _movement;
+        
+    /// <inheritdoc/>
+    public override float Angle => _movement.Angle;
     
     /// <inheritdoc/>
     public override Mobility Mobility => Mobility.Mobile;

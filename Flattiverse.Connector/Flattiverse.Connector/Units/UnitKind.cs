@@ -26,11 +26,19 @@ public enum UnitKind : byte
     /// </summary>
     Meteoroid = 0x0A,
     /// <summary>
+    /// Represents a shot.
+    /// </summary>
+    Shot = 0xE0,
+    /// <summary>
     /// Represents a classical player ship.
     /// </summary>
     ClassicShipPlayerUnit = 0xF0,
     /// <summary>
     /// Represents a new style player ship.
     /// </summary>
-    NewShipPlayerUnit = 0xF1
+    NewShipPlayerUnit = 0xF1,
+    /// <summary>
+    /// Represents an explosion.
+    /// </summary>
+    Explosion = 0xFF,
 }

@@ -24,7 +24,7 @@ public class ClassicShipPlayerUnit : PlayerUnit
 
     /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.ClassicShipPlayerUnit;
-
+    
     public override Unit Clone()
     {
         return new ClassicShipPlayerUnit(this);
