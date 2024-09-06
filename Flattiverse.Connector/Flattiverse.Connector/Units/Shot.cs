@@ -22,7 +22,15 @@ public class Shot : Unit
     private Vector _movement;
 
     private ushort _ticks;
+    
+    /// <summary>
+    /// The size of the generated explosion.
+    /// </summary>
     public readonly float Load;
+    
+    /// <summary>
+    /// The damage inflicted.
+    /// </summary>
     public readonly float Damage;
     
     internal Shot(Cluster cluster, string name, PacketReader reader) : base(cluster, name)

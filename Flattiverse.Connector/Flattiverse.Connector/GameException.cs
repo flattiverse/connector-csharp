@@ -105,6 +105,9 @@ public class GameException : Exception
                 case 0x22:
                     exception = new AllStartLocationsAreOvercrowded();
                     return true;
+                case 0x30:
+                    exception = new CanOnlyShootOncePerTickGameException();
+                    return true;
             }
 
         exception = null;

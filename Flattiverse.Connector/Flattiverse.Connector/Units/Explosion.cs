@@ -66,7 +66,7 @@ public class Explosion : Unit
     public override bool IsSolid => false;
     
     /// <inheritdoc/>
-    public override float Gravity => _secondPhase ? -3f : 0f;
+    public override float Gravity => _secondPhase ? -0.5f : 0f;
     
     /// <inheritdoc/>
     public override Team? Team => Player?.Team;

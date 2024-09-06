@@ -20,6 +20,7 @@ Each `Exception` possible in the game has a number. Here is a list:
 * `0x20` (`YouNeedToContinueFirstGameException`): Thrown, if the Controllable you want to control is dead.
 * `0x21` (`YouNeedToDieFirstGameException`): Thrown, if you are not dead but try to continue.
 * `0x22` (`AllStartLocationsAreOvercrowded`): Thrown, if theres too many traffic on the start locations.
+* `0x30` (`CanOnlyShootOncePerTickGameException`): Thrown, if you tried to shoot multiple times a tick with the same unit.
 ## Packets
 Those packet commands are used to transfer necessary data from the galaxy to the client:
 * `0x00`: Ping request.
