@@ -4,65 +4,79 @@ using System.Text;
 
 namespace Flattiverse.Connector.Network;
 
-class PacketWriter
+struct PacketWriter : IDisposable
 {
+    private readonly SendBuffer _buffer;
     private int _size;
-    private byte[] _data;
 
-    public byte Command;
-    public byte Session;
-
-    public PacketWriter(byte[] data)
+    public PacketWriter(SendBuffer buffer)
     {
-        _data = data;
+        _buffer = buffer;
+        _buffer.Data[_buffer.Position] = 0;
+        _buffer.Data[_buffer.Position + 1] = 0;
     }
 
-    public bool WriteToByteArray(byte[] destination, ref int position)
+    public PacketWriter(SendBuffer buffer, byte command, byte session)
     {
-        if (position + 4 + _size >= destination.Length)
-            return false;
+        _buffer = buffer;
+        _buffer.Data[_buffer.Position] = command;
+        _buffer.Data[_buffer.Position + 1] = session;
+    }
 
-        destination[position++] = Command;
-        destination[position++] = Session;
+    public PacketWriter(SendBuffer buffer, byte command)
+    {
+        _buffer = buffer;
+        _buffer.Data[_buffer.Position] = command;
+        _buffer.Data[_buffer.Position + 1] = 0;
+    }
 
-        Unsafe.As<byte, ushort>(ref destination[position]) = (ushort)_size;
-        Buffer.BlockCopy(_data, 0, destination, position + 2, _size);
+    public byte Command
+    {
+        get => _buffer.Data[_buffer.Position];
+        set => _buffer.Data[_buffer.Position] = value;
+    }
 
-        position += 2 + _size;
-        
-        return true;
+    public byte Session
+    {
+        get => _buffer.Data[_buffer.Position + 1];
+        set => _buffer.Data[_buffer.Position + 1] = value;
+    }
+
+    public override string ToString()
+    {
+        return $"SEND: cmd=0x{Command:X02} sess=0x{Session:X02}.";
     }
 
     public void Write(byte data)
     {
-        Debug.Assert(_size < _data.Length, "Packet too long.");
+        Debug.Assert(_buffer.Position + 4 + _size + 1 <= _buffer.Data.Length, "Packet too long.");
 
-        _data[_size++] = data;
+        _buffer.Data[_buffer.Position + 4 + _size++] = data;
     }
 
     public void Write(ushort data)
     {
-        Debug.Assert(_size + 1 < _data.Length, "Packet too long.");
+        Debug.Assert(_buffer.Position + 4 + _size + 2 <= _buffer.Data.Length, "Packet too long.");
 
-        Unsafe.As<byte, ushort>(ref _data[_size]) = data;
+        Unsafe.As<byte, ushort>(ref _buffer.Data[_buffer.Position + 4 + _size]) = data;
 
         _size += 2;
     }
 
     public void Write(int data)
     {
-        Debug.Assert(_size + 3 < _data.Length, "Packet too long.");
+        Debug.Assert(_buffer.Position + 4 + _size + 4 <= _buffer.Data.Length, "Packet too long.");
 
-        Unsafe.As<byte, int>(ref _data[_size]) = data;
+        Unsafe.As<byte, int>(ref _buffer.Data[_buffer.Position + 4 + _size]) = data;
 
         _size += 4;
     }
-    
+
     public void Write(float data)
     {
-        Debug.Assert(_size + 3 < _data.Length, "Packet too long.");
+        Debug.Assert(_buffer.Position + 4 + _size + 4 <= _buffer.Data.Length, "Packet too long.");
 
-        Unsafe.As<byte, float>(ref _data[_size]) = data;
+        Unsafe.As<byte, float>(ref _buffer.Data[_buffer.Position + 4 + _size]) = data;
 
         _size += 4;
     }
@@ -71,9 +85,9 @@ class PacketWriter
     {
         if (string.IsNullOrEmpty(data))
         {
-            Debug.Assert(_size < _data.Length, "Packet too long.");
+            Debug.Assert(_buffer.Position + 4 + _size + 1 <= _buffer.Data.Length, "Packet too long.");
 
-            _data[_size++] = 0x00;
+            _buffer.Data[_buffer.Position + 4 + _size++] = 0x00;
 
             return;
         }
@@ -82,30 +96,36 @@ class PacketWriter
 
         if (size < 255)
         {
-            Debug.Assert(_size + size < _data.Length, "Packet too long.");
+            Debug.Assert(_buffer.Position + 4 + _size + 1 + size <= _buffer.Data.Length, "Packet too long.");
 
-            _data[_size++] = (byte)size;
-            Encoding.UTF8.GetBytes(data, 0, data.Length, _data, _size);
+            _buffer.Data[_buffer.Position + 4 + _size++] = (byte)size;
+            Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer.Data, _buffer.Position + 4 + _size);
             _size += size;
         }
         else
         {
-            Debug.Assert(_size + 2 + size < _data.Length, "Packet too long.");
+            Debug.Assert(_buffer.Position + 4 + _size + 3 + size <= _buffer.Data.Length, "Packet too long.");
 
-            _data[_size++] = 255;
-            Unsafe.As<byte, ushort>(ref _data[_size]) = (ushort)size;
+            _buffer.Data[_buffer.Position + 4 + _size++] = 255;
+            Unsafe.As<byte, ushort>(ref _buffer.Data[_buffer.Position + 4 + _size]) = (ushort)size;
             _size += 2;
-            Encoding.UTF8.GetBytes(data, 0, data.Length, _data, _size);
+            Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer.Data, _buffer.Position + 4 + _size);
             _size += size;
         }
     }
 
     public void Write(byte[] data)
     {
-        Debug.Assert(_size + data.Length <= _data.Length, "Packet too long.");
+        Debug.Assert(_buffer.Position + 4 + _size + data.Length <= _buffer.Data.Length, "Packet too long.");
 
-        Buffer.BlockCopy(data, 0, _data, _size, data.Length);
+        Buffer.BlockCopy(data, 0, _buffer.Data, _buffer.Position + 4 + _size, data.Length);
 
         _size += data.Length;
+    }
+
+    public void Dispose()
+    {
+        Unsafe.As<byte, ushort>(ref _buffer.Data[_buffer.Position + 2]) = (ushort)_size;
+        _buffer.Position += 4 + _size;
     }
 }

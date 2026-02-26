@@ -5,7 +5,7 @@
 /// </summary>
 public class CanOnlyShootOncePerTickGameException : GameException
 {
-    internal CanOnlyShootOncePerTickGameException() : base(0x30, "[0x30] You tried to register too much units of a specific kind.")
+    internal CanOnlyShootOncePerTickGameException() : base(0x30, "[0x30] Please, only shoot once a tick with the same unit.")
     {
     }
 }

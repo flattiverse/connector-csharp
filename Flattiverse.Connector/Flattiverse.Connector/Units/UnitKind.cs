@@ -26,6 +26,10 @@ public enum UnitKind : byte
     /// </summary>
     Meteoroid = 0x0A,
     /// <summary>
+    /// Represents a buoy.
+    /// </summary>
+    Buoy = 0x10,
+    /// <summary>
     /// Represents a shot.
     /// </summary>
     Shot = 0xE0,

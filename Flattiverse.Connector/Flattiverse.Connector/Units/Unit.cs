@@ -99,12 +99,23 @@ public class Unit
         switch (kind)
         {
             default:
-            case UnitKind.Sun:
-            case UnitKind.BlackHole:
-            case UnitKind.Moon:
-            case UnitKind.Meteoroid:
                 unit = null;
                 return false;
+            case UnitKind.Sun:
+                unit = new Sun(cluster, name, reader);
+                return true;
+            case UnitKind.BlackHole:
+                unit = new BlackHole(cluster, name, reader);
+                return true;
+            case UnitKind.Moon:
+                unit = new Moon(cluster, name, reader);
+                return true;
+            case UnitKind.Meteoroid:
+                unit = new Meteoroid(cluster, name, reader);
+                return true;
+            case UnitKind.Buoy:
+                unit = new Buoy(cluster, name, reader);
+                return true;
             case UnitKind.Planet:
                 unit = new Planet(cluster, name, reader);
                 return true;
@@ -118,6 +129,17 @@ public class Unit
                 unit = new ClassicShipPlayerUnit(cluster, name, reader);
                 return true;
         }
+    }
+
+    /// <summary>
+    /// Returns a textual representation of this unit.
+    /// </summary>
+    /// <returns>The textual representation.</returns>
+    public override string ToString()
+    {
+        string teamName = Team is null ? "-" : Team.Name;
+
+        return $"Kind={Kind}, Name=\"{Name}\", Cluster=\"{Cluster.Name}\", Team=\"{teamName}\", Mobility={Mobility}, Position={Position}, Movement={Movement}, Radius={Radius:0.00}, Angle={Angle:0.000}, Gravity={Gravity:0.000}, IsMasking={IsMasking}, IsSolid={IsSolid}, CanBeEdited={CanBeEdited}";
     }
 
     /// <summary>

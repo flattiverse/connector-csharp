@@ -33,14 +33,12 @@ public class ClassicShipControllable : Controllable
         if (movement.Length > 0.101f)
             throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "movement");
         
-        PacketWriter writer = new PacketWriter(new byte[12]);
-
-        writer.Command = 0x87;
-        
-        writer.Write(Id);
-        movement.Write(writer);
-    
-        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x87;
+            writer.Write(Id);
+            movement.Write(ref writer);
+        });
     }
 
     /// <summary>
@@ -92,17 +90,15 @@ public class ClassicShipControllable : Controllable
         if (damage > 3.001f)
             throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "damage");
 
-        PacketWriter writer = new PacketWriter(new byte[32]);
-
-        writer.Command = 0x88;
-        
-        writer.Write(Id);
-        relativeMovement.Write(writer);
-        writer.Write(ticks);
-        writer.Write(load);
-        writer.Write(damage);
-    
-        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x88;
+            writer.Write(Id);
+            relativeMovement.Write(ref writer);
+            writer.Write(ticks);
+            writer.Write(load);
+            writer.Write(damage);
+        });
     }
 
     /// <inheritdoc/>

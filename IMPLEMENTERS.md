@@ -40,7 +40,7 @@ Those packet commands are used to transfer necessary data from the galaxy to the
 * `0x2F`: Deactivate `ControllableInfo`.
 * `0x30`: You see a new `Unit` in the `Cluster`.
 * `0x31`: `Position`, `Movement` and maybe `Direction` of the `Unit` has been updated.
-* `0x3F`: You don't see the `Unit` any more.
+* `0x3F`: You don't see the `Unit` anymore.
 * `0x80`: There is a new `Controllable`.
 * `0x81`: `Controllable` deceased.
 * `0x82`: `Controllable` data has been updated and is alive.
@@ -50,7 +50,15 @@ Those packet commands are used to transfer necessary data from the galaxy to the
 * `0xC5`: Message received which has been sent to your `Team`.
 * `0xC6`: Message received which has been sent to you.
 
-With those packet commands clients call commands in the galaxy:
+With those packet commands clients call commands in the Galaxy (server):
+
+* `0x00` (all): Respond to a ping request with the given payload.
+* `0x80` (players only): Register a new classic ship with the specified name.
+* `0x84` (players only): Continue (respawn) the specified controllable.
+* `0x85` (players only): Commit suicide with the specified controllable.
+* `0x87` (players only): Move the specified controllable with the given vector.
+* `0x88` (players only): Shoot with the specified controllable using movement vector, ticks, load, and damage.
+* `0x8F` (players only): Unregister (deactivate) the specified controllable.
 * `0xC4` (players only): Send a message to the galaxy.
 * `0xC5` (players only): Send a message to all members of a team.
 * `0xC6` (players only): Send a message to a player.

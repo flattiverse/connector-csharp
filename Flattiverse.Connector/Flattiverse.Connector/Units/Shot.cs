@@ -95,4 +95,13 @@ public class Shot : Unit
 
     /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.Shot;
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        string playerName = Player is null ? "-" : Player.Name;
+        string controllableName = ControllableInfo is null ? "-" : ControllableInfo.Name;
+
+        return $"{base.ToString()}, Player=\"{playerName}\", Controllable=\"{controllableName}\", Ticks={_ticks}, Load={Load:0.000}, Damage={Damage:0.000}";
+    }
 }

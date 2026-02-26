@@ -45,14 +45,12 @@ public class Team : INamedUnit
     /// <param name="message">The message to send.</param>
     public async Task Chat(string message)
     {
-        PacketWriter writer = new PacketWriter(new byte[2052]);
-
-        writer.Command = 0xC5;
-        
-        writer.Write(Id);
-        writer.Write(message);
-        
-        await Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xC5;
+            writer.Write(Id);
+            writer.Write(message);
+        });
     }
     
     internal void Update(string name, byte red, byte green, byte blue)

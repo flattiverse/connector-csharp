@@ -11,9 +11,9 @@ public class GalaxyTickEvent : FlattiverseEvent
     /// <summary>
     /// Specifies 
     /// </summary>
-    public readonly int Tick;
+    public readonly uint Tick;
 
-    internal GalaxyTickEvent(int tick)
+    internal GalaxyTickEvent(uint tick)
     {
         Tick = tick;
     }

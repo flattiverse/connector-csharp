@@ -65,14 +65,12 @@ public class Player : INamedUnit
     /// <param name="message">The message ot send.</param>
     public async Task Chat(string message)
     {
-        PacketWriter writer = new PacketWriter(new byte[2052]);
-
-        writer.Command = 0xC6;
-        
-        writer.Write(Id);
-        writer.Write(message);
-        
-        await Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xC6;
+            writer.Write(Id);
+            writer.Write(message);
+        });
     }
     
     /// <summary>

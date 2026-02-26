@@ -51,11 +51,20 @@ public class PlayerUnit : Unit
     /// <inheritdoc/>
     public override Mobility Mobility => Mobility.Mobile;
 
+    /// <inheritdoc/>
+    public override Team? Team => Player.Team;
+
     internal override void UpdateMovement(PacketReader reader)
     {
         base.UpdateMovement(reader);
         
         Vector.FromReader(reader, out _position);
         Vector.FromReader(reader, out _movement);
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return $"{base.ToString()}, Player=\"{Player.Name}\", Controllable=\"{ControllableInfo.Name}\"";
     }
 }

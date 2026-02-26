@@ -4,60 +4,60 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A planet.
+/// A meteoroid.
 /// </summary>
-public class Planet : SteadyUnit
+public class Meteoroid : SteadyUnit
 {
     /// <summary>
-    /// Visual type of the planet.
+    /// Visual type of the meteoroid.
     /// </summary>
-    public readonly PlanetType Type;
+    public readonly MeteoroidType Type;
 
     /// <summary>
-    /// Metal richness of this planet.
+    /// Metal richness of this meteoroid.
     /// </summary>
     public readonly float Metal;
 
     /// <summary>
-    /// Carbon richness of this planet.
+    /// Carbon richness of this meteoroid.
     /// </summary>
     public readonly float Carbon;
 
     /// <summary>
-    /// Hydrogen richness of this planet.
+    /// Hydrogen richness of this meteoroid.
     /// </summary>
     public readonly float Hydrogen;
 
     /// <summary>
-    /// Silicon richness of this planet.
+    /// Silicon richness of this meteoroid.
     /// </summary>
     public readonly float Silicon;
 
-    internal Planet(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
+    internal Meteoroid(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
         if (!reader.Read(out byte typeId) || !reader.Read(out Metal) || !reader.Read(out Carbon) || !reader.Read(out Hydrogen) || !reader.Read(out Silicon))
             throw new System.IO.InvalidDataException("Couldn't read Unit.");
 
-        Type = (PlanetType)typeId;
+        Type = (MeteoroidType)typeId;
     }
 
-    internal Planet(Planet planet) : base(planet)
+    internal Meteoroid(Meteoroid meteoroid) : base(meteoroid)
     {
-        Type = planet.Type;
+        Type = meteoroid.Type;
 
-        Metal = planet.Metal;
-        Carbon = planet.Carbon;
-        Hydrogen = planet.Hydrogen;
-        Silicon = planet.Silicon;
+        Metal = meteoroid.Metal;
+        Carbon = meteoroid.Carbon;
+        Hydrogen = meteoroid.Hydrogen;
+        Silicon = meteoroid.Silicon;
     }
-    
+
     /// <inheritdoc/>
-    public override UnitKind Kind => UnitKind.Planet;
+    public override UnitKind Kind => UnitKind.Meteoroid;
 
     /// <inheritdoc/>
     public override Unit Clone()
     {
-        return new Planet(this);
+        return new Meteoroid(this);
     }
 
     /// <inheritdoc/>

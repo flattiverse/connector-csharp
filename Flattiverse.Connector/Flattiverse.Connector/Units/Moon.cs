@@ -4,60 +4,60 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A planet.
+/// A moon.
 /// </summary>
-public class Planet : SteadyUnit
+public class Moon : SteadyUnit
 {
     /// <summary>
-    /// Visual type of the planet.
+    /// Visual type of the moon.
     /// </summary>
-    public readonly PlanetType Type;
+    public readonly MoonType Type;
 
     /// <summary>
-    /// Metal richness of this planet.
+    /// Metal richness of this moon.
     /// </summary>
     public readonly float Metal;
 
     /// <summary>
-    /// Carbon richness of this planet.
+    /// Carbon richness of this moon.
     /// </summary>
     public readonly float Carbon;
 
     /// <summary>
-    /// Hydrogen richness of this planet.
+    /// Hydrogen richness of this moon.
     /// </summary>
     public readonly float Hydrogen;
 
     /// <summary>
-    /// Silicon richness of this planet.
+    /// Silicon richness of this moon.
     /// </summary>
     public readonly float Silicon;
 
-    internal Planet(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
+    internal Moon(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
         if (!reader.Read(out byte typeId) || !reader.Read(out Metal) || !reader.Read(out Carbon) || !reader.Read(out Hydrogen) || !reader.Read(out Silicon))
             throw new System.IO.InvalidDataException("Couldn't read Unit.");
 
-        Type = (PlanetType)typeId;
+        Type = (MoonType)typeId;
     }
 
-    internal Planet(Planet planet) : base(planet)
+    internal Moon(Moon moon) : base(moon)
     {
-        Type = planet.Type;
+        Type = moon.Type;
 
-        Metal = planet.Metal;
-        Carbon = planet.Carbon;
-        Hydrogen = planet.Hydrogen;
-        Silicon = planet.Silicon;
+        Metal = moon.Metal;
+        Carbon = moon.Carbon;
+        Hydrogen = moon.Hydrogen;
+        Silicon = moon.Silicon;
     }
-    
+
     /// <inheritdoc/>
-    public override UnitKind Kind => UnitKind.Planet;
+    public override UnitKind Kind => UnitKind.Moon;
 
     /// <inheritdoc/>
     public override Unit Clone()
     {
-        return new Planet(this);
+        return new Moon(this);
     }
 
     /// <inheritdoc/>

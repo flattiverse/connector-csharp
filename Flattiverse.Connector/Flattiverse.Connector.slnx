@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Development/Development.csproj" />
+  <Project Path="Flattiverse.Connector/Flattiverse.Connector.csproj" />
+</Solution>

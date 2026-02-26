@@ -9,8 +9,10 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        Galaxy galaxy1 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0", "SOME_AUTH_KEY", "Pink").ConfigureAwait(false);
-        Galaxy galaxy2 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0").ConfigureAwait(false);
+//        Galaxy galaxy1 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0", "SOME_AUTH_KEY", "Pink").ConfigureAwait(false);
+//        Galaxy galaxy2 = await Galaxy.Connect("ws://www.flattiverse.com/game/galaxies/0").ConfigureAwait(false);
+        Galaxy galaxy1 = await Galaxy.Connect("ws://127.0.0.1:5000", "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5", "Pink").ConfigureAwait(false);
+        //Galaxy galaxy2 = await Galaxy.Connect("ws://127.0.0.1:5000").ConfigureAwait(false);
 
         // await galaxy0.Chat("Halli, Hallo. :D");
         
@@ -18,6 +20,15 @@ class Program
 
         await ship.Continue();
 
+        for (int i = 0; i < 35; i++)
+        {
+            FlattiverseEvent @event = await galaxy1.NextEvent();
+
+            Console.WriteLine(@event);
+        }
+
+        return;
+        
         /*ThreadPool.QueueUserWorkItem(async delegate
         {
             for (int i = 0; i < 200; i++)

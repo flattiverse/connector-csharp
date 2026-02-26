@@ -133,11 +133,11 @@ class CommandParameter
                 value = null;
                 return false;
             case CommandParameterKind.UInt:
-                // if (reader.Read(out uint ui) && MinValue <= ui && ui <= MaxValue)
-                // {
-                //     value = ui;
-                //     return true;
-                // }
+                if (reader.Read(out uint ui))
+                {
+                    value = ui;
+                    return true;
+                }
 
                 value = null;
                 return false;

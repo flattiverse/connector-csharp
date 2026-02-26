@@ -44,7 +44,7 @@ public class Vector
         return true;
     }
 
-    internal void Write(PacketWriter writer)
+    internal void Write(ref PacketWriter writer)
     {
         writer.Write(X);
         writer.Write(Y);
@@ -186,7 +186,7 @@ public class Vector
     /// Divides the vector by the given length.
     /// </summary>
     /// <param name="vector">The vector to divide.</param>
-    /// <param name="factor">The factor to divide the vector with.</param>
+    /// <param name="divisor">The factor to divide the vector with.</param>
     /// <returns>The divided vector.</returns>
     public static Vector operator /(Vector vector, float divisor) =>
         new Vector(vector.X / divisor, vector.Y / divisor);

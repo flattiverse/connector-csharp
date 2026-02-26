@@ -88,6 +88,19 @@ class PacketReader
         _position += 4;
         return true;
     }
+    
+    public bool Read(out uint data)
+    {
+        if (_position + 3 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
+        {
+            data = default;
+            return false;
+        }
+
+        data = Unsafe.As<byte, uint>(ref _data[_basePosition + 4 + _position]);
+        _position += 4;
+        return true;
+    }
 
     public bool Read(out float data)
     {
@@ -158,5 +171,33 @@ class PacketReader
 
         _position += data.Length;
         return true;
+    }
+
+    public override string ToString()
+    {
+        StringBuilder builder = new StringBuilder();
+
+        builder.Append($"RECV: cmd=0x{Command:X02} sess=0x{Session:X02} |");
+
+        int size = Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]);
+
+        for (int position = 0; position < size; position++)
+            builder.Append($" 0x{_data[_basePosition + 4 + position]:X02}");
+
+        return builder.ToString();
+    }
+
+    public string ClaimWriter()
+    {
+        StringBuilder builder = new StringBuilder();
+
+        builder.Append($"SEND: cmd=0x{Command:X02} sess=0x{Session:X02} |");
+
+        int size = Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]);
+
+        for (int position = 0; position < size; position++)
+            builder.Append($" 0x{_data[_basePosition + 4 + position]:X02}");
+
+        return builder.ToString();
     }
 }

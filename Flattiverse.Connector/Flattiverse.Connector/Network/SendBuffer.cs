@@ -4,37 +4,57 @@ namespace Flattiverse.Connector.Network;
 
 class SendBuffer
 {
-    private int _position;
-    private byte[] _data;
+    public int Position;
+    public readonly byte[] Data;
 
     public SendBuffer(int size)
     {
-        _data = GC.AllocateUninitializedArray<byte>(size, true);
+        Data = new byte[size];
     }
 
-    public bool Send(PacketWriter writer)
+    public PacketWriter Write()
     {
-        return writer.WriteToByteArray(_data, ref _position);
+        return new PacketWriter(this);
+    }
+
+    public PacketWriter Write(byte command)
+    {
+        return new PacketWriter(this, command);
+    }
+
+    public PacketWriter Write(byte command, byte session)
+    {
+        return new PacketWriter(this, command, session);
     }
 
     public bool Send(SendBuffer buffer)
     {
-        if (_position + buffer._position > _data.Length)
+        if (Position + buffer.Position > Data.Length)
             return false;
 
-        Unsafe.CopyBlock(ref _data[_position], ref buffer._data[0], (uint)buffer._position);
-        
-        _position += buffer._position;
+        Unsafe.CopyBlock(ref Data[Position], ref buffer.Data[0], (uint)buffer.Position);
+
+        Position += buffer.Position;
 
         return true;
     }
-    
-    public Memory<byte> Buffer => _data.AsMemory(0, _position);
 
-    public bool HasData => _position > 0;
-    
+    public Memory<byte> Buffer => Data.AsMemory(0, Position);
+
+    public bool HasData => Position > 0;
+
+    /// <summary>
+    /// The complete length of data.
+    /// </summary>
+    public int Length => Data.Length;
+
     public void Reset()
     {
-        _position = 0;
+        Position = 0;
+    }
+
+    public void DoneWriting(int size)
+    {
+        Position += size;
     }
 }

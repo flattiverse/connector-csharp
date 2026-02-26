@@ -93,4 +93,13 @@ public class Explosion : Unit
     {
         _secondPhase = true;
     }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        string playerName = Player is null ? "-" : Player.Name;
+        string controllableName = ControllableInfo is null ? "-" : ControllableInfo.Name;
+
+        return $"{base.ToString()}, Player=\"{playerName}\", Controllable=\"{controllableName}\", DamagePhase={DamagePhase}, ShockWavePhase={ShockWavePhase}, Damage={Damage:0.000}";
+    }
 }

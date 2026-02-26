@@ -5,7 +5,7 @@
 /// </summary>
 public class InvalidDataGameException : GameException
 {
-    internal InvalidDataGameException() : base(0x03, "[0x0D] Invalid data received: Terminating connection.")
+    internal InvalidDataGameException() : base(0x0D, "[0x0D] Invalid data received, protocol mismatch: Terminating connection.")
     {
     }
 }

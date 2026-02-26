@@ -77,13 +77,11 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public async Task Continue()
     {
-        PacketWriter writer = new PacketWriter(new byte[1]);
-
-        writer.Command = 0x84;
-    
-        writer.Write(Id);
-    
-        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x84;
+            writer.Write(Id);
+        });
     }
 
     internal void Deactivate()
@@ -97,13 +95,11 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public async Task Suicide()
     {
-        PacketWriter writer = new PacketWriter(new byte[1]);
-
-        writer.Command = 0x85;
-    
-        writer.Write(Id);
-    
-        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(writer);
+        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x85;
+            writer.Write(Id);
+        });
     }
     
     /// <summary>
@@ -111,12 +107,11 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public void Dispose()
     {
-        PacketWriter writer = new PacketWriter(new byte[1]);
-
-        writer.Command = 0x8F;
-        writer.Write(Id);
-        
-        _cluster.Galaxy.Connection.Send(writer);
+        _cluster.Galaxy.Connection.Send(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x8F;
+            writer.Write(Id);
+        });
         _cluster.Galaxy.Connection.Flush();
     }
 

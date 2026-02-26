@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "B";
+    private const string Version = "D";
     
     private string _name;
     
@@ -44,6 +44,7 @@ public class Galaxy : IDisposable
 
     private bool _maintenance;
     private bool _active;
+    private bool _receivedGalaxySettings;
     
     private readonly Team?[] _teams;
     private readonly Cluster?[] _clusters;
@@ -322,7 +323,7 @@ public class Galaxy : IDisposable
     /// Dequeues or waits for an event.
     /// </summary>
     /// <returns>The event.</returns>
-    /// <exception cref="CantCallThisConcurrentGameException">Thrown, if you try to access this mehtod from different threads in parallel.</exception>
+    /// <exception cref="CantCallThisConcurrentGameException">Thrown, if you try to access this method from different threads in parallel.</exception>
     /// <exception cref="ConnectionTerminatedGameException">Thrown, if the network connection has been terminated.</exception>
     public async ValueTask<FlattiverseEvent> NextEvent()
     {
@@ -364,6 +365,7 @@ public class Galaxy : IDisposable
         while (await Connection.TryRead(reader).ConfigureAwait(false))
             do
             {
+
                 if (reader.Session > 0)
                     if (Connection.SessionReply(reader))
                         continue;
@@ -423,13 +425,11 @@ public class Galaxy : IDisposable
     /// <param name="message">The chat message to send.</param>
     public async Task Chat(string message)
     {
-        PacketWriter writer = new PacketWriter(new byte[2052]);
-
-        writer.Command = 0xC4;
-        
-        writer.Write(message);
-        
-        await Connection.SendSessionRequestAndGetReply(writer);
+        await Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xC4;
+            writer.Write(message);
+        });
     }
 
     /// <summary>
@@ -440,14 +440,12 @@ public class Galaxy : IDisposable
     {
         if (!Utils.CheckName(name))
             throw new InvalidArgumentGameException(InvalidArgumentKind.NameConstraint, "name");
-        
-        PacketWriter writer = new PacketWriter(new byte[65]);
 
-        writer.Command = 0x80;
-        
-        writer.Write(name);
-        
-        PacketReaderCopy result = await Connection.SendSessionRequestAndGetReply(writer);
+        PacketReaderCopy result = await Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x80;
+            writer.Write(name);
+        });
         
         if (result.Read(out byte id) && _controllables[id] is ClassicShipControllable controllable)
             return controllable;
@@ -458,11 +456,11 @@ public class Galaxy : IDisposable
     [Command(0x00)]
     private void PingPong(ushort challenge)
     {
-        PacketWriter writer = new PacketWriter(new byte[2]);
-        
-        writer.Write(challenge);
-        
-        Connection.Send(writer);
+        Connection.Send(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x00;
+            writer.Write(challenge);
+        });
         Connection.Flush();
     }
     
@@ -472,6 +470,16 @@ public class Galaxy : IDisposable
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
         byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases)
     {
+        GalaxySettingsSnapshot? oldSettings;
+
+        if (_receivedGalaxySettings)
+            oldSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
+                _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
+                _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
+                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases);
+        else
+            oldSettings = null;
+
         _gameMode = gameMode;
         _name = name;
         _description = description;
@@ -489,6 +497,15 @@ public class Galaxy : IDisposable
         _playerMaxClassicShips = playerMaxClassicShips;
         _playerMaxNewShips = playerMaxNewShips;
         _playerMaxBases = playerMaxBases;
+
+        _receivedGalaxySettings = true;
+
+        GalaxySettingsSnapshot newSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
+            _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
+            _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
+            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases);
+
+        PushEvent(new GalaxySettingsUpdatedEvent(oldSettings, newSettings));
     }
 
     [Command(0x02)]
@@ -499,9 +516,18 @@ public class Galaxy : IDisposable
         Team? team = _teams[id];
         
         if (team is null)
-            _teams[id] = new Team(this, id, name, red, green, blue);
+        {
+            Team newTeam = new Team(this, id, name, red, green, blue);
+            _teams[id] = newTeam;
+            PushEvent(new TeamCreatedEvent(CreateTeamSnapshot(newTeam)));
+        }
         else
+        {
+            TeamSnapshot oldTeam = CreateTeamSnapshot(team);
             team.Update(name, red, green, blue);
+            TeamSnapshot newTeam = CreateTeamSnapshot(team);
+            PushEvent(new TeamUpdatedEvent(oldTeam, newTeam));
+        }
     }
     
     [Command(0x03)]
@@ -510,9 +536,14 @@ public class Galaxy : IDisposable
         Debug.Assert(id < 32, "Invalid team ID.");
         
         Debug.Assert(_teams[id] is not null, "Team was already deactivated or did never exist.");
-        
-        _teams[id]!.Deactivate();
+
+        Team team = _teams[id]!;
+        TeamSnapshot removedTeam = CreateTeamSnapshot(team);
+
+        team.Deactivate();
         _teams[id] = null;
+
+        PushEvent(new TeamRemovedEvent(removedTeam));
     }
     
     [Command(0x06)]
@@ -523,9 +554,23 @@ public class Galaxy : IDisposable
         Cluster? cluster = _clusters[id];
         
         if (cluster is null)
-            _clusters[id] = new Cluster(this, id, name);
+        {
+            Cluster newCluster = new Cluster(this, id, name);
+            _clusters[id] = newCluster;
+            PushEvent(new ClusterCreatedEvent(CreateClusterSnapshot(newCluster)));
+        }
         else
+        {
+            ClusterSnapshot oldCluster = CreateClusterSnapshot(cluster);
             cluster.Update(name);
+            ClusterSnapshot newCluster = CreateClusterSnapshot(cluster);
+            PushEvent(new ClusterUpdatedEvent(oldCluster, newCluster));
+        }
+    }
+
+    private static TeamSnapshot CreateTeamSnapshot(Team team)
+    {
+        return new TeamSnapshot(team.Id, team.Name, team.Red, team.Green, team.Blue);
     }
     
     [Command(0x07)]
@@ -533,9 +578,20 @@ public class Galaxy : IDisposable
     {
         Debug.Assert(id < 64, "Invalid cluster ID.");
         Debug.Assert(_clusters[id] is not null, "Cluster was already deactivated or did never exist.");
-        
-        _clusters[id]!.Deactivate();
+
+        Cluster cluster = _clusters[id]!;
+        cluster.Deactivate();
+
+        ClusterSnapshot removedCluster = CreateClusterSnapshot(cluster);
+
         _clusters[id] = null;
+
+        PushEvent(new ClusterRemovedEvent(removedCluster));
+    }
+
+    private static ClusterSnapshot CreateClusterSnapshot(Cluster cluster)
+    {
+        return new ClusterSnapshot(cluster.Id, cluster.Name, cluster.Active);
     }
     
     [Command(0x10)]
@@ -638,6 +694,8 @@ public class Galaxy : IDisposable
 
         if (controllableInfo is not null)
         {
+            controllableInfo.Deactivate();
+            
             PushEvent(new ClosedControllableInfoPlayerEvent(player, controllableInfo));
             player._controllableInfos[id] = null;
         }
@@ -648,6 +706,7 @@ public class Galaxy : IDisposable
     [Command(0x80)]
     private void ControllableNew(UnitKind kind, byte id, string name, PacketReader reader)
     {
+
         if (Controllable.New(kind, _clusters[0]!, id, name, reader, out Controllable? info))
         {
             _controllables[id] = info;
@@ -709,7 +768,7 @@ public class Galaxy : IDisposable
     }
     
     [Command(0xC0)]
-    private void UniverseTick(int number)
+    private void UniverseTick(uint number)
     {
         PushEvent(new GalaxyTickEvent(number));
     }

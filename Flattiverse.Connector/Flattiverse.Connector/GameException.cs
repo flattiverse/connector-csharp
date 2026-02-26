@@ -69,6 +69,9 @@ public class GameException : Exception
                 case 0x0C:
                     exception = new SessionsExhaustedException();
                     return true;
+                case 0x0D:
+                    exception = new InvalidDataGameException();
+                    return true;
                 case 0x0F: // We don't care about the real reason because actually this exception shouldn't be ever communicated.
                     exception = new ConnectionTerminatedGameException(null);
                     return true;

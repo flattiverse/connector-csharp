@@ -6,6 +6,41 @@
 public enum EventKind : byte
 {
     /// <summary>
+    /// The galaxy settings have been updated.
+    /// </summary>
+    GalaxySettingsUpdated = 0x01,
+
+    /// <summary>
+    /// A team has been created.
+    /// </summary>
+    TeamCreated = 0x04,
+
+    /// <summary>
+    /// A team has been updated.
+    /// </summary>
+    TeamUpdated = 0x05,
+
+    /// <summary>
+    /// A team has been removed.
+    /// </summary>
+    TeamRemoved = 0x06,
+
+    /// <summary>
+    /// A cluster has been created.
+    /// </summary>
+    ClusterCreated = 0x08,
+
+    /// <summary>
+    /// A cluster has been updated.
+    /// </summary>
+    ClusterUpdated = 0x09,
+
+    /// <summary>
+    /// A cluster has been removed.
+    /// </summary>
+    ClusterRemoved = 0x0A,
+    
+    /// <summary>
     /// A player has joined the galaxy.
     /// </summary>
     PlayerJoined = 0x10,

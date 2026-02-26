@@ -28,6 +28,7 @@ class Connection
     private readonly Session?[] _sessions;
     private byte _sessionPosition;
     
+    public delegate void PacketWriterAction(ref PacketWriter writer);
     public delegate void DisconnectedHandler(string reason);
     public event DisconnectedHandler? Disconnected;
     
@@ -46,7 +47,7 @@ class Connection
         ThreadPool.QueueUserWorkItem(async delegate { await SendWorker(); });
     }
     
-    public async Task<PacketReaderCopy> SendSessionRequestAndGetReply(PacketWriter packet)
+    public async Task<PacketReaderCopy> SendSessionRequestAndGetReply(PacketWriterAction action)
     {
         if (_disconnected)
             throw new ConnectionTerminatedGameException(_closeReason);
@@ -69,15 +70,12 @@ class Connection
         if (session.Id == 0)
             throw new SessionsExhaustedException();
 
-        packet.Session = session.Id;
-
         lock (_sync)
         {
-            if (!_sendBufferA.Send(packet))
-            {
-                Close("Send buffer overflow: Check your internet connection.");
-                throw new ConnectionTerminatedGameException(_closeReason);
-            }
+            PacketWriter writer = _sendBufferA.Write();
+            action(ref writer);
+            writer.Session = session.Id;
+            writer.Dispose();
 
             if (!_flushSignalled)
                 if (_sendSignal is not null)
@@ -97,15 +95,16 @@ class Connection
 
     public string? CloseReason => _closeReason;
     
-    public void Send(PacketWriter packet)
+    public void Send(PacketWriterAction action)
     {
         lock (_sync)
         {
             if (_disconnected)
                 return;
 
-            if (!_sendBufferA.Send(packet))
-                Close("Send buffer overflow: Check your internet connection.");
+            PacketWriter writer = _sendBufferA.Write();
+            action(ref writer);
+            writer.Dispose();
         }
     }
 
@@ -164,6 +163,7 @@ class Connection
     /// <returns>true, if everything is Ok, false if the corresponding session didn't exist.</returns>
     public bool SessionReply(PacketReader reader)
     {
+
         Session? session = _sessions[reader.Session];
         
         if (session is null)
