@@ -18,6 +18,9 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 public class Galaxy : IDisposable
 {
     private const string Version = "D";
+    private const byte SpectatorsTeamId = 12;
+    private const int TeamCapacity = 13;
+    private const int ClusterCapacity = 24;
     
     private string _name;
     
@@ -176,11 +179,12 @@ public class Galaxy : IDisposable
         Connection = connection;
         Connection.Disconnected += ConnectionDisconnected;
         
-        _teams = new Team?[33];
-        _clusters = new Cluster?[64];
+        _teams = new Team?[TeamCapacity];
+        _clusters = new Cluster?[ClusterCapacity];
         _controllables = new Controllable?[192];
 
-        _teams[32] = new Team(this, 32, "Spectators", 128, 128, 128);
+        Team spectators = new Team(this, SpectatorsTeamId, "Spectators", 128, 128, 128);
+        _teams[SpectatorsTeamId] = spectators;
         
         _players = new Player?[193];
 
@@ -420,6 +424,43 @@ public class Galaxy : IDisposable
     }
 
     /// <summary>
+    /// Configures galaxy metadata, teams and clusters from an XML document.
+    /// Missing attributes keep old values for the referenced element.
+    /// Team/Cluster elements define the final set: missing ids are removed.
+    /// Unknown attributes and unknown child nodes are rejected by the server.
+    /// </summary>
+    /// <param name="xml">
+    /// Configuration XML. Example:
+    /// <code>
+    /// &lt;Galaxy Name="New Name"&gt;
+    ///   &lt;Team Id="0" /&gt;
+    ///   &lt;Team Id="1" Name="Green" ColorR="64" ColorG="255" ColorB="64" /&gt;
+    ///   &lt;Cluster Id="0" Name="Playground" Start="true" Respawn="false" /&gt;
+    /// &lt;/Galaxy&gt;
+    /// </code>
+    /// Team id 12 (Spectators) must not be included.
+    /// Team names must be unique.
+    /// Removing a team fails if any remaining cluster still has regions referencing that team.
+    /// Galaxy/Team/Cluster names must be non-empty and at most 32 characters.
+    /// Description must be at most 4096 characters.
+    /// At least one cluster must end up with Start="true".
+    /// </param>
+    /// <exception cref="InvalidArgumentGameException">
+    /// Thrown, if <paramref name="xml" /> is empty, unreadable on protocol level, or malformed XML.
+    /// </exception>
+    /// <exception cref="InvalidXmlNodeValueGameException">
+    /// Thrown, if a specific XML node or attribute contains an invalid value.
+    /// </exception>
+    public async Task Configure(string xml)
+    {
+        await Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x04;
+            writer.Write(xml);
+        });
+    }
+
+    /// <summary>
     /// Send a chat message to the galaxy.
     /// </summary>
     /// <param name="message">The chat message to send.</param>
@@ -468,7 +509,7 @@ public class Galaxy : IDisposable
     private void UpdateGalaxy(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxNewShips, ushort galaxyMaxBases,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases)
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, byte maintenance)
     {
         GalaxySettingsSnapshot? oldSettings;
 
@@ -476,7 +517,7 @@ public class Galaxy : IDisposable
             oldSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
                 _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
                 _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
-                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases);
+                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance);
         else
             oldSettings = null;
 
@@ -497,13 +538,14 @@ public class Galaxy : IDisposable
         _playerMaxClassicShips = playerMaxClassicShips;
         _playerMaxNewShips = playerMaxNewShips;
         _playerMaxBases = playerMaxBases;
+        _maintenance = maintenance != 0;
 
         _receivedGalaxySettings = true;
 
         GalaxySettingsSnapshot newSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
             _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
             _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
-            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases);
+            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance);
 
         PushEvent(new GalaxySettingsUpdatedEvent(oldSettings, newSettings));
     }
@@ -511,7 +553,7 @@ public class Galaxy : IDisposable
     [Command(0x02)]
     private void UpdateTeam(byte id, byte red, byte green, byte blue, string name)
     {
-        Debug.Assert(id < 32, "Invalid team ID.");
+        Debug.Assert(id < SpectatorsTeamId, "Invalid team ID.");
         
         Team? team = _teams[id];
         
@@ -533,7 +575,7 @@ public class Galaxy : IDisposable
     [Command(0x03)]
     private void DeactivateTeam(byte id)
     {
-        Debug.Assert(id < 32, "Invalid team ID.");
+        Debug.Assert(id < SpectatorsTeamId, "Invalid team ID.");
         
         Debug.Assert(_teams[id] is not null, "Team was already deactivated or did never exist.");
 
@@ -547,22 +589,25 @@ public class Galaxy : IDisposable
     }
     
     [Command(0x06)]
-    private void UpdateCluster(byte id, string name)
+    private void UpdateCluster(byte id, string name, byte flags)
     {
-        Debug.Assert(id < 64, "Invalid cluster ID.");
+        Debug.Assert(id < ClusterCapacity, "Invalid cluster ID.");
+
+        bool start = (flags & 0x01) != 0;
+        bool respawn = (flags & 0x02) != 0;
         
         Cluster? cluster = _clusters[id];
         
         if (cluster is null)
         {
-            Cluster newCluster = new Cluster(this, id, name);
+            Cluster newCluster = new Cluster(this, id, name, start, respawn);
             _clusters[id] = newCluster;
             PushEvent(new ClusterCreatedEvent(CreateClusterSnapshot(newCluster)));
         }
         else
         {
             ClusterSnapshot oldCluster = CreateClusterSnapshot(cluster);
-            cluster.Update(name);
+            cluster.Update(name, start, respawn);
             ClusterSnapshot newCluster = CreateClusterSnapshot(cluster);
             PushEvent(new ClusterUpdatedEvent(oldCluster, newCluster));
         }
@@ -576,7 +621,7 @@ public class Galaxy : IDisposable
     [Command(0x07)]
     private void DeactivateCluster(byte id)
     {
-        Debug.Assert(id < 64, "Invalid cluster ID.");
+        Debug.Assert(id < ClusterCapacity, "Invalid cluster ID.");
         Debug.Assert(_clusters[id] is not null, "Cluster was already deactivated or did never exist.");
 
         Cluster cluster = _clusters[id]!;
@@ -591,7 +636,7 @@ public class Galaxy : IDisposable
 
     private static ClusterSnapshot CreateClusterSnapshot(Cluster cluster)
     {
-        return new ClusterSnapshot(cluster.Id, cluster.Name, cluster.Active);
+        return new ClusterSnapshot(cluster.Id, cluster.Name, cluster.Active, cluster.Start, cluster.Respawn);
     }
     
     [Command(0x10)]

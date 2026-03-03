@@ -47,6 +47,24 @@ public class ClusterUpdatedEvent : FlattiverseEvent
             appendedAtLeastOneChange = true;
         }
 
+        if (Old.Start != New.Start)
+        {
+            if (appendedAtLeastOneChange)
+                builder.Append(", ");
+
+            builder.Append($"Start={Old.Start}->{New.Start}");
+            appendedAtLeastOneChange = true;
+        }
+
+        if (Old.Respawn != New.Respawn)
+        {
+            if (appendedAtLeastOneChange)
+                builder.Append(", ");
+
+            builder.Append($"Respawn={Old.Respawn}->{New.Respawn}");
+            appendedAtLeastOneChange = true;
+        }
+
         if (!appendedAtLeastOneChange)
             return $"{Stamp:HH:mm:ss.fff} Cluster updated without effective field changes: Id={New.Id}.";
 

@@ -30,6 +30,10 @@ public enum UnitKind : byte
     /// </summary>
     Buoy = 0x10,
     /// <summary>
+    /// Represents a mission target with configurable waypoint vectors.
+    /// </summary>
+    MissionTarget = 0x11,
+    /// <summary>
     /// Represents a shot.
     /// </summary>
     Shot = 0xE0,

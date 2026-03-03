@@ -21,6 +21,6 @@ public class ClusterRemovedEvent : FlattiverseEvent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Stamp:HH:mm:ss.fff} Cluster removed: Id={Cluster.Id}, Name=\"{Cluster.Name}\", Active={Cluster.Active}.";
+        return $"{Stamp:HH:mm:ss.fff} Cluster removed: Id={Cluster.Id}, Name=\"{Cluster.Name}\", Active={Cluster.Active}, Start={Cluster.Start}, Respawn={Cluster.Respawn}.";
     }
 }

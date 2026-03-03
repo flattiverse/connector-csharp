@@ -73,6 +73,9 @@ public class Shot : Unit
     
     /// <inheritdoc/>
     public override Team? Team => Player?.Team;
+
+    /// <inheritdoc/>
+    public override bool IsMasking => false;
     
     /// <summary>
     /// The countdown of when the shot explodes.

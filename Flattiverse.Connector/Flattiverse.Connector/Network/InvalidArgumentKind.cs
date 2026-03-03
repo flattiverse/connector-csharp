@@ -26,6 +26,10 @@ public enum InvalidArgumentKind : byte
     /// </summary>
     ChatConstraint = 0x04,
     /// <summary>
+    /// The supplied XML data is empty, unreadable, or malformed.
+    /// </summary>
+    AmbiguousXmlData = 0x05,
+    /// <summary>
     /// The specified entity has not been found.
     /// </summary>
     EntityNotFound = 0xFB,

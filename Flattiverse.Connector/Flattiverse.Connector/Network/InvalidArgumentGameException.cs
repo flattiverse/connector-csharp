@@ -39,6 +39,8 @@ public class InvalidArgumentGameException : GameException
                 return $"[0x12] Parameter \"{parameter}\" references a name which is already in use.";
             case InvalidArgumentKind.ChatConstraint:
                 return $"[0x12] Parameter \"{parameter}\" doesn't match the chat message constraint.";
+            case InvalidArgumentKind.AmbiguousXmlData:
+                return $"[0x12] Parameter \"{parameter}\" contains ambiguous XML data.";
             case InvalidArgumentKind.ContainedNaN:
                 return $"[0x12] Parameter \"{parameter}\" contained a \"Not a Number\" value.";
             case InvalidArgumentKind.ContainedInfinity:

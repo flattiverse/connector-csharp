@@ -116,6 +116,9 @@ public class Unit
             case UnitKind.Buoy:
                 unit = new Buoy(cluster, name, reader);
                 return true;
+            case UnitKind.MissionTarget:
+                unit = new MissionTarget(cluster, name, reader);
+                return true;
             case UnitKind.Planet:
                 unit = new Planet(cluster, name, reader);
                 return true;

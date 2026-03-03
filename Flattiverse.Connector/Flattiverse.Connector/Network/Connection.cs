@@ -49,11 +49,27 @@ class Connection
     
     public async Task<PacketReaderCopy> SendSessionRequestAndGetReply(PacketWriterAction action)
     {
+        Session session = StartSessionRequest(action, false);
+        return await session.GetReplyOrThrow().ConfigureAwait(false);
+    }
+
+    public async Task<PacketReaderLarge> SendSessionRequestAndGetReplyLarge(PacketWriterAction action)
+    {
+        Session session = StartSessionRequest(action, true);
+        return await session.GetLargeReplyOrThrow().ConfigureAwait(false);
+    }
+    
+    public bool Disposed => _disposed;
+
+    public string? CloseReason => _closeReason;
+
+    private Session StartSessionRequest(PacketWriterAction action, bool largeReply)
+    {
         if (_disconnected)
             throw new ConnectionTerminatedGameException(_closeReason);
 
-        Session session = new Session();
-        
+        Session session = new Session(largeReply);
+
         for (int @try = 0; @try < _sessions.Length; @try++)
         {
             _sessionPosition++;
@@ -81,19 +97,14 @@ class Connection
                 if (_sendSignal is not null)
                 {
                     _sendSignal.SetResult();
-                
                     _sendSignal = null;
                 }
                 else
                     _flushSignalled = true;
         }
 
-        return await session.GetReplyOrThrow().ConfigureAwait(false);
+        return session;
     }
-    
-    public bool Disposed => _disposed;
-
-    public string? CloseReason => _closeReason;
     
     public void Send(PacketWriterAction action)
     {
@@ -149,7 +160,7 @@ class Connection
     {
         Debug.Assert(_sessions[1] is null, "Can't initialize the initial session when a session is already there on session slot 1.");
         
-        Session session = new Session();
+        Session session = new Session(false);
         
         _sessions[1] = session;
 
@@ -183,7 +194,18 @@ class Connection
             }
         }
         else
-            session.SetResult(reader);
+        {
+            if (session.ExpectsLargeReply)
+                session.SetLargeResult(reader);
+            else if (reader.Size <= PacketReaderCopy.InlineCapacity)
+                session.SetResult(reader);
+            else
+            {
+                session.SetResult(new ConnectionTerminatedGameException("Received oversized session reply in small reply mode."));
+                Close("Received oversized session reply in small reply mode.");
+                return false;
+            }
+        }
         
         _sessions[reader.Session] = null;
 
@@ -265,11 +287,24 @@ class Connection
                 return;
             else
             {
-                Disconnected?.Invoke(reason);
-                
                 _disposed = true;
                 _disconnected = true;
                 _closeReason ??= reason;
+
+                if (_sendSignal is not null)
+                {
+                    _sendSignal.TrySetResult();
+                    _sendSignal = null;
+                }
+
+                for (int sessionId = 1; sessionId < _sessions.Length; sessionId++)
+                    if (_sessions[sessionId] is Session session)
+                    {
+                        _sessions[sessionId] = null;
+                        session.SetResult(new ConnectionTerminatedGameException(_closeReason));
+                    }
+
+                Disconnected?.Invoke(reason);
             }
 
         _cancellationSource.Cancel();

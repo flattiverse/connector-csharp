@@ -22,6 +22,7 @@ class PacketReader
     }
 
     public PacketReaderCopy Copy => new PacketReaderCopy(_data, _basePosition);
+    public PacketReaderLarge LargeCopy => new PacketReaderLarge(_data, _basePosition);
     
     public Memory<byte> FullMemory => _data.AsMemory(); 
     

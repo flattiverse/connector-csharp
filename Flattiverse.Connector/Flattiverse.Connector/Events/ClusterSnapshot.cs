@@ -20,10 +20,22 @@ public class ClusterSnapshot
     /// </summary>
     public readonly bool Active;
 
-    internal ClusterSnapshot(byte id, string name, bool active)
+    /// <summary>
+    /// Start-cluster flag.
+    /// </summary>
+    public readonly bool Start;
+
+    /// <summary>
+    /// Respawn-cluster flag.
+    /// </summary>
+    public readonly bool Respawn;
+
+    internal ClusterSnapshot(byte id, string name, bool active, bool start, bool respawn)
     {
         Id = id;
         Name = name;
         Active = active;
+        Start = start;
+        Respawn = respawn;
     }
 }

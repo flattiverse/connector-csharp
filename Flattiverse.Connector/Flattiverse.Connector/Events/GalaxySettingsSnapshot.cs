@@ -92,10 +92,15 @@ public class GalaxySettingsSnapshot
     /// </summary>
     public readonly byte PlayerMaxBases;
 
+    /// <summary>
+    /// Maintenance mode flag.
+    /// </summary>
+    public readonly bool Maintenance;
+
     internal GalaxySettingsSnapshot(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxNewShips, ushort galaxyMaxBases,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases)
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, bool maintenance)
     {
         GameMode = gameMode;
         Name = name;
@@ -118,5 +123,6 @@ public class GalaxySettingsSnapshot
         PlayerMaxClassicShips = playerMaxClassicShips;
         PlayerMaxNewShips = playerMaxNewShips;
         PlayerMaxBases = playerMaxBases;
+        Maintenance = maintenance;
     }
 }

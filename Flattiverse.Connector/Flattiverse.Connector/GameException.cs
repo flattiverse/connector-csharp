@@ -99,6 +99,15 @@ public class GameException : Exception
                 case 0x15:
                     exception = new UnitConstraintViolationGameException();
                     return true;
+                case 0x16:
+                    if (packetReader.Read(out bte) && packetReader.Read(out string nodePath) && packetReader.Read(out string hint))
+                    {
+                        exception = new InvalidXmlNodeValueGameException((InvalidArgumentKind)bte, nodePath, hint);
+                        return true;
+                    }
+
+                    exception = null;
+                    return false;
                 case 0x20:
                     exception = new YouNeedToContinueFirstGameException();
                     return true;

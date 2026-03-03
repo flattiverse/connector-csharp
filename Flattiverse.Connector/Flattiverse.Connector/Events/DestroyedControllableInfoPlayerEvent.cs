@@ -29,6 +29,9 @@ public class DestroyedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
             case PlayerUnitDestroyedReason.Suicided:
                 return
                     $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} suicided.";
+            case PlayerUnitDestroyedReason.ByClusterRemoval:
+                return
+                    $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} got destroyed because its cluster was removed.";
             default:
                 return
                     $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} got destroyed.";

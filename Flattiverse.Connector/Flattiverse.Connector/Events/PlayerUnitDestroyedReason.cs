@@ -15,6 +15,10 @@ public enum PlayerUnitDestroyedReason
     /// </summary>
     Suicided = 0x10,
     /// <summary>
+    /// The PlayerUnit got destroyed because its cluster was removed.
+    /// </summary>
+    ByClusterRemoval = 0x01,
+    /// <summary>
     /// The PlayerUnit collided with a neutral unit.
     /// </summary>
     CollidedWithNeutralUnit = 0x20,

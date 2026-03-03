@@ -17,6 +17,7 @@ Each `Exception` possible in the game has a number. Here is a list:
 * `0x13` (`PermissionFailedGameException`): Thrown if you tried to call a command to which your PlayerKind doesn't have access.
 * `0x14` (`FloodcontrolTriggeredGameException`): Thrown, if you flood the chat somehow.
 * `0x15` (`UnitConstraintViolationGameException`): Thrown, if you try to register too many ships.
+* `0x16` (`InvalidXmlNodeValueGameException`): Thrown, if a specific XML node/attribute value is invalid. Includes reason, node path, and hint.
 * `0x20` (`YouNeedToContinueFirstGameException`): Thrown, if the Controllable you want to control is dead.
 * `0x21` (`YouNeedToDieFirstGameException`): Thrown, if you are not dead but try to continue.
 * `0x22` (`AllStartLocationsAreOvercrowded`): Thrown, if theres too many traffic on the start locations.
@@ -53,6 +54,14 @@ Those packet commands are used to transfer necessary data from the galaxy to the
 With those packet commands clients call commands in the Galaxy (server):
 
 * `0x00` (all): Respond to a ping request with the given payload.
+* `0x04` (admins only): Configure galaxy metadata/teams/clusters via XML.
+* `0x24` (admins only): Set or update a region in a cluster via `<Region ...>` XML.
+* `0x25` (admins only): Remove a region by id (`0..255`) from a cluster.
+* `0x26` (admins only): Query all regions of a cluster (binary reply).
+  Reply format: `ushort regionCount`, then per region: `byte id`, `string name`, `float left`, `float top`, `float right`, `float bottom`, `uint teamMask`.
+* `0x28` (admins only): Set or update one editable map unit in a cluster via unit-root XML like `<Sun ... />`.
+* `0x29` (admins only): Remove one editable map unit by name.
+* `0x2A` (admins only): Query XML of one editable map unit by name.
 * `0x80` (players only): Register a new classic ship with the specified name.
 * `0x84` (players only): Continue (respawn) the specified controllable.
 * `0x85` (players only): Commit suicide with the specified controllable.

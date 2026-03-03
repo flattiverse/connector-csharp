@@ -21,6 +21,6 @@ public class ClusterCreatedEvent : FlattiverseEvent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Stamp:HH:mm:ss.fff} Cluster created: Id={Cluster.Id}, Name=\"{Cluster.Name}\", Active={Cluster.Active}.";
+        return $"{Stamp:HH:mm:ss.fff} Cluster created: Id={Cluster.Id}, Name=\"{Cluster.Name}\", Active={Cluster.Active}, Start={Cluster.Start}, Respawn={Cluster.Respawn}.";
     }
 }
