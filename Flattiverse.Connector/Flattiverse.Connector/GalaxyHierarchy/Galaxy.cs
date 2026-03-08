@@ -17,7 +17,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "D";
+    private const string Version = "0";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
