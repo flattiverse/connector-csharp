@@ -69,27 +69,27 @@ The connector currently knows these map-relevant unit kinds:
 
 Connection and local state:
 
-- [`Galaxy.Connect(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:94)
-- [`Galaxy.NextEvent()`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:332)
-- [`Galaxy.Teams`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:64)
-- [`Galaxy.Clusters`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:74)
-- [`Galaxy.Players`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:79)
-- [`Galaxy.Controllables`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:84)
+- [`Galaxy.Connect(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L94)
+- [`Galaxy.NextEvent()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L332)
+- [`Galaxy.Teams`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L64)
+- [`Galaxy.Clusters`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L74)
+- [`Galaxy.Players`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L79)
+- [`Galaxy.Controllables`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L84)
 
 Player-facing commands:
 
-- [`Galaxy.Chat(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:467)
-- [`Galaxy.CreateClassicShip(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:480)
+- [`Galaxy.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L467)
+- [`Galaxy.CreateClassicShip(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L480)
 
 Admin-facing commands:
 
-- [`Galaxy.Configure(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:454)
-- [`Cluster.SetRegion(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:110)
-- [`Cluster.RemoveRegion(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:128)
-- [`Cluster.QueryRegions()`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:147)
-- [`Cluster.SetUnit(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:204)
-- [`Cluster.RemoveUnit(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:221)
-- [`Cluster.QueryUnitXml(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:239)
+- [`Galaxy.Configure(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L454)
+- [`Cluster.SetRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L110)
+- [`Cluster.RemoveRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L128)
+- [`Cluster.QueryRegions()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L147)
+- [`Cluster.SetUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L204)
+- [`Cluster.RemoveUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L221)
+- [`Cluster.QueryUnitXml(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L239)
 
 ## Notes
 

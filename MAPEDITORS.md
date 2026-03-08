@@ -4,13 +4,13 @@ This document is for software that connects as a Flattiverse admin and edits gal
 
 Relevant API entry points:
 
-- [`Galaxy.Configure(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs:454)
-- [`Cluster.SetRegion(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:110)
-- [`Cluster.RemoveRegion(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:128)
-- [`Cluster.QueryRegions()`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:147)
-- [`Cluster.SetUnit(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:204)
-- [`Cluster.RemoveUnit(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:221)
-- [`Cluster.QueryUnitXml(...)`](/mnt/d/projects/fv/fv-connector/Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs:239)
+- [`Galaxy.Configure(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L454)
+- [`Cluster.SetRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L110)
+- [`Cluster.RemoveRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L128)
+- [`Cluster.QueryRegions()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L147)
+- [`Cluster.SetUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L204)
+- [`Cluster.RemoveUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L221)
+- [`Cluster.QueryUnitXml(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L239)
 
 ## General Habits
 
