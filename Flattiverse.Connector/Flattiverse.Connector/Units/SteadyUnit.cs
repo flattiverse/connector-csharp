@@ -3,6 +3,9 @@ using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.Units;
 
+/// <summary>
+/// Immutable units such as suns or planets that remain present in a cluster.
+/// </summary>
 public class SteadyUnit : Unit
 {
     private float _gravity;

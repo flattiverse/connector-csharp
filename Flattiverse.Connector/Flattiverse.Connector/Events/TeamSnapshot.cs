@@ -3,7 +3,7 @@
 /// <summary>
 /// Snapshot of a team state relevant for events.
 /// </summary>
-public class TeamSnapshot
+public readonly struct TeamSnapshot
 {
     /// <summary>
     /// Team id.

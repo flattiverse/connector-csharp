@@ -26,6 +26,11 @@ public enum EventKind : byte
     TeamRemoved = 0x06,
 
     /// <summary>
+    /// A team score has been updated.
+    /// </summary>
+    TeamScoreUpdated = 0x07,
+
+    /// <summary>
     /// A cluster has been created.
     /// </summary>
     ClusterCreated = 0x08,
@@ -39,6 +44,11 @@ public enum EventKind : byte
     /// A cluster has been removed.
     /// </summary>
     ClusterRemoved = 0x0A,
+
+    /// <summary>
+    /// The server announced the compile profile it was built with.
+    /// </summary>
+    CompiledWithMessage = 0x0B,
     
     /// <summary>
     /// A player has joined the galaxy.
@@ -49,6 +59,11 @@ public enum EventKind : byte
     /// A player has parted the galaxy.
     /// </summary>
     PlayerParted = 0x11,
+
+    /// <summary>
+    /// A player score has been updated.
+    /// </summary>
+    PlayerScoreUpdated = 0x12,
     
     /// <summary>
     /// A PlayerUnit has been registered.
@@ -69,6 +84,31 @@ public enum EventKind : byte
     /// A PlayerUnit was unregistered.
     /// </summary>
     ControllableInfoClosed = 0x2F,
+
+    /// <summary>
+    /// Runtime update of a battery subsystem on your own controllable.
+    /// </summary>
+    BatterySubsystem = 0x80,
+
+    /// <summary>
+    /// Runtime update of an energy-cell subsystem on your own controllable.
+    /// </summary>
+    EnergyCellSubsystem = 0x81,
+
+    /// <summary>
+    /// Runtime update of a scanner subsystem on your own controllable.
+    /// </summary>
+    ScannerSubsystem = 0x82,
+
+    /// <summary>
+    /// Runtime update of an engine subsystem on your own controllable.
+    /// </summary>
+    ClassicShipEngineSubsystem = 0x83,
+
+    /// <summary>
+    /// Runtime update of a shot launcher subsystem on your own controllable.
+    /// </summary>
+    ShotWeaponSubsystem = 0x84,
     
     /// <summary>
     /// You see a new unit.
@@ -79,6 +119,11 @@ public enum EventKind : byte
     /// An existing unit has been updated.
     /// </summary>
     UpdatedUnit = 0x31,
+
+    /// <summary>
+    /// A previously known unit has been altered by an admin through map editing.
+    /// </summary>
+    UnitAlteredByAdmin = 0x3E,
     
     /// <summary>
     /// You don't see the unit anymore.

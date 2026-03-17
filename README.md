@@ -45,13 +45,21 @@ while (galaxy.Active)
 ## Current Capabilities
 
 - connect to a galaxy and keep a local mirror of galaxy settings, teams, clusters, players, controllables and visible units
-- receive strongly typed events for settings changes, team and cluster lifecycle, player lifecycle, visible unit lifecycle, controllable lifecycle, chat and connection termination
+- receive strongly typed events for settings changes, compile profile announcement, score changes, team and cluster lifecycle, player lifecycle, visible unit lifecycle, `ControllableInfo` lifecycle, owner-side subsystem runtime, chat and connection termination
+- inspect `Player.Score` and `Team.Score`, and react to `PlayerScoreUpdatedEvent` and `TeamScoreUpdatedEvent`
 - create and control classic ships
+- inspect and control the `ClassicShipControllable.Engine` subsystem
+- inspect and use the `ClassicShipControllable.Weapon` subsystem
+- inspect owner-side controllable battery runtime via `Controllable.EnergyBattery`, `Controllable.IonBattery` and `Controllable.NeutrinoBattery`
+- inspect controllable battery capacities and energy-cell efficiencies via the corresponding subsystem objects
+- inspect per-tick battery consumption via `BatterySubsystem.ConsumedThisTick`
+- inspect per-tick collected energy via `EnergyCellSubsystem.CollectedThisTick`
+- inspect owner-side ClassicShip scanner runtime via `ClassicShipControllable.MainScanner` and `ClassicShipControllable.SecondaryScanner`
 - send galaxy, team and private chat messages
 - use admin functions to configure galaxy metadata, teams and clusters
 - use admin functions to edit regions and editable map units
 
-The connector currently knows these map-relevant unit kinds:
+The connector currently materializes these unit kinds as visible units or own controllables:
 
 - `Sun`
 - `BlackHole`
@@ -60,39 +68,57 @@ The connector currently knows these map-relevant unit kinds:
 - `Meteoroid`
 - `Buoy`
 - `MissionTarget`
+- `Flag`
+- `DominationPoint`
 - `Shot`
 - `ClassicShipPlayerUnit`
-- `NewShipPlayerUnit`
 - `Explosion`
+
+`NewShipPlayerUnit` already exists in `UnitKind` and `ControllableInfo`, but the connector currently has no visible-unit or owner-side runtime type for it.
 
 ## Core API
 
 Connection and local state:
 
-- [`Galaxy.Connect(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L94)
-- [`Galaxy.NextEvent()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L332)
-- [`Galaxy.Teams`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L64)
-- [`Galaxy.Clusters`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L74)
-- [`Galaxy.Players`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L79)
-- [`Galaxy.Controllables`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L84)
+- [`Galaxy.Connect(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L98)
+- [`Galaxy.NextEvent()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L348)
+- [`Galaxy.Teams`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L73)
+- [`Galaxy.Clusters`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L78)
+- [`Galaxy.Players`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L83)
+- [`Galaxy.Controllables`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L88)
+- [`Galaxy.CompiledWithMaxPlayersSupported`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L321)
+- [`Galaxy.CompiledWithSymbol`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L326)
 
 Player-facing commands:
 
-- [`Galaxy.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L467)
-- [`Galaxy.CreateClassicShip(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L480)
+- [`Galaxy.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L488)
+- [`Team.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Team.cs#L48)
+- [`Player.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Player.cs#L68)
+- [`Galaxy.CreateClassicShip(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L501)
+- [`ClassicShipControllable.MainScanner`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
+- [`ClassicShipControllable.SecondaryScanner`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
+- [`ClassicShipControllable.Engine`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
+- [`ClassicShipControllable.Weapon`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
 
 Admin-facing commands:
 
-- [`Galaxy.Configure(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L454)
-- [`Cluster.SetRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L110)
-- [`Cluster.RemoveRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L128)
-- [`Cluster.QueryRegions()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L147)
-- [`Cluster.SetUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L204)
-- [`Cluster.RemoveUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L221)
-- [`Cluster.QueryUnitXml(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L239)
+- [`Galaxy.Configure(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L475)
+- [`Cluster.SetRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L120)
+- [`Cluster.RemoveRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L138)
+- [`Cluster.QueryRegions()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L157)
+- [`Cluster.SetUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L214)
+- [`Cluster.RemoveUnit(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L231)
+- [`Cluster.QueryUnitXml(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L249)
 
 ## Notes
 
 - `NextEvent()` must not be awaited concurrently. Parallel calls fail with `CantCallThisConcurrentGameException`.
 - The `Development` project is a regression and experimentation client, not a minimal beginner sample.
+- The `CliShip` project is a small scripted CLI ship runner. It executes a sequence of commands such as `create`, `continue`, `target:...`, `scan:...`, and `await-...` to debug server and connector behavior end-to-end. Its positional `maxTicks` argument is counted relative to the first received `GalaxyTick`, not against the absolute galaxy tick number.
 - Map-edit XML rules, examples, and server-side validation behavior are documented in [MAPEDITORS.md](MAPEDITORS.md).
+- `ControllableInfo` lifecycle is event-driven. Owner-side `Controllable` objects are mirrored locally on `0x80` / `0x81` / `0x8F`, but the connector currently does not raise separate lifecycle events for them.
+- Battery and energy-cell subsystem capabilities are initialized locally by controllable kind and are currently not transmitted on the wire.
+- Scanner subsystems are server-authoritative runtime objects. `Set(...)`, `On()`, and `Off()` send player commands; `Current*`, `Target*`, and `Active` are mirrored back via `0x82`.
+- Scanner angles are relative to the current ship facing. `scan:90x300x0` therefore points straight ahead.
+- The current scanner cost preview is surface-based and matches the current server-side scanner formula.
+- The owner's own ship must be read from `Controllable` / `0x80` / `0x82`, not from visible-unit events. The server does not echo a player's own controllables back through `NewUnit` / `UpdatedUnit` / `RemovedUnit`, even though those controllables still participate in scan masking and related geometry.

@@ -3,7 +3,7 @@
 /// <summary>
 /// Snapshot of a cluster state relevant for events.
 /// </summary>
-public class ClusterSnapshot
+public readonly struct ClusterSnapshot
 {
     /// <summary>
     /// Cluster id.

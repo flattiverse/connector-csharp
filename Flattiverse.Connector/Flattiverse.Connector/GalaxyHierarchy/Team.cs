@@ -17,6 +17,7 @@ public class Team : INamedUnit
     private byte _red;
     private byte _green;
     private byte _blue;
+    private readonly Score _score;
     
     private bool _active;
 
@@ -29,6 +30,7 @@ public class Team : INamedUnit
     {
         Galaxy = galaxy;
         Id = id;
+        _score = new Score();
         
         _name = name;
 
@@ -86,6 +88,11 @@ public class Team : INamedUnit
     /// The blue part of the team color.
     /// </summary>
     public byte Blue => _blue;
+
+    /// <summary>
+    /// Current live team score.
+    /// </summary>
+    public Score Score => _score;
     
     /// <summary>
     /// True as long as the team is active.

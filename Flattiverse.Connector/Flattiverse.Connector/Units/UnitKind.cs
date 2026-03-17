@@ -32,7 +32,15 @@ public enum UnitKind : byte
     /// <summary>
     /// Represents a mission target with configurable waypoint vectors.
     /// </summary>
-    MissionTarget = 0x11,
+    MissionTarget = 0x14,
+    /// <summary>
+    /// Represents a flag target.
+    /// </summary>
+    Flag = 0x15,
+    /// <summary>
+    /// Represents a domination point target.
+    /// </summary>
+    DominationPoint = 0x16,
     /// <summary>
     /// Represents a shot.
     /// </summary>

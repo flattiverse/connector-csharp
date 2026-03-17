@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.WebSockets;
+using System.Reflection;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
@@ -17,7 +18,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "0";
+    private const string Version = "1";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -47,7 +48,10 @@ public class Galaxy : IDisposable
 
     private bool _maintenance;
     private bool _active;
+    private bool _receivedCompiledWith;
     private bool _receivedGalaxySettings;
+    private byte _compiledWithMaxPlayersSupported;
+    private string _compiledWithSymbol;
     
     private readonly Team?[] _teams;
     private readonly Cluster?[] _clusters;
@@ -178,6 +182,7 @@ public class Galaxy : IDisposable
     {
         Connection = connection;
         Connection.Disconnected += ConnectionDisconnected;
+        _active = true;
         
         _teams = new Team?[TeamCapacity];
         _clusters = new Cluster?[ClusterCapacity];
@@ -187,6 +192,7 @@ public class Galaxy : IDisposable
         _teams[SpectatorsTeamId] = spectators;
         
         _players = new Player?[193];
+        _compiledWithSymbol = string.Empty;
 
         _events = new Queue<FlattiverseEvent>();
         _eventsSync = new object();
@@ -309,6 +315,16 @@ public class Galaxy : IDisposable
     /// </summary>
     public bool Maintenance => _maintenance;
 
+    /// <summary>
+    /// The maximum amount of players this server binary has been compiled to support.
+    /// </summary>
+    public int CompiledWithMaxPlayersSupported => _compiledWithMaxPlayersSupported;
+
+    /// <summary>
+    /// The compile symbol that selected the server binary's player-capacity profile.
+    /// </summary>
+    public string CompiledWithSymbol => _compiledWithSymbol;
+
     internal void PushEvent(FlattiverseEvent @event)
     {
         lock (_eventsSync)
@@ -389,7 +405,12 @@ public class Galaxy : IDisposable
                 }
                 catch (Exception exception)
                 {
-                    Connection.Close($"Error while executing command 0x{reader.Command:X02}: {exception.Message}");
+                    Exception actualException = exception;
+
+                    if (exception is TargetInvocationException targetInvocationException && targetInvocationException.InnerException is not null)
+                        actualException = targetInvocationException.InnerException;
+
+                    Connection.Close($"Error while executing command 0x{reader.Command:X02}: {actualException.GetType().Name}: {actualException.Message}");
                     return;
                 }
 
@@ -571,6 +592,18 @@ public class Galaxy : IDisposable
             PushEvent(new TeamUpdatedEvent(oldTeam, newTeam));
         }
     }
+
+    [Command(0x04)]
+    private void UpdateTeamScore(Team team, uint kills, uint deaths, uint mission)
+    {
+        uint oldKills = team.Score.Kills;
+        uint oldDeaths = team.Score.Deaths;
+        uint oldMission = team.Score.Mission;
+
+        team.Score.Update(kills, deaths, mission);
+
+        PushEvent(new TeamScoreUpdatedEvent(team, oldKills, oldDeaths, oldMission, team.Score.Kills, team.Score.Deaths, team.Score.Mission));
+    }
     
     [Command(0x03)]
     private void DeactivateTeam(byte id)
@@ -657,6 +690,22 @@ public class Galaxy : IDisposable
         Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
 
         _players[id]!.Update(ping);
+    }
+
+    [Command(0x12)]
+    private void UpdatePlayerScore(byte id, uint kills, uint deaths, uint mission)
+    {
+        Debug.Assert(id < 193, "Invalid player ID.");
+        Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
+
+        Player player = _players[id]!;
+        uint oldKills = player.Score.Kills;
+        uint oldDeaths = player.Score.Deaths;
+        uint oldMission = player.Score.Mission;
+
+        player.Score.Update(kills, deaths, mission);
+
+        PushEvent(new PlayerScoreUpdatedEvent(player, oldKills, oldDeaths, oldMission, player.Score.Kills, player.Score.Deaths, player.Score.Mission));
     }
     
     [Command(0x1F)]
@@ -783,14 +832,22 @@ public class Galaxy : IDisposable
     [Command(0x30)]
     private void UnitNew(Cluster cluster, string name, UnitKind kind, PacketReader reader)
     {
-        Unit? unit;
+        try
+        {
+            Unit? unit;
 
-        if (!Unit.TryReadUnit(kind, cluster, name, reader, out unit))
-            throw new InvalidDataException("Couldn't parse unit.");
+            if (!Unit.TryReadUnit(kind, cluster, name, reader, out unit))
+                throw new InvalidDataException("Couldn't parse unit.");
         
-        cluster.AddUnit(unit);
+            cluster.AddUnit(unit);
         
-        PushEvent(new NewUnitFlattiverseEvent(unit));
+            PushEvent(new NewUnitFlattiverseEvent(unit));
+        }
+        catch (Exception exception)
+        {
+            throw new InvalidDataException(
+                $"Couldn't process new unit \"{name}\" of kind {kind} in cluster \"{cluster.Name}\": {exception.Message}", exception);
+        }
     }
        
     [Command(0x31)]
@@ -799,17 +856,41 @@ public class Galaxy : IDisposable
         if (cluster.UpdateUnit(name, reader, out Unit? unit))
             PushEvent(new UpdatedUnitFlattiverseEvent(unit));
     }
+
+    [Command(0x32)]
+    private void UnitUpdatedState(Cluster cluster, string name, PacketReader reader)
+    {
+        if (cluster.UpdateUnitState(name, reader, out Unit? unit))
+            PushEvent(new UpdatedUnitFlattiverseEvent(unit));
+    }
+
+    [Command(0x3E)]
+    private void UnitAlteredByAdmin(byte clusterId, string name)
+    {
+        PushEvent(new UnitAlteredByAdminEvent(clusterId, name));
+    }
     
     [Command(0x3F)]
     private void UnitRemoved(Cluster cluster, string name)
     {
         if (cluster.RemoveUnit(name, out Unit? unit))
-        {
             PushEvent(new RemovedUnitFlattiverseEvent(unit));
+    }
+
+    [Command(0x0B)]
+    private void CompiledWith(byte maxPlayersSupported, string symbol)
+    {
+        Debug.Assert(!_receivedCompiledWith || (_compiledWithMaxPlayersSupported == maxPlayersSupported && _compiledWithSymbol == symbol),
+            "Received conflicting compile-configuration packets.");
+
+        if (_receivedCompiledWith)
             return;
-        }
-        
-        Debug.Fail("Removed non existent unit.");
+
+        _compiledWithMaxPlayersSupported = maxPlayersSupported;
+        _compiledWithSymbol = symbol;
+        _receivedCompiledWith = true;
+
+        PushEvent(new CompiledWithMessageEvent(maxPlayersSupported, symbol));
     }
     
     [Command(0xC0)]

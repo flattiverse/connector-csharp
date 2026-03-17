@@ -2,6 +2,9 @@
 
 namespace Flattiverse.Connector.Events;
 
+/// <summary>
+/// Signals that the player has closed or disposed a controllable.
+/// </summary>
 public class ClosedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
 {
     internal ClosedControllableInfoPlayerEvent(Player player, ControllableInfo controllableInfo) :

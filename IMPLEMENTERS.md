@@ -22,15 +22,15 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-0
+1
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=0&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=0&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=0&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=1&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=1&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=1&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -54,12 +54,16 @@ Instead it sends initial state packets first and only completes activation after
 
 1. `0x00` ping challenge
 1. `0x01` galaxy snapshot
-1. `0x02` team snapshots
+1. repeated team blocks: `0x02` team snapshot, then `0x04` team score snapshot
 1. `0x06` cluster snapshots
-1. existing `0x10` players
-1. existing `0x20` controllable infos
-1. `0x10` create packet for the newly connected player itself
-1. visible `0x30` unit create packets
+1. `0x0B` compiled-with message
+1. repeated existing player blocks: `0x10` player create, `0x12` player score, then zero or more `0x20` controllable infos for that player
+1. login-kind-specific self packets
+1. for a normal player login: `0x10` create packet for the newly connected player itself, then `0x12` initial score packet
+1. for a spectator or admin login: `0x10` create packet for the synthetic local spectator/admin player itself
+1. initial visible units
+1. for a normal player login: visible `0x30` unit create packets, with immediate `0x32` for units that are already full in that same tick
+1. for a spectator or admin login: every initial unit currently arrives as `0x30` followed immediately by `0x32`
 1. session reply with `session = 0x01` and payload `byte playerId`
 
 Do not assume that "the first packet after connect" is the activation reply.
@@ -150,21 +154,18 @@ If you write your own connector, you should handle team id `12` explicitly.
 
 ## Exceptions
 
-Each server-side `GameException` has a numeric id. On the wire, exceptions are transported in `command = 0xFF` packets.
+The reference implementation uses numeric exception ids across both server-side `GameException` packets and connector-local failures.
+Server-side exceptions are transported on the wire in `command = 0xFF` packets.
 
-Current codes:
+Current server-side on-wire codes:
 
-* `0x01` `CantConnectGameException`
 * `0x02` `InvalidProtocolVersionGameException`
 * `0x03` `AuthFailedGameException`
 * `0x04` `WrongAccountStateGameException`
 * `0x05` `InvalidOrMissingTeamGameException`
 * `0x08` `ServerFullOfPlayerKindGameException`
-* `0x0C` `SessionsExhaustedGameException`
 * `0x0D` `InvalidDataGameException`
-* `0x0F` `ConnectionTerminatedGameException`
 * `0x10` `SpecifiedElementNotFoundGameException`
-* `0x11` `CantCallThisConcurrentGameException`
 * `0x12` `InvalidArgumentGameException`
 * `0x13` `PermissionFailedGameException`
 * `0x14` `FloodcontrolTriggeredGameException`
@@ -174,6 +175,13 @@ Current codes:
 * `0x21` `YouNeedToDieFirstGameException`
 * `0x22` `AllStartLocationsAreOvercrowded`
 * `0x30` `CanOnlyShootOncePerTickGameException`
+
+Current connector-local-only codes:
+
+* `0x01` `CantConnectGameException`
+* `0x0C` `SessionsExhaustedException`
+* `0x0F` `ConnectionTerminatedGameException`
+* `0x11` `CantCallThisConcurrentGameException`
 
 Payload details for the important structured exceptions:
 
@@ -208,10 +216,13 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x01`: create or update galaxy snapshot
 * `0x02`: create or update team
 * `0x03`: deactivate team
+* `0x04`: update team score
 * `0x06`: create or update cluster
 * `0x07`: deactivate cluster
+* `0x0B`: compiled-with message
 * `0x10`: create player
 * `0x11`: update player
+* `0x12`: update player score
 * `0x1F`: deactivate player
 * `0x20`: create controllable info
 * `0x21`: mark controllable info alive
@@ -220,11 +231,13 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x24`: mark controllable info dead by other player
 * `0x2F`: deactivate controllable info
 * `0x30`: create visible unit
-* `0x31`: update visible unit state
+* `0x31`: update visible unit movement state
+* `0x32`: update visible unit runtime state
+* `0x3E`: admin altered a previously known unit
 * `0x3F`: deactivate visible unit
 * `0x80`: create controllable
 * `0x81`: controllable deceased
-* `0x82`: controllable updated and alive
+* `0x82`: controllable runtime update and alive
 * `0x8F`: controllable deactivated
 * `0xC0`: `GalaxyTickEvent`
 * `0xC4`: public galaxy chat message
@@ -272,6 +285,17 @@ byte   blue
 string name
 ```
 
+### `0x04` Team Score Update
+
+Payload order:
+
+```text
+byte teamId
+uint kills
+uint deaths
+uint mission
+```
+
 ### `0x06` Cluster Snapshot
 
 Payload order:
@@ -286,6 +310,21 @@ Cluster flags:
 
 * bit `0x01`: start cluster
 * bit `0x02`: respawn cluster
+
+### `0x0B` Compiled-With Message
+
+Payload order:
+
+```text
+byte   maxPlayersSupported
+string compileSymbol
+```
+
+Current values:
+
+* `16`, `PLAYERS_16`
+* `64`, `PLAYERS_64`
+* `192`, `PLAYERS_192`
 
 ### `0x10` Player Create
 
@@ -308,7 +347,402 @@ byte  playerId
 float pingMilliseconds
 ```
 
+### `0x12` Player Score Update
+
+Payload order:
+
+```text
+byte playerId
+uint kills
+uint deaths
+uint mission
+```
+
+### `0x80` Controllable Create
+
+Payload order:
+
+```text
+byte   controllableKind
+byte   controllableId
+string controllableName
+Vector position
+Vector movement
+```
+
+This packet is the owner's authoritative identity channel for a controllable. A player's own controllables are intentionally modeled separately from the visible-unit stream and therefore must be tracked from `0x80` / `0x82`, not from `0x30` / `0x32`.
+
+Static subsystem capabilities such as battery maxima, energy-cell efficiencies, or scanner limits are currently not transmitted here.
+The reference connector initializes them locally by `controllableKind`.
+
+### `0x81` Controllable Deceased
+
+Payload order:
+
+```text
+byte controllableId
+```
+
+### `0x82` Controllable Runtime Update
+
+This packet is owner-only. It is the runtime state channel for the player's own controllables.
+It remains available even while scanners are off and is the correct source for the owner's own position, movement, and subsystem runtime.
+Death is signaled separately via `0x81`; `0x82` is only sent for living controllables.
+
+Current subsystem runtime enums:
+
+```text
+SubsystemStatus:
+    0x00 Off
+    0x01 Worked
+    0x02 Failed
+    0x03 Upgrading
+
+SubsystemSlot ranges:
+    0x00..0x0F batteries
+    0x10..0x1F cells
+    0x20..0x2F scanners
+    0x30..0x3F engines
+    0x40..0x4F shot launchers
+
+Currently used slots:
+    0x00 EnergyBattery
+    0x01 IonBattery
+    0x02 NeutrinoBattery
+    0x10 EnergyCell
+    0x11 IonCell
+    0x12 NeutrinoCell
+    0x20 PrimaryScanner
+    0x21 SecondaryScanner
+    0x30 PrimaryEngine
+    0x40 FrontShotLauncher
+```
+
+Common payload order:
+
+```text
+byte   controllableId
+Vector position
+Vector movement
+float  energyBatteryCurrent
+float  energyBatteryConsumedThisTick
+byte   energyBatteryStatus
+float  ionBatteryCurrent
+float  ionBatteryConsumedThisTick
+byte   ionBatteryStatus
+float  neutrinoBatteryCurrent
+float  neutrinoBatteryConsumedThisTick
+byte   neutrinoBatteryStatus
+float  energyCellCollectedThisTick
+byte   energyCellStatus
+float  ionCellCollectedThisTick
+byte   ionCellStatus
+float  neutrinoCellCollectedThisTick
+byte   neutrinoCellStatus
+```
+
+The remaining payload depends on `controllableKind`.
+
+Current `ClassicShipPlayerUnit` addition:
+
+```text
+byte   mainScannerActive
+float  mainScannerCurrentWidth
+float  mainScannerCurrentLength
+float  mainScannerCurrentAngle
+float  mainScannerTargetWidth
+float  mainScannerTargetLength
+float  mainScannerTargetAngle
+byte   mainScannerStatus
+float  mainScannerConsumedEnergyThisTick
+float  mainScannerConsumedIonsThisTick
+float  mainScannerConsumedNeutrinosThisTick
+byte   secondaryScannerActive
+float  secondaryScannerCurrentWidth
+float  secondaryScannerCurrentLength
+float  secondaryScannerCurrentAngle
+float  secondaryScannerTargetWidth
+float  secondaryScannerTargetLength
+float  secondaryScannerTargetAngle
+byte   secondaryScannerStatus
+float  secondaryScannerConsumedEnergyThisTick
+float  secondaryScannerConsumedIonsThisTick
+float  secondaryScannerConsumedNeutrinosThisTick
+Vector engineCurrent
+Vector engineTarget
+byte   engineStatus
+float  engineConsumedEnergyThisTick
+float  engineConsumedIonsThisTick
+float  engineConsumedNeutrinosThisTick
+Vector weaponRelativeMovement
+ushort weaponTicks
+float  weaponLoad
+float  weaponDamage
+byte   weaponStatus
+float  weaponConsumedEnergyThisTick
+float  weaponConsumedIonsThisTick
+float  weaponConsumedNeutrinosThisTick
+```
+
+Notes:
+
+* Battery maxima and energy-cell efficiencies are currently initialized locally by controllable kind and are not sent on the wire.
+* `*CellCollectedThisTick` is the post-efficiency amount that was actually loaded through that cell during the current server tick.
+* `engineCurrent` is the currently applied engine impulse for this tick. `engineTarget` is the persisted requested impulse.
+* `weapon*` describes the shot request the server actually processed in this tick. If the weapon was off or did not have a queued shot, the runtime values are zeroed.
+* `mainScannerStatus == Worked` / `secondaryScannerStatus == Worked` tells owner-side tools whether the server actually paid and executed that scan in the current tick.
+* `SecondaryScanner` is currently a disabled subsystem on the reference ClassicShip. Its runtime block is still present and currently zeroed.
+* `Current*` is the server-applied runtime state. `Target*` is the server-side target configuration.
+* The current placeholder scanner energy cost is `PI * length^2 * width / 360 * 0.000282943`, so the reference `ClassicShip` maximum scan `90 x 300` costs about `20` energy per tick.
+* The reference connector does not expose additional wire events for subsystem runtime. Instead it parses these owner-only runtime blocks and raises connector-local subsystem events:
+  * `BatterySubsystemEvent`
+  * `EnergyCellSubsystemEvent`
+  * `ScannerSubsystemEvent`
+  * `ClassicShipEngineSubsystemEvent`
+  * `ShotWeaponSubsystemEvent`
+* Those connector-local events currently use `EventKind` values `0x80..0x84`, but no additional wire commands were introduced.
+
+### `0x30` Visible Unit Create
+
+For `PlayerKind.Player`, the unit visibility packets `0x30` / `0x31` / `0x32` / `0x3F` are driven by the server-side scan analysis of the player's active ships. Spectators and admins still receive the global unit feed, but the reference server now uses the same reduced/full packet split there as well and follows every newly visible unit with `0x32`.
+
+The visible-unit stream is for other units only. The owner never receives the player's own controllables back through visibility packets, even if those controllables still participate in masking and other geometry during scan analysis.
+
+Current runtime rule:
+
+* only active scanners with sufficient battery charge produce visibility
+* scanner angles are interpreted relative to the owning unit's current facing angle
+* passive energy and radiation intake is processed independently from scanner visibility and therefore still works while scanners are off
+* passive sun intake uses `maskingFactor * 1 / (1 + d/60)^sqrt(2)` with `d` as edge-to-edge distance; transfers below `1%` are ignored completely
+* a player's own controllables are not reported back through `0x30` / `0x31` / `0x32` / `0x3F`; the owner must use the separate `0x80` / `0x82` controllable channel for them
+* visibility promotion is unit-specific: the reference server keeps a unit in reduced visibility for `ReducedVisibilityTicks` consecutive seen ticks before promoting it to full visibility
+* when a unit first appears, the server always sends `0x30`; if the unit is already full in that same tick, `0x32` follows immediately
+* regular `0x32` updates are only sent to players that currently see the unit in full visibility
+
+All unit create packets start with:
+
+```text
+byte   clusterId
+string unitName
+byte   unitKind
+```
+
+The remaining payload depends on `unitKind`.
+
+Current reduced `0x30` payloads and promotion thresholds:
+
+* `Sun (0x00)`: `steady unit payload`; `ReducedVisibilityTicks = 100`
+* `BlackHole (0x01)`: `steady unit payload`; `ReducedVisibilityTicks = 200`
+* `Planet (0x08)`: `steady unit payload`, `byte planetType`; `ReducedVisibilityTicks = 250`
+* `Moon (0x09)`: `steady unit payload`, `byte moonType`; `ReducedVisibilityTicks = 250`
+* `Meteoroid (0x0A)`: `steady unit payload`, `byte meteoroidType`; `ReducedVisibilityTicks = 250`
+* `Buoy (0x10)`: `steady unit payload`; `ReducedVisibilityTicks = 20`
+* `MissionTarget (0x14)`: `steady unit payload`, `byte teamId`; `ReducedVisibilityTicks = 20`
+* `Flag (0x15)`: `steady unit payload`, `byte teamId`; `ReducedVisibilityTicks = 0`
+* `DominationPoint (0x16)`: `steady unit payload`, `byte teamId`, `float dominationRadius`; `ReducedVisibilityTicks = 50`
+* `Shot (0xE0)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
+* `ClassicShipPlayerUnit (0xF0)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 100`
+* `Explosion (0xFF)`: `byte ownerPlayerId`, `byte ownerControllableId`, `float load`, `float damage`, `Vector position`; `ReducedVisibilityTicks = 0`
+
+Notes:
+
+* `steady unit payload` means `Vector position`, `float radius`, `float gravity`
+* `planetType` / `moonType` / `meteoroidType` are intentionally already part of reduced visibility
+* For `Shot` and `Explosion`, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no owner". The reference connector treats `ownerPlayerId >= 192` as ownerless.
+* `Explosion` and `Flag` are effectively full immediately, but still participate in the same `0x30` + optional `0x32` visibility protocol
+
+### `0x31` Visible Unit Movement State Update
+
+All `0x31` packets currently start with:
+
+```text
+byte   clusterId
+string unitName
+```
+
+Current runtime rule:
+
+* `0x31` is sent while a unit remains visible at all, i.e. in reduced or full visibility
+* `0x32` is only sent once a unit is in full visibility, or immediately when it is promoted to full in the same tick
+
+Current `0x31` payloads:
+
+* steady units (`Sun`, `BlackHole`, `Planet`, `Moon`, `Meteoroid`, `Buoy`, `MissionTarget`, `Flag`, `DominationPoint`): no additional payload
+* `Shot (0xE0)`:
+  ```text
+  ushort ticks
+  Vector position
+  Vector movement
+  ```
+* `ClassicShipPlayerUnit (0xF0)`:
+  ```text
+  Vector position
+  Vector movement
+  ```
+* `Explosion (0xFF)`: no additional payload; in the reference connector `0x31` only advances the local explosion phase
+
+### `0x32` Visible Unit Runtime State Update
+
+All `0x32` packets currently start with:
+
+```text
+byte   clusterId
+string unitName
+```
+
+The remaining payload depends on the unit type.
+
+Current `0x32` payloads:
+
+* `Sun (0x00)`:
+  ```text
+  float energy
+  float ions
+  float neutrinos
+  float heat
+  float drain
+  ```
+* `BlackHole (0x01)`:
+  ```text
+  float gravityWellRadius
+  float gravityWellForce
+  ```
+* `Planet (0x08)` / `Moon (0x09)` / `Meteoroid (0x0A)`:
+  ```text
+  float metal
+  float carbon
+  float hydrogen
+  float silicon
+  ```
+* `Buoy (0x10)`:
+  ```text
+  string? message
+  ```
+* `MissionTarget (0x14)`:
+  ```text
+  int    sequenceNumber
+  ushort vectorCount
+  vectorCount * Vector
+  ```
+* `Flag (0x15)`: no additional payload
+* `DominationPoint (0x16)`:
+  ```text
+  byte teamId
+  int  domination
+  int  scoreCountdown
+  ```
+* `Shot (0xE0)`:
+  ```text
+  float load
+  float damage
+  ```
+* `ClassicShipPlayerUnit (0xF0)` common player-unit detail block:
+  ```text
+  byte  energyBatteryExists
+  float energyBatteryMaximum
+  float energyBatteryCurrent
+  float energyBatteryConsumedThisTick
+  byte  energyBatteryStatus
+  byte  ionBatteryExists
+  float ionBatteryMaximum
+  float ionBatteryCurrent
+  float ionBatteryConsumedThisTick
+  byte  ionBatteryStatus
+  byte  neutrinoBatteryExists
+  float neutrinoBatteryMaximum
+  float neutrinoBatteryCurrent
+  float neutrinoBatteryConsumedThisTick
+  byte  neutrinoBatteryStatus
+  byte  energyCellExists
+  float energyCellEfficiency
+  float energyCellCollectedThisTick
+  byte  energyCellStatus
+  byte  ionCellExists
+  float ionCellEfficiency
+  float ionCellCollectedThisTick
+  byte  ionCellStatus
+  byte  neutrinoCellExists
+  float neutrinoCellEfficiency
+  float neutrinoCellCollectedThisTick
+  byte  neutrinoCellStatus
+  byte  mainScannerExists
+  float mainScannerMaximumWidth
+  float mainScannerMaximumLength
+  float mainScannerWidthSpeed
+  float mainScannerLengthSpeed
+  float mainScannerAngleSpeed
+  byte  mainScannerActive
+  float mainScannerCurrentWidth
+  float mainScannerCurrentLength
+  float mainScannerCurrentAngle
+  float mainScannerTargetWidth
+  float mainScannerTargetLength
+  float mainScannerTargetAngle
+  byte  mainScannerStatus
+  float mainScannerConsumedEnergyThisTick
+  float mainScannerConsumedIonsThisTick
+  float mainScannerConsumedNeutrinosThisTick
+  byte  secondaryScannerExists
+  float secondaryScannerMaximumWidth
+  float secondaryScannerMaximumLength
+  float secondaryScannerWidthSpeed
+  float secondaryScannerLengthSpeed
+  float secondaryScannerAngleSpeed
+  byte  secondaryScannerActive
+  float secondaryScannerCurrentWidth
+  float secondaryScannerCurrentLength
+  float secondaryScannerCurrentAngle
+  float secondaryScannerTargetWidth
+  float secondaryScannerTargetLength
+  float secondaryScannerTargetAngle
+  byte  secondaryScannerStatus
+  float secondaryScannerConsumedEnergyThisTick
+  float secondaryScannerConsumedIonsThisTick
+  float secondaryScannerConsumedNeutrinosThisTick
+  byte  engineExists
+  float engineMaximum
+  Vector engineCurrent
+  Vector engineTarget
+  byte  engineStatus
+  float engineConsumedEnergyThisTick
+  float engineConsumedIonsThisTick
+  float engineConsumedNeutrinosThisTick
+  byte  weaponExists
+  float weaponMinimumRelativeMovement
+  float weaponMaximumRelativeMovement
+  ushort weaponMinimumTicks
+  ushort weaponMaximumTicks
+  float weaponMinimumLoad
+  float weaponMaximumLoad
+  float weaponMinimumDamage
+  float weaponMaximumDamage
+  Vector weaponRelativeMovement
+  ushort weaponTicks
+  float weaponLoad
+  float weaponDamage
+  byte  weaponStatus
+  float weaponConsumedEnergyThisTick
+  float weaponConsumedIonsThisTick
+  float weaponConsumedNeutrinosThisTick
+  ```
+* `Explosion (0xFF)`: no additional payload
+
 For unit and controllable payload details, inspect the current reference implementation types in `Flattiverse.Connector/Units` and `Flattiverse.Connector/GalaxyHierarchy`.
+
+### `0x3E` Unit Altered By Admin
+
+Payload order:
+
+```text
+byte   clusterId
+string unitName
+```
+
+Current runtime rule:
+
+* the server sends `0x3F` first and then `0x3E`
+* recipients are all admins, all spectators, and all players that have seen the unit before during their current connection
+* `0x3E` is intentionally only a cache invalidation hint and does not carry any further unit state
 
 ## Client To Server Commands
 
@@ -358,6 +792,7 @@ Important notes:
 * `0x28`, `0x29`, and `0x2A` only work for unit types with `CanBeEdited = true`.
 * Empty or unreadable XML on protocol level is rejected as `0x12 InvalidArgumentGameException` with `InvalidArgumentKind.AmbiguousXmlData` and parameter name `xml`.
 * `0x2A` rejects non-editable units with `0x16 InvalidXmlNodeValueGameException`.
+* Editable target kinds currently include `MissionTarget`, `Flag`, and `DominationPoint`.
 * XML semantics, whitelists, validation rules, and examples are intentionally documented in [MAPEDITORS.md](MAPEDITORS.md), not duplicated here.
 
 ### Player Commands
@@ -367,6 +802,9 @@ Important notes:
 * `0x85`: suicide controllable, payload `byte controllableId`
 * `0x87`: move controllable, payload `byte controllableId`, `Vector movement`
 * `0x88`: shoot, payload `byte controllableId`, `Vector movement`, `ushort ticks`, `float load`, `float damage`
+* `0x89`: configure scanner, payload `byte controllableId`, `byte scannerId`, `float width`, `float length`, `float angle`
+* `0x8A`: activate scanner, payload `byte controllableId`, `byte scannerId`
+* `0x8B`: deactivate scanner, payload `byte controllableId`, `byte scannerId`
 * `0x8F`: unregister controllable, payload `byte controllableId`
 * `0xC4`: send galaxy chat, payload `string message`
 * `0xC5`: send team chat, payload `byte teamId`, `string message`
@@ -377,6 +815,9 @@ Notes:
 * `0xC5` resolves the target team by id on the server side.
 * `0xC6` resolves the target player by id on the server side.
 * String validation for names and chat messages happens on the server even if a client already validated locally.
+* `0x88` currently validates `movement.Length` in `[0.1; 3]`, `ticks` in `[2; 140]`, `load` in `[2.5; 25]`, and `damage` in `[1; 20]`.
+* The current reference ClassicShip supports `scannerId = 0` for `MainScanner`. `scannerId = 1` addresses `SecondaryScanner`, which currently does not exist and therefore returns `0x10 SpecifiedElementNotFoundGameException`.
+* The configured scanner angle is relative to the ship's current facing. `0` points straight ahead, positive values rotate counter-clockwise in world space.
 
 ## Practical Compatibility Notes
 

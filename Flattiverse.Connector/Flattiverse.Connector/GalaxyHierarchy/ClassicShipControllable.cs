@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -8,102 +9,156 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class ClassicShipControllable : Controllable
 {
-    internal ClassicShipControllable(Cluster cluster, byte id, string name, PacketReader reader) : base(id, name,
-        cluster, reader)
+    private readonly ClassicShipEngineSubsystem _engine;
+    private readonly ShotWeaponSubsystem _weapon;
+    private readonly ScannerSubsystem _mainScanner;
+    private readonly ScannerSubsystem _secondaryScanner;
+
+    internal ClassicShipControllable(Cluster cluster, byte id, string name, PacketReader reader) : base(id, name, cluster, reader)
     {
+        _energyBattery = BatterySubsystem.CreateClassicShipEnergyBattery(this);
+        _ionBattery = BatterySubsystem.CreateMissingBattery(this, "IonBattery", SubsystemSlot.IonBattery);
+        _neutrinoBattery = BatterySubsystem.CreateMissingBattery(this, "NeutrinoBattery", SubsystemSlot.NeutrinoBattery);
+        _energyCell = EnergyCellSubsystem.CreateClassicShipEnergyCell(this);
+        _ionCell = EnergyCellSubsystem.CreateMissingCell(this, "IonCell", SubsystemSlot.IonCell);
+        _neutrinoCell = EnergyCellSubsystem.CreateMissingCell(this, "NeutrinoCell", SubsystemSlot.NeutrinoCell);
+
+        _engine = new ClassicShipEngineSubsystem(this);
+        _weapon = new ShotWeaponSubsystem(this, "Weapon", true, SubsystemSlot.FrontShotLauncher);
+        _mainScanner = ScannerSubsystem.CreateClassicShipPrimaryScanner(this);
+        _secondaryScanner = ScannerSubsystem.CreateClassicShipSecondaryScanner(this);
+    }
+
+    /// <summary>
+    /// The engine subsystem of the classic ship.
+    /// </summary>
+    public ClassicShipEngineSubsystem Engine
+    {
+        get { return _engine; }
+    }
+
+    /// <summary>
+    /// The weapon subsystem of the classic ship.
+    /// </summary>
+    public ShotWeaponSubsystem Weapon
+    {
+        get { return _weapon; }
+    }
+
+    /// <summary>
+    /// The primary scanner subsystem of the classic ship.
+    /// </summary>
+    public ScannerSubsystem MainScanner
+    {
+        get { return _mainScanner; }
+    }
+
+    /// <summary>
+    /// The secondary scanner subsystem of the classic ship.
+    /// </summary>
+    public ScannerSubsystem SecondaryScanner
+    {
+        get { return _secondaryScanner; }
     }
     
-    /// <summary>
-    /// Call this to move your ship. This vector will be the impulse your ship gets every tick until you specify a new vector. Length of 0 will turn off your engines.
-    /// </summary>
-    public async Task Move(Vector movement)
-    {
-        if (!Active)
-            throw new SpecifiedElementNotFoundGameException();
-        
-        if (!Alive)
-            throw new YouNeedToContinueFirstGameException();
-        
-        if (float.IsNaN(movement.X) || float.IsNaN(movement.Y))
-            throw new InvalidArgumentGameException(InvalidArgumentKind.ContainedNaN, "movement");
-        
-        if (movement.IsDamaged)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.ContainedInfinity, "movement");
-        
-        if (movement.Length > 0.101f)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "movement");
-        
-        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
-        {
-            writer.Command = 0x87;
-            writer.Write(Id);
-            movement.Write(ref writer);
-        });
-    }
-
-    /// <summary>
-    /// Shoots a shot into the specified direction and with the specified parameters. Please note that you can only shoot
-    /// one shot per tick.
-    /// </summary>
-    /// <param name="relativeMovement">The direction in which the shot will fly. [0.1f; 3f]</param>
-    /// <param name="ticks">The ticks how long the shot will fly. [3; 140]</param>
-    /// <param name="load">The explosion size when ticks did reach 0. [3; 25]</param>
-    /// <param name="damage">The damage the shot should inflict. [0.1f; 3f]</param>
-    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the unit doesn't exist.</exception>
-    /// <exception cref="YouNeedToContinueFirstGameException">Thrown, if the unit is dead.</exception>
-    /// <exception cref="InvalidArgumentGameException">Thrown, if one of the specified arguments doesn't match limit boundaries.</exception>
-    public async Task Shoot(Vector relativeMovement, ushort ticks, float load, float damage)
-    {
-        if (!Active)
-            throw new SpecifiedElementNotFoundGameException();
-        
-        if (!Alive)
-            throw new YouNeedToContinueFirstGameException();
-        
-        if (float.IsNaN(relativeMovement.X) || float.IsNaN(relativeMovement.Y))
-            throw new InvalidArgumentGameException(InvalidArgumentKind.ContainedNaN, "relativeMovement");
-        
-        if (relativeMovement.IsDamaged)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.ContainedInfinity, "relativeMovement");
-        
-        if (relativeMovement.Length > 3.001f)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "relativeMovement");
-        
-        if (relativeMovement.Length < 0.099f)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "relativeMovement");
-        
-        if (ticks < 3)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "ticks");
-
-        if (ticks > 140)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "ticks");
-
-        if (load < 3)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "load");
-
-        if (load > 25)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "load");
-
-        if (damage < 0.099f)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "damage");
-
-        if (damage > 3.001f)
-            throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "damage");
-
-        await _cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
-        {
-            writer.Command = 0x88;
-            writer.Write(Id);
-            relativeMovement.Write(ref writer);
-            writer.Write(ticks);
-            writer.Write(load);
-            writer.Write(damage);
-        });
-    }
-
     /// <inheritdoc/>
     public override float Gravity => 0.0012f;
     
     /// <inheritdoc/>
     public override float Size => 14f;
+
+    private protected override void ResetRuntime()
+    {
+        base.ResetRuntime();
+        _engine.ResetRuntime();
+        _weapon.ResetRuntime();
+        _mainScanner.ResetRuntime();
+        _secondaryScanner.ResetRuntime();
+    }
+
+    private protected override void ReadRuntime(PacketReader reader)
+    {
+        byte mainScannerActive;
+        float mainScannerCurrentWidth;
+        float mainScannerCurrentLength;
+        float mainScannerCurrentAngle;
+        float mainScannerTargetWidth;
+        float mainScannerTargetLength;
+        float mainScannerTargetAngle;
+        byte mainScannerStatus;
+        float mainScannerConsumedEnergyThisTick;
+        float mainScannerConsumedIonsThisTick;
+        float mainScannerConsumedNeutrinosThisTick;
+        byte secondaryScannerActive;
+        float secondaryScannerCurrentWidth;
+        float secondaryScannerCurrentLength;
+        float secondaryScannerCurrentAngle;
+        float secondaryScannerTargetWidth;
+        float secondaryScannerTargetLength;
+        float secondaryScannerTargetAngle;
+        byte secondaryScannerStatus;
+        float secondaryScannerConsumedEnergyThisTick;
+        float secondaryScannerConsumedIonsThisTick;
+        float secondaryScannerConsumedNeutrinosThisTick;
+        Vector? engineCurrent;
+        Vector? engineTarget;
+        byte engineStatus;
+        float engineConsumedEnergyThisTick;
+        float engineConsumedIonsThisTick;
+        float engineConsumedNeutrinosThisTick;
+        Vector? weaponRelativeMovement;
+        ushort weaponTicks;
+        float weaponLoad;
+        float weaponDamage;
+        byte weaponStatus;
+        float weaponConsumedEnergyThisTick;
+        float weaponConsumedIonsThisTick;
+        float weaponConsumedNeutrinosThisTick;
+
+        if (!reader.Read(out mainScannerActive) ||
+            !reader.Read(out mainScannerCurrentWidth) || !reader.Read(out mainScannerCurrentLength) || !reader.Read(out mainScannerCurrentAngle) ||
+            !reader.Read(out mainScannerTargetWidth) || !reader.Read(out mainScannerTargetLength) || !reader.Read(out mainScannerTargetAngle) ||
+            !reader.Read(out mainScannerStatus) || !reader.Read(out mainScannerConsumedEnergyThisTick) ||
+            !reader.Read(out mainScannerConsumedIonsThisTick) || !reader.Read(out mainScannerConsumedNeutrinosThisTick) ||
+            !reader.Read(out secondaryScannerActive) ||
+            !reader.Read(out secondaryScannerCurrentWidth) || !reader.Read(out secondaryScannerCurrentLength) ||
+            !reader.Read(out secondaryScannerCurrentAngle) || !reader.Read(out secondaryScannerTargetWidth) ||
+            !reader.Read(out secondaryScannerTargetLength) || !reader.Read(out secondaryScannerTargetAngle) ||
+            !reader.Read(out secondaryScannerStatus) || !reader.Read(out secondaryScannerConsumedEnergyThisTick) ||
+            !reader.Read(out secondaryScannerConsumedIonsThisTick) || !reader.Read(out secondaryScannerConsumedNeutrinosThisTick) ||
+            !Vector.FromReader(reader, out engineCurrent) || !Vector.FromReader(reader, out engineTarget) ||
+            !reader.Read(out engineStatus) || !reader.Read(out engineConsumedEnergyThisTick) ||
+            !reader.Read(out engineConsumedIonsThisTick) || !reader.Read(out engineConsumedNeutrinosThisTick) ||
+            !Vector.FromReader(reader, out weaponRelativeMovement) || !reader.Read(out weaponTicks) || !reader.Read(out weaponLoad) ||
+            !reader.Read(out weaponDamage) || !reader.Read(out weaponStatus) || !reader.Read(out weaponConsumedEnergyThisTick) ||
+            !reader.Read(out weaponConsumedIonsThisTick) || !reader.Read(out weaponConsumedNeutrinosThisTick))
+            throw new InvalidDataException("Couldan't read ClassicShipControllable runtime.");
+
+        _mainScanner.UpdateRuntime(mainScannerActive != 0, mainScannerCurrentWidth, mainScannerCurrentLength, mainScannerCurrentAngle,
+            mainScannerTargetWidth, mainScannerTargetLength, mainScannerTargetAngle, (SubsystemStatus)mainScannerStatus,
+            mainScannerConsumedEnergyThisTick, mainScannerConsumedIonsThisTick, mainScannerConsumedNeutrinosThisTick);
+        _secondaryScanner.UpdateRuntime(secondaryScannerActive != 0, secondaryScannerCurrentWidth, secondaryScannerCurrentLength,
+            secondaryScannerCurrentAngle, secondaryScannerTargetWidth, secondaryScannerTargetLength,
+            secondaryScannerTargetAngle, (SubsystemStatus)secondaryScannerStatus, secondaryScannerConsumedEnergyThisTick,
+            secondaryScannerConsumedIonsThisTick, secondaryScannerConsumedNeutrinosThisTick);
+        _engine.UpdateRuntime(engineCurrent, engineTarget, (SubsystemStatus)engineStatus, engineConsumedEnergyThisTick,
+            engineConsumedIonsThisTick, engineConsumedNeutrinosThisTick);
+        _weapon.UpdateRuntime(weaponRelativeMovement, weaponTicks, weaponLoad, weaponDamage, (SubsystemStatus)weaponStatus,
+            weaponConsumedEnergyThisTick, weaponConsumedIonsThisTick, weaponConsumedNeutrinosThisTick);
+    }
+
+    private protected override void EmitRuntimeEvents()
+    {
+        base.EmitRuntimeEvents();
+        PushRuntimeEvent(_mainScanner.CreateRuntimeEvent());
+        PushRuntimeEvent(_secondaryScanner.CreateRuntimeEvent());
+        PushRuntimeEvent(_engine.CreateRuntimeEvent());
+        PushRuntimeEvent(_weapon.CreateRuntimeEvent());
+    }
+
+    private void PushRuntimeEvent(FlattiverseEvent? @event)
+    {
+        if (@event is not null)
+            _cluster.Galaxy.PushEvent(@event);
+    }
 }

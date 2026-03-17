@@ -12,10 +12,7 @@ public class Buoy : SteadyUnit
 
     internal Buoy(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
-        if (!reader.Read(out string message))
-            throw new InvalidDataException("Couldn't read Buoy.");
-
-        _message = string.IsNullOrEmpty(message) ? null : message;
+        _message = null;
     }
 
     internal Buoy(Buoy buoy) : base(buoy)
@@ -36,6 +33,16 @@ public class Buoy : SteadyUnit
     /// Optional buoy message. Null means no message.
     /// </summary>
     public string? Message => _message;
+
+    internal override void UpdateState(PacketReader reader)
+    {
+        base.UpdateState(reader);
+
+        if (!reader.Read(out string message))
+            throw new InvalidDataException("Couldn't read Buoy.");
+
+        _message = string.IsNullOrEmpty(message) ? null : message;
+    }
 
     /// <inheritdoc/>
     public override Unit Clone()

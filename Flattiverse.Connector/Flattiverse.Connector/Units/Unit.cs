@@ -21,17 +21,20 @@ public class Unit
     /// The cluster this unit is in.
     /// </summary>
     protected Cluster _cluster;
+    private bool _fullStateKnown;
 
     internal Unit(Cluster cluster, string name)
     {
         _cluster = cluster;
         Name = name;
+        _fullStateKnown = false;
     }
 
     internal Unit(Unit unit)
     {
         _cluster = unit._cluster;
         Name = unit.Name;
+        _fullStateKnown = unit._fullStateKnown;
     }
     
     /// <summary>
@@ -88,6 +91,14 @@ public class Unit
     /// The cluster the unit is in.
     /// </summary>
     public virtual Cluster Cluster => _cluster;
+
+    /// <summary>
+    /// true if the connector has received the full state payload for this unit.
+    /// </summary>
+    public bool FullStateKnown
+    {
+        get { return _fullStateKnown; }
+    }
     
     /// <summary>
     /// The team of the unit.
@@ -119,6 +130,12 @@ public class Unit
             case UnitKind.MissionTarget:
                 unit = new MissionTarget(cluster, name, reader);
                 return true;
+            case UnitKind.Flag:
+                unit = new Flag(cluster, name, reader);
+                return true;
+            case UnitKind.DominationPoint:
+                unit = new DominationPoint(cluster, name, reader);
+                return true;
             case UnitKind.Planet:
                 unit = new Planet(cluster, name, reader);
                 return true;
@@ -142,7 +159,7 @@ public class Unit
     {
         string teamName = Team is null ? "-" : Team.Name;
 
-        return $"Kind={Kind}, Name=\"{Name}\", Cluster=\"{Cluster.Name}\", Team=\"{teamName}\", Mobility={Mobility}, Position={Position}, Movement={Movement}, Radius={Radius:0.00}, Angle={Angle:0.000}, Gravity={Gravity:0.000}, IsMasking={IsMasking}, IsSolid={IsSolid}, CanBeEdited={CanBeEdited}";
+        return $"Kind={Kind}, Name=\"{Name}\", Cluster=\"{Cluster.Name}\", Team=\"{teamName}\", Mobility={Mobility}, Position={Position}, Movement={Movement}, Radius={Radius:0.00}, Angle={Angle:0.000}, Gravity={Gravity:0.000}, IsMasking={IsMasking}, IsSolid={IsSolid}, CanBeEdited={CanBeEdited}, FullStateKnown={_fullStateKnown}";
     }
 
     /// <summary>
@@ -156,5 +173,15 @@ public class Unit
 
     internal virtual void UpdateMovement(PacketReader reader)
     {
+    }
+
+    internal virtual void UpdateState(PacketReader reader)
+    {
+        _fullStateKnown = true;
+    }
+
+    internal void MarkFullStateKnown()
+    {
+        _fullStateKnown = true;
     }
 }

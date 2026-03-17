@@ -25,6 +25,7 @@ public class Player : INamedUnit
     private readonly string _name;
     
     private float _ping;
+    private readonly Score _score;
 
     private bool _active;
     
@@ -43,6 +44,7 @@ public class Player : INamedUnit
     internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, string name, float ping)
     {
         Galaxy = galaxy;
+        _score = new Score();
         
         Id = id;
 
@@ -87,6 +89,11 @@ public class Player : INamedUnit
     /// The ping in ms of the player.
     /// </summary>
     public float Ping => _ping;
+
+    /// <summary>
+    /// Current live player score.
+    /// </summary>
+    public Score Score => _score;
 
     internal void Update(float ping)
     {

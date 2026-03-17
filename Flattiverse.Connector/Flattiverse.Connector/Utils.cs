@@ -1,6 +1,9 @@
-﻿namespace Flattiverse.Connector;
+namespace Flattiverse.Connector;
 
-class Utils
+/// <summary>
+/// General-purpose helpers used across the connector packages.
+/// </summary>
+public static class Utils
 {
     /// <summary>
     /// Checks the name.

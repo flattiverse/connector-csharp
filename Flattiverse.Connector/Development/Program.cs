@@ -15,9 +15,8 @@ class Program
     private const byte SpectatorsTeamId = 12;
     private const ushort DatabaseGalaxyId = 0;
     private const string DatabasePsqlConnection = "host=10.252.7.136 port=5432 dbname=flattiverse user=postgres";
-
-    private const string AdminAuth = "7666fc8bdadc000acde68691ebe7d30f6d0f6ac001431a18886ee2d9f176ab9e";
-    private const string PlayerAuth = "28a00943f2c0181a0c5db3f4de3e23e987a4c060cc39f45dcb6ed2a86f00eac5";
+    private const string AdminAuth = "replace-with-admin-auth";
+    private const string PlayerAuth = "replace-with-player-auth";
 
     private readonly struct ClusterSpec
     {
@@ -79,6 +78,12 @@ class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--cleanup-roundtrip-units")
+        {
+            await CleanupRoundtripUnits().ConfigureAwait(false);
+            return;
+        }
+
         Galaxy? adminGalaxy = null;
         Galaxy? playerGalaxy = null;
         Task? playerEventPump = null;
@@ -112,6 +117,7 @@ class Program
             await TestDeleteTeamBlockedByRegion(adminGalaxy).ConfigureAwait(false);
             await TestQueryRegions(adminGalaxy).ConfigureAwait(false);
             await TestSetQueryRemoveUnit(adminGalaxy).ConfigureAwait(false);
+            await TestScoreUpdatesOnSuicide(playerGalaxy, playerEvents).ConfigureAwait(false);
             await TestDeleteClusterWithActiveShip(adminGalaxy, playerGalaxy, playerEvents).ConfigureAwait(false);
             await TestSetUnitWithUnknownTeamRejected(adminGalaxy).ConfigureAwait(false);
             await TestDeleteTeamAssignedToUnit(adminGalaxy).ConfigureAwait(false);
@@ -298,7 +304,9 @@ class Program
                 "RoundtripMoon",
                 "RoundtripMeteoroid",
                 "RoundtripBuoy",
-                "RoundtripMissionTarget"
+                "RoundtripMissionTarget",
+                "RoundtripFlag",
+                "RoundtripDominationPoint"
             };
 
             bool allFound = true;
@@ -329,6 +337,43 @@ class Program
 
             if (eventPump is not null)
                 await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task CleanupRoundtripUnits()
+    {
+        Galaxy? adminGalaxy = null;
+
+        try
+        {
+            Console.WriteLine("CLEANUP: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, TeamName).ConfigureAwait(false);
+
+            if (!adminGalaxy.Clusters.TryGet(0, out Cluster? cluster))
+                throw new InvalidOperationException("Cluster 0 not found during roundtrip cleanup.");
+
+            foreach (string unitXml in BuildRoundtripCreateXml())
+            {
+                string unitName = ReadUnitName(unitXml);
+
+                try
+                {
+                    await cluster.RemoveUnit(unitName).ConfigureAwait(false);
+                    Console.WriteLine($"CLEANUP: removed {unitName}");
+                }
+                catch (InvalidArgumentGameException exception)
+                {
+                    if (exception.Reason == InvalidArgumentKind.EntityNotFound)
+                        Console.WriteLine($"CLEANUP: already absent {unitName}");
+                    else
+                        throw;
+                }
+            }
+        }
+        finally
+        {
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
         }
     }
 
@@ -374,7 +419,9 @@ class Program
         xml.Add("<Moon Name=\"RoundtripMoon\" X=\"170\" Y=\"-140\" Radius=\"24\" Gravity=\"0.01\" Type=\"IceMoon\" Metal=\"0.15\" Carbon=\"0.22\" Hydrogen=\"0.66\" Silicon=\"0.18\" />");
         xml.Add("<Meteoroid Name=\"RoundtripMeteoroid\" X=\"260\" Y=\"110\" Radius=\"15\" Gravity=\"0.002\" Type=\"MetallicSlug\" Metal=\"0.89\" Carbon=\"0.05\" Hydrogen=\"0.03\" Silicon=\"0.21\" />");
         xml.Add("<Buoy Name=\"RoundtripBuoy\" X=\"-260\" Y=\"-120\" Radius=\"10\" Gravity=\"0\" Message=\"Roundtrip marker buoy\" />");
-        xml.Add("<MissionTarget Name=\"RoundtripMissionTarget\" X=\"20\" Y=\"30\" Radius=\"8\" Gravity=\"0\" Team=\"0\"><Vector X=\"40\" Y=\"50\" /><Vector X=\"-60\" Y=\"70\" /></MissionTarget>");
+        xml.Add("<MissionTarget Name=\"RoundtripMissionTarget\" X=\"20\" Y=\"30\" Radius=\"8\" Gravity=\"0\" Team=\"0\" SequenceNumber=\"7\"><Vector X=\"40\" Y=\"50\" /><Vector X=\"-60\" Y=\"70\" /></MissionTarget>");
+        xml.Add("<Flag Name=\"RoundtripFlag\" X=\"-70\" Y=\"95\" Radius=\"9\" Gravity=\"0\" Team=\"0\" />");
+        xml.Add("<DominationPoint Name=\"RoundtripDominationPoint\" X=\"180\" Y=\"-75\" Radius=\"14\" Gravity=\"0\" Team=\"0\" DominationRadius=\"90\" />");
 
         return xml;
     }
@@ -842,7 +889,7 @@ class Program
             XDocument queriedPlanetDocument = XDocument.Parse(queriedPlanetXml, LoadOptions.None);
             bool kindSwitchWorked = queriedPlanetDocument.Root?.Name.LocalName == "Planet";
 
-            string missionTargetXml = $"<MissionTarget Name=\"{unitName}\" X=\"-20\" Y=\"15\" Radius=\"11\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\"><Vector X=\"1.5\" Y=\"2.5\" /><Vector X=\"-4\" Y=\"8\" /></MissionTarget>";
+            string missionTargetXml = $"<MissionTarget Name=\"{unitName}\" X=\"-20\" Y=\"15\" Radius=\"11\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" SequenceNumber=\"3\"><Vector X=\"1.5\" Y=\"2.5\" /><Vector X=\"-4\" Y=\"8\" /></MissionTarget>";
             await clusterValue.SetUnit(missionTargetXml).ConfigureAwait(false);
 
             string queriedMissionTargetXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
@@ -851,12 +898,14 @@ class Program
             bool missionTargetKindWorked = queriedMissionTargetDocument.Root?.Name.LocalName == "MissionTarget";
             bool missionTargetVectorCountWorked = false;
             bool missionTargetTeamWorked = false;
+            bool missionTargetSequenceWorked = false;
 
             XElement? missionTargetRoot = queriedMissionTargetDocument.Root;
 
             if (missionTargetRoot is not null)
             {
                 missionTargetTeamWorked = missionTargetRoot.Attribute("Team")?.Value == missionTargetTeamValue.Id.ToString();
+                missionTargetSequenceWorked = missionTargetRoot.Attribute("SequenceNumber")?.Value == "3";
 
                 int vectorCount = 0;
 
@@ -866,6 +915,22 @@ class Program
 
                 missionTargetVectorCountWorked = vectorCount == 2;
             }
+
+            string flagXml = $"<Flag Name=\"{unitName}\" X=\"-12\" Y=\"18\" Radius=\"7\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" />";
+            await clusterValue.SetUnit(flagXml).ConfigureAwait(false);
+
+            string queriedFlagXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
+            XDocument queriedFlagDocument = XDocument.Parse(queriedFlagXml, LoadOptions.None);
+            bool flagKindWorked = queriedFlagDocument.Root?.Name.LocalName == "Flag";
+            bool flagTeamWorked = queriedFlagDocument.Root?.Attribute("Team")?.Value == missionTargetTeamValue.Id.ToString();
+
+            string dominationPointXml = $"<DominationPoint Name=\"{unitName}\" X=\"25\" Y=\"-35\" Radius=\"13\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" DominationRadius=\"88\" />";
+            await clusterValue.SetUnit(dominationPointXml).ConfigureAwait(false);
+
+            string queriedDominationPointXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
+            XDocument queriedDominationPointDocument = XDocument.Parse(queriedDominationPointXml, LoadOptions.None);
+            bool dominationPointKindWorked = queriedDominationPointDocument.Root?.Name.LocalName == "DominationPoint";
+            bool dominationPointRadiusWorked = queriedDominationPointDocument.Root?.Attribute("DominationRadius")?.Value == "88";
 
             await clusterValue.RemoveUnit(unitName).ConfigureAwait(false);
             unitCreated = false;
@@ -883,8 +948,8 @@ class Program
                 queryAfterRemoveFailed = exception.Reason == InvalidArgumentKind.EntityNotFound && expectedParameter;
             }
 
-            Console.WriteLine($"  RESULT: {(isSun && kindSwitchWorked && missionTargetKindWorked && missionTargetVectorCountWorked && missionTargetTeamWorked && queryAfterRemoveFailed ? "OK" : "FAILED")} " +
-                              $"(sun={isSun}, kindSwitch={kindSwitchWorked}, missionTargetKind={missionTargetKindWorked}, missionTargetVectors={missionTargetVectorCountWorked}, missionTargetTeam={missionTargetTeamWorked}, removed={queryAfterRemoveFailed})");
+            Console.WriteLine($"  RESULT: {(isSun && kindSwitchWorked && missionTargetKindWorked && missionTargetVectorCountWorked && missionTargetTeamWorked && missionTargetSequenceWorked && flagKindWorked && flagTeamWorked && dominationPointKindWorked && dominationPointRadiusWorked && queryAfterRemoveFailed ? "OK" : "FAILED")} " +
+                              $"(sun={isSun}, kindSwitch={kindSwitchWorked}, missionTargetKind={missionTargetKindWorked}, missionTargetVectors={missionTargetVectorCountWorked}, missionTargetTeam={missionTargetTeamWorked}, missionTargetSequence={missionTargetSequenceWorked}, flagKind={flagKindWorked}, flagTeam={flagTeamWorked}, dominationPointKind={dominationPointKindWorked}, dominationPointRadius={dominationPointRadiusWorked}, removed={queryAfterRemoveFailed})");
         }
         catch (Exception exception)
         {
@@ -923,7 +988,7 @@ class Program
         string missingTeamName = $"TeamProbeMissing{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
         string missingTeamXml = $"<MissionTarget Name=\"{missingTeamName}\" X=\"10\" Y=\"-12\" Radius=\"8\" Gravity=\"0\"><Vector X=\"1\" Y=\"2\" /></MissionTarget>";
         string unknownTeamName = $"TeamProbeUnknown{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
-        string unknownTeamXml = $"<MissionTarget Name=\"{unknownTeamName}\" X=\"10\" Y=\"-12\" Radius=\"8\" Gravity=\"0\" Team=\"99\"><Vector X=\"1\" Y=\"2\" /></MissionTarget>";
+        string unknownTeamXml = $"<MissionTarget Name=\"{unknownTeamName}\" X=\"10\" Y=\"-12\" Radius=\"8\" Gravity=\"0\" Team=\"99\" SequenceNumber=\"1\"><Vector X=\"1\" Y=\"2\" /></MissionTarget>";
 
         Console.WriteLine("TEST set-unit-unknown-team:");
 
@@ -993,7 +1058,7 @@ class Program
         Team teamValue = team!;
         Cluster clusterValue = cluster!;
         string unitName = $"TeamBound{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
-        string setXml = $"<MissionTarget Name=\"{unitName}\" X=\"1\" Y=\"2\" Radius=\"9\" Gravity=\"0\" Team=\"{teamValue.Id}\"><Vector X=\"3\" Y=\"4\" /></MissionTarget>";
+        string setXml = $"<MissionTarget Name=\"{unitName}\" X=\"1\" Y=\"2\" Radius=\"9\" Gravity=\"0\" Team=\"{teamValue.Id}\" SequenceNumber=\"5\"><Vector X=\"3\" Y=\"4\" /></MissionTarget>";
 
         Console.WriteLine("TEST delete-team-assigned-to-unit:");
 
@@ -1261,6 +1326,70 @@ class Program
         {
             Console.WriteLine($"  CONTINUE AFTER DELETE: FAILED ({exception.GetType().Name}: {exception.Message})");
         }
+
+        ship.Dispose();
+    }
+
+    private static async Task TestScoreUpdatesOnSuicide(Galaxy playerGalaxy, ConcurrentQueue<FlattiverseEvent> playerEvents)
+    {
+        string shipName = $"ScoreShip{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
+        uint initialPlayerKills = playerGalaxy.Player.Score.Kills;
+        uint initialPlayerDeaths = playerGalaxy.Player.Score.Deaths;
+        uint initialTeamKills = playerGalaxy.Player.Team.Score.Kills;
+        uint initialTeamDeaths = playerGalaxy.Player.Team.Score.Deaths;
+
+        DrainEvents(playerEvents);
+
+        ClassicShipControllable ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+        await ship.Continue().ConfigureAwait(false);
+
+        bool alive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+
+        Console.WriteLine("TEST score-updates-on-suicide:");
+        Console.WriteLine($"  SHIP ALIVE BEFORE SUICIDE: {alive}");
+
+        if (!alive)
+        {
+            ship.Dispose();
+            Console.WriteLine("  RESULT: FAILED (ship did not become alive before suicide)");
+            return;
+        }
+
+        DrainEvents(playerEvents);
+
+        await ship.Suicide().ConfigureAwait(false);
+
+        bool dead = await WaitForAliveState(ship, false, 3000).ConfigureAwait(false);
+
+        await Task.Delay(250).ConfigureAwait(false);
+
+        List<FlattiverseEvent> eventsAfterSuicide = DrainEvents(playerEvents);
+        bool playerScoreUpdated = false;
+        bool teamScoreUpdated = false;
+
+        foreach (FlattiverseEvent @event in eventsAfterSuicide)
+            if (@event is PlayerScoreUpdatedEvent playerScoreUpdatedEvent &&
+                playerScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
+                playerScoreUpdatedEvent.NewDeaths == initialPlayerDeaths + 1U &&
+                playerScoreUpdatedEvent.NewKills == initialPlayerKills)
+                playerScoreUpdated = true;
+            else if (@event is TeamScoreUpdatedEvent teamScoreUpdatedEvent &&
+                     teamScoreUpdatedEvent.Team.Id == playerGalaxy.Player.Team.Id &&
+                     teamScoreUpdatedEvent.NewDeaths == initialTeamDeaths + 1U &&
+                     teamScoreUpdatedEvent.NewKills == initialTeamKills)
+                teamScoreUpdated = true;
+
+        bool playerScoreApplied = playerGalaxy.Player.Score.Deaths == initialPlayerDeaths + 1U &&
+                                  playerGalaxy.Player.Score.Kills == initialPlayerKills;
+        bool teamScoreApplied = playerGalaxy.Player.Team.Score.Deaths == initialTeamDeaths + 1U &&
+                                playerGalaxy.Player.Team.Score.Kills == initialTeamKills;
+
+        Console.WriteLine($"  SHIP REACHED DEAD STATE: {dead}");
+        Console.WriteLine($"  PLAYER SCORE EVENT: {playerScoreUpdated}");
+        Console.WriteLine($"  TEAM SCORE EVENT: {teamScoreUpdated}");
+        Console.WriteLine($"  PLAYER SCORE APPLIED: {playerScoreApplied}");
+        Console.WriteLine($"  TEAM SCORE APPLIED: {teamScoreApplied}");
+        Console.WriteLine($"  RESULT: {(dead && playerScoreUpdated && teamScoreUpdated && playerScoreApplied && teamScoreApplied ? "OK" : "FAILED")}");
 
         ship.Dispose();
     }

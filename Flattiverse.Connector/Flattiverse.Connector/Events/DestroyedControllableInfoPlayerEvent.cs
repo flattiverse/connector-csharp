@@ -7,6 +7,9 @@ namespace Flattiverse.Connector.Events;
 /// </summary>
 public class DestroyedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
 {
+    /// <summary>
+    /// Reason the referenced controllable was destroyed.
+    /// </summary>
     public readonly PlayerUnitDestroyedReason Reason;
     
     internal DestroyedControllableInfoPlayerEvent(Player player, ControllableInfo controllableInfo, PlayerUnitDestroyedReason reason) :

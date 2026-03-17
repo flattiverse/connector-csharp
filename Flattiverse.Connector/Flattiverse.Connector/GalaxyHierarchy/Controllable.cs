@@ -1,4 +1,5 @@
-﻿using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -15,6 +16,9 @@ public class Controllable : IDisposable, INamedUnit
     /// </summary>
     public readonly byte Id;
     
+    /// <summary>
+    /// The cluster this controllable belongs to.
+    /// </summary>
     protected Cluster _cluster;
     
     private bool _active;
@@ -23,6 +27,12 @@ public class Controllable : IDisposable, INamedUnit
 
     private Vector _position;
     private Vector _movement;
+    private protected BatterySubsystem _energyBattery;
+    private protected BatterySubsystem _ionBattery;
+    private protected BatterySubsystem _neutrinoBattery;
+    private protected EnergyCellSubsystem _energyCell;
+    private protected EnergyCellSubsystem _ionCell;
+    private protected EnergyCellSubsystem _neutrinoCell;
 
     internal Controllable(byte id, string name, Cluster cluster, PacketReader reader)
     {
@@ -32,6 +42,12 @@ public class Controllable : IDisposable, INamedUnit
         _name = name;
         
         _active = true;
+        _energyBattery = null!;
+        _ionBattery = null!;
+        _neutrinoBattery = null!;
+        _energyCell = null!;
+        _ionCell = null!;
+        _neutrinoCell = null!;
 
         if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
             throw new InvalidDataException("Couldn't read controllable.");
@@ -61,6 +77,54 @@ public class Controllable : IDisposable, INamedUnit
     /// The movement of the unit.
     /// </summary>
     public Vector Movement => new Vector(_movement);
+
+    /// <summary>
+    /// The energy battery subsystem of the controllable.
+    /// </summary>
+    public BatterySubsystem EnergyBattery
+    {
+        get { return _energyBattery; }
+    }
+
+    /// <summary>
+    /// The ion battery subsystem of the controllable.
+    /// </summary>
+    public BatterySubsystem IonBattery
+    {
+        get { return _ionBattery; }
+    }
+
+    /// <summary>
+    /// The neutrino battery subsystem of the controllable.
+    /// </summary>
+    public BatterySubsystem NeutrinoBattery
+    {
+        get { return _neutrinoBattery; }
+    }
+
+    /// <summary>
+    /// The energy cell subsystem of the controllable.
+    /// </summary>
+    public EnergyCellSubsystem EnergyCell
+    {
+        get { return _energyCell; }
+    }
+
+    /// <summary>
+    /// The ion cell subsystem of the controllable.
+    /// </summary>
+    public EnergyCellSubsystem IonCell
+    {
+        get { return _ionCell; }
+    }
+
+    /// <summary>
+    /// The neutrino cell subsystem of the controllable.
+    /// </summary>
+    public EnergyCellSubsystem NeutrinoCell
+    {
+        get { return _neutrinoCell; }
+    }
     
     /// <summary>
     /// true, if the unit is alive.
@@ -88,6 +152,7 @@ public class Controllable : IDisposable, INamedUnit
     {
         _active = false;
         _alive = false;
+        ResetRuntime();
     }
     
     /// <summary>
@@ -142,15 +207,76 @@ public class Controllable : IDisposable, INamedUnit
     {
         _alive = false;
         
-        _position = new Vector();;
-        _movement = new Vector();;
+        _position = new Vector();
+        _movement = new Vector();
+        ResetRuntime();
     }
 
     internal void Updated(PacketReader reader)
     {
-        if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
+        float energyBatteryCurrent;
+        float energyBatteryConsumedThisTick;
+        byte energyBatteryStatus;
+        float ionBatteryCurrent;
+        float ionBatteryConsumedThisTick;
+        byte ionBatteryStatus;
+        float neutrinoBatteryCurrent;
+        float neutrinoBatteryConsumedThisTick;
+        byte neutrinoBatteryStatus;
+        float energyCellCollectedThisTick;
+        byte energyCellStatus;
+        float ionCellCollectedThisTick;
+        byte ionCellStatus;
+        float neutrinoCellCollectedThisTick;
+        byte neutrinoCellStatus;
+
+        if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement) ||
+            !reader.Read(out energyBatteryCurrent) || !reader.Read(out energyBatteryConsumedThisTick) || !reader.Read(out energyBatteryStatus) ||
+            !reader.Read(out ionBatteryCurrent) || !reader.Read(out ionBatteryConsumedThisTick) || !reader.Read(out ionBatteryStatus) ||
+            !reader.Read(out neutrinoBatteryCurrent) || !reader.Read(out neutrinoBatteryConsumedThisTick) || !reader.Read(out neutrinoBatteryStatus) ||
+            !reader.Read(out energyCellCollectedThisTick) || !reader.Read(out energyCellStatus) ||
+            !reader.Read(out ionCellCollectedThisTick) || !reader.Read(out ionCellStatus) ||
+            !reader.Read(out neutrinoCellCollectedThisTick) || !reader.Read(out neutrinoCellStatus))
             throw new InvalidDataException("Couldan't read ControllableUpdate.");
 
+        _energyBattery.UpdateRuntime(energyBatteryCurrent, energyBatteryConsumedThisTick, (SubsystemStatus)energyBatteryStatus);
+        _ionBattery.UpdateRuntime(ionBatteryCurrent, ionBatteryConsumedThisTick, (SubsystemStatus)ionBatteryStatus);
+        _neutrinoBattery.UpdateRuntime(neutrinoBatteryCurrent, neutrinoBatteryConsumedThisTick, (SubsystemStatus)neutrinoBatteryStatus);
+        _energyCell.UpdateRuntime(energyCellCollectedThisTick, (SubsystemStatus)energyCellStatus);
+        _ionCell.UpdateRuntime(ionCellCollectedThisTick, (SubsystemStatus)ionCellStatus);
+        _neutrinoCell.UpdateRuntime(neutrinoCellCollectedThisTick, (SubsystemStatus)neutrinoCellStatus);
+        ReadRuntime(reader);
         _alive = true;
+        EmitRuntimeEvents();
+    }
+
+    private protected virtual void ResetRuntime()
+    {
+        _energyBattery.ResetRuntime();
+        _ionBattery.ResetRuntime();
+        _neutrinoBattery.ResetRuntime();
+        _energyCell.ResetRuntime();
+        _ionCell.ResetRuntime();
+        _neutrinoCell.ResetRuntime();
+    }
+
+    private protected virtual void ReadRuntime(PacketReader reader)
+    {
+    }
+
+    private protected virtual void EmitRuntimeEvents()
+    {
+        PushRuntimeEvent(_energyBattery.CreateRuntimeEvent());
+        PushRuntimeEvent(_ionBattery.CreateRuntimeEvent());
+        PushRuntimeEvent(_neutrinoBattery.CreateRuntimeEvent());
+        PushRuntimeEvent(_energyCell.CreateRuntimeEvent());
+        PushRuntimeEvent(_ionCell.CreateRuntimeEvent());
+        PushRuntimeEvent(_neutrinoCell.CreateRuntimeEvent());
+    }
+
+    private void PushRuntimeEvent(FlattiverseEvent? @event)
+    {
+        if (@event is not null)
+            _cluster.Galaxy.PushEvent(@event);
     }
 }

@@ -22,21 +22,32 @@ public class Shot : Unit
     private Vector _movement;
 
     private ushort _ticks;
+    private float _load;
+    private float _damage;
     
     /// <summary>
     /// The size of the generated explosion.
     /// </summary>
-    public readonly float Load;
+    public float Load
+    {
+        get { return _load; }
+    }
     
     /// <summary>
     /// The damage inflicted.
     /// </summary>
-    public readonly float Damage;
+    public float Damage
+    {
+        get { return _damage; }
+    }
     
     internal Shot(Cluster cluster, string name, PacketReader reader) : base(cluster, name)
     {
-        if (!reader.Read(out byte playerId) || !reader.Read(out byte controllableId) || !reader.Read(out _ticks) || !reader.Read(out Load) || !reader.Read(out Damage) || !Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
+        if (!reader.Read(out byte playerId) || !reader.Read(out byte controllableId) || !reader.Read(out _ticks) || !Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
             throw new InvalidDataException("Couldn't read Unit.");
+
+        _load = 0f;
+        _damage = 0f;
 
         if (playerId < 192)
         {
@@ -51,6 +62,8 @@ public class Shot : Unit
         ControllableInfo = unit.ControllableInfo;
         
         _ticks = unit._ticks;
+        _load = unit._load;
+        _damage = unit._damage;
         
         _position = new Vector(unit._position);
         _movement = new Vector(unit._movement);
@@ -89,6 +102,14 @@ public class Shot : Unit
         if (!reader.Read(out _ticks) || !Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
             throw new InvalidDataException("Couldn't read Unit.");
     }
+
+    internal override void UpdateState(PacketReader reader)
+    {
+        base.UpdateState(reader);
+
+        if (!reader.Read(out _load) || !reader.Read(out _damage))
+            throw new InvalidDataException("Couldn't read Unit.");
+    }
     
     /// <inheritdoc/>
     public override Unit Clone()
@@ -105,6 +126,6 @@ public class Shot : Unit
         string playerName = Player is null ? "-" : Player.Name;
         string controllableName = ControllableInfo is null ? "-" : ControllableInfo.Name;
 
-        return $"{base.ToString()}, Player=\"{playerName}\", Controllable=\"{controllableName}\", Ticks={_ticks}, Load={Load:0.000}, Damage={Damage:0.000}";
+        return $"{base.ToString()}, Player=\"{playerName}\", Controllable=\"{controllableName}\", Ticks={_ticks}, Load={_load:0.000}, Damage={_damage:0.000}";
     }
 }

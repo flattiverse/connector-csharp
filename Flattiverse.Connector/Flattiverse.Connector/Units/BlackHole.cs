@@ -8,26 +8,35 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class BlackHole : SteadyUnit
 {
+    private float _gravityWellRadius;
+    private float _gravityWellForce;
+
     /// <summary>
     /// Radius of the intensified gravity well.
     /// </summary>
-    public readonly float GravityWellRadius;
+    public float GravityWellRadius
+    {
+        get { return _gravityWellRadius; }
+    }
 
     /// <summary>
     /// Additional attraction force inside the gravity well.
     /// </summary>
-    public readonly float GravityWellForce;
+    public float GravityWellForce
+    {
+        get { return _gravityWellForce; }
+    }
 
     internal BlackHole(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
-        if (!reader.Read(out GravityWellRadius) || !reader.Read(out GravityWellForce))
-            throw new System.IO.InvalidDataException("Couldn't read Unit.");
+        _gravityWellRadius = 0f;
+        _gravityWellForce = 0f;
     }
 
     internal BlackHole(BlackHole blackHole) : base(blackHole)
     {
-        GravityWellRadius = blackHole.GravityWellRadius;
-        GravityWellForce = blackHole.GravityWellForce;
+        _gravityWellRadius = blackHole._gravityWellRadius;
+        _gravityWellForce = blackHole._gravityWellForce;
     }
 
     /// <inheritdoc/>
@@ -39,9 +48,17 @@ public class BlackHole : SteadyUnit
         return new BlackHole(this);
     }
 
+    internal override void UpdateState(PacketReader reader)
+    {
+        base.UpdateState(reader);
+
+        if (!reader.Read(out _gravityWellRadius) || !reader.Read(out _gravityWellForce))
+            throw new System.IO.InvalidDataException("Couldn't read Unit.");
+    }
+
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{base.ToString()}, GravityWellRadius={GravityWellRadius:0.000}, GravityWellForce={GravityWellForce:0.000}";
+        return $"{base.ToString()}, GravityWellRadius={_gravityWellRadius:0.000}, GravityWellForce={_gravityWellForce:0.000}";
     }
 }

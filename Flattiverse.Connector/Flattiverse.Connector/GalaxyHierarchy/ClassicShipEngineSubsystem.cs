@@ -1,0 +1,173 @@
+using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Network;
+using Flattiverse.Connector.Units;
+
+namespace Flattiverse.Connector.GalaxyHierarchy;
+
+/// <summary>
+/// Engine subsystem of a classic ship controllable.
+/// </summary>
+public class ClassicShipEngineSubsystem : Subsystem
+{
+    private readonly float _maximum;
+
+    private Vector _current;
+    private Vector _target;
+    private float _consumedEnergyThisTick;
+    private float _consumedIonsThisTick;
+    private float _consumedNeutrinosThisTick;
+
+    internal ClassicShipEngineSubsystem(Controllable controllable) :
+        base(controllable, "Engine", true, SubsystemSlot.PrimaryEngine)
+    {
+        _maximum = 0.1f;
+        _current = new Vector();
+        _target = new Vector();
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+    }
+
+    /// <summary>
+    /// The maximum configurable movement vector length.
+    /// </summary>
+    public float Maximum
+    {
+        get { return _maximum; }
+    }
+
+    /// <summary>
+    /// The current server-applied movement impulse.
+    /// </summary>
+    public Vector Current
+    {
+        get { return new Vector(_current); }
+    }
+
+    /// <summary>
+    /// The current target movement impulse.
+    /// </summary>
+    public Vector Target
+    {
+        get { return new Vector(_target); }
+    }
+
+    /// <summary>
+    /// The energy consumed by the engine during the current server tick.
+    /// </summary>
+    public float ConsumedEnergyThisTick
+    {
+        get { return _consumedEnergyThisTick; }
+    }
+
+    /// <summary>
+    /// The ions consumed by the engine during the current server tick.
+    /// </summary>
+    public float ConsumedIonsThisTick
+    {
+        get { return _consumedIonsThisTick; }
+    }
+
+    /// <summary>
+    /// The neutrinos consumed by the engine during the current server tick.
+    /// </summary>
+    public float ConsumedNeutrinosThisTick
+    {
+        get { return _consumedNeutrinosThisTick; }
+    }
+
+    /// <summary>
+    /// Calculates the current placeholder engine tick costs for the requested movement vector.
+    /// The current formula is <c>energy = 12000 * movement.Length^3</c>.
+    /// Returns false when the subsystem does not exist or the movement is outside the valid range.
+    /// Values just above the maximum are clipped to the maximum before the cost is calculated.
+    /// </summary>
+    public bool CalculateCost(Vector movement, out float energy, out float ions, out float neutrinos)
+    {
+        energy = 0f;
+        ions = 0f;
+        neutrinos = 0f;
+
+        if (!Exists)
+            return false;
+
+        if (RangeTolerance.ClampMaximum(movement, _maximum, out Vector clampedMovement) != InvalidArgumentKind.Valid)
+            return false;
+
+        energy = clampedMovement.Length * clampedMovement.Length * clampedMovement.Length * 12000f;
+
+        if (float.IsNaN(energy) || float.IsInfinity(energy))
+        {
+            energy = 0f;
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Sets the target movement impulse on the server.
+    /// Values just above the maximum are clipped to the maximum before they are sent.
+    /// </summary>
+    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the controllable or subsystem does not exist.</exception>
+    /// <exception cref="YouNeedToContinueFirstGameException">Thrown, if the controllable is dead.</exception>
+    /// <exception cref="InvalidArgumentGameException">Thrown, if an argument is invalid.</exception>
+    public async Task Set(Vector movement)
+    {
+        if (!Controllable.Active || !Exists)
+            throw new SpecifiedElementNotFoundGameException();
+
+        if (!Controllable.Alive)
+            throw new YouNeedToContinueFirstGameException();
+
+        InvalidArgumentKind movementValidity = RangeTolerance.ClampMaximum(movement, _maximum, out movement);
+
+        if (movementValidity != InvalidArgumentKind.Valid)
+            throw new InvalidArgumentGameException(movementValidity, "movement");
+
+        await Controllable.Cluster.Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x87;
+            writer.Write(Controllable.Id);
+            movement.Write(ref writer);
+        });
+    }
+
+    /// <summary>
+    /// Turns the engine off by requesting a zero movement vector.
+    /// </summary>
+    public async Task Off()
+    {
+        await Set(new Vector());
+    }
+
+    internal void ResetRuntime()
+    {
+        _current = new Vector();
+        _target = new Vector();
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+        ResetRuntimeStatus();
+    }
+
+    internal void UpdateRuntime(Vector current, Vector target, SubsystemStatus status, float consumedEnergyThisTick,
+        float consumedIonsThisTick, float consumedNeutrinosThisTick)
+    {
+        _current = current;
+        _target = target;
+        _consumedEnergyThisTick = consumedEnergyThisTick;
+        _consumedIonsThisTick = consumedIonsThisTick;
+        _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
+        UpdateRuntimeStatus(status);
+    }
+
+    internal FlattiverseEvent? CreateRuntimeEvent()
+    {
+        if (!Exists || !ShouldEmitRuntimeEvent())
+            return null;
+
+        return new ClassicShipEngineSubsystemEvent(Controllable, Slot, Status, _current, _target,
+            _consumedEnergyThisTick, _consumedIonsThisTick, _consumedNeutrinosThisTick);
+    }
+}

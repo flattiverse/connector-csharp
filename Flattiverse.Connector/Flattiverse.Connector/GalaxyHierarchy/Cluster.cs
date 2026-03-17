@@ -62,6 +62,16 @@ public class Cluster : INamedUnit
 
         return true;
     }
+
+    internal bool UpdateUnitState(string name, PacketReader reader, [NotNullWhen(true)] out Unit? unit)
+    {
+        if (!_units.TryGetValue(name, out unit))
+            return false;
+
+        unit.UpdateState(reader);
+
+        return true;
+    }
     
     internal void AddUnit(Unit unit)
     {
@@ -258,4 +268,12 @@ public class Cluster : INamedUnit
     /// If false, you have been disconnected or the cluster has been removed and therefore disabled.
     /// </summary>
     public bool Active => _active;
+
+    /// <summary>
+    /// Units currently known within this cluster from the connector's point of view.
+    /// </summary>
+    public IEnumerable<Unit> Units
+    {
+        get { return _units.Values; }
+    }
 }

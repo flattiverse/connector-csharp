@@ -34,6 +34,8 @@ public class Explosion : Unit
             Player = cluster.Galaxy.Players[playerId];
             ControllableInfo = Player.ControllableInfos[controllableId];
         }
+
+        MarkFullStateKnown();
     }
     
     internal Explosion(Explosion unit) : base(unit)
