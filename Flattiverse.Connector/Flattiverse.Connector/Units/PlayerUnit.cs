@@ -26,6 +26,7 @@ public class PlayerUnit : Unit
     private readonly EnergyCellSubsystemInfo _energyCell;
     private readonly EnergyCellSubsystemInfo _ionCell;
     private readonly EnergyCellSubsystemInfo _neutrinoCell;
+    private readonly HullSubsystemInfo _hull;
     
     internal PlayerUnit(Cluster cluster, string name, PacketReader reader) : base(cluster, name)
     {
@@ -40,6 +41,7 @@ public class PlayerUnit : Unit
         _energyCell = new EnergyCellSubsystemInfo();
         _ionCell = new EnergyCellSubsystemInfo();
         _neutrinoCell = new EnergyCellSubsystemInfo();
+        _hull = new HullSubsystemInfo();
     }
 
     internal PlayerUnit(PlayerUnit unit) : base(unit)
@@ -65,6 +67,8 @@ public class PlayerUnit : Unit
         _neutrinoCell = new EnergyCellSubsystemInfo();
         _neutrinoCell.Update(unit._neutrinoCell.Exists, unit._neutrinoCell.Efficiency, unit._neutrinoCell.CollectedThisTick,
             unit._neutrinoCell.Status);
+        _hull = new HullSubsystemInfo();
+        _hull.Update(unit._hull.Exists, unit._hull.Maximum, unit._hull.Current, unit._hull.Status);
     }
     
     /// <inheritdoc/>
@@ -130,6 +134,14 @@ public class PlayerUnit : Unit
         get { return _neutrinoCell; }
     }
 
+    /// <summary>
+    /// Visible snapshot of the hull subsystem.
+    /// </summary>
+    public HullSubsystemInfo Hull
+    {
+        get { return _hull; }
+    }
+
     internal override void UpdateMovement(PacketReader reader)
     {
         base.UpdateMovement(reader);
@@ -168,7 +180,11 @@ public class PlayerUnit : Unit
             !reader.Read(out byte neutrinoCellExists) ||
             !reader.Read(out float neutrinoCellEfficiency) ||
             !reader.Read(out float neutrinoCellCollectedThisTick) ||
-            !reader.Read(out byte neutrinoCellStatus))
+            !reader.Read(out byte neutrinoCellStatus) ||
+            !reader.Read(out byte hullExists) ||
+            !reader.Read(out float hullMaximum) ||
+            !reader.Read(out float hullCurrent) ||
+            !reader.Read(out byte hullStatus))
             throw new InvalidDataException("Couldn't read Unit.");
 
         _energyBattery.Update(energyBatteryExists != 0, energyBatteryMaximum, energyBatteryCurrent, energyBatteryConsumedThisTick,
@@ -180,6 +196,7 @@ public class PlayerUnit : Unit
         _energyCell.Update(energyCellExists != 0, energyCellEfficiency, energyCellCollectedThisTick, (SubsystemStatus)energyCellStatus);
         _ionCell.Update(ionCellExists != 0, ionCellEfficiency, ionCellCollectedThisTick, (SubsystemStatus)ionCellStatus);
         _neutrinoCell.Update(neutrinoCellExists != 0, neutrinoCellEfficiency, neutrinoCellCollectedThisTick, (SubsystemStatus)neutrinoCellStatus);
+        _hull.Update(hullExists != 0, hullMaximum, hullCurrent, (SubsystemStatus)hullStatus);
     }
 
     /// <inheritdoc/>
@@ -187,6 +204,7 @@ public class PlayerUnit : Unit
     {
         return $"{base.ToString()}, Player=\"{Player.Name}\", Controllable=\"{ControllableInfo.Name}\", " +
                $"EnergyBattery={_energyBattery.Current:0.###}/{_energyBattery.Maximum:0.###}({_energyBattery.Status}), EnergyConsumed={_energyBattery.ConsumedThisTick:0.###}, " +
-               $"EnergyCellCollected={_energyCell.CollectedThisTick:0.###}({_energyCell.Status})";
+               $"EnergyCellCollected={_energyCell.CollectedThisTick:0.###}({_energyCell.Status}), " +
+               $"Hull={_hull.Current:0.###}/{_hull.Maximum:0.###}({_hull.Status})";
     }
 }

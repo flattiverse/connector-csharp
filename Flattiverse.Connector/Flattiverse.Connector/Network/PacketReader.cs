@@ -103,6 +103,19 @@ class PacketReader
         return true;
     }
 
+    public bool Read(out long data)
+    {
+        if (_position + 7 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
+        {
+            data = default;
+            return false;
+        }
+
+        data = Unsafe.As<byte, long>(ref _data[_basePosition + 4 + _position]);
+        _position += 8;
+        return true;
+    }
+
     public bool Read(out float data)
     {
         if (_position + 3 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -168,7 +181,7 @@ class PacketReader
         if (_position + data.Length > Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
             return false;
 
-        Unsafe.CopyBlock(ref data[0], ref _data[_position], (uint)data.Length);
+        Unsafe.CopyBlock(ref data[0], ref _data[_basePosition + 4 + _position], (uint)data.Length);
 
         _position += data.Length;
         return true;

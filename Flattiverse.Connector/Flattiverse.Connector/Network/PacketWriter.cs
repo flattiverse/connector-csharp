@@ -72,6 +72,24 @@ struct PacketWriter : IDisposable
         _size += 4;
     }
 
+    public void Write(uint data)
+    {
+        Debug.Assert(_buffer.Position + 4 + _size + 4 <= _buffer.Data.Length, "Packet too long.");
+
+        Unsafe.As<byte, uint>(ref _buffer.Data[_buffer.Position + 4 + _size]) = data;
+
+        _size += 4;
+    }
+
+    public void Write(long data)
+    {
+        Debug.Assert(_buffer.Position + 4 + _size + 8 <= _buffer.Data.Length, "Packet too long.");
+
+        Unsafe.As<byte, long>(ref _buffer.Data[_buffer.Position + 4 + _size]) = data;
+
+        _size += 8;
+    }
+
     public void Write(float data)
     {
         Debug.Assert(_buffer.Position + 4 + _size + 4 <= _buffer.Data.Length, "Packet too long.");

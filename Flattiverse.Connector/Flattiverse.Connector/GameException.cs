@@ -55,7 +55,10 @@ public class GameException : Exception
                         exception = new WrongAccountStateGameException();
                     return true;
                 case 0x05:
-                    exception = new InvalidOrMissingTeamGameException();
+                    exception = new TeamSelectionFailedGameException();
+                    return true;
+                case 0x06:
+                    exception = new SelfDisclosureRequiredGameException();
                     return true;
                 case 0x08:
                     if (packetReader.Read(out bte))
@@ -66,6 +69,9 @@ public class GameException : Exception
 
                     exception = null;
                     return false;
+                case 0x09:
+                    exception = new AccountAlreadyLoggedInGameException();
+                    return true;
                 case 0x0C:
                     exception = new SessionsExhaustedException();
                     return true;

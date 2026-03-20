@@ -70,7 +70,8 @@ Example:
   PlayerMaxClassicShips="1"
   PlayerMaxNewShips="1"
   PlayerMaxBases="0"
-  Maintenance="false">
+  Maintenance="false"
+  RequiresSelfDisclosure="false">
   <Team Id="0" Name="Pink" ColorR="255" ColorG="0" ColorB="200" />
   <Team Id="1" Name="Green" ColorR="192" ColorG="255" ColorB="0" />
   <Cluster Id="0" Name="Playground" Start="true" Respawn="false" />
@@ -98,6 +99,7 @@ Allowed `Galaxy` attributes:
 - `PlayerMaxNewShips`: per-player cap for `NewShipPlayerUnit`.
 - `PlayerMaxBases`: per-player cap for future or custom base-type controllables.
 - `Maintenance`: if `true`, the galaxy is marked as being under maintenance.
+- `RequiresSelfDisclosure`: if `true`, regular player logins must provide both self-disclosure strings during connect.
 
 Allowed `Team` attributes:
 

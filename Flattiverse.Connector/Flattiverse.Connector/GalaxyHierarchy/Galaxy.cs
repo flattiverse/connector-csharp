@@ -18,7 +18,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "1";
+    private const string Version = "7";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -47,6 +47,7 @@ public class Galaxy : IDisposable
     private byte _playerMaxBases;
 
     private bool _maintenance;
+    private bool _requiresSelfDisclosure;
     private bool _active;
     private bool _receivedCompiledWith;
     private bool _receivedGalaxySettings;
@@ -94,18 +95,47 @@ public class Galaxy : IDisposable
     /// <param name="auth">This should be your auth key or null, if you want to join as spectator.</param>
     /// <param name="team">This should be the name of the team you want to join or null if the galaxy should chose
     /// the team for you (or if only one team exists).</param>
+    /// <param name="runtimeDisclosure">Optional runtime self-disclosure sent once during login.</param>
+    /// <param name="buildDisclosure">Optional build-assistance self-disclosure sent once during login.</param>
     /// <returns>The galaxy you have connected to.</returns>
-    public static async Task<Galaxy> Connect(string uri, string? auth = null, string? team = null)
+    public static async Task<Galaxy> Connect(string uri, string? auth = null, string? team = null,
+        RuntimeDisclosure? runtimeDisclosure = null, BuildDisclosure? buildDisclosure = null)
     {
         Uri parsedUri;
         ClientWebSocket? socket = null;
+        string authQuery;
+        System.Text.StringBuilder queryBuilder = new System.Text.StringBuilder();
 
         if (auth is null)
-            parsedUri = new Uri($"{uri}?version={Version}&auth=0000000000000000000000000000000000000000000000000000000000000000");
-        else if (team is null)
-            parsedUri = new Uri($"{uri}?version={Version}&auth={auth}");
+            authQuery = "0000000000000000000000000000000000000000000000000000000000000000";
         else
-            parsedUri = new Uri($"{uri}?version={Version}&auth={auth}&team={team}");
+            authQuery = auth;
+
+        queryBuilder.Append(uri);
+        queryBuilder.Append("?version=");
+        queryBuilder.Append(Version);
+        queryBuilder.Append("&auth=");
+        queryBuilder.Append(Uri.EscapeDataString(authQuery));
+
+        if (team is not null)
+        {
+            queryBuilder.Append("&team=");
+            queryBuilder.Append(Uri.EscapeDataString(team));
+        }
+
+        if (runtimeDisclosure is not null)
+        {
+            queryBuilder.Append("&runtimeDisclosure=");
+            queryBuilder.Append(runtimeDisclosure.ToString());
+        }
+
+        if (buildDisclosure is not null)
+        {
+            queryBuilder.Append("&buildDisclosure=");
+            queryBuilder.Append(buildDisclosure.ToString());
+        }
+
+        parsedUri = new Uri(queryBuilder.ToString());
         
         CultureInfo originalCulture = Thread.CurrentThread.CurrentCulture;
 
@@ -314,6 +344,11 @@ public class Galaxy : IDisposable
     /// consistent player state.
     /// </summary>
     public bool Maintenance => _maintenance;
+
+    /// <summary>
+    /// True if this galaxy requires self-disclosure for regular player logins.
+    /// </summary>
+    public bool RequiresSelfDisclosure => _requiresSelfDisclosure;
 
     /// <summary>
     /// The maximum amount of players this server binary has been compiled to support.
@@ -530,7 +565,8 @@ public class Galaxy : IDisposable
     private void UpdateGalaxy(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxNewShips, ushort galaxyMaxBases,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, byte maintenance)
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, byte maintenance,
+        byte requiresSelfDisclosure)
     {
         GalaxySettingsSnapshot? oldSettings;
 
@@ -538,7 +574,8 @@ public class Galaxy : IDisposable
             oldSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
                 _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
                 _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
-                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance);
+                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance,
+                _requiresSelfDisclosure);
         else
             oldSettings = null;
 
@@ -560,13 +597,15 @@ public class Galaxy : IDisposable
         _playerMaxNewShips = playerMaxNewShips;
         _playerMaxBases = playerMaxBases;
         _maintenance = maintenance != 0;
+        _requiresSelfDisclosure = requiresSelfDisclosure != 0;
 
         _receivedGalaxySettings = true;
 
         GalaxySettingsSnapshot newSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
             _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
             _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
-            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance);
+            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance,
+            _requiresSelfDisclosure);
 
         PushEvent(new GalaxySettingsUpdatedEvent(oldSettings, newSettings));
     }
@@ -594,15 +633,23 @@ public class Galaxy : IDisposable
     }
 
     [Command(0x04)]
-    private void UpdateTeamScore(Team team, uint kills, uint deaths, uint mission)
+    private void UpdateTeamScore(Team team, uint playerKills, uint playerDeaths, uint friendlyKills, uint friendlyDeaths, uint npcKills,
+        uint npcDeaths, uint neutralDeaths, uint mission)
     {
-        uint oldKills = team.Score.Kills;
-        uint oldDeaths = team.Score.Deaths;
+        uint oldPlayerKills = team.Score.PlayerKills;
+        uint oldPlayerDeaths = team.Score.PlayerDeaths;
+        uint oldFriendlyKills = team.Score.FriendlyKills;
+        uint oldFriendlyDeaths = team.Score.FriendlyDeaths;
+        uint oldNpcKills = team.Score.NpcKills;
+        uint oldNpcDeaths = team.Score.NpcDeaths;
+        uint oldNeutralDeaths = team.Score.NeutralDeaths;
         uint oldMission = team.Score.Mission;
 
-        team.Score.Update(kills, deaths, mission);
+        team.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
-        PushEvent(new TeamScoreUpdatedEvent(team, oldKills, oldDeaths, oldMission, team.Score.Kills, team.Score.Deaths, team.Score.Mission));
+        PushEvent(new TeamScoreUpdatedEvent(team, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills, oldFriendlyDeaths, oldNpcKills,
+            oldNpcDeaths, oldNeutralDeaths, oldMission, team.Score.PlayerKills, team.Score.PlayerDeaths, team.Score.FriendlyKills,
+            team.Score.FriendlyDeaths, team.Score.NpcKills, team.Score.NpcDeaths, team.Score.NeutralDeaths, team.Score.Mission));
     }
     
     [Command(0x03)]
@@ -673,39 +720,63 @@ public class Galaxy : IDisposable
     }
     
     [Command(0x10)]
-    private void CreatePlayer(byte id, PlayerKind kind, Team team, string name, float ping)
+    private void CreatePlayer(byte id, PlayerKind kind, Team team, string name, float ping, byte admin, int rank,
+        long playerKills, long playerDeaths, long friendlyKills, long friendlyDeaths, long npcKills, long npcDeaths,
+        long neutralDeaths, PacketReader reader)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is null, "Player does already exist.");
 
-        _players[id] = new Player(this, id, kind, team, name, ping);
+        RuntimeDisclosure? runtimeDisclosure = null;
+        BuildDisclosure? buildDisclosure = null;
+
+        if (!reader.Read(out byte disclosureFlags))
+            throw new InvalidDataException("Player create packet is missing disclosure flags.");
+
+        if ((disclosureFlags & 0x01) != 0 && !RuntimeDisclosure.TryRead(reader, out runtimeDisclosure))
+            throw new InvalidDataException("Player create packet contains malformed runtime disclosure.");
+
+        if ((disclosureFlags & 0x02) != 0 && !BuildDisclosure.TryRead(reader, out buildDisclosure))
+            throw new InvalidDataException("Player create packet contains malformed build disclosure.");
+
+        _players[id] = new Player(this, id, kind, team, name, ping, admin != 0x00, rank, playerKills, playerDeaths, friendlyKills,
+            friendlyDeaths, npcKills, npcDeaths, neutralDeaths, runtimeDisclosure, buildDisclosure);
         
         PushEvent(new JoinedPlayerEvent(_players[id]!));
     }
     
     [Command(0x11)]
-    private void UpdatePlayer(byte id, float ping)
+    private void UpdatePlayer(byte id, float ping, byte admin, int rank, long playerKills, long playerDeaths, long friendlyKills,
+        long friendlyDeaths, long npcKills, long npcDeaths, long neutralDeaths)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
 
-        _players[id]!.Update(ping);
+        _players[id]!.Update(ping, admin != 0x00, rank, playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths);
     }
 
     [Command(0x12)]
-    private void UpdatePlayerScore(byte id, uint kills, uint deaths, uint mission)
+    private void UpdatePlayerScore(byte id, uint playerKills, uint playerDeaths, uint friendlyKills, uint friendlyDeaths, uint npcKills,
+        uint npcDeaths, uint neutralDeaths, uint mission)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
 
         Player player = _players[id]!;
-        uint oldKills = player.Score.Kills;
-        uint oldDeaths = player.Score.Deaths;
+        uint oldPlayerKills = player.Score.PlayerKills;
+        uint oldPlayerDeaths = player.Score.PlayerDeaths;
+        uint oldFriendlyKills = player.Score.FriendlyKills;
+        uint oldFriendlyDeaths = player.Score.FriendlyDeaths;
+        uint oldNpcKills = player.Score.NpcKills;
+        uint oldNpcDeaths = player.Score.NpcDeaths;
+        uint oldNeutralDeaths = player.Score.NeutralDeaths;
         uint oldMission = player.Score.Mission;
 
-        player.Score.Update(kills, deaths, mission);
+        player.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
-        PushEvent(new PlayerScoreUpdatedEvent(player, oldKills, oldDeaths, oldMission, player.Score.Kills, player.Score.Deaths, player.Score.Mission));
+        PushEvent(new PlayerScoreUpdatedEvent(player, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills, oldFriendlyDeaths, oldNpcKills,
+            oldNpcDeaths, oldNeutralDeaths, oldMission, player.Score.PlayerKills, player.Score.PlayerDeaths, player.Score.FriendlyKills,
+            player.Score.FriendlyDeaths, player.Score.NpcKills, player.Score.NpcDeaths, player.Score.NeutralDeaths, player.Score.Mission));
     }
     
     [Command(0x1F)]
@@ -779,6 +850,32 @@ public class Galaxy : IDisposable
             throw new InvalidDataException("Server did send a non existent ControllableInfo.");
 
         controllable.SetDeadByPlayerShip(reason, causerControllable);
+    }
+
+    [Command(0x25)]
+    private void ControllableInfoScoreUpdated(Player player, byte id, uint playerKills, uint playerDeaths, uint friendlyKills,
+        uint friendlyDeaths, uint npcKills, uint npcDeaths, uint neutralDeaths, uint mission)
+    {
+        ControllableInfo? controllable = player._controllableInfos[id];
+
+        if (controllable is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo.");
+
+        uint oldPlayerKills = controllable.Score.PlayerKills;
+        uint oldPlayerDeaths = controllable.Score.PlayerDeaths;
+        uint oldFriendlyKills = controllable.Score.FriendlyKills;
+        uint oldFriendlyDeaths = controllable.Score.FriendlyDeaths;
+        uint oldNpcKills = controllable.Score.NpcKills;
+        uint oldNpcDeaths = controllable.Score.NpcDeaths;
+        uint oldNeutralDeaths = controllable.Score.NeutralDeaths;
+        uint oldMission = controllable.Score.Mission;
+
+        controllable.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
+
+        PushEvent(new ControllableInfoScoreUpdatedEvent(player, controllable, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills,
+            oldFriendlyDeaths, oldNpcKills, oldNpcDeaths, oldNeutralDeaths, oldMission, controllable.Score.PlayerKills,
+            controllable.Score.PlayerDeaths, controllable.Score.FriendlyKills, controllable.Score.FriendlyDeaths,
+            controllable.Score.NpcKills, controllable.Score.NpcDeaths, controllable.Score.NeutralDeaths, controllable.Score.Mission));
     }
 
     [Command(0x2F)]

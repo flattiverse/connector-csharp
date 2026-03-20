@@ -5,6 +5,8 @@ using Flattiverse.Connector.Events;
 using Flattiverse.Connector.GalaxyHierarchy;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
+using Npgsql;
+using System.Net.WebSockets;
 
 namespace Development;
 
@@ -14,9 +16,11 @@ class Program
     private const string TeamName = "Pink";
     private const byte SpectatorsTeamId = 12;
     private const ushort DatabaseGalaxyId = 0;
-    private const string DatabasePsqlConnection = "host=10.252.7.136 port=5432 dbname=flattiverse user=postgres";
-    private const string AdminAuth = "replace-with-admin-auth";
-    private const string PlayerAuth = "replace-with-player-auth";
+    private const string DatabaseConnectionString = "Host=10.252.7.136;Port=5432;Database=flattiverse;Username=postgres";
+    private const string AdminAuth = "<INSERT ADMIN API KEY HERE>";
+    private const string PlayerAdminAuth = "<INSERT PLAYER-ADMIN API KEY HERE>";
+    private const string PlayerAuth = "<INSERT PLAYER API KEY HERE>";
+    private static readonly TimeSpan AccountSessionTimeout = new TimeSpan(0, 0, 15);
 
     private readonly struct ClusterSpec
     {
@@ -31,6 +35,24 @@ class Program
             Name = name;
             Start = start;
             Respawn = respawn;
+        }
+    }
+
+    private readonly struct TeamSpec
+    {
+        public readonly byte Id;
+        public readonly string Name;
+        public readonly byte Red;
+        public readonly byte Green;
+        public readonly byte Blue;
+
+        public TeamSpec(byte id, string name, byte red, byte green, byte blue)
+        {
+            Id = id;
+            Name = name;
+            Red = red;
+            Green = green;
+            Blue = blue;
         }
     }
 
@@ -64,6 +86,60 @@ class Program
         }
     }
 
+    private readonly struct DatabaseAccountRow
+    {
+        public readonly int AccountId;
+        public readonly bool Admin;
+        public readonly int Rank;
+        public readonly long? DatePlayedStart;
+        public readonly long? DatePlayedEnd;
+        public readonly long StatsPlayerKills;
+        public readonly long StatsPlayerDeaths;
+        public readonly long StatsFriendlyKills;
+        public readonly long StatsFriendlyDeaths;
+        public readonly long StatsNpcKills;
+        public readonly long StatsNpcDeaths;
+        public readonly long StatsNeutralDeaths;
+        public readonly short? SessionGalaxy;
+        public readonly short? SessionTeam;
+        public readonly long SessionPlayerKills;
+        public readonly long SessionPlayerDeaths;
+        public readonly long SessionFriendlyKills;
+        public readonly long SessionFriendlyDeaths;
+        public readonly long SessionNpcKills;
+        public readonly long SessionNpcDeaths;
+        public readonly long SessionNeutralDeaths;
+
+        public DatabaseAccountRow(int accountId, bool admin, int rank, long? datePlayedStart, long? datePlayedEnd,
+            long statsPlayerKills, long statsPlayerDeaths, long statsFriendlyKills, long statsFriendlyDeaths,
+            long statsNpcKills, long statsNpcDeaths, long statsNeutralDeaths, short? sessionGalaxy, short? sessionTeam,
+            long sessionPlayerKills, long sessionPlayerDeaths, long sessionFriendlyKills, long sessionFriendlyDeaths,
+            long sessionNpcKills, long sessionNpcDeaths, long sessionNeutralDeaths)
+        {
+            AccountId = accountId;
+            Admin = admin;
+            Rank = rank;
+            DatePlayedStart = datePlayedStart;
+            DatePlayedEnd = datePlayedEnd;
+            StatsPlayerKills = statsPlayerKills;
+            StatsPlayerDeaths = statsPlayerDeaths;
+            StatsFriendlyKills = statsFriendlyKills;
+            StatsFriendlyDeaths = statsFriendlyDeaths;
+            StatsNpcKills = statsNpcKills;
+            StatsNpcDeaths = statsNpcDeaths;
+            StatsNeutralDeaths = statsNeutralDeaths;
+            SessionGalaxy = sessionGalaxy;
+            SessionTeam = sessionTeam;
+            SessionPlayerKills = sessionPlayerKills;
+            SessionPlayerDeaths = sessionPlayerDeaths;
+            SessionFriendlyKills = sessionFriendlyKills;
+            SessionFriendlyDeaths = sessionFriendlyDeaths;
+            SessionNpcKills = sessionNpcKills;
+            SessionNpcDeaths = sessionNpcDeaths;
+            SessionNeutralDeaths = sessionNeutralDeaths;
+        }
+    }
+
     private static async Task Main(string[] args)
     {
         if (args.Length > 0 && args[0] == "--units-db-roundtrip")
@@ -84,6 +160,36 @@ class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--login-team-selection-check")
+        {
+            await RunLoginTeamSelectionCheck().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--account-session-check")
+        {
+            await RunAccountSessionCheck().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--hull-neutral-death-check")
+        {
+            await RunHullNeutralDeathCheck().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--friendly-stats-check")
+        {
+            await RunFriendlyStatsCheck().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--self-disclosure-check")
+        {
+            await RunSelfDisclosureCheck().ConfigureAwait(false);
+            return;
+        }
+
         Galaxy? adminGalaxy = null;
         Galaxy? playerGalaxy = null;
         Task? playerEventPump = null;
@@ -95,12 +201,12 @@ class Program
         try
         {
             adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, TeamName).ConfigureAwait(false);
-            playerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, TeamName).ConfigureAwait(false);
+            playerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
 
             restoreConfigurationXml = BuildConfigurationXml(adminGalaxy, null);
             restoreRegionsByCluster = await CaptureRegionsByCluster(adminGalaxy).ConfigureAwait(false);
 
-            playerEventPump = StartEventPump(playerGalaxy, playerEvents);
+            playerEventPump = StartEventPump("MAIN", playerGalaxy, playerEvents);
 
             await Task.Delay(250).ConfigureAwait(false);
             DrainEvents(playerEvents);
@@ -172,7 +278,7 @@ class Program
         {
             Console.WriteLine("ROUNDTRIP: connecting admin...");
             adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, TeamName).ConfigureAwait(false);
-            eventPump = StartEventPump(adminGalaxy, eventQueue);
+            eventPump = StartEventPump("UNITS-DB-ROUNDTRIP", adminGalaxy, eventQueue);
 
             await Task.Delay(1250).ConfigureAwait(false);
             List<FlattiverseEvent> initialEvents = DrainEvents(eventQueue);
@@ -287,7 +393,7 @@ class Program
         {
             Console.WriteLine("STARTUP-CHECK: connecting admin...");
             adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, TeamName).ConfigureAwait(false);
-            eventPump = StartEventPump(adminGalaxy, eventQueue);
+            eventPump = StartEventPump("UNITS-STARTUP-CHECK", adminGalaxy, eventQueue);
 
             await Task.Delay(1250).ConfigureAwait(false);
             List<FlattiverseEvent> events = DrainEvents(eventQueue);
@@ -374,6 +480,795 @@ class Program
         {
             if (adminGalaxy is not null)
                 adminGalaxy.Dispose();
+        }
+    }
+
+    private static async Task RunLoginTeamSelectionCheck()
+    {
+        Galaxy? adminGalaxy = null;
+        Galaxy? explicitTeamPlayer = null;
+        Galaxy? autoTeamPlayer1 = null;
+        Galaxy? autoTeamPlayer2 = null;
+        string? restoreConfigurationXml = null;
+        Dictionary<byte, string>? restoreRegionsByCluster = null;
+
+        try
+        {
+            Console.WriteLine("LOGIN-TEAM-CHECK: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, null).ConfigureAwait(false);
+
+            restoreConfigurationXml = BuildConfigurationXml(adminGalaxy, null, null);
+            restoreRegionsByCluster = await CaptureRegionsByCluster(adminGalaxy).ConfigureAwait(false);
+
+            await RemoveAllRegions(adminGalaxy).ConfigureAwait(false);
+
+            ClusterSpec[] clusters = BuildClusterSpecs(adminGalaxy, false);
+            TeamSpec[] teams = new TeamSpec[]
+            {
+                new TeamSpec(0, "Pink", 255, 0, 200),
+                new TeamSpec(1, "Green", 192, 255, 0)
+            };
+
+            await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, teams, clusters)).ConfigureAwait(false);
+            await Task.Delay(250).ConfigureAwait(false);
+
+            explicitTeamPlayer = await Galaxy.Connect(Uri, PlayerAuth, "Green").ConfigureAwait(false);
+            Console.WriteLine($"LOGIN-TEAM-CHECK: explicit Green -> {explicitTeamPlayer.Player.Team.Name}");
+
+            try
+            {
+                Galaxy invalidTeamPlayer = await Galaxy.Connect(Uri, PlayerAuth, "DoesNotExist").ConfigureAwait(false);
+                invalidTeamPlayer.Dispose();
+                Console.WriteLine("LOGIN-TEAM-CHECK: invalid explicit team -> FAILED (unexpected success)");
+            }
+            catch (TeamSelectionFailedGameException exception)
+            {
+                Console.WriteLine($"LOGIN-TEAM-CHECK: invalid explicit team -> OK ({exception.Message})");
+            }
+
+            autoTeamPlayer1 = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            Console.WriteLine($"LOGIN-TEAM-CHECK: auto #1 -> {autoTeamPlayer1.Player.Team.Name}");
+
+            autoTeamPlayer2 = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            Console.WriteLine($"LOGIN-TEAM-CHECK: auto #2 -> {autoTeamPlayer2.Player.Team.Name}");
+
+            bool explicitTeamOk = explicitTeamPlayer.Player.Team.Name == "Green";
+            bool autoTeam1Ok = autoTeamPlayer1.Player.Team.Name == "Pink";
+            bool autoTeam2Ok = autoTeamPlayer2.Player.Team.Name == "Pink";
+
+            Console.WriteLine($"LOGIN-TEAM-CHECK: explicit team selection correct = {explicitTeamOk}");
+            Console.WriteLine($"LOGIN-TEAM-CHECK: auto team selection #1 correct = {autoTeam1Ok}");
+            Console.WriteLine($"LOGIN-TEAM-CHECK: auto team selection #2 tie-break correct = {autoTeam2Ok}");
+
+            explicitTeamPlayer.Dispose();
+            explicitTeamPlayer = null;
+
+            autoTeamPlayer1.Dispose();
+            autoTeamPlayer1 = null;
+
+            autoTeamPlayer2.Dispose();
+            autoTeamPlayer2 = null;
+
+            await Task.Delay(500).ConfigureAwait(false);
+
+            await RemoveAllRegions(adminGalaxy).ConfigureAwait(false);
+            await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, Array.Empty<TeamSpec>(), clusters)).ConfigureAwait(false);
+            await Task.Delay(250).ConfigureAwait(false);
+
+            try
+            {
+                Galaxy noTeamPlayer = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+                noTeamPlayer.Dispose();
+                Console.WriteLine("LOGIN-TEAM-CHECK: auto team with no teams available -> FAILED (unexpected success)");
+            }
+            catch (TeamSelectionFailedGameException exception)
+            {
+                Console.WriteLine($"LOGIN-TEAM-CHECK: auto team with no teams available -> OK ({exception.Message})");
+            }
+        }
+        finally
+        {
+            if (explicitTeamPlayer is not null)
+                explicitTeamPlayer.Dispose();
+
+            if (autoTeamPlayer1 is not null)
+                autoTeamPlayer1.Dispose();
+
+            if (autoTeamPlayer2 is not null)
+                autoTeamPlayer2.Dispose();
+
+            if (adminGalaxy is not null && restoreConfigurationXml is not null)
+                try
+                {
+                    await adminGalaxy.Configure(restoreConfigurationXml).ConfigureAwait(false);
+                    Console.WriteLine("LOGIN-TEAM-CHECK: restore configuration OK");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine($"LOGIN-TEAM-CHECK: restore configuration FAILED ({exception.GetType().Name}: {exception.Message})");
+                }
+
+            if (adminGalaxy is not null && restoreRegionsByCluster is not null)
+                try
+                {
+                    await RestoreRegionsByCluster(adminGalaxy, restoreRegionsByCluster).ConfigureAwait(false);
+                    Console.WriteLine("LOGIN-TEAM-CHECK: restore regions OK");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine($"LOGIN-TEAM-CHECK: restore regions FAILED ({exception.GetType().Name}: {exception.Message})");
+                }
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+        }
+    }
+
+    private static async Task RunAccountSessionCheck()
+    {
+        DatabaseAccountRow originalAccount = QueryAccountRow(PlayerAuth);
+        DatabaseAccountRow originalAdminAccount = QueryAccountRow(AdminAuth);
+        Galaxy? adminGalaxy = null;
+        Galaxy? playerAdminGalaxy = null;
+        Galaxy? playerGalaxy = null;
+        Task? eventPump = null;
+        ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ClassicShipControllable? ship = null;
+        Cluster? adminCluster = null;
+        string shipName = $"Acc{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
+        string neutralUnitName = $"AccountSyncPlanet{DateTime.UtcNow.Ticks}";
+
+        if (HasFreshSession(originalAccount))
+        {
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: SKIPPED (account already has fresh session, {FormatSessionState(originalAccount)})");
+            return;
+        }
+
+        if (HasFreshSession(originalAdminAccount))
+        {
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: SKIPPED (admin helper account already has fresh session, {FormatSessionState(originalAdminAccount)})");
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting same-account admin...");
+            playerAdminGalaxy = await Galaxy.Connect(Uri, PlayerAdminAuth, null).ConfigureAwait(false);
+
+            DatabaseAccountRow adminConnectedAccount = QueryAccountRow(PlayerAuth);
+            bool adminSessionClaimed = adminConnectedAccount.SessionGalaxy == DatabaseGalaxyId &&
+                                       adminConnectedAccount.SessionTeam == SpectatorsTeamId &&
+                                       adminConnectedAccount.SessionPlayerKills == 0 &&
+                                       adminConnectedAccount.SessionPlayerDeaths == 0 &&
+                                       adminConnectedAccount.SessionNpcKills == 0 &&
+                                       adminConnectedAccount.SessionNpcDeaths == 0 &&
+                                       adminConnectedAccount.SessionNeutralDeaths == 0;
+
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin session claimed in DB = {adminSessionClaimed}");
+
+            try
+            {
+                Galaxy duplicatePlayerAfterAdmin = await Galaxy.Connect(Uri, PlayerAuth, TeamName).ConfigureAwait(false);
+                duplicatePlayerAfterAdmin.Dispose();
+                Console.WriteLine("ACCOUNT-SESSION-CHECK: player denied while same account uses admin key = False");
+            }
+            catch (AccountAlreadyLoggedInGameException exception)
+            {
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: player denied while same account uses admin key = True ({exception.Message})");
+            }
+
+            playerAdminGalaxy.Dispose();
+            playerAdminGalaxy = null;
+
+            bool adminSessionCleared = await WaitForSessionGalaxy(PlayerAdminAuth, null, 7000).ConfigureAwait(false);
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin session cleared after disconnect = {adminSessionCleared}");
+
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting helper admin...");
+            adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, null).ConfigureAwait(false);
+
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting player...");
+            playerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, TeamName).ConfigureAwait(false);
+            eventPump = StartEventPump("ACCOUNT-SESSION-CHECK", playerGalaxy, playerEvents);
+
+            await Task.Delay(500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            bool initialFieldsOk = playerGalaxy.Player.Admin == originalAccount.Admin &&
+                                   playerGalaxy.Player.Rank == originalAccount.Rank &&
+                                   playerGalaxy.Player.PlayerKills == originalAccount.StatsPlayerKills &&
+                                   playerGalaxy.Player.PlayerDeaths == originalAccount.StatsPlayerDeaths &&
+                                   playerGalaxy.Player.NpcKills == originalAccount.StatsNpcKills &&
+                                   playerGalaxy.Player.NpcDeaths == originalAccount.StatsNpcDeaths &&
+                                   playerGalaxy.Player.NeutralDeaths == originalAccount.StatsNeutralDeaths;
+
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: initial player fields correct = {initialFieldsOk}");
+
+            DatabaseAccountRow connectedAccount = QueryAccountRow(PlayerAuth);
+            bool sessionClaimed = connectedAccount.SessionGalaxy == DatabaseGalaxyId &&
+                                  connectedAccount.SessionTeam == playerGalaxy.Player.Team.Id &&
+                                  connectedAccount.SessionPlayerKills == 0 &&
+                                  connectedAccount.SessionPlayerDeaths == 0 &&
+                                  connectedAccount.SessionNpcKills == 0 &&
+                                  connectedAccount.SessionNpcDeaths == 0 &&
+                                  connectedAccount.SessionNeutralDeaths == 0;
+
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: session claimed in DB = {sessionClaimed}");
+
+            try
+            {
+                Galaxy duplicatePlayer = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+                duplicatePlayer.Dispose();
+                Console.WriteLine("ACCOUNT-SESSION-CHECK: duplicate login denied = False");
+            }
+            catch (AccountAlreadyLoggedInGameException exception)
+            {
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: duplicate login denied = True ({exception.Message})");
+            }
+
+            try
+            {
+                Galaxy duplicateAdmin = await Galaxy.Connect(Uri, PlayerAdminAuth, null).ConfigureAwait(false);
+                duplicateAdmin.Dispose();
+                Console.WriteLine("ACCOUNT-SESSION-CHECK: admin denied while same account already plays = False");
+            }
+            catch (AccountAlreadyLoggedInGameException exception)
+            {
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin denied while same account already plays = True ({exception.Message})");
+            }
+
+            bool targetAdmin = !originalAccount.Admin;
+            int targetRank = originalAccount.Rank + 7;
+
+            ExecuteDatabaseNonQuery($"""
+                UPDATE public.accounts
+                SET "admin" = {FormatBool(targetAdmin)},
+                    "rank" = {targetRank}
+                WHERE "id" = {originalAccount.AccountId}
+                """);
+
+            bool accountRefreshObserved = await WaitForPlayerAccountState(playerGalaxy.Player, targetAdmin, targetRank, 7000).ConfigureAwait(false);
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin/rank refresh observed = {accountRefreshObserved}");
+
+            ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+            await ship.Continue().ConfigureAwait(false);
+
+            bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: ship alive after continue = {shipAlive}");
+
+            bool initialHullOk = shipAlive &&
+                                 ship.Hull.Exists &&
+                                 ship.Hull.Maximum == 50f &&
+                                 ship.Hull.Current == 50f;
+
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: initial hull correct = {initialHullOk}");
+
+            if (shipAlive)
+            {
+                if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
+                    throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
+
+                string unitXml =
+                    $"<Planet Name=\"{neutralUnitName}\" X=\"{ship.Position.X:0.###}\" Y=\"{ship.Position.Y:0.###}\" Radius=\"50\" Gravity=\"0\" Type=\"OceanWorld\" Metal=\"0\" Carbon=\"0\" Hydrogen=\"0\" Silicon=\"0\" />";
+
+                await adminCluster.SetUnit(unitXml).ConfigureAwait(false);
+
+                bool shipDead = await WaitForAliveState(ship, false, 5000).ConfigureAwait(false);
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: neutral death observed = {shipDead}");
+
+                await Task.Delay(3500).ConfigureAwait(false);
+                DrainEvents(playerEvents);
+
+                DatabaseAccountRow afterNeutralDeath = QueryAccountRow(PlayerAuth);
+                bool neutralDeathUpdated = playerGalaxy.Player.NeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
+                                           afterNeutralDeath.StatsNeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
+                                           afterNeutralDeath.SessionNeutralDeaths == 1;
+
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: neutral death stats updated = {neutralDeathUpdated}");
+
+                await adminCluster.RemoveUnit(neutralUnitName).ConfigureAwait(false);
+                adminCluster = null;
+            }
+
+            playerGalaxy.Dispose();
+            playerGalaxy = null;
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            bool sessionCleared = await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: session cleared after disconnect = {sessionCleared}");
+
+            Galaxy reconnectGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: reconnect after cleanup succeeded = {reconnectGalaxy.Player.Active}");
+            reconnectGalaxy.Dispose();
+
+            bool secondSessionCleared = await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: session cleared after reconnect dispose = {secondSessionCleared}");
+        }
+        finally
+        {
+            if (playerAdminGalaxy is not null)
+                playerAdminGalaxy.Dispose();
+
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null && adminCluster is not null)
+                try
+                {
+                    await adminCluster.RemoveUnit(neutralUnitName).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(PlayerAdminAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            RestoreAccountRow(originalAccount);
+            await WaitForSessionGalaxy(AdminAuth, null, 7000).ConfigureAwait(false);
+            RestoreAccountRow(originalAdminAccount);
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: account row restored");
+        }
+    }
+
+    private static async Task RunHullNeutralDeathCheck()
+    {
+        DatabaseAccountRow originalAccount = QueryAccountRow(PlayerAuth);
+        Galaxy? adminGalaxy = null;
+        Galaxy? playerGalaxy = null;
+        Cluster? adminCluster = null;
+        ClassicShipControllable? ship = null;
+        ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        Task? eventPump = null;
+        string shipName = $"HullCheck{Environment.ProcessId}";
+        string neutralUnitName = $"HullCheckPlanet{Environment.ProcessId}";
+
+        if (HasFreshSession(originalAccount))
+        {
+            Console.WriteLine($"HULL-NEUTRAL-DEATH-CHECK: SKIPPED (account already has fresh session, {FormatSessionState(originalAccount)})");
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine("HULL-NEUTRAL-DEATH-CHECK: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, null).ConfigureAwait(false);
+
+            Console.WriteLine("HULL-NEUTRAL-DEATH-CHECK: connecting player...");
+            playerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            eventPump = StartEventPump("HULL-NEUTRAL-DEATH-CHECK", playerGalaxy, playerEvents);
+
+            await Task.Delay(500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+            await ship.Continue().ConfigureAwait(false);
+
+            bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"HULL-NEUTRAL-DEATH-CHECK: ship alive after continue = {shipAlive}");
+
+            bool initialHullOk = shipAlive &&
+                                 ship.Hull.Exists &&
+                                 ship.Hull.Maximum == 50f &&
+                                 ship.Hull.Current == 50f;
+
+            Console.WriteLine($"HULL-NEUTRAL-DEATH-CHECK: initial hull correct = {initialHullOk}");
+
+            if (!shipAlive)
+                return;
+
+            if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
+                throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
+
+            string unitXml =
+                $"<Planet Name=\"{neutralUnitName}\" X=\"{ship.Position.X:0.###}\" Y=\"{ship.Position.Y:0.###}\" Radius=\"50\" Gravity=\"0\" Type=\"OceanWorld\" Metal=\"0\" Carbon=\"0\" Hydrogen=\"0\" Silicon=\"0\" />";
+
+            await adminCluster.SetUnit(unitXml).ConfigureAwait(false);
+
+            bool shipDead = await WaitForAliveState(ship, false, 5000).ConfigureAwait(false);
+            Console.WriteLine($"HULL-NEUTRAL-DEATH-CHECK: neutral death observed = {shipDead}");
+
+            DateTime hullDeadline = DateTime.UtcNow.AddMilliseconds(1000);
+
+            while (DateTime.UtcNow < hullDeadline && ship.Hull.Current != 0f)
+                await Task.Delay(50).ConfigureAwait(false);
+
+            bool hullDepleted = ship.Hull.Current == 0f;
+            Console.WriteLine($"HULL-NEUTRAL-DEATH-CHECK: hull depleted after death = {hullDepleted} (current={ship.Hull.Current:0.###})");
+
+            await Task.Delay(3500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            DatabaseAccountRow afterNeutralDeath = QueryAccountRow(PlayerAuth);
+            bool neutralDeathUpdated = playerGalaxy.Player.NeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
+                                       afterNeutralDeath.StatsNeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
+                                       afterNeutralDeath.SessionNeutralDeaths == 1;
+
+            Console.WriteLine($"HULL-NEUTRAL-DEATH-CHECK: neutral death stats updated = {neutralDeathUpdated}");
+        }
+        finally
+        {
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null && adminCluster is not null)
+                try
+                {
+                    await adminCluster.RemoveUnit(neutralUnitName).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            RestoreAccountRow(originalAccount);
+            Console.WriteLine("HULL-NEUTRAL-DEATH-CHECK: account row restored");
+        }
+    }
+
+    private static async Task RunFriendlyStatsCheck()
+    {
+        DatabaseAccountRow originalAccount = QueryAccountRow(PlayerAuth);
+        Galaxy? playerGalaxy = null;
+        ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        Task? eventPump = null;
+        string shipName = $"FriendlyCheck{Environment.ProcessId}";
+
+        if (HasFreshSession(originalAccount))
+        {
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: SKIPPED (account already has fresh session, {FormatSessionState(originalAccount)})");
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine("FRIENDLY-STATS-CHECK: connecting player...");
+            playerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            eventPump = StartEventPump("FRIENDLY-STATS-CHECK", playerGalaxy, playerEvents);
+
+            await Task.Delay(500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            uint initialPlayerDeaths = playerGalaxy.Player.Score.PlayerDeaths;
+            uint initialPlayerFriendlyDeaths = playerGalaxy.Player.Score.FriendlyDeaths;
+            uint initialTeamDeaths = playerGalaxy.Player.Team.Score.PlayerDeaths;
+            uint initialTeamFriendlyDeaths = playerGalaxy.Player.Team.Score.FriendlyDeaths;
+
+            ClassicShipControllable ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+            await ship.Continue().ConfigureAwait(false);
+
+            bool alive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: ship alive after continue = {alive}");
+
+            if (!alive)
+                return;
+
+            if (!playerGalaxy.Player.ControllableInfos.TryGet(ship.Id, out ControllableInfo? controllableInfoBeforeSuicide) || controllableInfoBeforeSuicide is null)
+            {
+                Console.WriteLine("FRIENDLY-STATS-CHECK: controllable info missing before suicide");
+                return;
+            }
+
+            uint initialControllableFriendlyDeaths = controllableInfoBeforeSuicide.Score.FriendlyDeaths;
+
+            DrainEvents(playerEvents);
+            await ship.Suicide().ConfigureAwait(false);
+
+            bool dead = await WaitForAliveState(ship, false, 3000).ConfigureAwait(false);
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: suicide death observed = {dead}");
+
+            await Task.Delay(250).ConfigureAwait(false);
+            List<FlattiverseEvent> eventsAfterSuicide = DrainEvents(playerEvents);
+            bool playerScoreUpdated = false;
+            bool teamScoreUpdated = false;
+            bool controllableScoreUpdated = false;
+
+            foreach (FlattiverseEvent @event in eventsAfterSuicide)
+                if (@event is PlayerScoreUpdatedEvent playerScoreUpdatedEvent &&
+                    playerScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
+                    playerScoreUpdatedEvent.NewPlayerDeaths == initialPlayerDeaths &&
+                    playerScoreUpdatedEvent.NewFriendlyDeaths == initialPlayerFriendlyDeaths + 1U)
+                    playerScoreUpdated = true;
+                else if (@event is TeamScoreUpdatedEvent teamScoreUpdatedEvent &&
+                         teamScoreUpdatedEvent.Team.Id == playerGalaxy.Player.Team.Id &&
+                         teamScoreUpdatedEvent.NewPlayerDeaths == initialTeamDeaths &&
+                         teamScoreUpdatedEvent.NewFriendlyDeaths == initialTeamFriendlyDeaths + 1U)
+                    teamScoreUpdated = true;
+                else if (@event is ControllableInfoScoreUpdatedEvent controllableInfoScoreUpdatedEvent &&
+                         controllableInfoScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
+                         controllableInfoScoreUpdatedEvent.ControllableInfo.Id == ship.Id &&
+                         controllableInfoScoreUpdatedEvent.NewFriendlyDeaths == initialControllableFriendlyDeaths + 1U)
+                    controllableScoreUpdated = true;
+
+            bool playerScoreApplied = playerGalaxy.Player.Score.PlayerDeaths == initialPlayerDeaths &&
+                                      playerGalaxy.Player.Score.FriendlyDeaths == initialPlayerFriendlyDeaths + 1U;
+            bool teamScoreApplied = playerGalaxy.Player.Team.Score.PlayerDeaths == initialTeamDeaths &&
+                                    playerGalaxy.Player.Team.Score.FriendlyDeaths == initialTeamFriendlyDeaths + 1U;
+            bool controllableScoreApplied = playerGalaxy.Player.ControllableInfos.TryGet(ship.Id, out ControllableInfo? controllableInfoAfterSuicide) &&
+                                            controllableInfoAfterSuicide is not null &&
+                                            controllableInfoAfterSuicide.Score.FriendlyDeaths == initialControllableFriendlyDeaths + 1U;
+
+            await Task.Delay(3500).ConfigureAwait(false);
+            DatabaseAccountRow afterFriendlyDeath = QueryAccountRow(PlayerAuth);
+            bool friendlyStatsUpdated = afterFriendlyDeath.StatsFriendlyDeaths == originalAccount.StatsFriendlyDeaths + 1 &&
+                                        afterFriendlyDeath.SessionFriendlyDeaths == 1 &&
+                                        afterFriendlyDeath.StatsPlayerDeaths == originalAccount.StatsPlayerDeaths &&
+                                        afterFriendlyDeath.SessionPlayerDeaths == 0;
+
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: player score event = {playerScoreUpdated}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: team score event = {teamScoreUpdated}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: controllable score event = {controllableScoreUpdated}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: player score applied = {playerScoreApplied}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: team score applied = {teamScoreApplied}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: controllable score applied = {controllableScoreApplied}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: db row statsFriendlyDeaths={afterFriendlyDeath.StatsFriendlyDeaths}, sessionFriendlyDeaths={afterFriendlyDeath.SessionFriendlyDeaths}, statsPlayerDeaths={afterFriendlyDeath.StatsPlayerDeaths}, sessionPlayerDeaths={afterFriendlyDeath.SessionPlayerDeaths}, sessionGalaxy={(afterFriendlyDeath.SessionGalaxy is null ? "null" : afterFriendlyDeath.SessionGalaxy.Value.ToString())}");
+            Console.WriteLine($"FRIENDLY-STATS-CHECK: db stats updated = {friendlyStatsUpdated}");
+        }
+        finally
+        {
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            RestoreAccountRow(originalAccount);
+            Console.WriteLine("FRIENDLY-STATS-CHECK: account row restored");
+        }
+    }
+
+    private static async Task RunSelfDisclosureCheck()
+    {
+        DatabaseAccountRow playerAccount = QueryAccountRow(PlayerAuth);
+        DatabaseAccountRow adminAccount = QueryAccountRow(AdminAuth);
+        DatabaseAccountRow helperAdminAccount = QueryAccountRow(PlayerAdminAuth);
+        Galaxy? adminGalaxy = null;
+        Galaxy? helperAdminGalaxy = null;
+        Galaxy? optionalPlayerGalaxy = null;
+        Galaxy? disclosedPlayerGalaxy = null;
+        Galaxy? spectatorGalaxy = null;
+        Task? adminEventPump = null;
+        Task? spectatorEventPump = null;
+        ConcurrentQueue<FlattiverseEvent> adminEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ConcurrentQueue<FlattiverseEvent> spectatorEvents = new ConcurrentQueue<FlattiverseEvent>();
+        string? restoreConfigurationXml = null;
+
+        if (HasFreshSession(playerAccount))
+        {
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: SKIPPED (player account already has fresh session, {FormatSessionState(playerAccount)})");
+            return;
+        }
+
+        if (HasFreshSession(adminAccount))
+        {
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: SKIPPED (admin account already has fresh session, {FormatSessionState(adminAccount)})");
+            return;
+        }
+
+        if (HasFreshSession(helperAdminAccount))
+        {
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: SKIPPED (helper admin account already has fresh session, {FormatSessionState(helperAdminAccount)})");
+            return;
+        }
+
+        try
+        {
+            adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, null).ConfigureAwait(false);
+            adminEventPump = StartEventPump("SELF-DISCLOSURE-ADMIN", adminGalaxy, adminEvents);
+            restoreConfigurationXml = BuildConfigurationXml(adminGalaxy, null, null, adminGalaxy.RequiresSelfDisclosure);
+
+            await Task.Delay(250).ConfigureAwait(false);
+            DrainEvents(adminEvents);
+
+            await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, null, null, false)).ConfigureAwait(false);
+
+            bool requiresFalseObserved = await WaitForRequiresSelfDisclosure(adminGalaxy, false, 3000).ConfigureAwait(false);
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: requires false observed = {requiresFalseObserved}");
+
+            optionalPlayerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+
+            await Task.Delay(250).ConfigureAwait(false);
+
+            bool optionalSelfNull = optionalPlayerGalaxy.Player.RuntimeDisclosure is null &&
+                                    optionalPlayerGalaxy.Player.BuildDisclosure is null;
+            bool optionalAdminNull = adminGalaxy.Players.TryGet(optionalPlayerGalaxy.Player.Id, out Player? optionalAdminView) &&
+                                     optionalAdminView.RuntimeDisclosure is null &&
+                                     optionalAdminView.BuildDisclosure is null;
+            bool optionalAdminJoinEventNull = false;
+            List<FlattiverseEvent> optionalAdminEvents = DrainEvents(adminEvents);
+
+            foreach (FlattiverseEvent @event in optionalAdminEvents)
+                if (@event is JoinedPlayerEvent joinedPlayerEvent &&
+                    joinedPlayerEvent.Player.Id == optionalPlayerGalaxy.Player.Id &&
+                    joinedPlayerEvent.Player.RuntimeDisclosure is null &&
+                    joinedPlayerEvent.Player.BuildDisclosure is null)
+                    optionalAdminJoinEventNull = true;
+
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: optional connect without disclosure = {optionalSelfNull}");
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: admin sees null disclosure on optional player = {optionalAdminNull}");
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: admin receives PlayerJoined with null disclosure = {optionalAdminJoinEventNull}");
+
+            optionalPlayerGalaxy.Dispose();
+            optionalPlayerGalaxy = null;
+
+            bool optionalSessionCleared = await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: optional session cleared = {optionalSessionCleared}");
+
+            await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, null, null, true)).ConfigureAwait(false);
+
+            bool requiresTrueObserved = await WaitForRequiresSelfDisclosure(adminGalaxy, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: requires true observed = {requiresTrueObserved}");
+
+            spectatorGalaxy = await Galaxy.Connect(Uri, null, null).ConfigureAwait(false);
+            spectatorEventPump = StartEventPump("SELF-DISCLOSURE-SPECTATOR", spectatorGalaxy, spectatorEvents);
+
+            await Task.Delay(250).ConfigureAwait(false);
+            DrainEvents(spectatorEvents);
+
+            bool spectatorOptional = spectatorGalaxy.Player.Kind == PlayerKind.Spectator &&
+                                     spectatorGalaxy.Player.RuntimeDisclosure is null &&
+                                     spectatorGalaxy.Player.BuildDisclosure is null;
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: spectator still connects without disclosure = {spectatorOptional}");
+
+            try
+            {
+                Galaxy missingDisclosureGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+                missingDisclosureGalaxy.Dispose();
+                Console.WriteLine("SELF-DISCLOSURE-CHECK: missing disclosure denied = False");
+            }
+            catch (SelfDisclosureRequiredGameException exception)
+            {
+                Console.WriteLine($"SELF-DISCLOSURE-CHECK: missing disclosure denied = True ({exception.Message})");
+            }
+
+            byte malformedCode = await ConnectAndReadInitialExceptionCode(
+                $"{Uri}?version=7&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
+
+            RuntimeDisclosure runtimeDisclosure = new RuntimeDisclosure(
+                RuntimeDisclosureLevel.Manual,
+                RuntimeDisclosureLevel.Assisted,
+                RuntimeDisclosureLevel.Automated,
+                RuntimeDisclosureLevel.Autonomous,
+                RuntimeDisclosureLevel.AiControlled,
+                RuntimeDisclosureLevel.Manual,
+                RuntimeDisclosureLevel.Automated,
+                RuntimeDisclosureLevel.Assisted,
+                RuntimeDisclosureLevel.Autonomous,
+                RuntimeDisclosureLevel.Manual);
+
+            BuildDisclosure buildDisclosure = new BuildDisclosure(
+                BuildDisclosureLevel.AgenticTool,
+                BuildDisclosureLevel.PaidLlm,
+                BuildDisclosureLevel.SearchOnly,
+                BuildDisclosureLevel.None,
+                BuildDisclosureLevel.PaidLlm,
+                BuildDisclosureLevel.AgenticTool,
+                BuildDisclosureLevel.IntegratedLlm,
+                BuildDisclosureLevel.PaidLlm,
+                BuildDisclosureLevel.FreeLlm,
+                BuildDisclosureLevel.AgenticTool,
+                BuildDisclosureLevel.SearchOnly,
+                BuildDisclosureLevel.None);
+
+            disclosedPlayerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null, runtimeDisclosure, buildDisclosure).ConfigureAwait(false);
+
+            await Task.Delay(250).ConfigureAwait(false);
+
+            bool disclosedSelfMatches = disclosedPlayerGalaxy.Player.RuntimeDisclosure is not null &&
+                                        disclosedPlayerGalaxy.Player.BuildDisclosure is not null &&
+                                        disclosedPlayerGalaxy.Player.RuntimeDisclosure[RuntimeDisclosureAspect.EngineControl] == RuntimeDisclosureLevel.Manual &&
+                                        disclosedPlayerGalaxy.Player.RuntimeDisclosure[RuntimeDisclosureAspect.WeaponTargetSelection] == RuntimeDisclosureLevel.AiControlled &&
+                                        disclosedPlayerGalaxy.Player.BuildDisclosure[BuildDisclosureAspect.SoftwareDesign] == BuildDisclosureLevel.AgenticTool &&
+                                        disclosedPlayerGalaxy.Player.BuildDisclosure[BuildDisclosureAspect.Chat] == BuildDisclosureLevel.None;
+
+            bool disclosedAdminMatches = adminGalaxy.Players.TryGet(disclosedPlayerGalaxy.Player.Id, out Player? disclosedAdminView) &&
+                                         disclosedAdminView.RuntimeDisclosure is not null &&
+                                         disclosedAdminView.BuildDisclosure is not null &&
+                                         disclosedAdminView.RuntimeDisclosure[RuntimeDisclosureAspect.Navigation] == RuntimeDisclosureLevel.Assisted &&
+                                         disclosedAdminView.RuntimeDisclosure[RuntimeDisclosureAspect.LoadoutControl] == RuntimeDisclosureLevel.Autonomous &&
+                                         disclosedAdminView.BuildDisclosure[BuildDisclosureAspect.ScannerControl] == BuildDisclosureLevel.IntegratedLlm &&
+                                         disclosedAdminView.BuildDisclosure[BuildDisclosureAspect.MissionControl] == BuildDisclosureLevel.SearchOnly;
+            bool disclosedSpectatorMatches = spectatorGalaxy.Players.TryGet(disclosedPlayerGalaxy.Player.Id, out Player? disclosedSpectatorView) &&
+                                             disclosedSpectatorView.RuntimeDisclosure is not null &&
+                                             disclosedSpectatorView.BuildDisclosure is not null &&
+                                             disclosedSpectatorView.RuntimeDisclosure[RuntimeDisclosureAspect.EngineControl] == RuntimeDisclosureLevel.Manual &&
+                                             disclosedSpectatorView.RuntimeDisclosure[RuntimeDisclosureAspect.WeaponTargetSelection] == RuntimeDisclosureLevel.AiControlled &&
+                                             disclosedSpectatorView.BuildDisclosure[BuildDisclosureAspect.SoftwareDesign] == BuildDisclosureLevel.AgenticTool &&
+                                             disclosedSpectatorView.BuildDisclosure[BuildDisclosureAspect.Chat] == BuildDisclosureLevel.None;
+            bool disclosedAdminJoinEventMatches = false;
+            bool disclosedSpectatorJoinEventMatches = false;
+            List<FlattiverseEvent> disclosedAdminEvents = DrainEvents(adminEvents);
+            List<FlattiverseEvent> disclosedSpectatorEvents = DrainEvents(spectatorEvents);
+
+            foreach (FlattiverseEvent @event in disclosedAdminEvents)
+                if (@event is JoinedPlayerEvent joinedPlayerEvent &&
+                    joinedPlayerEvent.Player.Id == disclosedPlayerGalaxy.Player.Id &&
+                    joinedPlayerEvent.Player.RuntimeDisclosure is not null &&
+                    joinedPlayerEvent.Player.BuildDisclosure is not null &&
+                    joinedPlayerEvent.Player.RuntimeDisclosure[RuntimeDisclosureAspect.Navigation] == RuntimeDisclosureLevel.Assisted &&
+                    joinedPlayerEvent.Player.BuildDisclosure[BuildDisclosureAspect.ScannerControl] == BuildDisclosureLevel.IntegratedLlm)
+                    disclosedAdminJoinEventMatches = true;
+
+            foreach (FlattiverseEvent @event in disclosedSpectatorEvents)
+                if (@event is JoinedPlayerEvent joinedPlayerEvent &&
+                    joinedPlayerEvent.Player.Id == disclosedPlayerGalaxy.Player.Id &&
+                    joinedPlayerEvent.Player.RuntimeDisclosure is not null &&
+                    joinedPlayerEvent.Player.BuildDisclosure is not null &&
+                    joinedPlayerEvent.Player.RuntimeDisclosure[RuntimeDisclosureAspect.EngineControl] == RuntimeDisclosureLevel.Manual &&
+                    joinedPlayerEvent.Player.BuildDisclosure[BuildDisclosureAspect.Chat] == BuildDisclosureLevel.None)
+                    disclosedSpectatorJoinEventMatches = true;
+
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: disclosed self parsed = {disclosedSelfMatches}");
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: disclosed admin view parsed = {disclosedAdminMatches}");
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: disclosed spectator view parsed = {disclosedSpectatorMatches}");
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: admin receives PlayerJoined with disclosure = {disclosedAdminJoinEventMatches}");
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: spectator receives PlayerJoined with disclosure = {disclosedSpectatorJoinEventMatches}");
+
+            disclosedPlayerGalaxy.Dispose();
+            disclosedPlayerGalaxy = null;
+
+            bool disclosedSessionCleared = await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: disclosed session cleared = {disclosedSessionCleared}");
+
+            helperAdminGalaxy = await Galaxy.Connect(Uri, PlayerAdminAuth, null).ConfigureAwait(false);
+            bool helperAdminOptional = helperAdminGalaxy.Player.Kind == PlayerKind.Admin &&
+                                       helperAdminGalaxy.Player.RuntimeDisclosure is null &&
+                                       helperAdminGalaxy.Player.BuildDisclosure is null;
+            Console.WriteLine($"SELF-DISCLOSURE-CHECK: admin still connects without disclosure = {helperAdminOptional}");
+        }
+        finally
+        {
+            if (optionalPlayerGalaxy is not null)
+                optionalPlayerGalaxy.Dispose();
+
+            if (disclosedPlayerGalaxy is not null)
+                disclosedPlayerGalaxy.Dispose();
+
+            if (spectatorGalaxy is not null)
+                spectatorGalaxy.Dispose();
+
+            if (helperAdminGalaxy is not null)
+                helperAdminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(PlayerAdminAuth, null, 7000).ConfigureAwait(false);
+
+            if (adminGalaxy is not null && restoreConfigurationXml is not null)
+                try
+                {
+                    await adminGalaxy.Configure(restoreConfigurationXml).ConfigureAwait(false);
+                    Console.WriteLine("SELF-DISCLOSURE-CHECK: restore configuration OK");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine($"SELF-DISCLOSURE-CHECK: restore configuration FAILED ({exception.GetType().Name}: {exception.Message})");
+                }
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(AdminAuth, null, 7000).ConfigureAwait(false);
+
+            if (adminEventPump is not null)
+                await Task.WhenAny(adminEventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (spectatorEventPump is not null)
+                await Task.WhenAny(spectatorEventPump, Task.Delay(1000)).ConfigureAwait(false);
         }
     }
 
@@ -469,50 +1364,194 @@ class Program
     {
         List<DatabaseUnitRow> rows = new List<DatabaseUnitRow>();
 
-        string sql = $"SELECT cluster, name, kind, configuration FROM public.\"units\" WHERE galaxy={galaxyId} ORDER BY cluster, name";
+        using NpgsqlConnection connection = new NpgsqlConnection(DatabaseConnectionString);
+        connection.Open();
 
-        System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo("psql");
-        startInfo.UseShellExecute = false;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        startInfo.ArgumentList.Add(DatabasePsqlConnection);
-        startInfo.ArgumentList.Add("-At");
-        startInfo.ArgumentList.Add("-F");
-        startInfo.ArgumentList.Add("\t");
-        startInfo.ArgumentList.Add("-c");
-        startInfo.ArgumentList.Add(sql);
+        using NpgsqlCommand command = new NpgsqlCommand(
+            "SELECT cluster, name, kind, configuration FROM public.\"units\" WHERE galaxy=@galaxy ORDER BY cluster, name",
+            connection);
 
-        System.Diagnostics.Process? process = System.Diagnostics.Process.Start(startInfo);
+        command.Parameters.AddWithValue("@galaxy", (short)galaxyId);
 
-        if (process is null)
-            throw new InvalidOperationException("Could not start psql process for database query.");
+        using NpgsqlDataReader reader = command.ExecuteReader();
 
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-            throw new InvalidOperationException($"psql query failed with exit code {process.ExitCode}: {error}");
-
-        string[] lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (string line in lines)
-        {
-            string[] columns = line.Split('\t', 4);
-
-            if (columns.Length < 4)
-                continue;
-
-            if (!byte.TryParse(columns[0], out byte clusterId))
-                continue;
-
-            if (!short.TryParse(columns[2], out short kind))
-                continue;
-
-            rows.Add(new DatabaseUnitRow(clusterId, columns[1], kind, columns[3]));
-        }
+        while (reader.Read())
+            rows.Add(new DatabaseUnitRow((byte)(short)reader["cluster"], (string)reader["name"], (short)reader["kind"], (string)reader["configuration"]));
 
         return rows;
+    }
+
+    private static DatabaseAccountRow QueryAccountRow(string auth)
+    {
+        using NpgsqlConnection connection = new NpgsqlConnection(DatabaseConnectionString);
+        connection.Open();
+
+        using NpgsqlCommand command = new NpgsqlCommand(
+            """
+            SELECT "id",
+                   "admin",
+                   "rank",
+                   "datePlayedStart",
+                   "datePlayedEnd",
+                   "statsPlayerKills",
+                   "statsPlayerDeaths",
+                   "statsFriendlyKills",
+                   "statsFriendlyDeaths",
+                   "statsNpcKills",
+                   "statsNpcDeaths",
+                   "statsNeutralDeaths",
+                   "sessionGalaxy",
+                   "sessionTeam",
+                   "sessionPlayerKills",
+                   "sessionPlayerDeaths",
+                   "sessionFriendlyKills",
+                   "sessionFriendlyDeaths",
+                   "sessionNpcKills",
+                   "sessionNpcDeaths",
+                   "sessionNeutralDeaths"
+            FROM public.accounts
+            WHERE encode("apiPlayer", 'hex') = @auth
+               OR encode("apiAdmin", 'hex') = @auth
+            LIMIT 1
+            """,
+            connection);
+
+        command.Parameters.AddWithValue("@auth", auth);
+
+        using NpgsqlDataReader reader = command.ExecuteReader();
+
+        if (!reader.Read())
+            throw new InvalidOperationException("Could not find account row for the specified API key.");
+
+        return new DatabaseAccountRow(
+            (int)reader["id"],
+            (bool)reader["admin"],
+            (int)reader["rank"],
+            reader["datePlayedStart"] is DBNull ? null : (long)reader["datePlayedStart"],
+            reader["datePlayedEnd"] is DBNull ? null : (long)reader["datePlayedEnd"],
+            (long)reader["statsPlayerKills"],
+            (long)reader["statsPlayerDeaths"],
+            (long)reader["statsFriendlyKills"],
+            (long)reader["statsFriendlyDeaths"],
+            (long)reader["statsNpcKills"],
+            (long)reader["statsNpcDeaths"],
+            (long)reader["statsNeutralDeaths"],
+            reader["sessionGalaxy"] is DBNull ? null : (short)reader["sessionGalaxy"],
+            reader["sessionTeam"] is DBNull ? null : (short)reader["sessionTeam"],
+            (long)reader["sessionPlayerKills"],
+            (long)reader["sessionPlayerDeaths"],
+            (long)reader["sessionFriendlyKills"],
+            (long)reader["sessionFriendlyDeaths"],
+            (long)reader["sessionNpcKills"],
+            (long)reader["sessionNpcDeaths"],
+            (long)reader["sessionNeutralDeaths"]);
+    }
+
+    private static void RestoreAccountRow(DatabaseAccountRow row)
+    {
+        ExecuteDatabaseNonQuery($"""
+            UPDATE public.accounts
+            SET "admin" = {FormatBool(row.Admin)},
+                "rank" = {row.Rank},
+                "datePlayedStart" = {FormatNullableLong(row.DatePlayedStart)},
+                "datePlayedEnd" = {FormatNullableLong(row.DatePlayedEnd)},
+                "statsPlayerKills" = {row.StatsPlayerKills},
+                "statsPlayerDeaths" = {row.StatsPlayerDeaths},
+                "statsFriendlyKills" = {row.StatsFriendlyKills},
+                "statsFriendlyDeaths" = {row.StatsFriendlyDeaths},
+                "statsNpcKills" = {row.StatsNpcKills},
+                "statsNpcDeaths" = {row.StatsNpcDeaths},
+                "statsNeutralDeaths" = {row.StatsNeutralDeaths},
+                "sessionGalaxy" = {FormatNullableShort(row.SessionGalaxy)},
+                "sessionTeam" = {FormatNullableShort(row.SessionTeam)},
+                "sessionPlayerKills" = {row.SessionPlayerKills},
+                "sessionPlayerDeaths" = {row.SessionPlayerDeaths},
+                "sessionFriendlyKills" = {row.SessionFriendlyKills},
+                "sessionFriendlyDeaths" = {row.SessionFriendlyDeaths},
+                "sessionNpcKills" = {row.SessionNpcKills},
+                "sessionNpcDeaths" = {row.SessionNpcDeaths},
+                "sessionNeutralDeaths" = {row.SessionNeutralDeaths}
+            WHERE "id" = {row.AccountId}
+            """);
+    }
+
+    private static async Task<bool> WaitForPlayerAccountState(Player player, bool admin, int rank, int timeoutMs)
+    {
+        DateTime endTime = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+
+        while (DateTime.UtcNow < endTime)
+        {
+            if (player.Admin == admin && player.Rank == rank)
+                return true;
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    private static async Task<bool> WaitForSessionGalaxy(string auth, short? expectedSessionGalaxy, int timeoutMs)
+    {
+        DateTime endTime = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+
+        while (DateTime.UtcNow < endTime)
+        {
+            DatabaseAccountRow row = QueryAccountRow(auth);
+
+            if (row.SessionGalaxy == expectedSessionGalaxy)
+                return true;
+
+            await Task.Delay(100).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    private static bool HasFreshSession(DatabaseAccountRow row)
+    {
+        if (row.SessionGalaxy is null)
+            return false;
+
+        if (row.DatePlayedEnd is not long datePlayedEndTicks || datePlayedEndTicks <= 0)
+            return true;
+
+        return new DateTime(datePlayedEndTicks, DateTimeKind.Utc) + AccountSessionTimeout >= DateTime.UtcNow;
+    }
+
+    private static string FormatSessionState(DatabaseAccountRow row)
+    {
+        if (row.SessionGalaxy is null)
+            return "sessionGalaxy=null";
+
+        if (row.DatePlayedEnd is not long datePlayedEndTicks || datePlayedEndTicks <= 0)
+            return $"sessionGalaxy={row.SessionGalaxy.Value}, datePlayedEnd=null";
+
+        TimeSpan age = DateTime.UtcNow - new DateTime(datePlayedEndTicks, DateTimeKind.Utc);
+        return $"sessionGalaxy={row.SessionGalaxy.Value}, datePlayedEndAge={age.TotalSeconds:0.0}s";
+    }
+
+    private static string FormatBool(bool value)
+    {
+        return value ? "TRUE" : "FALSE";
+    }
+
+    private static string FormatNullableShort(short? value)
+    {
+        return value is short present ? present.ToString() : "NULL";
+    }
+
+    private static string FormatNullableLong(long? value)
+    {
+        return value is long present ? present.ToString() : "NULL";
+    }
+
+    private static void ExecuteDatabaseNonQuery(string sql)
+    {
+        using NpgsqlConnection connection = new NpgsqlConnection(DatabaseConnectionString);
+        connection.Open();
+
+        using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
+        command.ExecuteNonQuery();
     }
 
     private static async Task TestNoStartCluster(Galaxy adminGalaxy)
@@ -1335,8 +2374,10 @@ class Program
         string shipName = $"ScoreShip{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
         uint initialPlayerKills = playerGalaxy.Player.Score.Kills;
         uint initialPlayerDeaths = playerGalaxy.Player.Score.Deaths;
+        uint initialPlayerFriendlyDeaths = playerGalaxy.Player.Score.FriendlyDeaths;
         uint initialTeamKills = playerGalaxy.Player.Team.Score.Kills;
         uint initialTeamDeaths = playerGalaxy.Player.Team.Score.Deaths;
+        uint initialTeamFriendlyDeaths = playerGalaxy.Player.Team.Score.FriendlyDeaths;
 
         DrainEvents(playerEvents);
 
@@ -1370,19 +2411,23 @@ class Program
         foreach (FlattiverseEvent @event in eventsAfterSuicide)
             if (@event is PlayerScoreUpdatedEvent playerScoreUpdatedEvent &&
                 playerScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
-                playerScoreUpdatedEvent.NewDeaths == initialPlayerDeaths + 1U &&
-                playerScoreUpdatedEvent.NewKills == initialPlayerKills)
+                playerScoreUpdatedEvent.NewDeaths == initialPlayerDeaths &&
+                playerScoreUpdatedEvent.NewKills == initialPlayerKills &&
+                playerScoreUpdatedEvent.NewFriendlyDeaths == initialPlayerFriendlyDeaths + 1U)
                 playerScoreUpdated = true;
             else if (@event is TeamScoreUpdatedEvent teamScoreUpdatedEvent &&
                      teamScoreUpdatedEvent.Team.Id == playerGalaxy.Player.Team.Id &&
-                     teamScoreUpdatedEvent.NewDeaths == initialTeamDeaths + 1U &&
-                     teamScoreUpdatedEvent.NewKills == initialTeamKills)
+                     teamScoreUpdatedEvent.NewDeaths == initialTeamDeaths &&
+                     teamScoreUpdatedEvent.NewKills == initialTeamKills &&
+                     teamScoreUpdatedEvent.NewFriendlyDeaths == initialTeamFriendlyDeaths + 1U)
                 teamScoreUpdated = true;
 
-        bool playerScoreApplied = playerGalaxy.Player.Score.Deaths == initialPlayerDeaths + 1U &&
-                                  playerGalaxy.Player.Score.Kills == initialPlayerKills;
-        bool teamScoreApplied = playerGalaxy.Player.Team.Score.Deaths == initialTeamDeaths + 1U &&
-                                playerGalaxy.Player.Team.Score.Kills == initialTeamKills;
+        bool playerScoreApplied = playerGalaxy.Player.Score.Deaths == initialPlayerDeaths &&
+                                  playerGalaxy.Player.Score.Kills == initialPlayerKills &&
+                                  playerGalaxy.Player.Score.FriendlyDeaths == initialPlayerFriendlyDeaths + 1U;
+        bool teamScoreApplied = playerGalaxy.Player.Team.Score.Deaths == initialTeamDeaths &&
+                                playerGalaxy.Player.Team.Score.Kills == initialTeamKills &&
+                                playerGalaxy.Player.Team.Score.FriendlyDeaths == initialTeamFriendlyDeaths + 1U;
 
         Console.WriteLine($"  SHIP REACHED DEAD STATE: {dead}");
         Console.WriteLine($"  PLAYER SCORE EVENT: {playerScoreUpdated}");
@@ -1446,7 +2491,7 @@ class Program
         }
     }
 
-    private static Task StartEventPump(Galaxy playerGalaxy, ConcurrentQueue<FlattiverseEvent> playerEvents)
+    private static Task StartEventPump(string name, Galaxy playerGalaxy, ConcurrentQueue<FlattiverseEvent> playerEvents)
     {
         return Task.Run(async delegate
         {
@@ -1458,8 +2503,9 @@ class Program
                     playerEvents.Enqueue(@event);
                 }
             }
-            catch (ConnectionTerminatedGameException)
+            catch (ConnectionTerminatedGameException exception)
             {
+                Console.WriteLine($"{name}: event pump terminated ({exception.Message})");
             }
         });
     }
@@ -1476,20 +2522,37 @@ class Program
 
     private static string BuildConfigurationXml(Galaxy galaxy, ClusterSpec[]? clusters)
     {
+        return BuildConfigurationXml(galaxy, null, clusters, null);
+    }
+
+    private static string BuildConfigurationXml(Galaxy galaxy, TeamSpec[]? teams, ClusterSpec[]? clusters, bool? requiresSelfDisclosure = null)
+    {
         XElement root = new XElement("Galaxy");
 
-        foreach (Team team in galaxy.Teams)
-        {
-            if (team.Id == SpectatorsTeamId)
-                continue;
+        if (requiresSelfDisclosure is not null)
+            root.Add(new XAttribute("RequiresSelfDisclosure", requiresSelfDisclosure.Value));
 
-            root.Add(new XElement("Team",
-                new XAttribute("Id", team.Id),
-                new XAttribute("Name", team.Name),
-                new XAttribute("ColorR", team.Red),
-                new XAttribute("ColorG", team.Green),
-                new XAttribute("ColorB", team.Blue)));
-        }
+        if (teams is null)
+            foreach (Team team in galaxy.Teams)
+            {
+                if (team.Id == SpectatorsTeamId)
+                    continue;
+
+                root.Add(new XElement("Team",
+                    new XAttribute("Id", team.Id),
+                    new XAttribute("Name", team.Name),
+                    new XAttribute("ColorR", team.Red),
+                    new XAttribute("ColorG", team.Green),
+                    new XAttribute("ColorB", team.Blue)));
+            }
+        else
+            foreach (TeamSpec team in teams)
+                root.Add(new XElement("Team",
+                    new XAttribute("Id", team.Id),
+                    new XAttribute("Name", team.Name),
+                    new XAttribute("ColorR", team.Red),
+                    new XAttribute("ColorG", team.Green),
+                    new XAttribute("ColorB", team.Blue)));
 
         if (clusters is null)
             foreach (Cluster cluster in galaxy.Clusters)
@@ -1509,6 +2572,29 @@ class Program
         XDocument document = new XDocument(root);
 
         return document.ToString(SaveOptions.DisableFormatting);
+    }
+
+    private static async Task RemoveAllRegions(Galaxy adminGalaxy)
+    {
+        foreach (Cluster cluster in adminGalaxy.Clusters)
+        {
+            string currentRegionsXml = await cluster.QueryRegions().ConfigureAwait(false);
+            XDocument currentRegionsDocument = XDocument.Parse(currentRegionsXml, LoadOptions.None);
+            XElement? currentRegionsRoot = currentRegionsDocument.Root;
+
+            if (currentRegionsRoot is null || currentRegionsRoot.Name.LocalName != "Regions")
+                throw new InvalidDataException("Current region query XML has no Regions root.");
+
+            foreach (XElement regionElement in currentRegionsRoot.Elements("Region"))
+            {
+                XAttribute? idAttribute = regionElement.Attribute("Id");
+
+                if (idAttribute is null || !int.TryParse(idAttribute.Value, out int id))
+                    throw new InvalidDataException("Current region query XML contains a Region without a valid Id.");
+
+                await cluster.RemoveRegion(id).ConfigureAwait(false);
+            }
+        }
     }
 
     private static ClusterSpec[] BuildClusterSpecs(Galaxy galaxy, bool forceStartFalse)
@@ -1614,5 +2700,38 @@ class Program
         }
 
         return controllable.Alive == expectedAlive;
+    }
+
+    private static async Task<bool> WaitForRequiresSelfDisclosure(Galaxy galaxy, bool expectedValue, int timeoutMs)
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (galaxy.RequiresSelfDisclosure == expectedValue)
+                return true;
+
+            await Task.Delay(50).ConfigureAwait(false);
+        }
+
+        return galaxy.RequiresSelfDisclosure == expectedValue;
+    }
+
+    private static async Task<byte> ConnectAndReadInitialExceptionCode(string uri)
+    {
+        using ClientWebSocket socket = new ClientWebSocket();
+        byte[] data = new byte[512];
+
+        await socket.ConnectAsync(new Uri(uri), CancellationToken.None).ConfigureAwait(false);
+
+        WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(data), CancellationToken.None).ConfigureAwait(false);
+
+        if (result.Count < 5)
+            throw new InvalidDataException("Expected an initial exception packet.");
+
+        if (data[0] != 0xFF || data[1] != 0x01)
+            throw new InvalidDataException($"Expected an initial exception packet, got command 0x{data[0]:X02} session 0x{data[1]:X02}.");
+
+        return data[4];
     }
 }

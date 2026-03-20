@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Flattiverse.Connector\Flattiverse.Connector.csproj" />
+      <PackageReference Include="Npgsql" Version="10.0.0" />
     </ItemGroup>
 
 </Project>

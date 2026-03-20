@@ -97,10 +97,16 @@ public class GalaxySettingsSnapshot
     /// </summary>
     public readonly bool Maintenance;
 
+    /// <summary>
+    /// Requires self-disclosure from regular player logins.
+    /// </summary>
+    public readonly bool RequiresSelfDisclosure;
+
     internal GalaxySettingsSnapshot(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxNewShips, ushort galaxyMaxBases,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, bool maintenance)
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, bool maintenance,
+        bool requiresSelfDisclosure)
     {
         GameMode = gameMode;
         Name = name;
@@ -124,5 +130,6 @@ public class GalaxySettingsSnapshot
         PlayerMaxNewShips = playerMaxNewShips;
         PlayerMaxBases = playerMaxBases;
         Maintenance = maintenance;
+        RequiresSelfDisclosure = requiresSelfDisclosure;
     }
 }

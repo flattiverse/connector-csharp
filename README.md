@@ -40,7 +40,7 @@ while (galaxy.Active)
 }
 ```
 
-`auth == null` connects as spectator. `team == null` is currently intended for spectator and admin logins; normal player logins currently need an explicit team.
+`auth == null` connects as spectator. `team == null` lets the server auto-select the least populated non-spectator team for normal players. `runtimeDisclosure` and `buildDisclosure` are optional extra arguments on `Galaxy.Connect(...)`; galaxies may require them.
 
 ## Current Capabilities
 
@@ -114,7 +114,7 @@ Admin-facing commands:
 
 - `NextEvent()` must not be awaited concurrently. Parallel calls fail with `CantCallThisConcurrentGameException`.
 - The `Development` project is a regression and experimentation client, not a minimal beginner sample.
-- The `CliShip` project is a small scripted CLI ship runner. It executes a sequence of commands such as `create`, `continue`, `target:...`, `scan:...`, and `await-...` to debug server and connector behavior end-to-end. Its positional `maxTicks` argument is counted relative to the first received `GalaxyTick`, not against the absolute galaxy tick number.
+- The private scripted tooling (`CliShip`, `AdminRunner`) now lives in the sibling repository `../fv-cliship` and is intentionally no longer part of the public connector solution.
 - Map-edit XML rules, examples, and server-side validation behavior are documented in [MAPEDITORS.md](MAPEDITORS.md).
 - `ControllableInfo` lifecycle is event-driven. Owner-side `Controllable` objects are mirrored locally on `0x80` / `0x81` / `0x8F`, but the connector currently does not raise separate lifecycle events for them.
 - Battery and energy-cell subsystem capabilities are initialized locally by controllable kind and are currently not transmitted on the wire.

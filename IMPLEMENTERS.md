@@ -18,27 +18,36 @@ The WebSocket upgrade request uses query parameters:
 * `version`
 * `auth`
 * optional `team`
+* optional `runtimeDisclosure`
+* optional `buildDisclosure`
 
 Current protocol version:
 
 ```text
-1
+7
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=1&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=1&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=1&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=7&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=7&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=7&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=7&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
 
 * `auth` is always a 64-character lowercase/uppercase hex string representing 32 bytes.
 * The all-zero API key is the special spectator login.
-* The team-less form is currently used for spectator and admin logins.
-* Normal players must currently provide a valid `team` query parameter.
+* The team-less form is used for spectator and admin logins.
+* Normal players may also omit `team`; in that case the server auto-selects the non-spectator team with the fewest currently connected normal players. Ties are resolved by the smallest team id.
+* `runtimeDisclosure` is a fixed 10-nibble hexadecimal string. Each nibble declares one runtime automation aspect in this order: `EngineControl`, `Navigation`, `ScannerControl`, `WeaponAiming`, `WeaponTargetSelection`, `ResourceControl`, `FleetControl`, `MissionControl`, `LoadoutControl`, `Chat`.
+* Runtime disclosure nibble values: `0=Unsupported`, `1=Manual`, `2=Assisted`, `3=Automated`, `4=Autonomous`, `5=AiControlled`.
+* `buildDisclosure` is a fixed 12-nibble hexadecimal string. Each nibble declares one build-assistance aspect in this order: `SoftwareDesign`, `UI`, `UniverseRendering`, `Input`, `EngineControl`, `Navigation`, `ScannerControl`, `WeaponSystems`, `ResourceControl`, `FleetControl`, `MissionControl`, `Chat`.
+* Build disclosure nibble values: `0=None`, `1=SearchOnly`, `2=FreeLlm`, `3=PaidLlm`, `4=IntegratedLlm`, `5=AgenticTool`.
+* If a galaxy has `RequiresSelfDisclosure=true`, regular player logins must provide both disclosure strings. Admin and spectator logins are currently exempt.
+* A player account may have only one active galaxy session at a time. The same lock covers both `apiPlayer` and `apiAdmin` of that account, so an admin login also blocks a normal login and vice versa while a fresh session heartbeat exists.
 * A plain HTTP request without WebSocket upgrade currently returns HTTP `426 Upgrade Required`.
 
 ## Initial Success And Failure Semantics
@@ -162,8 +171,10 @@ Current server-side on-wire codes:
 * `0x02` `InvalidProtocolVersionGameException`
 * `0x03` `AuthFailedGameException`
 * `0x04` `WrongAccountStateGameException`
-* `0x05` `InvalidOrMissingTeamGameException`
+* `0x05` `TeamSelectionFailedGameException`
+* `0x06` `SelfDisclosureRequiredGameException`
 * `0x08` `ServerFullOfPlayerKindGameException`
+* `0x09` `AccountAlreadyLoggedInGameException`
 * `0x0D` `InvalidDataGameException`
 * `0x10` `SpecifiedElementNotFoundGameException`
 * `0x12` `InvalidArgumentGameException`
@@ -187,8 +198,16 @@ Payload details for the important structured exceptions:
 
 * `0x04`: `byte accountStatus`
 * `0x08`: `byte playerKind`
+* `0x09`: no additional payload
 * `0x12`: `byte invalidArgumentKind`, `string parameter`
 * `0x16`: `byte invalidArgumentKind`, `string nodePath`, `string hint`
+
+`0x06` is used when the galaxy requires self-disclosure and a regular player login omitted `runtimeDisclosure` or `buildDisclosure`.
+
+`0x05` is currently used for both cases:
+
+* an explicit `team` query parameter was specified but does not resolve to an existing team
+* no `team` query parameter was specified and the server found no non-spectator team that could be auto-selected
 
 Current `InvalidArgumentKind` values:
 
@@ -229,6 +248,7 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x22`: mark controllable info dead with generic reason
 * `0x23`: mark controllable info dead by collision
 * `0x24`: mark controllable info dead by other player
+* `0x25`: update controllable info score
 * `0x2F`: deactivate controllable info
 * `0x30`: create visible unit
 * `0x31`: update visible unit movement state
@@ -269,9 +289,10 @@ byte   playerMaxClassicShips
 byte   playerMaxNewShips
 byte   playerMaxBases
 byte   maintenanceFlag
+byte   requiresSelfDisclosureFlag
 ```
 
-`maintenanceFlag` is `0x00` or `0x01`.
+`maintenanceFlag` and `requiresSelfDisclosureFlag` are `0x00` or `0x01`.
 
 ### `0x02` Team Snapshot
 
@@ -291,8 +312,13 @@ Payload order:
 
 ```text
 byte teamId
-uint kills
-uint deaths
+uint playerKills
+uint playerDeaths
+uint friendlyKills
+uint friendlyDeaths
+uint npcKills
+uint npcDeaths
+uint neutralDeaths
 uint mission
 ```
 
@@ -336,7 +362,26 @@ byte   playerKind
 byte   teamId
 string accountName
 float  pingMilliseconds
+byte   adminFlag
+int    rank
+long   playerKills
+long   playerDeaths
+long   friendlyKills
+long   friendlyDeaths
+long   npcKills
+long   npcDeaths
+long   neutralDeaths
+byte   disclosureFlags
+[5 bytes packed runtimeDisclosure if disclosureFlags bit 0x01 is set]
+[6 bytes packed buildDisclosure if disclosureFlags bit 0x02 is set]
 ```
+
+`disclosureFlags` uses:
+
+* bit `0x01`: `runtimeDisclosure` present
+* bit `0x02`: `buildDisclosure` present
+
+Packed disclosure bytes use high nibble first. Disclosure data is sent only in `0x10 Player Create`, not in `0x11 Player Update`.
 
 ### `0x11` Player Update
 
@@ -345,6 +390,15 @@ Payload order:
 ```text
 byte  playerId
 float pingMilliseconds
+byte  adminFlag
+int   rank
+long  playerKills
+long  playerDeaths
+long  friendlyKills
+long  friendlyDeaths
+long  npcKills
+long  npcDeaths
+long  neutralDeaths
 ```
 
 ### `0x12` Player Score Update
@@ -353,10 +407,35 @@ Payload order:
 
 ```text
 byte playerId
-uint kills
-uint deaths
+uint playerKills
+uint playerDeaths
+uint friendlyKills
+uint friendlyDeaths
+uint npcKills
+uint npcDeaths
+uint neutralDeaths
 uint mission
 ```
+
+### `0x25` Controllable Info Score Update
+
+Payload order:
+
+```text
+byte controllablePlayerId
+byte controllableId
+uint playerKills
+uint playerDeaths
+uint friendlyKills
+uint friendlyDeaths
+uint npcKills
+uint npcDeaths
+uint neutralDeaths
+uint mission
+```
+
+This score belongs to the registered controllable identified by `(controllablePlayerId, controllableId)`.
+It is session-local, just like `0x12 Player Score Update`.
 
 ### `0x80` Controllable Create
 
@@ -400,7 +479,8 @@ SubsystemStatus:
 
 SubsystemSlot ranges:
     0x00..0x0F batteries
-    0x10..0x1F cells
+    0x10..0x17 cells
+    0x18..0x1F hulls
     0x20..0x2F scanners
     0x30..0x3F engines
     0x40..0x4F shot launchers
@@ -412,6 +492,7 @@ Currently used slots:
     0x10 EnergyCell
     0x11 IonCell
     0x12 NeutrinoCell
+    0x18 Hull
     0x20 PrimaryScanner
     0x21 SecondaryScanner
     0x30 PrimaryEngine
@@ -439,6 +520,8 @@ float  ionCellCollectedThisTick
 byte   ionCellStatus
 float  neutrinoCellCollectedThisTick
 byte   neutrinoCellStatus
+float  hullCurrent
+byte   hullStatus
 ```
 
 The remaining payload depends on `controllableKind`.
@@ -488,6 +571,7 @@ Notes:
 
 * Battery maxima and energy-cell efficiencies are currently initialized locally by controllable kind and are not sent on the wire.
 * `*CellCollectedThisTick` is the post-efficiency amount that was actually loaded through that cell during the current server tick.
+* `hullCurrent` is the current hull integrity after that tick's damage resolution. The reference `ClassicShip` currently initializes hull locally with a maximum of `50`.
 * `engineCurrent` is the currently applied engine impulse for this tick. `engineTarget` is the persisted requested impulse.
 * `weapon*` describes the shot request the server actually processed in this tick. If the weapon was off or did not have a queued shot, the runtime values are zeroed.
 * `mainScannerStatus == Worked` / `secondaryScannerStatus == Worked` tells owner-side tools whether the server actually paid and executed that scan in the current tick.
@@ -497,10 +581,11 @@ Notes:
 * The reference connector does not expose additional wire events for subsystem runtime. Instead it parses these owner-only runtime blocks and raises connector-local subsystem events:
   * `BatterySubsystemEvent`
   * `EnergyCellSubsystemEvent`
+  * `HullSubsystemEvent`
   * `ScannerSubsystemEvent`
   * `ClassicShipEngineSubsystemEvent`
   * `ShotWeaponSubsystemEvent`
-* Those connector-local events currently use `EventKind` values `0x80..0x84`, but no additional wire commands were introduced.
+* Those connector-local events currently use `EventKind` values `0x80..0x85`, but no additional wire commands were introduced.
 
 ### `0x30` Visible Unit Create
 
@@ -665,6 +750,10 @@ Current `0x32` payloads:
   float neutrinoCellEfficiency
   float neutrinoCellCollectedThisTick
   byte  neutrinoCellStatus
+  byte  hullExists
+  float hullMaximum
+  float hullCurrent
+  byte  hullStatus
   byte  mainScannerExists
   float mainScannerMaximumWidth
   float mainScannerMaximumLength

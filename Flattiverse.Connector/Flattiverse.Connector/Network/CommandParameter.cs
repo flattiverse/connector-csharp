@@ -142,11 +142,11 @@ class CommandParameter
                 value = null;
                 return false;
             case CommandParameterKind.Long:
-                // if (reader.Read(out long l) && MinValue <= l && l <= MaxValue)
-                // {
-                //     value = l;
-                //     return true;
-                // }
+                if (reader.Read(out long l))
+                {
+                    value = l;
+                    return true;
+                }
 
                 value = null;
                 return false;

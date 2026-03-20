@@ -79,6 +79,19 @@ struct PacketReaderLarge
         return true;
     }
 
+    public bool Read(out long data)
+    {
+        if (_position + 7 >= Length)
+        {
+            data = default;
+            return false;
+        }
+
+        data = Unsafe.As<byte, long>(ref _data[_position]);
+        _position += 8;
+        return true;
+    }
+
     public bool Read(out float data)
     {
         if (_position + 3 >= Length)

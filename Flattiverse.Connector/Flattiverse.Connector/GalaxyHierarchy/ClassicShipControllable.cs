@@ -16,6 +16,7 @@ public class ClassicShipControllable : Controllable
 
     internal ClassicShipControllable(Cluster cluster, byte id, string name, PacketReader reader) : base(id, name, cluster, reader)
     {
+        _hull = HullSubsystem.CreateClassicShipHull(this);
         _energyBattery = BatterySubsystem.CreateClassicShipEnergyBattery(this);
         _ionBattery = BatterySubsystem.CreateMissingBattery(this, "IonBattery", SubsystemSlot.IonBattery);
         _neutrinoBattery = BatterySubsystem.CreateMissingBattery(this, "NeutrinoBattery", SubsystemSlot.NeutrinoBattery);

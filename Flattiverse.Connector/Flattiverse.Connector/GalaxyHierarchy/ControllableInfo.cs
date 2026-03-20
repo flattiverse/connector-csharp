@@ -25,6 +25,7 @@ public class ControllableInfo : INamedUnit
     public readonly byte Id;
     
     private readonly string _name;
+    private readonly Score _score;
 
     private bool _alive;
     
@@ -37,6 +38,7 @@ public class ControllableInfo : INamedUnit
         Id = id;
         
         _name = name;
+        _score = new Score();
         
         _alive = alive;
         
@@ -57,6 +59,11 @@ public class ControllableInfo : INamedUnit
     /// true, if the corresponding PlayerUnit is still in use.
     /// </summary>
     public bool Active => _active;
+
+    /// <summary>
+    /// Current live score of this controllable inside one galaxy session.
+    /// </summary>
+    public Score Score => _score;
     
     /// <summary>
     /// Specifies the kind of the PlayerUnit.

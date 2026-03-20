@@ -36,6 +36,11 @@ public enum SubsystemSlot : byte
     NeutrinoCell = 0x12,
 
     /// <summary>
+    /// Hull integrity slot.
+    /// </summary>
+    Hull = 0x18,
+
+    /// <summary>
     /// Primary scanner slot.
     /// </summary>
     PrimaryScanner = 0x20,

@@ -223,6 +223,7 @@ class Connection
             return false;
 
         ValueWebSocketReceiveResult result;
+        int receivedSize;
         
         try
         {
@@ -237,7 +238,77 @@ class Connection
         switch (result.MessageType)
         {
             case WebSocketMessageType.Binary:
-                packets.Reset(result.Count);
+                receivedSize = result.Count;
+
+                while (!result.EndOfMessage)
+                {
+                    if (receivedSize >= packets.FullMemory.Length)
+                    {
+                        Close("Received oversized websocket message.");
+                        return false;
+                    }
+
+                    try
+                    {
+                        result = await _socket.ReceiveAsync(packets.FullMemory[receivedSize..], _cancellation).ConfigureAwait(false);
+                    }
+                    catch (Exception exception)
+                    {
+                        Close($"Error while receiving data: {exception.Message}");
+                        return false;
+                    }
+
+                    switch (result.MessageType)
+                    {
+                        case WebSocketMessageType.Binary:
+                            receivedSize += result.Count;
+                            break;
+                        case WebSocketMessageType.Close:
+                            lock (_sync)
+                                _disconnected = true;
+
+                            if (_socket.State == WebSocketState.CloseReceived)
+                                try
+                                {
+                                    await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye.",
+                                        CancellationToken.None).ConfigureAwait(false);
+                                }
+                                catch
+                                { }
+
+                            if (_socket.CloseStatus.HasValue)
+                                if (_socket.CloseStatusDescription is null)
+                                    Close($"Flattiverse server disconnected with reason: {_socket.CloseStatus.Value}.");
+                                else
+                                    Close(
+                                        $"Flattiverse server disconnected with reason: {_socket.CloseStatus.Value} and message \"{_socket.CloseStatusDescription}\".");
+                            else
+                                Close("Flattiverse server disconnected without giving any reason.");
+                            return false;
+                        default:
+                            lock (_sync)
+                                _disconnected = true;
+
+                            if (_socket.State == WebSocketState.Open)
+                                try
+                                {
+                                    await _socket.CloseAsync(WebSocketCloseStatus.InvalidMessageType, "Flattiverse protocol doesn't implement text messages.",
+                                        CancellationToken.None).ConfigureAwait(false);
+                                }
+                                catch
+                                { }
+
+                            Close("The remote server violated the flattiverse protocol by sending a text message.");
+                            return false;
+                    }
+                }
+
+                if (!packets.Reset(receivedSize))
+                {
+                    Close("Received malformed packet stream.");
+                    return false;
+                }
+
                 return true;
             case WebSocketMessageType.Close:
                 lock (_sync)

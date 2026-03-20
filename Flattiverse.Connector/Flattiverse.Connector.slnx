@@ -1,6 +1,4 @@
 <Solution>
-  <Project Path="AdminRunner/AdminRunner.csproj" />
-  <Project Path="CliShip/CliShip.csproj" />
   <Project Path="Development/Development.csproj" />
   <Project Path="Flattiverse.Connector/Flattiverse.Connector.csproj" />
 </Solution>

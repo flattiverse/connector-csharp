@@ -81,6 +81,11 @@ public enum EventKind : byte
     ControllableInfoDestroyed = 0x22,
     
     /// <summary>
+    /// A PlayerUnit score has been updated.
+    /// </summary>
+    ControllableInfoScoreUpdated = 0x25,
+
+    /// <summary>
     /// A PlayerUnit was unregistered.
     /// </summary>
     ControllableInfoClosed = 0x2F,
@@ -109,6 +114,11 @@ public enum EventKind : byte
     /// Runtime update of a shot launcher subsystem on your own controllable.
     /// </summary>
     ShotWeaponSubsystem = 0x84,
+
+    /// <summary>
+    /// Runtime update of a hull subsystem on your own controllable.
+    /// </summary>
+    HullSubsystem = 0x85,
     
     /// <summary>
     /// You see a new unit.

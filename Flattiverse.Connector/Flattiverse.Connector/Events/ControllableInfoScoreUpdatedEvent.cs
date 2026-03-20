@@ -3,9 +3,9 @@ using Flattiverse.Connector.GalaxyHierarchy;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Is raised when a player score has been updated.
+/// Is raised when a controllable-info score has been updated.
 /// </summary>
-public class PlayerScoreUpdatedEvent : PlayerEvent
+public class ControllableInfoScoreUpdatedEvent : ControllableInfoPlayerEvent
 {
     /// <summary>
     /// Kill count before the update.
@@ -107,10 +107,10 @@ public class PlayerScoreUpdatedEvent : PlayerEvent
     /// </summary>
     public readonly uint NewMission;
 
-    internal PlayerScoreUpdatedEvent(Player player, uint oldPlayerKills, uint oldPlayerDeaths, uint oldFriendlyKills,
-        uint oldFriendlyDeaths, uint oldNpcKills, uint oldNpcDeaths, uint oldNeutralDeaths, uint oldMission, uint newPlayerKills,
-        uint newPlayerDeaths, uint newFriendlyKills, uint newFriendlyDeaths, uint newNpcKills, uint newNpcDeaths,
-        uint newNeutralDeaths, uint newMission) : base(player)
+    internal ControllableInfoScoreUpdatedEvent(Player player, ControllableInfo controllableInfo, uint oldPlayerKills,
+        uint oldPlayerDeaths, uint oldFriendlyKills, uint oldFriendlyDeaths, uint oldNpcKills, uint oldNpcDeaths,
+        uint oldNeutralDeaths, uint oldMission, uint newPlayerKills, uint newPlayerDeaths, uint newFriendlyKills,
+        uint newFriendlyDeaths, uint newNpcKills, uint newNpcDeaths, uint newNeutralDeaths, uint newMission) : base(player, controllableInfo)
     {
         OldKills = oldPlayerKills;
         OldPlayerKills = oldPlayerKills;
@@ -135,11 +135,11 @@ public class PlayerScoreUpdatedEvent : PlayerEvent
     }
 
     /// <inheritdoc/>
-    public override EventKind Kind => EventKind.PlayerScoreUpdated;
+    public override EventKind Kind => EventKind.ControllableInfoScoreUpdated;
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Stamp:HH:mm:ss.fff} Player score updated: Id={Player.Id}, Name=\"{Player.Name}\", PlayerKills={OldPlayerKills}->{NewPlayerKills}, PlayerDeaths={OldPlayerDeaths}->{NewPlayerDeaths}, FriendlyKills={OldFriendlyKills}->{NewFriendlyKills}, FriendlyDeaths={OldFriendlyDeaths}->{NewFriendlyDeaths}, NpcKills={OldNpcKills}->{NewNpcKills}, NpcDeaths={OldNpcDeaths}->{NewNpcDeaths}, NeutralDeaths={OldNeutralDeaths}->{NewNeutralDeaths}, Mission={OldMission}->{NewMission}.";
+        return $"{Stamp:HH:mm:ss.fff} Controllable score updated: PlayerId={Player.Id}, Player=\"{Player.Name}\", ControllableId={ControllableInfo.Id}, Controllable=\"{ControllableInfo.Name}\", PlayerKills={OldPlayerKills}->{NewPlayerKills}, PlayerDeaths={OldPlayerDeaths}->{NewPlayerDeaths}, FriendlyKills={OldFriendlyKills}->{NewFriendlyKills}, FriendlyDeaths={OldFriendlyDeaths}->{NewFriendlyDeaths}, NpcKills={OldNpcKills}->{NewNpcKills}, NpcDeaths={OldNpcDeaths}->{NewNpcDeaths}, NeutralDeaths={OldNeutralDeaths}->{NewNeutralDeaths}, Mission={OldMission}->{NewMission}.";
     }
 }

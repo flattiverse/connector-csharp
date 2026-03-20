@@ -93,6 +93,21 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    public bool Read(out long data)
+    {
+        if (_position + 7 >= Length)
+        {
+            data = default;
+            return false;
+        }
+
+        fixed (byte* source = _data)
+            data = Unsafe.ReadUnaligned<long>(source + _position);
+
+        _position += 8;
+        return true;
+    }
+
     public bool Read(out float data)
     {
         if (_position + 3 >= Length)
