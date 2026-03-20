@@ -24,16 +24,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-7
+10
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=7&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=7&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=7&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=7&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=10&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=10&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=10&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=10&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -173,6 +173,7 @@ Current server-side on-wire codes:
 * `0x04` `WrongAccountStateGameException`
 * `0x05` `TeamSelectionFailedGameException`
 * `0x06` `SelfDisclosureRequiredGameException`
+* `0x07` `PersistenceUnavailableGameException`
 * `0x08` `ServerFullOfPlayerKindGameException`
 * `0x09` `AccountAlreadyLoggedInGameException`
 * `0x0D` `InvalidDataGameException`
@@ -182,6 +183,7 @@ Current server-side on-wire codes:
 * `0x14` `FloodcontrolTriggeredGameException`
 * `0x15` `UnitConstraintViolationGameException`
 * `0x16` `InvalidXmlNodeValueGameException`
+* `0x17` `ControllableIsClosingGameException`
 * `0x20` `YouNeedToContinueFirstGameException`
 * `0x21` `YouNeedToDieFirstGameException`
 * `0x22` `AllStartLocationsAreOvercrowded`
@@ -204,10 +206,14 @@ Payload details for the important structured exceptions:
 
 `0x06` is used when the galaxy requires self-disclosure and a regular player login omitted `runtimeDisclosure` or `buildDisclosure`.
 
+`0x07` is used when a player or admin login requires persistent account/session storage and that storage is currently unavailable.
+
 `0x05` is currently used for both cases:
 
 * an explicit `team` query parameter was specified but does not resolve to an existing team
 * no `team` query parameter was specified and the server found no non-spectator team that could be auto-selected
+
+`0x17` is currently used when a client sends `0x84 Continue` for a controllable that has already entered the closing phase.
 
 Current `InvalidArgumentKind` values:
 
@@ -249,7 +255,7 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x23`: mark controllable info dead by collision
 * `0x24`: mark controllable info dead by other player
 * `0x25`: update controllable info score
-* `0x2F`: deactivate controllable info
+* `0x2F`: final close of controllable info
 * `0x30`: create visible unit
 * `0x31`: update visible unit movement state
 * `0x32`: update visible unit runtime state
@@ -258,7 +264,7 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x80`: create controllable
 * `0x81`: controllable deceased
 * `0x82`: controllable runtime update and alive
-* `0x8F`: controllable deactivated
+* `0x8F`: controllable finally closed
 * `0xC0`: `GalaxyTickEvent`
 * `0xC4`: public galaxy chat message
 * `0xC5`: team chat message
@@ -894,15 +900,20 @@ Important notes:
 * `0x89`: configure scanner, payload `byte controllableId`, `byte scannerId`, `float width`, `float length`, `float angle`
 * `0x8A`: activate scanner, payload `byte controllableId`, `byte scannerId`
 * `0x8B`: deactivate scanner, payload `byte controllableId`, `byte scannerId`
-* `0x8F`: unregister controllable, payload `byte controllableId`
+* `0x8F`: request close of controllable, payload `byte controllableId`
 * `0xC4`: send galaxy chat, payload `string message`
 * `0xC5`: send team chat, payload `byte teamId`, `string message`
 * `0xC6`: send private chat, payload `byte playerId`, `string message`
+* `0xC7`: download small avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
+* `0xC8`: download big avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
 
 Notes:
 
 * `0xC5` resolves the target team by id on the server side.
 * `0xC6` resolves the target player by id on the server side.
+* `0xC7` / `0xC8` resolve the target player by id on the server side and return the avatar bytes cached on that server-side player at login time.
+* An empty `0xC7` / `0xC8` reply payload means that no avatar image is currently stored for that size.
+* `0x8F` is not an immediate removal. The server may keep a living controllable alive for 30 ticks before finally closing it, and dead controllables stay registered until no shot/explosion references remain.
 * String validation for names and chat messages happens on the server even if a client already validated locally.
 * `0x88` currently validates `movement.Length` in `[0.1; 3]`, `ticks` in `[2; 140]`, `load` in `[2.5; 25]`, and `damage` in `[1; 20]`.
 * The current reference ClassicShip supports `scannerId = 0` for `MainScanner`. `scannerId = 1` addresses `SecondaryScanner`, which currently does not exist and therefore returns `0x10 SpecifiedElementNotFoundGameException`.

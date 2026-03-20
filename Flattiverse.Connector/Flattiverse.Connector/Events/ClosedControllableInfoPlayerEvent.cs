@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Signals that the player has closed or disposed a controllable.
+/// Signals that the player has closed a controllable.
 /// </summary>
 public class ClosedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
 {
@@ -16,5 +16,5 @@ public class ClosedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
     public override EventKind Kind => EventKind.ControllableInfoClosed;
 
     /// <inheritdoc/>
-    public override string ToString() => $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} closed/disposed controllable {ControllableInfo.Name} of type {ControllableInfo.Kind}.";
+    public override string ToString() => $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} closed controllable {ControllableInfo.Name} of type {ControllableInfo.Kind}.";
 }

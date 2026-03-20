@@ -60,6 +60,9 @@ public class GameException : Exception
                 case 0x06:
                     exception = new SelfDisclosureRequiredGameException();
                     return true;
+                case 0x07:
+                    exception = new PersistenceUnavailableGameException();
+                    return true;
                 case 0x08:
                     if (packetReader.Read(out bte))
                     {
@@ -114,6 +117,9 @@ public class GameException : Exception
 
                     exception = null;
                     return false;
+                case 0x17:
+                    exception = new ControllableIsClosingGameException();
+                    return true;
                 case 0x20:
                     exception = new YouNeedToContinueFirstGameException();
                     return true;

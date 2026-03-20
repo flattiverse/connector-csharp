@@ -106,6 +106,44 @@ public class Player : INamedUnit
             writer.Write(message);
         });
     }
+
+    /// <summary>
+    /// Downloads the player's cached small avatar image bytes.
+    /// </summary>
+    public async Task<byte[]> DownloadSmallAvatar()
+    {
+        PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xC7;
+            writer.Write(Id);
+        }).ConfigureAwait(false);
+
+        byte[] avatar = new byte[reader.Length];
+
+        if (!reader.Read(avatar))
+            throw new InvalidDataException("Couldn't read small avatar payload.");
+
+        return avatar;
+    }
+
+    /// <summary>
+    /// Downloads the player's cached big avatar image bytes.
+    /// </summary>
+    public async Task<byte[]> DownloadBigAvatar()
+    {
+        PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xC8;
+            writer.Write(Id);
+        }).ConfigureAwait(false);
+
+        byte[] avatar = new byte[reader.Length];
+
+        if (!reader.Read(avatar))
+            throw new InvalidDataException("Couldn't read big avatar payload.");
+
+        return avatar;
+    }
     
     /// <summary>
     /// The account name.

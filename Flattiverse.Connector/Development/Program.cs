@@ -13,6 +13,7 @@ namespace Development;
 class Program
 {
     private const string Uri = "ws://127.0.0.1:5000";
+    private const string SpectatorWatchUri = "ws://127.0.0.1:5666";
     private const string TeamName = "Pink";
     private const byte SpectatorsTeamId = 12;
     private const ushort DatabaseGalaxyId = 0;
@@ -140,8 +141,28 @@ class Program
         }
     }
 
+    private readonly struct DatabaseAvatarRow
+    {
+        public readonly int AccountId;
+        public readonly byte[]? SmallAvatar;
+        public readonly byte[]? BigAvatar;
+
+        public DatabaseAvatarRow(int accountId, byte[]? smallAvatar, byte[]? bigAvatar)
+        {
+            AccountId = accountId;
+            SmallAvatar = smallAvatar;
+            BigAvatar = bigAvatar;
+        }
+    }
+
     private static async Task Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "--spectator-watch")
+        {
+            await RunSpectatorWatch(args).ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--units-db-roundtrip")
         {
             await RunUnitsDbRoundtrip().ConfigureAwait(false);
@@ -187,6 +208,12 @@ class Program
         if (args.Length > 0 && args[0] == "--self-disclosure-check")
         {
             await RunSelfDisclosureCheck().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--avatar-download-check")
+        {
+            await RunAvatarDownloadCheck(args).ConfigureAwait(false);
             return;
         }
 
@@ -1030,6 +1057,85 @@ class Program
         }
     }
 
+    private static async Task RunAvatarDownloadCheck(string[] args)
+    {
+        if (args.Length < 3 || args.Length > 4)
+        {
+            Console.WriteLine("AVATAR-DOWNLOAD-CHECK: usage Development --avatar-download-check <uri> <auth> [team|-]");
+            return;
+        }
+
+        string uri = args[1];
+        string auth = args[2];
+        string? team = args.Length >= 4 && args[3] != "-" ? args[3] : null;
+        byte[] originalSmallAvatar = new byte[] { 0x01, 0x23, 0x45, 0x67 };
+        byte[] originalBigAvatar = new byte[] { 0x89, 0xAB, 0xCD, 0xEF, 0x10 };
+        byte[] changedSmallAvatar = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
+        byte[] changedBigAvatar = new byte[] { 0xCA, 0xFE, 0xBA, 0xBE, 0x11, 0x22 };
+        DatabaseAvatarRow avatarRow = QueryAvatarRow(auth);
+        DatabaseAccountRow accountRow = QueryAccountRow(auth);
+        Galaxy? playerGalaxy = null;
+        Galaxy? spectatorGalaxy = null;
+
+        if (HasFreshSession(accountRow))
+        {
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: SKIPPED (account already has fresh session, {FormatSessionState(accountRow)})");
+            return;
+        }
+
+        try
+        {
+            UpdateAvatarRow(avatarRow.AccountId, originalSmallAvatar, originalBigAvatar);
+
+            playerGalaxy = await Galaxy.Connect(uri, auth, team).ConfigureAwait(false);
+            spectatorGalaxy = await Galaxy.Connect(uri, null, null).ConfigureAwait(false);
+
+            await Task.Delay(250).ConfigureAwait(false);
+
+            Player spectatorView = FindPlayerById(spectatorGalaxy, playerGalaxy.Player.Id);
+
+            byte[] selfSmallAvatar = await playerGalaxy.Player.DownloadSmallAvatar().ConfigureAwait(false);
+            byte[] selfBigAvatar = await playerGalaxy.Player.DownloadBigAvatar().ConfigureAwait(false);
+            byte[] spectatorSmallAvatar = await spectatorView.DownloadSmallAvatar().ConfigureAwait(false);
+            byte[] spectatorBigAvatar = await spectatorView.DownloadBigAvatar().ConfigureAwait(false);
+
+            bool initialSelfMatches = selfSmallAvatar.SequenceEqual(originalSmallAvatar) &&
+                                      selfBigAvatar.SequenceEqual(originalBigAvatar);
+            bool initialSpectatorMatches = spectatorSmallAvatar.SequenceEqual(originalSmallAvatar) &&
+                                           spectatorBigAvatar.SequenceEqual(originalBigAvatar);
+
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: self initial avatar download = {initialSelfMatches}");
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: spectator initial avatar download = {initialSpectatorMatches}");
+
+            UpdateAvatarRow(avatarRow.AccountId, changedSmallAvatar, changedBigAvatar);
+
+            byte[] cachedSelfSmallAvatar = await playerGalaxy.Player.DownloadSmallAvatar().ConfigureAwait(false);
+            byte[] cachedSelfBigAvatar = await playerGalaxy.Player.DownloadBigAvatar().ConfigureAwait(false);
+            byte[] cachedSpectatorSmallAvatar = await spectatorView.DownloadSmallAvatar().ConfigureAwait(false);
+            byte[] cachedSpectatorBigAvatar = await spectatorView.DownloadBigAvatar().ConfigureAwait(false);
+
+            bool selfCached = cachedSelfSmallAvatar.SequenceEqual(originalSmallAvatar) &&
+                              cachedSelfBigAvatar.SequenceEqual(originalBigAvatar);
+            bool spectatorCached = cachedSpectatorSmallAvatar.SequenceEqual(originalSmallAvatar) &&
+                                   cachedSpectatorBigAvatar.SequenceEqual(originalBigAvatar);
+
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: self uses login-time cache = {selfCached}");
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: spectator uses login-time cache = {spectatorCached}");
+        }
+        finally
+        {
+            if (spectatorGalaxy is not null)
+                spectatorGalaxy.Dispose();
+
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            await Task.Delay(250).ConfigureAwait(false);
+            RestoreAvatarRow(avatarRow);
+            Console.WriteLine("AVATAR-DOWNLOAD-CHECK: avatar row restored");
+        }
+    }
+
     private static async Task RunSelfDisclosureCheck()
     {
         DatabaseAccountRow playerAccount = QueryAccountRow(PlayerAuth);
@@ -1135,7 +1241,7 @@ class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=7&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=10&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 
@@ -1269,6 +1375,72 @@ class Program
 
             if (spectatorEventPump is not null)
                 await Task.WhenAny(spectatorEventPump, Task.Delay(1000)).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task RunSpectatorWatch(string[] args)
+    {
+        string uri = SpectatorWatchUri;
+        int durationSeconds = 0;
+        Galaxy? spectatorGalaxy = null;
+        Queue<string> recentEvents = new Queue<string>(64);
+        DateTime started = DateTime.UtcNow;
+
+        if (args.Length >= 2)
+            uri = args[1];
+
+        if (args.Length >= 3)
+            durationSeconds = int.Parse(args[2]);
+
+        try
+        {
+            Console.WriteLine($"SPECTATOR-WATCH: connecting to {uri}...");
+            spectatorGalaxy = await Galaxy.Connect(uri, null, null).ConfigureAwait(false);
+
+            Console.WriteLine(
+                $"SPECTATOR-WATCH: connected as {spectatorGalaxy.Player.Name} ({spectatorGalaxy.Player.Kind}), teams={spectatorGalaxy.Teams.Count}, players={spectatorGalaxy.Players.Count}.");
+
+            DumpSpectatorState(spectatorGalaxy);
+
+            while (spectatorGalaxy.Active)
+            {
+                if (durationSeconds > 0 && (DateTime.UtcNow - started).TotalSeconds >= durationSeconds)
+                {
+                    Console.WriteLine($"SPECTATOR-WATCH: duration limit {durationSeconds}s reached.");
+                    break;
+                }
+
+                FlattiverseEvent @event = await spectatorGalaxy.NextEvent().ConfigureAwait(false);
+                string line = DescribeSpectatorEvent(@event);
+
+                Console.WriteLine(line);
+                recentEvents.Enqueue(line);
+
+                while (recentEvents.Count > 64)
+                    recentEvents.Dequeue();
+            }
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine($"SPECTATOR-WATCH: FATAL {exception.GetType().Name}: {exception.Message}");
+
+            if (recentEvents.Count > 0)
+            {
+                Console.WriteLine("SPECTATOR-WATCH: recent events:");
+
+                foreach (string line in recentEvents)
+                    Console.WriteLine($"  {line}");
+            }
+
+            if (spectatorGalaxy is not null)
+                DumpSpectatorState(spectatorGalaxy);
+
+            throw;
+        }
+        finally
+        {
+            if (spectatorGalaxy is not null)
+                spectatorGalaxy.Dispose();
         }
     }
 
@@ -1447,6 +1619,36 @@ class Program
             (long)reader["sessionNeutralDeaths"]);
     }
 
+    private static DatabaseAvatarRow QueryAvatarRow(string auth)
+    {
+        using NpgsqlConnection connection = new NpgsqlConnection(DatabaseConnectionString);
+        connection.Open();
+
+        using NpgsqlCommand command = new NpgsqlCommand(
+            """
+            SELECT "id",
+                   "avatarSmall",
+                   "avatarBig"
+            FROM public.accounts
+            WHERE encode("apiPlayer", 'hex') = @auth
+               OR encode("apiAdmin", 'hex') = @auth
+            LIMIT 1
+            """,
+            connection);
+
+        command.Parameters.AddWithValue("@auth", auth);
+
+        using NpgsqlDataReader reader = command.ExecuteReader();
+
+        if (!reader.Read())
+            throw new InvalidOperationException("Could not find avatar row for the specified API key.");
+
+        return new DatabaseAvatarRow(
+            (int)reader["id"],
+            reader["avatarSmall"] is byte[] smallAvatar ? smallAvatar : null,
+            reader["avatarBig"] is byte[] bigAvatar ? bigAvatar : null);
+    }
+
     private static void RestoreAccountRow(DatabaseAccountRow row)
     {
         ExecuteDatabaseNonQuery($"""
@@ -1473,6 +1675,31 @@ class Program
                 "sessionNeutralDeaths" = {row.SessionNeutralDeaths}
             WHERE "id" = {row.AccountId}
             """);
+    }
+
+    private static void UpdateAvatarRow(int accountId, byte[]? smallAvatar, byte[]? bigAvatar)
+    {
+        using NpgsqlConnection connection = new NpgsqlConnection(DatabaseConnectionString);
+        connection.Open();
+
+        using NpgsqlCommand command = new NpgsqlCommand(
+            """
+            UPDATE public.accounts
+            SET "avatarSmall" = @smallAvatar,
+                "avatarBig" = @bigAvatar
+            WHERE "id" = @accountId
+            """,
+            connection);
+
+        command.Parameters.AddWithValue("@accountId", accountId);
+        command.Parameters.AddWithValue("@smallAvatar", smallAvatar is not null ? (object)smallAvatar : DBNull.Value);
+        command.Parameters.AddWithValue("@bigAvatar", bigAvatar is not null ? (object)bigAvatar : DBNull.Value);
+        command.ExecuteNonQuery();
+    }
+
+    private static void RestoreAvatarRow(DatabaseAvatarRow row)
+    {
+        UpdateAvatarRow(row.AccountId, row.SmallAvatar, row.BigAvatar);
     }
 
     private static async Task<bool> WaitForPlayerAccountState(Player player, bool admin, int rank, int timeoutMs)
@@ -1516,6 +1743,14 @@ class Program
             return true;
 
         return new DateTime(datePlayedEndTicks, DateTimeKind.Utc) + AccountSessionTimeout >= DateTime.UtcNow;
+    }
+
+    private static Player FindPlayerById(Galaxy galaxy, byte playerId)
+    {
+        if (galaxy.Players.TryGet(playerId, out Player? player))
+            return player;
+
+        throw new InvalidOperationException($"Could not resolve player {playerId} in galaxy view.");
     }
 
     private static string FormatSessionState(DatabaseAccountRow row)
@@ -2366,7 +2601,7 @@ class Program
             Console.WriteLine($"  CONTINUE AFTER DELETE: FAILED ({exception.GetType().Name}: {exception.Message})");
         }
 
-        ship.Dispose();
+        ship.RequestClose();
     }
 
     private static async Task TestScoreUpdatesOnSuicide(Galaxy playerGalaxy, ConcurrentQueue<FlattiverseEvent> playerEvents)
@@ -2391,7 +2626,7 @@ class Program
 
         if (!alive)
         {
-            ship.Dispose();
+            ship.RequestClose();
             Console.WriteLine("  RESULT: FAILED (ship did not become alive before suicide)");
             return;
         }
@@ -2436,7 +2671,7 @@ class Program
         Console.WriteLine($"  TEAM SCORE APPLIED: {teamScoreApplied}");
         Console.WriteLine($"  RESULT: {(dead && playerScoreUpdated && teamScoreUpdated && playerScoreApplied && teamScoreApplied ? "OK" : "FAILED")}");
 
-        ship.Dispose();
+        ship.RequestClose();
     }
 
     private static async Task<Dictionary<byte, string>> CaptureRegionsByCluster(Galaxy adminGalaxy)
@@ -2508,6 +2743,102 @@ class Program
                 Console.WriteLine($"{name}: event pump terminated ({exception.Message})");
             }
         });
+    }
+
+    private static string DescribeSpectatorEvent(FlattiverseEvent @event)
+    {
+        if (@event is JoinedPlayerEvent joinedPlayerEvent)
+            return $"{joinedPlayerEvent.Stamp:HH:mm:ss.fff} PLAYER+ id={joinedPlayerEvent.Player.Id} name={joinedPlayerEvent.Player.Name} team={joinedPlayerEvent.Player.Team.Name} kind={joinedPlayerEvent.Player.Kind}";
+
+        if (@event is PartedPlayerEvent partedPlayerEvent)
+            return $"{partedPlayerEvent.Stamp:HH:mm:ss.fff} PLAYER- id={partedPlayerEvent.Player.Id} name={partedPlayerEvent.Player.Name}";
+
+        if (@event is RegisteredControllableInfoPlayerEvent registeredControllableInfoPlayerEvent)
+            return $"{registeredControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL+ player={registeredControllableInfoPlayerEvent.Player.Id}:{registeredControllableInfoPlayerEvent.Player.Name} controllable={registeredControllableInfoPlayerEvent.ControllableInfo.Id}:{registeredControllableInfoPlayerEvent.ControllableInfo.Name} kind={registeredControllableInfoPlayerEvent.ControllableInfo.Kind} alive={registeredControllableInfoPlayerEvent.ControllableInfo.Alive}";
+
+        if (@event is ClosedControllableInfoPlayerEvent closedControllableInfoPlayerEvent)
+            return $"{closedControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL- player={closedControllableInfoPlayerEvent.Player.Id}:{closedControllableInfoPlayerEvent.Player.Name} controllable={closedControllableInfoPlayerEvent.ControllableInfo.Id}:{closedControllableInfoPlayerEvent.ControllableInfo.Name}";
+
+        if (@event is ContinuedControllableInfoPlayerEvent continuedControllableInfoPlayerEvent)
+            return $"{continuedControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL-ALIVE player={continuedControllableInfoPlayerEvent.Player.Id}:{continuedControllableInfoPlayerEvent.Player.Name} controllable={continuedControllableInfoPlayerEvent.ControllableInfo.Id}:{continuedControllableInfoPlayerEvent.ControllableInfo.Name}";
+
+        if (@event is DestroyedControllableInfoPlayerEvent destroyedControllableInfoPlayerEvent)
+            return $"{destroyedControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL-DEAD player={destroyedControllableInfoPlayerEvent.Player.Id}:{destroyedControllableInfoPlayerEvent.Player.Name} controllable={destroyedControllableInfoPlayerEvent.ControllableInfo.Id}:{destroyedControllableInfoPlayerEvent.ControllableInfo.Name} event={destroyedControllableInfoPlayerEvent.Kind}";
+
+        if (@event is NewUnitFlattiverseEvent newUnitFlattiverseEvent)
+            return DescribeUnitEvent("UNIT+", newUnitFlattiverseEvent.Stamp, newUnitFlattiverseEvent.Unit);
+
+        if (@event is RemovedUnitFlattiverseEvent removedUnitFlattiverseEvent)
+            return DescribeUnitEvent("UNIT-", removedUnitFlattiverseEvent.Stamp, removedUnitFlattiverseEvent.Unit);
+
+        if (@event is UpdatedUnitFlattiverseEvent updatedUnitFlattiverseEvent)
+            if (updatedUnitFlattiverseEvent.Unit.Kind == UnitKind.Shot || updatedUnitFlattiverseEvent.Unit.Kind == UnitKind.Explosion)
+                return DescribeUnitEvent("UNIT*", updatedUnitFlattiverseEvent.Stamp, updatedUnitFlattiverseEvent.Unit);
+
+        return @event.ToString();
+    }
+
+    private static string DescribeUnitEvent(string prefix, DateTime stamp, Unit unit)
+    {
+        if (unit is Shot shot)
+        {
+            string playerName = shot.Player is null ? "-" : $"{shot.Player.Id}:{shot.Player.Name}";
+            string controllableName = shot.ControllableInfo is null ? "-" : $"{shot.ControllableInfo.Id}:{shot.ControllableInfo.Name}";
+
+            return $"{stamp:HH:mm:ss.fff} {prefix} kind=Shot cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} ticks={shot.Ticks}";
+        }
+
+        if (unit is Explosion explosion)
+        {
+            string playerName = explosion.Player is null ? "-" : $"{explosion.Player.Id}:{explosion.Player.Name}";
+            string controllableName = explosion.ControllableInfo is null ? "-" : $"{explosion.ControllableInfo.Id}:{explosion.ControllableInfo.Name}";
+
+            return $"{stamp:HH:mm:ss.fff} {prefix} kind=Explosion cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} radius={unit.Radius:0.###}";
+        }
+
+        if (unit is ClassicShipPlayerUnit classicShipPlayerUnit)
+        {
+            string playerName = classicShipPlayerUnit.Player is null ? "-" : $"{classicShipPlayerUnit.Player.Id}:{classicShipPlayerUnit.Player.Name}";
+            string controllableName = classicShipPlayerUnit.ControllableInfo is null ? "-" : $"{classicShipPlayerUnit.ControllableInfo.Id}:{classicShipPlayerUnit.ControllableInfo.Name}";
+
+            return $"{stamp:HH:mm:ss.fff} {prefix} kind={unit.Kind} cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} pos={unit.Position}";
+        }
+
+        return $"{stamp:HH:mm:ss.fff} {prefix} kind={unit.Kind} cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name}";
+    }
+
+    private static void DumpSpectatorState(Galaxy galaxy)
+    {
+        Console.WriteLine("SPECTATOR-WATCH: players snapshot:");
+
+        foreach (Player player in galaxy.Players)
+        {
+            Console.WriteLine($"  player {player.Id}:{player.Name} active={player.Active} kind={player.Kind} team={player.Team.Name}");
+
+            foreach (ControllableInfo controllableInfo in player.ControllableInfos)
+                Console.WriteLine($"    controllable {controllableInfo.Id}:{controllableInfo.Name} active={controllableInfo.Active} alive={controllableInfo.Alive} kind={controllableInfo.Kind}");
+        }
+
+        Console.WriteLine("SPECTATOR-WATCH: units snapshot:");
+
+        foreach (Cluster cluster in galaxy.Clusters)
+        {
+            int unitCount = 0;
+            int shotCount = 0;
+            int explosionCount = 0;
+
+            foreach (Unit unit in cluster.Units)
+            {
+                unitCount++;
+
+                if (unit.Kind == UnitKind.Shot)
+                    shotCount++;
+                else if (unit.Kind == UnitKind.Explosion)
+                    explosionCount++;
+            }
+
+            Console.WriteLine($"  cluster {cluster.Id}:{cluster.Name} units={unitCount} shots={shotCount} explosions={explosionCount}");
+        }
     }
 
     private static List<FlattiverseEvent> DrainEvents(ConcurrentQueue<FlattiverseEvent> events)

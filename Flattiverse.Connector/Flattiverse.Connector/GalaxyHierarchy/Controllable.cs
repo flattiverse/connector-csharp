@@ -7,7 +7,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// <summary>
 /// With this class you actually can control a player unit.
 /// </summary>
-public class Controllable : IDisposable, INamedUnit
+public class Controllable : INamedUnit
 {
     private readonly string _name;
 
@@ -142,7 +142,7 @@ public class Controllable : IDisposable, INamedUnit
     public bool Alive => _alive;
     
     /// <summary>
-    /// true if this object still can be used. If the unit has been disposed this is false.
+    /// true if this object still can be used. If the unit has been finally closed this is false.
     /// </summary>
     public bool Active => _active;
 
@@ -178,9 +178,9 @@ public class Controllable : IDisposable, INamedUnit
     }
     
     /// <summary>
-    /// Call this to close the unit.
+    /// Call this to request closing the unit. The server may keep it alive for a grace period before it is finally removed.
     /// </summary>
-    public void Dispose()
+    public void RequestClose()
     {
         _cluster.Galaxy.Connection.Send(delegate (ref PacketWriter writer)
         {
