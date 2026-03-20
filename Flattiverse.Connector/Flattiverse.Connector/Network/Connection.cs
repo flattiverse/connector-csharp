@@ -305,7 +305,14 @@ class Connection
 
                 if (!packets.Reset(receivedSize))
                 {
-                    Close("Received malformed packet stream.");
+                    if (PacketReader.TryValidatePacketStream(packets.FullMemory.ToArray(), receivedSize, out int malformedOffset, out ushort malformedPacketSize))
+                        Close($"Received malformed packet stream with messageSize={receivedSize}.");
+                    else if (malformedOffset + 4 <= receivedSize)
+                        Close(
+                            $"Received malformed packet stream at offset {malformedOffset}: cmd=0x{packets.FullMemory.Span[malformedOffset]:X02}, sess=0x{packets.FullMemory.Span[malformedOffset + 1]:X02}, declaredSize={malformedPacketSize}, messageSize={receivedSize}.");
+                    else
+                        Close($"Received malformed packet stream at offset {malformedOffset} with trailing bytes and messageSize={receivedSize}.");
+
                     return false;
                 }
 

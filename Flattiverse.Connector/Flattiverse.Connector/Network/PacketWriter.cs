@@ -12,6 +12,7 @@ struct PacketWriter : IDisposable
     public PacketWriter(SendBuffer buffer)
     {
         _buffer = buffer;
+        _size = 0;
         _buffer.Data[_buffer.Position] = 0;
         _buffer.Data[_buffer.Position + 1] = 0;
     }
@@ -19,6 +20,7 @@ struct PacketWriter : IDisposable
     public PacketWriter(SendBuffer buffer, byte command, byte session)
     {
         _buffer = buffer;
+        _size = 0;
         _buffer.Data[_buffer.Position] = command;
         _buffer.Data[_buffer.Position + 1] = session;
     }
@@ -26,6 +28,7 @@ struct PacketWriter : IDisposable
     public PacketWriter(SendBuffer buffer, byte command)
     {
         _buffer = buffer;
+        _size = 0;
         _buffer.Data[_buffer.Position] = command;
         _buffer.Data[_buffer.Position + 1] = 0;
     }

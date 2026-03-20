@@ -414,19 +414,25 @@ public class Galaxy : IDisposable
     {
         byte[] data = GC.AllocateUninitializedArray<byte>(16777216, false);
         PacketReader reader = new PacketReader(data);
+        string previousPacket = string.Empty;
 
         CommandRouter router = new CommandRouter(this);
 
         while (await Connection.TryRead(reader).ConfigureAwait(false))
             do
             {
+                string currentPacket = reader.ToString();
 
                 if (reader.Session > 0)
                     if (Connection.SessionReply(reader))
+                    {
+                        previousPacket = currentPacket;
                         continue;
+                    }
                     else
                     {
-                        Connection.Close("Received reply to a session which doesn't exist.");
+                        Connection.Close(
+                            $"Received reply to a session which doesn't exist: cmd=0x{reader.Command:X02}, sess=0x{reader.Session:X02}, size={reader.Size} | PreviousPacket={previousPacket} | CurrentPacket={currentPacket}");
                         return;
                     }
 
@@ -434,7 +440,7 @@ public class Galaxy : IDisposable
                 {
                     if (!router.Call(reader))
                     {
-                        Connection.Close($"Command not found: 0x{reader.Command:X02}.");
+                        Connection.Close($"Command not found: 0x{reader.Command:X02} | PreviousPacket={previousPacket} | CurrentPacket={currentPacket}");
                         return;
                     }
                 }
@@ -445,9 +451,12 @@ public class Galaxy : IDisposable
                     if (exception is TargetInvocationException targetInvocationException && targetInvocationException.InnerException is not null)
                         actualException = targetInvocationException.InnerException;
 
-                    Connection.Close($"Error while executing command 0x{reader.Command:X02}: {actualException.GetType().Name}: {actualException.Message}");
+                    Connection.Close(
+                        $"Error while executing command 0x{reader.Command:X02}: {actualException.GetType().Name}: {actualException.Message} | PreviousPacket={previousPacket} | CurrentPacket={currentPacket}");
                     return;
                 }
+
+                previousPacket = currentPacket;
 
             } while (reader.Next());
         

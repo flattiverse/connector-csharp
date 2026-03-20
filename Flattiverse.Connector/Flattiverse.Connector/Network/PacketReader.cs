@@ -25,6 +25,32 @@ class PacketReader
     public PacketReaderLarge LargeCopy => new PacketReaderLarge(_data, _basePosition);
     
     public Memory<byte> FullMemory => _data.AsMemory(); 
+
+    public static bool TryValidatePacketStream(byte[] data, int size, out int malformedOffset, out ushort malformedPacketSize)
+    {
+        Debug.Assert(data is not null, "No packet data provided.");
+        Debug.Assert(size >= 0 && size <= data.Length, "Invalid packet size specified.");
+
+        int position = 0;
+
+        while (position + 4 <= size)
+        {
+            ushort packetSize = Unsafe.As<byte, ushort>(ref data[position + 2]);
+
+            if (position + 4 + packetSize > size)
+            {
+                malformedOffset = position;
+                malformedPacketSize = packetSize;
+                return false;
+            }
+
+            position += 4 + packetSize;
+        }
+
+        malformedOffset = position;
+        malformedPacketSize = 0;
+        return position == size;
+    }
     
     public bool Reset(int size)
     {
