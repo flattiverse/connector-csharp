@@ -18,7 +18,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "10";
+    private const string Version = "11";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -731,7 +731,7 @@ public class Galaxy : IDisposable
     [Command(0x10)]
     private void CreatePlayer(byte id, PlayerKind kind, Team team, string name, float ping, byte admin, int rank,
         long playerKills, long playerDeaths, long friendlyKills, long friendlyDeaths, long npcKills, long npcDeaths,
-        long neutralDeaths, PacketReader reader)
+        long neutralDeaths, byte hasAvatar, PacketReader reader)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is null, "Player does already exist.");
@@ -749,7 +749,7 @@ public class Galaxy : IDisposable
             throw new InvalidDataException("Player create packet contains malformed build disclosure.");
 
         _players[id] = new Player(this, id, kind, team, name, ping, admin != 0x00, rank, playerKills, playerDeaths, friendlyKills,
-            friendlyDeaths, npcKills, npcDeaths, neutralDeaths, runtimeDisclosure, buildDisclosure);
+            friendlyDeaths, npcKills, npcDeaths, neutralDeaths, hasAvatar != 0x00, runtimeDisclosure, buildDisclosure);
         
         PushEvent(new JoinedPlayerEvent(_players[id]!));
     }

@@ -24,16 +24,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-10
+11
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=10&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=10&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=10&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=10&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=11&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=11&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=11&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=11&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -184,6 +184,7 @@ Current server-side on-wire codes:
 * `0x15` `UnitConstraintViolationGameException`
 * `0x16` `InvalidXmlNodeValueGameException`
 * `0x17` `ControllableIsClosingGameException`
+* `0x18` `AvatarNotAvailableGameException`
 * `0x20` `YouNeedToContinueFirstGameException`
 * `0x21` `YouNeedToDieFirstGameException`
 * `0x22` `AllStartLocationsAreOvercrowded`
@@ -214,6 +215,8 @@ Payload details for the important structured exceptions:
 * no `team` query parameter was specified and the server found no non-spectator team that could be auto-selected
 
 `0x17` is currently used when a client sends `0x84 Continue` for a controllable that has already entered the closing phase.
+
+`0x18` is currently used when a client requests `0xC7` / `0xC8` for a player that has no avatar available.
 
 Current `InvalidArgumentKind` values:
 
@@ -377,6 +380,7 @@ long   friendlyDeaths
 long   npcKills
 long   npcDeaths
 long   neutralDeaths
+byte   hasAvatar
 byte   disclosureFlags
 [5 bytes packed runtimeDisclosure if disclosureFlags bit 0x01 is set]
 [6 bytes packed buildDisclosure if disclosureFlags bit 0x02 is set]
@@ -912,7 +916,9 @@ Notes:
 * `0xC5` resolves the target team by id on the server side.
 * `0xC6` resolves the target player by id on the server side.
 * `0xC7` / `0xC8` resolve the target player by id on the server side and return the avatar bytes cached on that server-side player at login time.
-* An empty `0xC7` / `0xC8` reply payload means that no avatar image is currently stored for that size.
+* `0x10 Player Create` contains `hasAvatar`, so clients can avoid sending `0xC7` / `0xC8` for players without avatars.
+* If `hasAvatar == 0`, the reference connector throws locally before sending `0xC7` / `0xC8`.
+* The server still validates `0xC7` / `0xC8` and returns `0x18 AvatarNotAvailableGameException` if no avatar is available.
 * `0x8F` is not an immediate removal. The server may keep a living controllable alive for 30 ticks before finally closing it, and dead controllables stay registered until no shot/explosion references remain.
 * String validation for names and chat messages happens on the server even if a client already validated locally.
 * `0x88` currently validates `movement.Length` in `[0.1; 3]`, `ticks` in `[2; 140]`, `load` in `[2.5; 25]`, and `damage` in `[1; 20]`.

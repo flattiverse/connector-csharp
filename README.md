@@ -119,6 +119,7 @@ Admin-facing commands:
 - The private scripted tooling (`CliShip`, `AdminRunner`) now lives in the sibling repository `../fv-cliship` and is intentionally no longer part of the public connector solution.
 - Map-edit XML rules, examples, and server-side validation behavior are documented in [MAPEDITORS.md](MAPEDITORS.md).
 - `ControllableInfo` lifecycle is event-driven. Owner-side `Controllable` objects are mirrored locally on `0x80` / `0x81` / `0x8F`, but the connector currently does not raise separate lifecycle events for them. `0x8F` is the final close, not the initial close request.
+- `Player.HasAvatar` tells you whether `DownloadSmallAvatar()` / `DownloadBigAvatar()` are valid for that player. The reference connector throws immediately if no avatar is available.
 - Battery and energy-cell subsystem capabilities are initialized locally by controllable kind and are currently not transmitted on the wire.
 - Scanner subsystems are server-authoritative runtime objects. `Set(...)`, `On()`, and `Off()` send player commands; `Current*`, `Target*`, and `Active` are mirrored back via `0x82`.
 - Scanner angles are relative to the current ship facing. `scan:90x300x0` therefore points straight ahead.

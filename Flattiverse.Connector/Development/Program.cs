@@ -1103,7 +1103,9 @@ class Program
                                       selfBigAvatar.SequenceEqual(originalBigAvatar);
             bool initialSpectatorMatches = spectatorSmallAvatar.SequenceEqual(originalSmallAvatar) &&
                                            spectatorBigAvatar.SequenceEqual(originalBigAvatar);
+            bool hasAvatarInitial = playerGalaxy.Player.HasAvatar && spectatorView.HasAvatar;
 
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: has avatar initially = {hasAvatarInitial}");
             Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: self initial avatar download = {initialSelfMatches}");
             Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: spectator initial avatar download = {initialSpectatorMatches}");
 
@@ -1121,6 +1123,48 @@ class Program
 
             Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: self uses login-time cache = {selfCached}");
             Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: spectator uses login-time cache = {spectatorCached}");
+
+            spectatorGalaxy.Dispose();
+            spectatorGalaxy = null;
+            playerGalaxy.Dispose();
+            playerGalaxy = null;
+
+            await Task.Delay(250).ConfigureAwait(false);
+
+            UpdateAvatarRow(avatarRow.AccountId, null, null);
+
+            playerGalaxy = await Galaxy.Connect(uri, auth, team).ConfigureAwait(false);
+            spectatorGalaxy = await Galaxy.Connect(uri, null, null).ConfigureAwait(false);
+
+            await Task.Delay(250).ConfigureAwait(false);
+
+            spectatorView = FindPlayerById(spectatorGalaxy, playerGalaxy.Player.Id);
+
+            bool hasAvatarMissing = !playerGalaxy.Player.HasAvatar && !spectatorView.HasAvatar;
+            bool selfThrows = false;
+            bool spectatorThrows = false;
+
+            try
+            {
+                await playerGalaxy.Player.DownloadSmallAvatar().ConfigureAwait(false);
+            }
+            catch (AvatarNotAvailableGameException)
+            {
+                selfThrows = true;
+            }
+
+            try
+            {
+                await spectatorView.DownloadBigAvatar().ConfigureAwait(false);
+            }
+            catch (AvatarNotAvailableGameException)
+            {
+                spectatorThrows = true;
+            }
+
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: has avatar missing = {hasAvatarMissing}");
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: self throws without avatar = {selfThrows}");
+            Console.WriteLine($"AVATAR-DOWNLOAD-CHECK: spectator throws without avatar = {spectatorThrows}");
         }
         finally
         {
@@ -1241,7 +1285,7 @@ class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=10&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=11&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 

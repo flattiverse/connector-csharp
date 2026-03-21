@@ -34,6 +34,7 @@ public class Player : INamedUnit
     private long _npcKills;
     private long _npcDeaths;
     private long _neutralDeaths;
+    private readonly bool _hasAvatar;
     private readonly Score _score;
 
     /// <summary>
@@ -62,7 +63,7 @@ public class Player : INamedUnit
 
     internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, string name, float ping, bool admin, int rank,
         long playerKills, long playerDeaths, long friendlyKills, long friendlyDeaths, long npcKills, long npcDeaths,
-        long neutralDeaths, RuntimeDisclosure? runtimeDisclosure, BuildDisclosure? buildDisclosure)
+        long neutralDeaths, bool hasAvatar, RuntimeDisclosure? runtimeDisclosure, BuildDisclosure? buildDisclosure)
     {
         Galaxy = galaxy;
         _score = new Score();
@@ -84,6 +85,7 @@ public class Player : INamedUnit
         _npcKills = npcKills;
         _npcDeaths = npcDeaths;
         _neutralDeaths = neutralDeaths;
+        _hasAvatar = hasAvatar;
         RuntimeDisclosure = runtimeDisclosure;
         BuildDisclosure = buildDisclosure;
         _active = true;
@@ -112,6 +114,9 @@ public class Player : INamedUnit
     /// </summary>
     public async Task<byte[]> DownloadSmallAvatar()
     {
+        if (!_hasAvatar)
+            throw new AvatarNotAvailableGameException();
+
         PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
         {
             writer.Command = 0xC7;
@@ -131,6 +136,9 @@ public class Player : INamedUnit
     /// </summary>
     public async Task<byte[]> DownloadBigAvatar()
     {
+        if (!_hasAvatar)
+            throw new AvatarNotAvailableGameException();
+
         PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
         {
             writer.Command = 0xC8;
@@ -204,6 +212,11 @@ public class Player : INamedUnit
     /// Total deaths caused by neutral units or the environment.
     /// </summary>
     public long NeutralDeaths => _neutralDeaths;
+
+    /// <summary>
+    /// True if this player currently has a cached avatar available on the server.
+    /// </summary>
+    public bool HasAvatar => _hasAvatar;
 
     /// <summary>
     /// Current live player score.

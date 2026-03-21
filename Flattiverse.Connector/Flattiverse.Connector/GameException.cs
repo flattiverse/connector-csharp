@@ -120,6 +120,9 @@ public class GameException : Exception
                 case 0x17:
                     exception = new ControllableIsClosingGameException();
                     return true;
+                case 0x18:
+                    exception = new AvatarNotAvailableGameException();
+                    return true;
                 case 0x20:
                     exception = new YouNeedToContinueFirstGameException();
                     return true;
