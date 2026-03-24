@@ -41,6 +41,11 @@ public enum SubsystemSlot : byte
     Hull = 0x18,
 
     /// <summary>
+    /// Shield integrity slot.
+    /// </summary>
+    Shield = 0x19,
+
+    /// <summary>
     /// Primary scanner slot.
     /// </summary>
     PrimaryScanner = 0x20,
@@ -71,7 +76,17 @@ public enum SubsystemSlot : byte
     TertiaryEngine = 0x32,
 
     /// <summary>
-    /// Front shot-launcher slot.
+    /// Dynamic shot launcher slot.
     /// </summary>
-    FrontShotLauncher = 0x40,
+    DynamicShotLauncher = 0x40,
+
+    /// <summary>
+    /// Dynamic shot magazine slot.
+    /// </summary>
+    DynamicShotMagazine = 0x41,
+
+    /// <summary>
+    /// Dynamic shot fabricator slot.
+    /// </summary>
+    DynamicShotFabricator = 0x42,
 }

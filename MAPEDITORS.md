@@ -425,16 +425,22 @@ Additional required attributes:
 
 - `Team`: team id that owns this flag.
 
+Optional attributes:
+
+- `GraceTicks`: number of ticks the flag stays inactive after a hit. Defaults to `0`.
+
 Constraints:
 
 - `Team` must exist
 - `Team` must not be spectators
+- `GraceTicks >= 0`
 - child elements are rejected; plain text content is currently ignored
+- `Active` is runtime-only state, becomes `false` during grace time, can be scanned, and is therefore not an editable XML attribute
 
 Example:
 
 ```xml
-<Flag Name="BlueFlag" X="1200" Y="0" Radius="20" Gravity="0" Team="1" />
+<Flag Name="BlueFlag" X="1200" Y="0" Radius="20" Gravity="0" Team="1" GraceTicks="120" />
 ```
 
 ### DominationPoint
@@ -471,7 +477,7 @@ await cluster.SetUnit("""
 </MissionTarget>
 """);
 
-await cluster.SetUnit("""<Flag Name="BlueFlag" X="1200" Y="0" Radius="20" Gravity="0" Team="1" />""");
+await cluster.SetUnit("""<Flag Name="BlueFlag" X="1200" Y="0" Radius="20" Gravity="0" Team="1" GraceTicks="120" />""");
 
 await cluster.SetUnit("""<DominationPoint Name="Center" X="0" Y="0" Radius="24" Gravity="0" Team="0" DominationRadius="250" />""");
 

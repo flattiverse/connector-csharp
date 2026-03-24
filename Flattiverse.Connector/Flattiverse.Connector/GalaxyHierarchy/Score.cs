@@ -12,14 +12,14 @@ public class Score
     private uint _npcKills;
     private uint _npcDeaths;
     private uint _neutralDeaths;
-    private uint _mission;
+    private int _mission;
 
     internal Score()
     {
     }
 
     internal void Update(uint playerKills, uint playerDeaths, uint friendlyKills, uint friendlyDeaths, uint npcKills, uint npcDeaths,
-        uint neutralDeaths, uint mission)
+        uint neutralDeaths, int mission)
     {
         _playerKills = playerKills;
         _playerDeaths = playerDeaths;
@@ -30,16 +30,6 @@ public class Score
         _neutralDeaths = neutralDeaths;
         _mission = mission;
     }
-
-    /// <summary>
-    /// Number of kills in the current galaxy runtime.
-    /// </summary>
-    public uint Kills => _playerKills;
-
-    /// <summary>
-    /// Number of deaths in the current galaxy runtime.
-    /// </summary>
-    public uint Deaths => _playerDeaths;
 
     /// <summary>
     /// Number of kills of enemy players in the current galaxy runtime.
@@ -79,5 +69,5 @@ public class Score
     /// <summary>
     /// Number of mission points in the current galaxy runtime.
     /// </summary>
-    public uint Mission => _mission;
+    public int Mission => _mission;
 }

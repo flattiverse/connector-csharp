@@ -26,6 +26,7 @@ public class Player : INamedUnit
     
     private float _ping;
     private bool _admin;
+    private bool _disconnected;
     private int _rank;
     private long _playerKills;
     private long _playerDeaths;
@@ -61,7 +62,7 @@ public class Player : INamedUnit
     /// </summary>
     public readonly Galaxy Galaxy;
 
-    internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, string name, float ping, bool admin, int rank,
+    internal Player(Galaxy galaxy, byte id, PlayerKind kind, Team team, string name, float ping, bool admin, bool disconnected, int rank,
         long playerKills, long playerDeaths, long friendlyKills, long friendlyDeaths, long npcKills, long npcDeaths,
         long neutralDeaths, bool hasAvatar, RuntimeDisclosure? runtimeDisclosure, BuildDisclosure? buildDisclosure)
     {
@@ -77,6 +78,7 @@ public class Player : INamedUnit
         
         _ping = ping;
         _admin = admin;
+        _disconnected = disconnected;
         _rank = rank;
         _playerKills = playerKills;
         _playerDeaths = playerDeaths;
@@ -119,7 +121,7 @@ public class Player : INamedUnit
 
         PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
         {
-            writer.Command = 0xC7;
+            writer.Command = 0xF1;
             writer.Write(Id);
         }).ConfigureAwait(false);
 
@@ -141,7 +143,7 @@ public class Player : INamedUnit
 
         PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
         {
-            writer.Command = 0xC8;
+            writer.Command = 0xF2;
             writer.Write(Id);
         }).ConfigureAwait(false);
 
@@ -159,9 +161,14 @@ public class Player : INamedUnit
     public string Name => _name;
     
     /// <summary>
-    /// true, if the player is still used/connected to the game server.
+    /// true, if the player is still represented in the current galaxy session.
     /// </summary>
     public bool Active => _active;
+
+    /// <summary>
+    /// true, if the player's connection has already disconnected and only cleanup remains.
+    /// </summary>
+    public bool Disconnected => _disconnected;
     
     /// <summary>
     /// The ping in ms of the player.
@@ -223,11 +230,12 @@ public class Player : INamedUnit
     /// </summary>
     public Score Score => _score;
 
-    internal void Update(float ping, bool admin, int rank, long playerKills, long playerDeaths, long friendlyKills,
+    internal void Update(float ping, bool admin, bool disconnected, int rank, long playerKills, long playerDeaths, long friendlyKills,
         long friendlyDeaths, long npcKills, long npcDeaths, long neutralDeaths)
     {
         _ping = ping;
         _admin = admin;
+        _disconnected = disconnected;
         _rank = rank;
         _playerKills = playerKills;
         _playerDeaths = playerDeaths;
@@ -243,6 +251,7 @@ public class Player : INamedUnit
         _ping = -1;
         
         _active = false;
+        _disconnected = true;
 
         foreach (ControllableInfo? controllableInfo in _controllableInfos)
             if (controllableInfo is not null)

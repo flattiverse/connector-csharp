@@ -64,6 +64,11 @@ public enum EventKind : byte
     /// A player score has been updated.
     /// </summary>
     PlayerScoreUpdated = 0x12,
+
+    /// <summary>
+    /// A player connection has disconnected while cleanup is still pending.
+    /// </summary>
+    PlayerDisconnected = 0x13,
     
     /// <summary>
     /// A PlayerUnit has been registered.
@@ -101,9 +106,9 @@ public enum EventKind : byte
     EnergyCellSubsystem = 0x81,
 
     /// <summary>
-    /// Runtime update of a scanner subsystem on your own controllable.
+    /// Runtime update of a dynamic scanner subsystem on your own controllable.
     /// </summary>
-    ScannerSubsystem = 0x82,
+    DynamicScannerSubsystem = 0x82,
 
     /// <summary>
     /// Runtime update of an engine subsystem on your own controllable.
@@ -111,14 +116,29 @@ public enum EventKind : byte
     ClassicShipEngineSubsystem = 0x83,
 
     /// <summary>
-    /// Runtime update of a shot launcher subsystem on your own controllable.
+    /// Runtime update of a dynamic shot launcher subsystem on your own controllable.
     /// </summary>
-    ShotWeaponSubsystem = 0x84,
+    DynamicShotLauncherSubsystem = 0x84,
 
     /// <summary>
     /// Runtime update of a hull subsystem on your own controllable.
     /// </summary>
     HullSubsystem = 0x85,
+
+    /// <summary>
+    /// Runtime update of a dynamic shot magazine subsystem on your own controllable.
+    /// </summary>
+    DynamicShotMagazineSubsystem = 0x86,
+
+    /// <summary>
+    /// Runtime update of a dynamic shot fabricator subsystem on your own controllable.
+    /// </summary>
+    DynamicShotFabricatorSubsystem = 0x87,
+
+    /// <summary>
+    /// Runtime update of a shield subsystem on your own controllable.
+    /// </summary>
+    ShieldSubsystem = 0x88,
     
     /// <summary>
     /// You see a new unit.
@@ -141,6 +161,21 @@ public enum EventKind : byte
     RemovedUnit = 0x3F,
     
     /// <summary>
+    /// A galaxy-wide system chat announced that a flag has been scored.
+    /// </summary>
+    FlagScoredChat = 0xC1,
+
+    /// <summary>
+    /// A galaxy-wide system chat announced that a domination point has been scored.
+    /// </summary>
+    DominationPointScoredChat = 0xC2,
+
+    /// <summary>
+    /// A galaxy-wide system chat announced that someone hit the own flag.
+    /// </summary>
+    OwnFlagHitChat = 0xC3,
+
+    /// <summary>
     /// You received a galaxy chat message.
     /// </summary>
     ChatGalaxy = 0xC4,
@@ -154,6 +189,11 @@ public enum EventKind : byte
     /// You received a private message of a team member.
     /// </summary>
     ChatPlayer = 0xC6,
+
+    /// <summary>
+    /// A galaxy-wide system chat announced that a flag became active again.
+    /// </summary>
+    FlagReactivatedChat = 0xC9,
     
     /// <summary>
     /// The connection has been terminated.

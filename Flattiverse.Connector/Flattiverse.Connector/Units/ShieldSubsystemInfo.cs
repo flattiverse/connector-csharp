@@ -1,25 +1,27 @@
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Visible snapshot of a classic-ship engine subsystem on a scanned player unit.
+/// Visible snapshot of a shield subsystem on a scanned player unit.
 /// </summary>
-public class ClassicShipEngineSubsystemInfo
+public class ShieldSubsystemInfo
 {
     private bool _exists;
     private float _maximum;
-    private Vector _current;
-    private Vector _target;
+    private float _current;
+    private bool _active;
+    private float _rate;
     private SubsystemStatus _status;
     private float _consumedEnergyThisTick;
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal ClassicShipEngineSubsystemInfo()
+    internal ShieldSubsystemInfo()
     {
         _exists = false;
         _maximum = 0f;
-        _current = new Vector();
-        _target = new Vector();
+        _current = 0f;
+        _active = false;
+        _rate = 0f;
         _status = SubsystemStatus.Off;
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
@@ -27,7 +29,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// true if the subsystem exists.
+    /// Indicates whether the subsystem exists on the scanned unit.
     /// </summary>
     public bool Exists
     {
@@ -35,7 +37,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The maximum configurable impulse length.
+    /// The maximum shield integrity.
     /// </summary>
     public float Maximum
     {
@@ -43,23 +45,31 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The current applied engine impulse.
+    /// The current shield integrity.
     /// </summary>
-    public Vector Current
+    public float Current
     {
-        get { return new Vector(_current); }
+        get { return _current; }
     }
 
     /// <summary>
-    /// The configured target engine impulse.
+    /// Whether shield loading was active for the tick.
     /// </summary>
-    public Vector Target
+    public bool Active
     {
-        get { return new Vector(_target); }
+        get { return _active; }
     }
 
     /// <summary>
-    /// The status reported for the current server tick.
+    /// The configured shield load rate.
+    /// </summary>
+    public float Rate
+    {
+        get { return _rate; }
+    }
+
+    /// <summary>
+    /// Status of the reported shield subsystem.
     /// </summary>
     public SubsystemStatus Status
     {
@@ -67,7 +77,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The energy consumed during the current server tick.
+    /// Energy consumed by the shield during the tick.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -75,7 +85,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The ions consumed during the current server tick.
+    /// Ions consumed by the shield during the tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -83,20 +93,21 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The neutrinos consumed during the current server tick.
+    /// Neutrinos consumed by the shield during the tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float maximum, Vector current, Vector target, SubsystemStatus status, float consumedEnergyThisTick,
+    internal void Update(bool exists, float maximum, float current, bool active, float rate, SubsystemStatus status, float consumedEnergyThisTick,
         float consumedIonsThisTick, float consumedNeutrinosThisTick)
     {
         _exists = exists;
         _maximum = exists ? maximum : 0f;
-        _current = exists ? new Vector(current) : new Vector();
-        _target = exists ? new Vector(target) : new Vector();
+        _current = exists ? current : 0f;
+        _active = exists && active;
+        _rate = exists ? rate : 0f;
         _status = exists ? status : SubsystemStatus.Off;
         _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
         _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;

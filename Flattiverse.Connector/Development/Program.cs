@@ -1285,7 +1285,7 @@ class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=11&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=13&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 
@@ -1531,7 +1531,7 @@ class Program
         xml.Add("<Meteoroid Name=\"RoundtripMeteoroid\" X=\"260\" Y=\"110\" Radius=\"15\" Gravity=\"0.002\" Type=\"MetallicSlug\" Metal=\"0.89\" Carbon=\"0.05\" Hydrogen=\"0.03\" Silicon=\"0.21\" />");
         xml.Add("<Buoy Name=\"RoundtripBuoy\" X=\"-260\" Y=\"-120\" Radius=\"10\" Gravity=\"0\" Message=\"Roundtrip marker buoy\" />");
         xml.Add("<MissionTarget Name=\"RoundtripMissionTarget\" X=\"20\" Y=\"30\" Radius=\"8\" Gravity=\"0\" Team=\"0\" SequenceNumber=\"7\"><Vector X=\"40\" Y=\"50\" /><Vector X=\"-60\" Y=\"70\" /></MissionTarget>");
-        xml.Add("<Flag Name=\"RoundtripFlag\" X=\"-70\" Y=\"95\" Radius=\"9\" Gravity=\"0\" Team=\"0\" />");
+        xml.Add("<Flag Name=\"RoundtripFlag\" X=\"-70\" Y=\"95\" Radius=\"9\" Gravity=\"0\" Team=\"0\" GraceTicks=\"120\" />");
         xml.Add("<DominationPoint Name=\"RoundtripDominationPoint\" X=\"180\" Y=\"-75\" Radius=\"14\" Gravity=\"0\" Team=\"0\" DominationRadius=\"90\" />");
 
         return xml;
@@ -2234,13 +2234,14 @@ class Program
                 missionTargetVectorCountWorked = vectorCount == 2;
             }
 
-            string flagXml = $"<Flag Name=\"{unitName}\" X=\"-12\" Y=\"18\" Radius=\"7\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" />";
+            string flagXml = $"<Flag Name=\"{unitName}\" X=\"-12\" Y=\"18\" Radius=\"7\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" GraceTicks=\"123\" />";
             await clusterValue.SetUnit(flagXml).ConfigureAwait(false);
 
             string queriedFlagXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
             XDocument queriedFlagDocument = XDocument.Parse(queriedFlagXml, LoadOptions.None);
             bool flagKindWorked = queriedFlagDocument.Root?.Name.LocalName == "Flag";
             bool flagTeamWorked = queriedFlagDocument.Root?.Attribute("Team")?.Value == missionTargetTeamValue.Id.ToString();
+            bool flagGraceTicksWorked = queriedFlagDocument.Root?.Attribute("GraceTicks")?.Value == "123";
 
             string dominationPointXml = $"<DominationPoint Name=\"{unitName}\" X=\"25\" Y=\"-35\" Radius=\"13\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" DominationRadius=\"88\" />";
             await clusterValue.SetUnit(dominationPointXml).ConfigureAwait(false);
@@ -2266,8 +2267,8 @@ class Program
                 queryAfterRemoveFailed = exception.Reason == InvalidArgumentKind.EntityNotFound && expectedParameter;
             }
 
-            Console.WriteLine($"  RESULT: {(isSun && kindSwitchWorked && missionTargetKindWorked && missionTargetVectorCountWorked && missionTargetTeamWorked && missionTargetSequenceWorked && flagKindWorked && flagTeamWorked && dominationPointKindWorked && dominationPointRadiusWorked && queryAfterRemoveFailed ? "OK" : "FAILED")} " +
-                              $"(sun={isSun}, kindSwitch={kindSwitchWorked}, missionTargetKind={missionTargetKindWorked}, missionTargetVectors={missionTargetVectorCountWorked}, missionTargetTeam={missionTargetTeamWorked}, missionTargetSequence={missionTargetSequenceWorked}, flagKind={flagKindWorked}, flagTeam={flagTeamWorked}, dominationPointKind={dominationPointKindWorked}, dominationPointRadius={dominationPointRadiusWorked}, removed={queryAfterRemoveFailed})");
+            Console.WriteLine($"  RESULT: {(isSun && kindSwitchWorked && missionTargetKindWorked && missionTargetVectorCountWorked && missionTargetTeamWorked && missionTargetSequenceWorked && flagKindWorked && flagTeamWorked && flagGraceTicksWorked && dominationPointKindWorked && dominationPointRadiusWorked && queryAfterRemoveFailed ? "OK" : "FAILED")} " +
+                              $"(sun={isSun}, kindSwitch={kindSwitchWorked}, missionTargetKind={missionTargetKindWorked}, missionTargetVectors={missionTargetVectorCountWorked}, missionTargetTeam={missionTargetTeamWorked}, missionTargetSequence={missionTargetSequenceWorked}, flagKind={flagKindWorked}, flagTeam={flagTeamWorked}, flagGraceTicks={flagGraceTicksWorked}, dominationPointKind={dominationPointKindWorked}, dominationPointRadius={dominationPointRadiusWorked}, removed={queryAfterRemoveFailed})");
         }
         catch (Exception exception)
         {
@@ -2651,11 +2652,11 @@ class Program
     private static async Task TestScoreUpdatesOnSuicide(Galaxy playerGalaxy, ConcurrentQueue<FlattiverseEvent> playerEvents)
     {
         string shipName = $"ScoreShip{DateTimeOffset.UtcNow.ToUnixTimeSeconds() % 1000000:000000}";
-        uint initialPlayerKills = playerGalaxy.Player.Score.Kills;
-        uint initialPlayerDeaths = playerGalaxy.Player.Score.Deaths;
+        uint initialPlayerKills = playerGalaxy.Player.Score.PlayerKills;
+        uint initialPlayerDeaths = playerGalaxy.Player.Score.PlayerDeaths;
         uint initialPlayerFriendlyDeaths = playerGalaxy.Player.Score.FriendlyDeaths;
-        uint initialTeamKills = playerGalaxy.Player.Team.Score.Kills;
-        uint initialTeamDeaths = playerGalaxy.Player.Team.Score.Deaths;
+        uint initialTeamKills = playerGalaxy.Player.Team.Score.PlayerKills;
+        uint initialTeamDeaths = playerGalaxy.Player.Team.Score.PlayerDeaths;
         uint initialTeamFriendlyDeaths = playerGalaxy.Player.Team.Score.FriendlyDeaths;
 
         DrainEvents(playerEvents);
@@ -2690,22 +2691,22 @@ class Program
         foreach (FlattiverseEvent @event in eventsAfterSuicide)
             if (@event is PlayerScoreUpdatedEvent playerScoreUpdatedEvent &&
                 playerScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
-                playerScoreUpdatedEvent.NewDeaths == initialPlayerDeaths &&
-                playerScoreUpdatedEvent.NewKills == initialPlayerKills &&
+                playerScoreUpdatedEvent.NewPlayerDeaths == initialPlayerDeaths &&
+                playerScoreUpdatedEvent.NewPlayerKills == initialPlayerKills &&
                 playerScoreUpdatedEvent.NewFriendlyDeaths == initialPlayerFriendlyDeaths + 1U)
                 playerScoreUpdated = true;
             else if (@event is TeamScoreUpdatedEvent teamScoreUpdatedEvent &&
                      teamScoreUpdatedEvent.Team.Id == playerGalaxy.Player.Team.Id &&
-                     teamScoreUpdatedEvent.NewDeaths == initialTeamDeaths &&
-                     teamScoreUpdatedEvent.NewKills == initialTeamKills &&
+                     teamScoreUpdatedEvent.NewPlayerDeaths == initialTeamDeaths &&
+                     teamScoreUpdatedEvent.NewPlayerKills == initialTeamKills &&
                      teamScoreUpdatedEvent.NewFriendlyDeaths == initialTeamFriendlyDeaths + 1U)
                 teamScoreUpdated = true;
 
-        bool playerScoreApplied = playerGalaxy.Player.Score.Deaths == initialPlayerDeaths &&
-                                  playerGalaxy.Player.Score.Kills == initialPlayerKills &&
+        bool playerScoreApplied = playerGalaxy.Player.Score.PlayerDeaths == initialPlayerDeaths &&
+                                  playerGalaxy.Player.Score.PlayerKills == initialPlayerKills &&
                                   playerGalaxy.Player.Score.FriendlyDeaths == initialPlayerFriendlyDeaths + 1U;
-        bool teamScoreApplied = playerGalaxy.Player.Team.Score.Deaths == initialTeamDeaths &&
-                                playerGalaxy.Player.Team.Score.Kills == initialTeamKills &&
+        bool teamScoreApplied = playerGalaxy.Player.Team.Score.PlayerDeaths == initialTeamDeaths &&
+                                playerGalaxy.Player.Team.Score.PlayerKills == initialTeamKills &&
                                 playerGalaxy.Player.Team.Score.FriendlyDeaths == initialTeamFriendlyDeaths + 1U;
 
         Console.WriteLine($"  SHIP REACHED DEAD STATE: {dead}");
@@ -2797,6 +2798,9 @@ class Program
         if (@event is PartedPlayerEvent partedPlayerEvent)
             return $"{partedPlayerEvent.Stamp:HH:mm:ss.fff} PLAYER- id={partedPlayerEvent.Player.Id} name={partedPlayerEvent.Player.Name}";
 
+        if (@event is DisconnectedPlayerEvent disconnectedPlayerEvent)
+            return $"{disconnectedPlayerEvent.Stamp:HH:mm:ss.fff} PLAYER-DISCONNECTED id={disconnectedPlayerEvent.Player.Id} name={disconnectedPlayerEvent.Player.Name}";
+
         if (@event is RegisteredControllableInfoPlayerEvent registeredControllableInfoPlayerEvent)
             return $"{registeredControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL+ player={registeredControllableInfoPlayerEvent.Player.Id}:{registeredControllableInfoPlayerEvent.Player.Name} controllable={registeredControllableInfoPlayerEvent.ControllableInfo.Id}:{registeredControllableInfoPlayerEvent.ControllableInfo.Name} kind={registeredControllableInfoPlayerEvent.ControllableInfo.Kind} alive={registeredControllableInfoPlayerEvent.ControllableInfo.Alive}";
 
@@ -2857,7 +2861,7 @@ class Program
 
         foreach (Player player in galaxy.Players)
         {
-            Console.WriteLine($"  player {player.Id}:{player.Name} active={player.Active} kind={player.Kind} team={player.Team.Name}");
+            Console.WriteLine($"  player {player.Id}:{player.Name} active={player.Active} disconnected={player.Disconnected} kind={player.Kind} team={player.Team.Name}");
 
             foreach (ControllableInfo controllableInfo in player.ControllableInfos)
                 Console.WriteLine($"    controllable {controllableInfo.Id}:{controllableInfo.Name} active={controllableInfo.Active} alive={controllableInfo.Alive} kind={controllableInfo.Kind}");

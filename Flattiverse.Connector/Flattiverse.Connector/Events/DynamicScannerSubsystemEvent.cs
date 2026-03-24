@@ -3,9 +3,9 @@ using Flattiverse.Connector.GalaxyHierarchy;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Runtime update of a scanner subsystem on your own controllable.
+/// Runtime update of a dynamic scanner subsystem on your own controllable.
 /// </summary>
-public class ScannerSubsystemEvent : ControllableSubsystemEvent
+public class DynamicScannerSubsystemEvent : ControllableSubsystemEvent
 {
     /// <summary>
     /// true if the scanner is active.
@@ -57,7 +57,7 @@ public class ScannerSubsystemEvent : ControllableSubsystemEvent
     /// </summary>
     public readonly float ConsumedNeutrinosThisTick;
 
-    internal ScannerSubsystemEvent(Controllable controllable, SubsystemSlot slot, SubsystemStatus status, bool active, float currentWidth,
+    internal DynamicScannerSubsystemEvent(Controllable controllable, SubsystemSlot slot, SubsystemStatus status, bool active, float currentWidth,
         float currentLength, float currentAngle, float targetWidth, float targetLength, float targetAngle,
         float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick) : base(controllable, slot, status)
     {
@@ -74,11 +74,11 @@ public class ScannerSubsystemEvent : ControllableSubsystemEvent
     }
 
     /// <inheritdoc/>
-    public override EventKind Kind => EventKind.ScannerSubsystem;
+    public override EventKind Kind => EventKind.DynamicScannerSubsystem;
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Stamp:HH:mm:ss.fff} Scanner subsystem event: Controllable=\"{Controllable.Name}\", Slot={Slot}, Status={Status}, Active={Active}, Current=({CurrentWidth:0.###},{CurrentLength:0.###},{CurrentAngle:0.###}), Target=({TargetWidth:0.###},{TargetLength:0.###},{TargetAngle:0.###}), Consumed=({ConsumedEnergyThisTick:0.###},{ConsumedIonsThisTick:0.###},{ConsumedNeutrinosThisTick:0.###}).";
+        return $"{Stamp:HH:mm:ss.fff} Dynamic scanner subsystem event: Controllable=\"{Controllable.Name}\", Slot={Slot}, Status={Status}, Active={Active}, Current=({CurrentWidth:0.###},{CurrentLength:0.###},{CurrentAngle:0.###}), Target=({TargetWidth:0.###},{TargetLength:0.###},{TargetAngle:0.###}), Consumed=({ConsumedEnergyThisTick:0.###},{ConsumedIonsThisTick:0.###},{ConsumedNeutrinosThisTick:0.###}).";
     }
 }

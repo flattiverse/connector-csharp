@@ -18,7 +18,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class Galaxy : IDisposable
 {
-    private const string Version = "11";
+    private const string Version = "13";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -643,7 +643,7 @@ public class Galaxy : IDisposable
 
     [Command(0x04)]
     private void UpdateTeamScore(Team team, uint playerKills, uint playerDeaths, uint friendlyKills, uint friendlyDeaths, uint npcKills,
-        uint npcDeaths, uint neutralDeaths, uint mission)
+        uint npcDeaths, uint neutralDeaths, int mission)
     {
         uint oldPlayerKills = team.Score.PlayerKills;
         uint oldPlayerDeaths = team.Score.PlayerDeaths;
@@ -652,7 +652,7 @@ public class Galaxy : IDisposable
         uint oldNpcKills = team.Score.NpcKills;
         uint oldNpcDeaths = team.Score.NpcDeaths;
         uint oldNeutralDeaths = team.Score.NeutralDeaths;
-        uint oldMission = team.Score.Mission;
+        int oldMission = team.Score.Mission;
 
         team.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
@@ -729,7 +729,7 @@ public class Galaxy : IDisposable
     }
     
     [Command(0x10)]
-    private void CreatePlayer(byte id, PlayerKind kind, Team team, string name, float ping, byte admin, int rank,
+    private void CreatePlayer(byte id, PlayerKind kind, Team team, string name, float ping, byte admin, byte stateFlags, int rank,
         long playerKills, long playerDeaths, long friendlyKills, long friendlyDeaths, long npcKills, long npcDeaths,
         long neutralDeaths, byte hasAvatar, PacketReader reader)
     {
@@ -748,25 +748,37 @@ public class Galaxy : IDisposable
         if ((disclosureFlags & 0x02) != 0 && !BuildDisclosure.TryRead(reader, out buildDisclosure))
             throw new InvalidDataException("Player create packet contains malformed build disclosure.");
 
-        _players[id] = new Player(this, id, kind, team, name, ping, admin != 0x00, rank, playerKills, playerDeaths, friendlyKills,
-            friendlyDeaths, npcKills, npcDeaths, neutralDeaths, hasAvatar != 0x00, runtimeDisclosure, buildDisclosure);
+        bool disconnected = (stateFlags & 0x01) != 0;
+
+        _players[id] = new Player(this, id, kind, team, name, ping, admin != 0x00, disconnected, rank, playerKills, playerDeaths,
+            friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, hasAvatar != 0x00, runtimeDisclosure, buildDisclosure);
         
         PushEvent(new JoinedPlayerEvent(_players[id]!));
+
+        if (_players[id]!.Disconnected)
+            PushEvent(new DisconnectedPlayerEvent(_players[id]!));
     }
     
     [Command(0x11)]
-    private void UpdatePlayer(byte id, float ping, byte admin, int rank, long playerKills, long playerDeaths, long friendlyKills,
-        long friendlyDeaths, long npcKills, long npcDeaths, long neutralDeaths)
+    private void UpdatePlayer(byte id, float ping, byte admin, byte stateFlags, int rank, long playerKills, long playerDeaths,
+        long friendlyKills, long friendlyDeaths, long npcKills, long npcDeaths, long neutralDeaths)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
 
-        _players[id]!.Update(ping, admin != 0x00, rank, playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths);
+        Player player = _players[id]!;
+        bool wasDisconnected = player.Disconnected;
+
+        player.Update(ping, admin != 0x00, (stateFlags & 0x01) != 0, rank, playerKills, playerDeaths, friendlyKills, friendlyDeaths,
+            npcKills, npcDeaths, neutralDeaths);
+
+        if (!wasDisconnected && player.Disconnected)
+            PushEvent(new DisconnectedPlayerEvent(player));
     }
 
     [Command(0x12)]
     private void UpdatePlayerScore(byte id, uint playerKills, uint playerDeaths, uint friendlyKills, uint friendlyDeaths, uint npcKills,
-        uint npcDeaths, uint neutralDeaths, uint mission)
+        uint npcDeaths, uint neutralDeaths, int mission)
     {
         Debug.Assert(id < 193, "Invalid player ID.");
         Debug.Assert(_players[id] is not null, "Player was already deactivated or did never exist.");
@@ -779,7 +791,7 @@ public class Galaxy : IDisposable
         uint oldNpcKills = player.Score.NpcKills;
         uint oldNpcDeaths = player.Score.NpcDeaths;
         uint oldNeutralDeaths = player.Score.NeutralDeaths;
-        uint oldMission = player.Score.Mission;
+        int oldMission = player.Score.Mission;
 
         player.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
@@ -863,7 +875,7 @@ public class Galaxy : IDisposable
 
     [Command(0x25)]
     private void ControllableInfoScoreUpdated(Player player, byte id, uint playerKills, uint playerDeaths, uint friendlyKills,
-        uint friendlyDeaths, uint npcKills, uint npcDeaths, uint neutralDeaths, uint mission)
+        uint friendlyDeaths, uint npcKills, uint npcDeaths, uint neutralDeaths, int mission)
     {
         ControllableInfo? controllable = player._controllableInfos[id];
 
@@ -877,7 +889,7 @@ public class Galaxy : IDisposable
         uint oldNpcKills = controllable.Score.NpcKills;
         uint oldNpcDeaths = controllable.Score.NpcDeaths;
         uint oldNeutralDeaths = controllable.Score.NeutralDeaths;
-        uint oldMission = controllable.Score.Mission;
+        int oldMission = controllable.Score.Mission;
 
         controllable.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
@@ -1004,6 +1016,34 @@ public class Galaxy : IDisposable
     {
         PushEvent(new GalaxyTickEvent(number));
     }
+
+    [Command(0xC1)]
+    private void FlagScoredChat(Player player, byte controllableId, Team flagTeam, string flagName)
+    {
+        ControllableInfo? controllableInfo = player._controllableInfos[controllableId];
+
+        if (controllableInfo is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo in flag score chat.");
+
+        PushEvent(new FlagScoredChatEvent(player, controllableInfo, flagTeam, flagName));
+    }
+
+    [Command(0xC2)]
+    private void DominationPointScoredChat(Team team, string dominationPointName)
+    {
+        PushEvent(new DominationPointScoredChatEvent(team, dominationPointName));
+    }
+
+    [Command(0xC3)]
+    private void OwnFlagHitChat(Player player, byte controllableId, Team flagTeam, string flagName)
+    {
+        ControllableInfo? controllableInfo = player._controllableInfos[controllableId];
+
+        if (controllableInfo is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo in own-flag-hit chat.");
+
+        PushEvent(new OwnFlagHitChatEvent(player, controllableInfo, flagTeam, flagName));
+    }
     
     [Command(0xC4)]
     private void ChatGalaxy(Player player, string message)
@@ -1021,6 +1061,12 @@ public class Galaxy : IDisposable
     private void ChatPlayer(Player player, string message)
     {
         PushEvent(new PlayerChatPlayerEvent(player, message, this.Player));
+    }
+
+    [Command(0xC9)]
+    private void FlagReactivatedChat(Team flagTeam, string flagName)
+    {
+        PushEvent(new FlagReactivatedChatEvent(flagTeam, flagName));
     }
 
     /// <summary>

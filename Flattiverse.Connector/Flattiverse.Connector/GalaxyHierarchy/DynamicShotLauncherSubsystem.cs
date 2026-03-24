@@ -5,9 +5,9 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// Projectile weapon subsystem of a controllable.
+/// Dynamic projectile launcher subsystem of a controllable.
 /// </summary>
-public class ShotWeaponSubsystem : Subsystem
+public class DynamicShotLauncherSubsystem : Subsystem
 {
     private const float RelativeMovementMinimum = 0.1f;
     private const float RelativeMovementMaximum = 3f;
@@ -26,7 +26,7 @@ public class ShotWeaponSubsystem : Subsystem
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal ShotWeaponSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
+    internal DynamicShotLauncherSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
         _relativeMovement = new Vector();
@@ -135,7 +135,7 @@ public class ShotWeaponSubsystem : Subsystem
     }
 
     /// <summary>
-    /// The energy consumed by the weapon during the current server tick.
+    /// The energy consumed by the launcher during the current server tick.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -143,7 +143,7 @@ public class ShotWeaponSubsystem : Subsystem
     }
 
     /// <summary>
-    /// The ions consumed by the weapon during the current server tick.
+    /// The ions consumed by the launcher during the current server tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -151,7 +151,7 @@ public class ShotWeaponSubsystem : Subsystem
     }
 
     /// <summary>
-    /// The neutrinos consumed by the weapon during the current server tick.
+    /// The neutrinos consumed by the launcher during the current server tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {
@@ -159,24 +159,16 @@ public class ShotWeaponSubsystem : Subsystem
     }
 
     /// <summary>
-    /// Calculates the current placeholder weapon energy costs for the requested shot.
-    /// The current formula is
-    /// <c>
-    /// energy = 10
-    ///   + 250 * speed01^3
-    ///   + 240 * ticks01^2
-    ///   + 600 * load01^2
-    ///   + 700 * damage01^2
-    /// </c>
-    /// with
-    /// <c>speed01=(speed-0.1)/2.9</c>,
-    /// <c>ticks01=(ticks-2)/138</c>,
-    /// <c>load01=(load-2.5)/22.5</c>,
-    /// <c>damage01=(damage-1)/19</c>.
-    /// Returns false when the subsystem does not exist or the requested values are outside the valid range.
-    /// The vector length, load and damage values are clipped when they are only slightly outside the configured range.
-    /// The tick count is not clipped.
+    /// Calculates the resource costs for one dynamic shot request.
     /// </summary>
+    /// <param name="relativeMovement">The relative shot movement vector.</param>
+    /// <param name="ticks">The shot lifetime in ticks.</param>
+    /// <param name="load">The explosion load applied when the shot expires.</param>
+    /// <param name="damage">The damage the shot should inflict.</param>
+    /// <param name="energy">The resulting energy cost.</param>
+    /// <param name="ions">The resulting ion cost.</param>
+    /// <param name="neutrinos">The resulting neutrino cost.</param>
+    /// <returns><see langword="true"/> if the input is valid; otherwise <see langword="false"/>.</returns>
     public bool CalculateCost(Vector relativeMovement, ushort ticks, float load, float damage, out float energy, out float ions,
         out float neutrinos)
     {
@@ -304,7 +296,7 @@ public class ShotWeaponSubsystem : Subsystem
         if (!Exists || !ShouldEmitRuntimeEvent())
             return null;
 
-        return new ShotWeaponSubsystemEvent(Controllable, Slot, Status, _relativeMovement, _ticks, _load, _damage,
+        return new DynamicShotLauncherSubsystemEvent(Controllable, Slot, Status, _relativeMovement, _ticks, _load, _damage,
             _consumedEnergyThisTick, _consumedIonsThisTick, _consumedNeutrinosThisTick);
     }
 }

@@ -4,9 +4,9 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Runtime update of a shot-launcher subsystem on your own controllable.
+/// Runtime update of a dynamic shot launcher subsystem on your own controllable.
 /// </summary>
-public class ShotWeaponSubsystemEvent : ControllableSubsystemEvent
+public class DynamicShotLauncherSubsystemEvent : ControllableSubsystemEvent
 {
     /// <summary>
     /// The shot movement processed for the current server tick.
@@ -43,7 +43,7 @@ public class ShotWeaponSubsystemEvent : ControllableSubsystemEvent
     /// </summary>
     public readonly float ConsumedNeutrinosThisTick;
 
-    internal ShotWeaponSubsystemEvent(Controllable controllable, SubsystemSlot slot, SubsystemStatus status, Vector relativeMovement,
+    internal DynamicShotLauncherSubsystemEvent(Controllable controllable, SubsystemSlot slot, SubsystemStatus status, Vector relativeMovement,
         ushort ticks, float load, float damage, float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick) :
         base(controllable, slot, status)
     {
@@ -57,11 +57,11 @@ public class ShotWeaponSubsystemEvent : ControllableSubsystemEvent
     }
 
     /// <inheritdoc/>
-    public override EventKind Kind => EventKind.ShotWeaponSubsystem;
+    public override EventKind Kind => EventKind.DynamicShotLauncherSubsystem;
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Stamp:HH:mm:ss.fff} Shot-launcher subsystem event: Controllable=\"{Controllable.Name}\", Slot={Slot}, Status={Status}, RelativeMovement={RelativeMovement}, Ticks={Ticks}, Load={Load:0.###}, Damage={Damage:0.###}, Consumed=({ConsumedEnergyThisTick:0.###},{ConsumedIonsThisTick:0.###},{ConsumedNeutrinosThisTick:0.###}).";
+        return $"{Stamp:HH:mm:ss.fff} Dynamic shot launcher subsystem event: Controllable=\"{Controllable.Name}\", Slot={Slot}, Status={Status}, RelativeMovement={RelativeMovement}, Ticks={Ticks}, Load={Load:0.###}, Damage={Damage:0.###}, Consumed=({ConsumedEnergyThisTick:0.###},{ConsumedIonsThisTick:0.###},{ConsumedNeutrinosThisTick:0.###}).";
     }
 }

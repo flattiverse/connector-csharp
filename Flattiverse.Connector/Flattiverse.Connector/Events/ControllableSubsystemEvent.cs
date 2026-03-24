@@ -18,7 +18,7 @@ public abstract class ControllableSubsystemEvent : FlattiverseEvent
     public readonly SubsystemSlot Slot;
 
     /// <summary>
-    /// The runtime status for the current server tick.
+    /// The status reported for the current server tick.
     /// </summary>
     public readonly SubsystemStatus Status;
 

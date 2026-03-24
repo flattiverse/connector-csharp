@@ -24,16 +24,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-11
+13
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=11&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=11&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=11&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=11&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=13&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=13&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=13&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=13&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -216,7 +216,7 @@ Payload details for the important structured exceptions:
 
 `0x17` is currently used when a client sends `0x84 Continue` for a controllable that has already entered the closing phase.
 
-`0x18` is currently used when a client requests `0xC7` / `0xC8` for a player that has no avatar available.
+`0x18` is currently used when a client requests `0xF1` / `0xF2` for a player that has no avatar available.
 
 Current `InvalidArgumentKind` values:
 
@@ -269,6 +269,8 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x82`: controllable runtime update and alive
 * `0x8F`: controllable finally closed
 * `0xC0`: `GalaxyTickEvent`
+* `0xC1`: flag-scored system chat message
+* `0xC2`: domination-point-scored system chat message
 * `0xC4`: public galaxy chat message
 * `0xC5`: team chat message
 * `0xC6`: private chat message
@@ -328,7 +330,7 @@ uint friendlyDeaths
 uint npcKills
 uint npcDeaths
 uint neutralDeaths
-uint mission
+int mission
 ```
 
 ### `0x06` Cluster Snapshot
@@ -372,6 +374,7 @@ byte   teamId
 string accountName
 float  pingMilliseconds
 byte   adminFlag
+byte   stateFlags
 int    rank
 long   playerKills
 long   playerDeaths
@@ -391,6 +394,10 @@ byte   disclosureFlags
 * bit `0x01`: `runtimeDisclosure` present
 * bit `0x02`: `buildDisclosure` present
 
+`stateFlags` uses:
+
+* bit `0x01`: player connection already disconnected; cleanup and controllable closeout may still be pending
+
 Packed disclosure bytes use high nibble first. Disclosure data is sent only in `0x10 Player Create`, not in `0x11 Player Update`.
 
 ### `0x11` Player Update
@@ -401,6 +408,7 @@ Payload order:
 byte  playerId
 float pingMilliseconds
 byte  adminFlag
+byte  stateFlags
 int   rank
 long  playerKills
 long  playerDeaths
@@ -410,6 +418,10 @@ long  npcKills
 long  npcDeaths
 long  neutralDeaths
 ```
+
+`stateFlags` currently uses:
+
+* bit `0x01`: player connection already disconnected; cleanup and controllable closeout may still be pending
 
 ### `0x12` Player Score Update
 
@@ -424,7 +436,7 @@ uint friendlyDeaths
 uint npcKills
 uint npcDeaths
 uint neutralDeaths
-uint mission
+int mission
 ```
 
 ### `0x25` Controllable Info Score Update
@@ -441,11 +453,51 @@ uint friendlyDeaths
 uint npcKills
 uint npcDeaths
 uint neutralDeaths
-uint mission
+int mission
 ```
 
 This score belongs to the registered controllable identified by `(controllablePlayerId, controllableId)`.
 It is session-local, just like `0x12 Player Score Update`.
+
+### `0xC1` Flag Scored System Chat
+
+Payload order:
+
+```text
+byte   playerId
+byte   controllableId
+byte   flagTeamId
+string flagName
+```
+
+### `0xC2` Domination Point Scored System Chat
+
+Payload order:
+
+```text
+byte   teamId
+string dominationPointName
+```
+
+### `0xC3` Own Flag Hit System Chat
+
+Payload order:
+
+```text
+byte   playerId
+byte   controllableId
+byte   flagTeamId
+string flagName
+```
+
+### `0xC9` Flag Reactivated System Chat
+
+Payload order:
+
+```text
+byte   flagTeamId
+string flagName
+```
 
 ### `0x80` Controllable Create
 
@@ -490,10 +542,10 @@ SubsystemStatus:
 SubsystemSlot ranges:
     0x00..0x0F batteries
     0x10..0x17 cells
-    0x18..0x1F hulls
+    0x18..0x1F integrity subsystems
     0x20..0x2F scanners
     0x30..0x3F engines
-    0x40..0x4F shot launchers
+    0x40..0x4F dynamic shot subsystems
 
 Currently used slots:
     0x00 EnergyBattery
@@ -503,10 +555,13 @@ Currently used slots:
     0x11 IonCell
     0x12 NeutrinoCell
     0x18 Hull
+    0x19 Shield
     0x20 PrimaryScanner
     0x21 SecondaryScanner
     0x30 PrimaryEngine
-    0x40 FrontShotLauncher
+    0x40 DynamicShotLauncher
+    0x41 DynamicShotMagazine
+    0x42 DynamicShotFabricator
 ```
 
 Common payload order:
@@ -532,6 +587,13 @@ float  neutrinoCellCollectedThisTick
 byte   neutrinoCellStatus
 float  hullCurrent
 byte   hullStatus
+float  shieldCurrent
+byte   shieldActive
+float  shieldRate
+byte   shieldStatus
+float  shieldConsumedEnergyThisTick
+float  shieldConsumedIonsThisTick
+float  shieldConsumedNeutrinosThisTick
 ```
 
 The remaining payload depends on `controllableKind`.
@@ -567,14 +629,22 @@ byte   engineStatus
 float  engineConsumedEnergyThisTick
 float  engineConsumedIonsThisTick
 float  engineConsumedNeutrinosThisTick
-Vector weaponRelativeMovement
-ushort weaponTicks
-float  weaponLoad
-float  weaponDamage
-byte   weaponStatus
-float  weaponConsumedEnergyThisTick
-float  weaponConsumedIonsThisTick
-float  weaponConsumedNeutrinosThisTick
+Vector shotLauncherRelativeMovement
+ushort shotLauncherTicks
+float  shotLauncherLoad
+float  shotLauncherDamage
+byte   shotLauncherStatus
+float  shotLauncherConsumedEnergyThisTick
+float  shotLauncherConsumedIonsThisTick
+float  shotLauncherConsumedNeutrinosThisTick
+float  shotMagazineCurrentShots
+byte   shotMagazineStatus
+byte   shotFabricatorActive
+float  shotFabricatorRate
+byte   shotFabricatorStatus
+float  shotFabricatorConsumedEnergyThisTick
+float  shotFabricatorConsumedIonsThisTick
+float  shotFabricatorConsumedNeutrinosThisTick
 ```
 
 Notes:
@@ -582,8 +652,12 @@ Notes:
 * Battery maxima and energy-cell efficiencies are currently initialized locally by controllable kind and are not sent on the wire.
 * `*CellCollectedThisTick` is the post-efficiency amount that was actually loaded through that cell during the current server tick.
 * `hullCurrent` is the current hull integrity after that tick's damage resolution. The reference `ClassicShip` currently initializes hull locally with a maximum of `50`.
+* `shieldCurrent` is the current shield integrity after that tick's damage resolution. The reference `ClassicShip` currently initializes shield locally with a maximum of `20`.
+* `shieldActive` / `shieldRate` is the owner-visible shield loading configuration. The current placeholder shield cost is `1600 * rate^2`, so the maximum reference rate `0.125` costs `25` energy per tick.
 * `engineCurrent` is the currently applied engine impulse for this tick. `engineTarget` is the persisted requested impulse.
-* `weapon*` describes the shot request the server actually processed in this tick. If the weapon was off or did not have a queued shot, the runtime values are zeroed.
+* `shotLauncher*` describes the shot request the server actually processed in this tick. If the launcher had no queued shot, the runtime values are zeroed.
+* `shotMagazineCurrentShots` is the owner-visible stored shot resource in `[0; 5]`. `shotMagazineStatus == Failed` means the launcher tried to consume one full shot this tick and the magazine did not have enough stored charge.
+* `shotFabricator*` is the owner-visible production state. While active, the fabricator still consumes its configured energy at a full magazine; only the stored amount is clamped.
 * `mainScannerStatus == Worked` / `secondaryScannerStatus == Worked` tells owner-side tools whether the server actually paid and executed that scan in the current tick.
 * `SecondaryScanner` is currently a disabled subsystem on the reference ClassicShip. Its runtime block is still present and currently zeroed.
 * `Current*` is the server-applied runtime state. `Target*` is the server-side target configuration.
@@ -592,10 +666,13 @@ Notes:
   * `BatterySubsystemEvent`
   * `EnergyCellSubsystemEvent`
   * `HullSubsystemEvent`
-  * `ScannerSubsystemEvent`
+  * `ShieldSubsystemEvent`
+  * `DynamicScannerSubsystemEvent`
   * `ClassicShipEngineSubsystemEvent`
-  * `ShotWeaponSubsystemEvent`
-* Those connector-local events currently use `EventKind` values `0x80..0x85`, but no additional wire commands were introduced.
+  * `DynamicShotLauncherSubsystemEvent`
+  * `DynamicShotMagazineSubsystemEvent`
+  * `DynamicShotFabricatorSubsystemEvent`
+* Those connector-local events currently use `EventKind` values `0x80..0x88`, but no additional wire commands were introduced.
 
 ### `0x30` Visible Unit Create
 
@@ -606,7 +683,7 @@ The visible-unit stream is for other units only. The owner never receives the pl
 Current runtime rule:
 
 * only active scanners with sufficient battery charge produce visibility
-* scanner angles are interpreted relative to the owning unit's current facing angle
+* scanner angles are interpreted as absolute world angles
 * passive energy and radiation intake is processed independently from scanner visibility and therefore still works while scanners are off
 * passive sun intake uses `maskingFactor * 1 / (1 + d/60)^sqrt(2)` with `d` as edge-to-edge distance; transfers below `1%` are ignored completely
 * a player's own controllables are not reported back through `0x30` / `0x31` / `0x32` / `0x3F`; the owner must use the separate `0x80` / `0x82` controllable channel for them
@@ -674,7 +751,7 @@ Current `0x31` payloads:
   Vector position
   Vector movement
   ```
-* `Explosion (0xFF)`: no additional payload; in the reference connector `0x31` only advances the local explosion phase
+* `Explosion (0xFF)`: no additional payload; the reference connector ignores `0x31` for explosions
 
 ### `0x32` Visible Unit Runtime State Update
 
@@ -719,7 +796,11 @@ Current `0x32` payloads:
   ushort vectorCount
   vectorCount * Vector
   ```
-* `Flag (0x15)`: no additional payload
+* `Flag (0x15)`:
+  ```text
+  int  graceTicks
+  byte activeFlag
+  ```
 * `DominationPoint (0x16)`:
   ```text
   byte teamId
@@ -764,6 +845,15 @@ Current `0x32` payloads:
   float hullMaximum
   float hullCurrent
   byte  hullStatus
+  byte  shieldExists
+  float shieldMaximum
+  float shieldCurrent
+  byte  shieldActive
+  float shieldRate
+  byte  shieldStatus
+  float shieldConsumedEnergyThisTick
+  float shieldConsumedIonsThisTick
+  float shieldConsumedNeutrinosThisTick
   byte  mainScannerExists
   float mainScannerMaximumWidth
   float mainScannerMaximumLength
@@ -806,23 +896,36 @@ Current `0x32` payloads:
   float engineConsumedEnergyThisTick
   float engineConsumedIonsThisTick
   float engineConsumedNeutrinosThisTick
-  byte  weaponExists
-  float weaponMinimumRelativeMovement
-  float weaponMaximumRelativeMovement
-  ushort weaponMinimumTicks
-  ushort weaponMaximumTicks
-  float weaponMinimumLoad
-  float weaponMaximumLoad
-  float weaponMinimumDamage
-  float weaponMaximumDamage
-  Vector weaponRelativeMovement
-  ushort weaponTicks
-  float weaponLoad
-  float weaponDamage
-  byte  weaponStatus
-  float weaponConsumedEnergyThisTick
-  float weaponConsumedIonsThisTick
-  float weaponConsumedNeutrinosThisTick
+  byte  shotLauncherExists
+  float shotLauncherMinimumRelativeMovement
+  float shotLauncherMaximumRelativeMovement
+  ushort shotLauncherMinimumTicks
+  ushort shotLauncherMaximumTicks
+  float shotLauncherMinimumLoad
+  float shotLauncherMaximumLoad
+  float shotLauncherMinimumDamage
+  float shotLauncherMaximumDamage
+  Vector shotLauncherRelativeMovement
+  ushort shotLauncherTicks
+  float shotLauncherLoad
+  float shotLauncherDamage
+  byte  shotLauncherStatus
+  float shotLauncherConsumedEnergyThisTick
+  float shotLauncherConsumedIonsThisTick
+  float shotLauncherConsumedNeutrinosThisTick
+  byte  shotMagazineExists
+  float shotMagazineMaximumShots
+  float shotMagazineCurrentShots
+  byte  shotMagazineStatus
+  byte  shotFabricatorExists
+  float shotFabricatorMinimumRate
+  float shotFabricatorMaximumRate
+  byte  shotFabricatorActive
+  float shotFabricatorRate
+  byte  shotFabricatorStatus
+  float shotFabricatorConsumedEnergyThisTick
+  float shotFabricatorConsumedIonsThisTick
+  float shotFabricatorConsumedNeutrinosThisTick
   ```
 * `Explosion (0xFF)`: no additional payload
 
@@ -904,26 +1007,38 @@ Important notes:
 * `0x89`: configure scanner, payload `byte controllableId`, `byte scannerId`, `float width`, `float length`, `float angle`
 * `0x8A`: activate scanner, payload `byte controllableId`, `byte scannerId`
 * `0x8B`: deactivate scanner, payload `byte controllableId`, `byte scannerId`
+* `0x8C`: configure shot fabricator, payload `byte controllableId`, `float rate`
+* `0x8D`: activate shot fabricator, payload `byte controllableId`
+* `0x8E`: deactivate shot fabricator, payload `byte controllableId`
 * `0x8F`: request close of controllable, payload `byte controllableId`
+* `0x90`: configure shield loading, payload `byte controllableId`, `float rate`
+* `0x91`: activate shield loading, payload `byte controllableId`
+* `0x92`: deactivate shield loading, payload `byte controllableId`
 * `0xC4`: send galaxy chat, payload `string message`
 * `0xC5`: send team chat, payload `byte teamId`, `string message`
 * `0xC6`: send private chat, payload `byte playerId`, `string message`
-* `0xC7`: download small avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
-* `0xC8`: download big avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
+* `0xF1`: download small avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
+* `0xF2`: download big avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
 
 Notes:
 
 * `0xC5` resolves the target team by id on the server side.
 * `0xC6` resolves the target player by id on the server side.
-* `0xC7` / `0xC8` resolve the target player by id on the server side and return the avatar bytes cached on that server-side player at login time.
-* `0x10 Player Create` contains `hasAvatar`, so clients can avoid sending `0xC7` / `0xC8` for players without avatars.
-* If `hasAvatar == 0`, the reference connector throws locally before sending `0xC7` / `0xC8`.
-* The server still validates `0xC7` / `0xC8` and returns `0x18 AvatarNotAvailableGameException` if no avatar is available.
+* `0xF1` / `0xF2` resolve the target player by id on the server side and return the avatar bytes cached on that server-side player at login time.
+* `0xC1` and `0xC2` are server-originated objective system chat packets. They are not sent by clients.
+* `0x10 Player Create` contains `hasAvatar`, so clients can avoid sending `0xF1` / `0xF2` for players without avatars.
+* If `hasAvatar == 0`, the reference connector throws locally before sending `0xF1` / `0xF2`.
+* The server still validates `0xF1` / `0xF2` and returns `0x18 AvatarNotAvailableGameException` if no avatar is available.
 * `0x8F` is not an immediate removal. The server may keep a living controllable alive for 30 ticks before finally closing it, and dead controllables stay registered until no shot/explosion references remain.
+* During that cleanup window the owning player may already have `stateFlags & 0x01 != 0`, meaning the connection is gone even though the player and controllable infos are still present.
 * String validation for names and chat messages happens on the server even if a client already validated locally.
-* `0x88` currently validates `movement.Length` in `[0.1; 3]`, `ticks` in `[2; 140]`, `load` in `[2.5; 25]`, and `damage` in `[1; 20]`.
+* `0x88` currently validates `movement.Length` in `[0.1; 3]`, `ticks` in `[2; 140]`, `load` in `[2.5; 25]`, and `damage` in `[1; 20]`. Firing additionally requires at least one full stored shot in `ShotMagazine`; otherwise the launcher runtime stays failed for that tick.
 * The current reference ClassicShip supports `scannerId = 0` for `MainScanner`. `scannerId = 1` addresses `SecondaryScanner`, which currently does not exist and therefore returns `0x10 SpecifiedElementNotFoundGameException`.
-* The configured scanner angle is relative to the ship's current facing. `0` points straight ahead, positive values rotate counter-clockwise in world space.
+* `0x89` currently validates scanner `width` in `[5; 90]`, `length` in `[20; 300]`, and any finite `angle` as an absolute world angle.
+* While a dynamic scanner is off, its current width, length, and angle are zero. On the next active tick after re-activation, width and length ramp from `2.5 x 10` and the angle starts again from `0` toward the configured target.
+* `0x8C` currently validates fabricator `rate` in `[0; 0.025]`. `0x8D` / `0x8E` only toggle `Active`; they do not change the configured rate.
+* `0x90` currently validates shield `rate` in `[0; 0.125]`. `0x91` / `0x92` only toggle shield loading `Active`; they do not change the configured rate.
+* On revive, the reference `ClassicShip` restores `ShotMagazine` to `2`, resets `ShotFabricator` to `Active=false`, `Rate=0`, and resets `Shield` to `Current=0`, `Active=false`, `Rate=0`.
 
 ## Practical Compatibility Notes
 

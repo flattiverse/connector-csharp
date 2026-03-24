@@ -10,13 +10,16 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 public class ClassicShipControllable : Controllable
 {
     private readonly ClassicShipEngineSubsystem _engine;
-    private readonly ShotWeaponSubsystem _weapon;
-    private readonly ScannerSubsystem _mainScanner;
-    private readonly ScannerSubsystem _secondaryScanner;
+    private readonly DynamicShotLauncherSubsystem _shotLauncher;
+    private readonly DynamicShotMagazineSubsystem _shotMagazine;
+    private readonly DynamicShotFabricatorSubsystem _shotFabricator;
+    private readonly DynamicScannerSubsystem _mainScanner;
+    private readonly DynamicScannerSubsystem _secondaryScanner;
 
     internal ClassicShipControllable(Cluster cluster, byte id, string name, PacketReader reader) : base(id, name, cluster, reader)
     {
         _hull = HullSubsystem.CreateClassicShipHull(this);
+        _shield = ShieldSubsystem.CreateClassicShipShield(this);
         _energyBattery = BatterySubsystem.CreateClassicShipEnergyBattery(this);
         _ionBattery = BatterySubsystem.CreateMissingBattery(this, "IonBattery", SubsystemSlot.IonBattery);
         _neutrinoBattery = BatterySubsystem.CreateMissingBattery(this, "NeutrinoBattery", SubsystemSlot.NeutrinoBattery);
@@ -25,9 +28,11 @@ public class ClassicShipControllable : Controllable
         _neutrinoCell = EnergyCellSubsystem.CreateMissingCell(this, "NeutrinoCell", SubsystemSlot.NeutrinoCell);
 
         _engine = new ClassicShipEngineSubsystem(this);
-        _weapon = new ShotWeaponSubsystem(this, "Weapon", true, SubsystemSlot.FrontShotLauncher);
-        _mainScanner = ScannerSubsystem.CreateClassicShipPrimaryScanner(this);
-        _secondaryScanner = ScannerSubsystem.CreateClassicShipSecondaryScanner(this);
+        _shotLauncher = new DynamicShotLauncherSubsystem(this, "ShotLauncher", true, SubsystemSlot.DynamicShotLauncher);
+        _shotMagazine = new DynamicShotMagazineSubsystem(this, "ShotMagazine", true, SubsystemSlot.DynamicShotMagazine);
+        _shotFabricator = new DynamicShotFabricatorSubsystem(this, "ShotFabricator", true, SubsystemSlot.DynamicShotFabricator);
+        _mainScanner = DynamicScannerSubsystem.CreateClassicShipPrimaryScanner(this);
+        _secondaryScanner = DynamicScannerSubsystem.CreateClassicShipSecondaryScanner(this);
     }
 
     /// <summary>
@@ -39,17 +44,33 @@ public class ClassicShipControllable : Controllable
     }
 
     /// <summary>
-    /// The weapon subsystem of the classic ship.
+    /// The shot launcher subsystem of the classic ship.
     /// </summary>
-    public ShotWeaponSubsystem Weapon
+    public DynamicShotLauncherSubsystem ShotLauncher
     {
-        get { return _weapon; }
+        get { return _shotLauncher; }
+    }
+
+    /// <summary>
+    /// The shot magazine subsystem of the classic ship.
+    /// </summary>
+    public DynamicShotMagazineSubsystem ShotMagazine
+    {
+        get { return _shotMagazine; }
+    }
+
+    /// <summary>
+    /// The shot fabricator subsystem of the classic ship.
+    /// </summary>
+    public DynamicShotFabricatorSubsystem ShotFabricator
+    {
+        get { return _shotFabricator; }
     }
 
     /// <summary>
     /// The primary scanner subsystem of the classic ship.
     /// </summary>
-    public ScannerSubsystem MainScanner
+    public DynamicScannerSubsystem MainScanner
     {
         get { return _mainScanner; }
     }
@@ -57,7 +78,7 @@ public class ClassicShipControllable : Controllable
     /// <summary>
     /// The secondary scanner subsystem of the classic ship.
     /// </summary>
-    public ScannerSubsystem SecondaryScanner
+    public DynamicScannerSubsystem SecondaryScanner
     {
         get { return _secondaryScanner; }
     }
@@ -72,7 +93,9 @@ public class ClassicShipControllable : Controllable
     {
         base.ResetRuntime();
         _engine.ResetRuntime();
-        _weapon.ResetRuntime();
+        _shotLauncher.ResetRuntime();
+        _shotMagazine.ResetRuntime();
+        _shotFabricator.ResetRuntime();
         _mainScanner.ResetRuntime();
         _secondaryScanner.ResetRuntime();
     }
@@ -107,14 +130,22 @@ public class ClassicShipControllable : Controllable
         float engineConsumedEnergyThisTick;
         float engineConsumedIonsThisTick;
         float engineConsumedNeutrinosThisTick;
-        Vector? weaponRelativeMovement;
-        ushort weaponTicks;
-        float weaponLoad;
-        float weaponDamage;
-        byte weaponStatus;
-        float weaponConsumedEnergyThisTick;
-        float weaponConsumedIonsThisTick;
-        float weaponConsumedNeutrinosThisTick;
+        Vector? shotLauncherRelativeMovement;
+        ushort shotLauncherTicks;
+        float shotLauncherLoad;
+        float shotLauncherDamage;
+        byte shotLauncherStatus;
+        float shotLauncherConsumedEnergyThisTick;
+        float shotLauncherConsumedIonsThisTick;
+        float shotLauncherConsumedNeutrinosThisTick;
+        float shotMagazineCurrentShots;
+        byte shotMagazineStatus;
+        byte shotFabricatorActive;
+        float shotFabricatorRate;
+        byte shotFabricatorStatus;
+        float shotFabricatorConsumedEnergyThisTick;
+        float shotFabricatorConsumedIonsThisTick;
+        float shotFabricatorConsumedNeutrinosThisTick;
 
         if (!reader.Read(out mainScannerActive) ||
             !reader.Read(out mainScannerCurrentWidth) || !reader.Read(out mainScannerCurrentLength) || !reader.Read(out mainScannerCurrentAngle) ||
@@ -130,9 +161,13 @@ public class ClassicShipControllable : Controllable
             !Vector.FromReader(reader, out engineCurrent) || !Vector.FromReader(reader, out engineTarget) ||
             !reader.Read(out engineStatus) || !reader.Read(out engineConsumedEnergyThisTick) ||
             !reader.Read(out engineConsumedIonsThisTick) || !reader.Read(out engineConsumedNeutrinosThisTick) ||
-            !Vector.FromReader(reader, out weaponRelativeMovement) || !reader.Read(out weaponTicks) || !reader.Read(out weaponLoad) ||
-            !reader.Read(out weaponDamage) || !reader.Read(out weaponStatus) || !reader.Read(out weaponConsumedEnergyThisTick) ||
-            !reader.Read(out weaponConsumedIonsThisTick) || !reader.Read(out weaponConsumedNeutrinosThisTick))
+            !Vector.FromReader(reader, out shotLauncherRelativeMovement) || !reader.Read(out shotLauncherTicks) || !reader.Read(out shotLauncherLoad) ||
+            !reader.Read(out shotLauncherDamage) || !reader.Read(out shotLauncherStatus) || !reader.Read(out shotLauncherConsumedEnergyThisTick) ||
+            !reader.Read(out shotLauncherConsumedIonsThisTick) || !reader.Read(out shotLauncherConsumedNeutrinosThisTick) ||
+            !reader.Read(out shotMagazineCurrentShots) || !reader.Read(out shotMagazineStatus) ||
+            !reader.Read(out shotFabricatorActive) || !reader.Read(out shotFabricatorRate) || !reader.Read(out shotFabricatorStatus) ||
+            !reader.Read(out shotFabricatorConsumedEnergyThisTick) || !reader.Read(out shotFabricatorConsumedIonsThisTick) ||
+            !reader.Read(out shotFabricatorConsumedNeutrinosThisTick))
             throw new InvalidDataException("Couldan't read ClassicShipControllable runtime.");
 
         _mainScanner.UpdateRuntime(mainScannerActive != 0, mainScannerCurrentWidth, mainScannerCurrentLength, mainScannerCurrentAngle,
@@ -144,8 +179,12 @@ public class ClassicShipControllable : Controllable
             secondaryScannerConsumedIonsThisTick, secondaryScannerConsumedNeutrinosThisTick);
         _engine.UpdateRuntime(engineCurrent, engineTarget, (SubsystemStatus)engineStatus, engineConsumedEnergyThisTick,
             engineConsumedIonsThisTick, engineConsumedNeutrinosThisTick);
-        _weapon.UpdateRuntime(weaponRelativeMovement, weaponTicks, weaponLoad, weaponDamage, (SubsystemStatus)weaponStatus,
-            weaponConsumedEnergyThisTick, weaponConsumedIonsThisTick, weaponConsumedNeutrinosThisTick);
+        _shotLauncher.UpdateRuntime(shotLauncherRelativeMovement, shotLauncherTicks, shotLauncherLoad, shotLauncherDamage,
+            (SubsystemStatus)shotLauncherStatus, shotLauncherConsumedEnergyThisTick, shotLauncherConsumedIonsThisTick,
+            shotLauncherConsumedNeutrinosThisTick);
+        _shotMagazine.UpdateRuntime(shotMagazineCurrentShots, (SubsystemStatus)shotMagazineStatus);
+        _shotFabricator.UpdateRuntime(shotFabricatorActive != 0, shotFabricatorRate, (SubsystemStatus)shotFabricatorStatus,
+            shotFabricatorConsumedEnergyThisTick, shotFabricatorConsumedIonsThisTick, shotFabricatorConsumedNeutrinosThisTick);
     }
 
     private protected override void EmitRuntimeEvents()
@@ -154,7 +193,9 @@ public class ClassicShipControllable : Controllable
         PushRuntimeEvent(_mainScanner.CreateRuntimeEvent());
         PushRuntimeEvent(_secondaryScanner.CreateRuntimeEvent());
         PushRuntimeEvent(_engine.CreateRuntimeEvent());
-        PushRuntimeEvent(_weapon.CreateRuntimeEvent());
+        PushRuntimeEvent(_shotLauncher.CreateRuntimeEvent());
+        PushRuntimeEvent(_shotMagazine.CreateRuntimeEvent());
+        PushRuntimeEvent(_shotFabricator.CreateRuntimeEvent());
     }
 
     private void PushRuntimeEvent(FlattiverseEvent? @event)

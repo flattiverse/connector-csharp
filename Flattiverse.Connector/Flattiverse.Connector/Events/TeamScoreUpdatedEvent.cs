@@ -13,19 +13,9 @@ public class TeamScoreUpdatedEvent : FlattiverseEvent
     public readonly Team Team;
 
     /// <summary>
-    /// Kill count before the update.
-    /// </summary>
-    public readonly uint OldKills;
-
-    /// <summary>
     /// Enemy-player kill count before the update.
     /// </summary>
     public readonly uint OldPlayerKills;
-
-    /// <summary>
-    /// Death count before the update.
-    /// </summary>
-    public readonly uint OldDeaths;
 
     /// <summary>
     /// Enemy-player death count before the update.
@@ -60,22 +50,12 @@ public class TeamScoreUpdatedEvent : FlattiverseEvent
     /// <summary>
     /// Mission score before the update.
     /// </summary>
-    public readonly uint OldMission;
-
-    /// <summary>
-    /// Kill count after the update.
-    /// </summary>
-    public readonly uint NewKills;
+    public readonly int OldMission;
 
     /// <summary>
     /// Enemy-player kill count after the update.
     /// </summary>
     public readonly uint NewPlayerKills;
-
-    /// <summary>
-    /// Death count after the update.
-    /// </summary>
-    public readonly uint NewDeaths;
 
     /// <summary>
     /// Enemy-player death count after the update.
@@ -110,16 +90,14 @@ public class TeamScoreUpdatedEvent : FlattiverseEvent
     /// <summary>
     /// Mission score after the update.
     /// </summary>
-    public readonly uint NewMission;
+    public readonly int NewMission;
 
     internal TeamScoreUpdatedEvent(Team team, uint oldPlayerKills, uint oldPlayerDeaths, uint oldFriendlyKills, uint oldFriendlyDeaths,
-        uint oldNpcKills, uint oldNpcDeaths, uint oldNeutralDeaths, uint oldMission, uint newPlayerKills, uint newPlayerDeaths,
-        uint newFriendlyKills, uint newFriendlyDeaths, uint newNpcKills, uint newNpcDeaths, uint newNeutralDeaths, uint newMission)
+        uint oldNpcKills, uint oldNpcDeaths, uint oldNeutralDeaths, int oldMission, uint newPlayerKills, uint newPlayerDeaths,
+        uint newFriendlyKills, uint newFriendlyDeaths, uint newNpcKills, uint newNpcDeaths, uint newNeutralDeaths, int newMission)
     {
         Team = team;
-        OldKills = oldPlayerKills;
         OldPlayerKills = oldPlayerKills;
-        OldDeaths = oldPlayerDeaths;
         OldPlayerDeaths = oldPlayerDeaths;
         OldFriendlyKills = oldFriendlyKills;
         OldFriendlyDeaths = oldFriendlyDeaths;
@@ -127,9 +105,7 @@ public class TeamScoreUpdatedEvent : FlattiverseEvent
         OldNpcDeaths = oldNpcDeaths;
         OldNeutralDeaths = oldNeutralDeaths;
         OldMission = oldMission;
-        NewKills = newPlayerKills;
         NewPlayerKills = newPlayerKills;
-        NewDeaths = newPlayerDeaths;
         NewPlayerDeaths = newPlayerDeaths;
         NewFriendlyKills = newFriendlyKills;
         NewFriendlyDeaths = newFriendlyDeaths;

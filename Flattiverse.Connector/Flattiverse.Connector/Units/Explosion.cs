@@ -21,8 +21,6 @@ public class Explosion : Unit
     private Vector _position;
     private float _size;
     private float _damage;
-
-    private bool _secondPhase;
     
     internal Explosion(Cluster cluster, string name, PacketReader reader) : base(cluster, name)
     {
@@ -68,7 +66,7 @@ public class Explosion : Unit
     public override bool IsSolid => false;
     
     /// <inheritdoc/>
-    public override float Gravity => _secondPhase ? -0.5f : 0f;
+    public override float Gravity => 0f;
     
     /// <inheritdoc/>
     public override Team? Team => Player?.Team;
@@ -79,21 +77,20 @@ public class Explosion : Unit
     /// <summary>
     /// Defines whether this explosion is in the damage phase or not.
     /// </summary>
-    public bool DamagePhase => !_secondPhase;
+    public bool DamagePhase => true;
     
     /// <summary>
     /// Defines whether this explosion is in the shockwave phase or not.
     /// </summary>
-    public bool ShockWavePhase => _secondPhase;
+    public bool ShockWavePhase => false;
 
     /// <summary>
     /// The damage this explosion inflicts.
     /// </summary>
-    public float Damage => _secondPhase ? 0f : _damage;
+    public float Damage => _damage;
 
     internal override void UpdateMovement(PacketReader reader)
     {
-        _secondPhase = true;
     }
 
     /// <inheritdoc/>

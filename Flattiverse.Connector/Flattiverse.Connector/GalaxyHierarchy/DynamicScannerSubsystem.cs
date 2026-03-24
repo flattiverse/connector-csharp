@@ -5,11 +5,13 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// Represents a persistent scanner subsystem configuration.
+/// Represents a persistent dynamic scanner subsystem configuration.
 /// </summary>
-public class ScannerSubsystem : Subsystem
+public class DynamicScannerSubsystem : Subsystem
 {
     private const float EnergyScale = 0.000282943f;
+    private const float MinimumWidthValue = 5f;
+    private const float MinimumLengthValue = 20f;
 
     private readonly byte _id;
     private readonly float _maximumWidth;
@@ -31,7 +33,7 @@ public class ScannerSubsystem : Subsystem
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal ScannerSubsystem(Controllable controllable, string name, byte id, bool exists, float maximumWidth, float maximumLength,
+    internal DynamicScannerSubsystem(Controllable controllable, string name, byte id, bool exists, float maximumWidth, float maximumLength,
         float widthSpeed, float lengthSpeed, float angleSpeed, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
@@ -45,14 +47,30 @@ public class ScannerSubsystem : Subsystem
         ResetRuntime();
     }
 
-    internal static ScannerSubsystem CreateClassicShipPrimaryScanner(Controllable controllable)
+    internal static DynamicScannerSubsystem CreateClassicShipPrimaryScanner(Controllable controllable)
     {
-        return new ScannerSubsystem(controllable, "MainScanner", 0, true, 90f, 300f, 2.5f, 10f, 5f, SubsystemSlot.PrimaryScanner);
+        return new DynamicScannerSubsystem(controllable, "MainScanner", 0, true, 90f, 300f, 2.5f, 10f, 5f, SubsystemSlot.PrimaryScanner);
     }
 
-    internal static ScannerSubsystem CreateClassicShipSecondaryScanner(Controllable controllable)
+    internal static DynamicScannerSubsystem CreateClassicShipSecondaryScanner(Controllable controllable)
     {
-        return new ScannerSubsystem(controllable, "SecondaryScanner", 1, false, 0f, 0f, 0f, 0f, 0f, SubsystemSlot.SecondaryScanner);
+        return new DynamicScannerSubsystem(controllable, "SecondaryScanner", 1, false, 0f, 0f, 0f, 0f, 0f, SubsystemSlot.SecondaryScanner);
+    }
+
+    /// <summary>
+    /// The minimum configurable scan width in degree.
+    /// </summary>
+    public float MinimumWidth
+    {
+        get { return MinimumWidthValue; }
+    }
+
+    /// <summary>
+    /// The minimum configurable scan length.
+    /// </summary>
+    public float MinimumLength
+    {
+        get { return MinimumLengthValue; }
     }
 
     /// <summary>
@@ -112,7 +130,7 @@ public class ScannerSubsystem : Subsystem
     }
 
     /// <summary>
-    /// The currently configured scan center angle in degree.
+    /// The currently configured absolute scan center angle in degree.
     /// </summary>
     public float CurrentAngle
     {
@@ -136,7 +154,7 @@ public class ScannerSubsystem : Subsystem
     }
 
     /// <summary>
-    /// The target scan center angle in degree.
+    /// The target absolute scan center angle in degree.
     /// </summary>
     public float TargetAngle
     {
@@ -178,7 +196,7 @@ public class ScannerSubsystem : Subsystem
     /// <summary>
     /// Calculates the scanner tick costs. The current placeholder model scales with the scanned surface and is tuned so
     /// that a maximum scan of 90 x 300 costs about 20 energy per tick.
-    /// Returns false when the subsystem does not exist or the requested values are outside the valid range.
+    /// This also accepts the smaller runtime dimensions that occur while the scanner ramps up after activation.
     /// Values just above the maximum width or length are clipped before the cost is calculated.
     /// </summary>
     public bool CalculateCost(float width, float length, out float energy, out float ions, out float neutrinos)
@@ -209,7 +227,8 @@ public class ScannerSubsystem : Subsystem
 
     /// <summary>
     /// Sets the target scanner configuration on the server.
-    /// Width and length values just above the maximum are clipped before they are sent.
+    /// Width and length values just outside the valid range are clipped before they are sent.
+    /// Scanner angles are absolute world angles.
     /// </summary>
     /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the controllable or subsystem does not exist.</exception>
     /// <exception cref="YouNeedToContinueFirstGameException">Thrown, if the controllable is dead.</exception>
@@ -222,12 +241,12 @@ public class ScannerSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind widthValidity = RangeTolerance.ClampMaximum(width, _maximumWidth, out width);
+        InvalidArgumentKind widthValidity = RangeTolerance.ClampRange(width, MinimumWidthValue, _maximumWidth, out width);
 
         if (widthValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(widthValidity, "width");
 
-        InvalidArgumentKind lengthValidity = RangeTolerance.ClampMaximum(length, _maximumLength, out length);
+        InvalidArgumentKind lengthValidity = RangeTolerance.ClampRange(length, MinimumLengthValue, _maximumLength, out length);
 
         if (lengthValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(lengthValidity, "length");
@@ -327,7 +346,7 @@ public class ScannerSubsystem : Subsystem
         if (!Exists || !ShouldEmitRuntimeEvent())
             return null;
 
-        return new ScannerSubsystemEvent(Controllable, Slot, Status, _active, _currentWidth, _currentLength, _currentAngle,
+        return new DynamicScannerSubsystemEvent(Controllable, Slot, Status, _active, _currentWidth, _currentLength, _currentAngle,
             _targetWidth, _targetLength, _targetAngle, _consumedEnergyThisTick, _consumedIonsThisTick, _consumedNeutrinosThisTick);
     }
 }

@@ -1,9 +1,9 @@
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Visible snapshot of a scanner subsystem on a scanned player unit.
+/// Visible snapshot of a dynamic scanner subsystem on a scanned player unit.
 /// </summary>
-public class ScannerSubsystemInfo
+public class DynamicScannerSubsystemInfo
 {
     private bool _exists;
     private float _maximumWidth;
@@ -23,7 +23,7 @@ public class ScannerSubsystemInfo
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal ScannerSubsystemInfo()
+    internal DynamicScannerSubsystemInfo()
     {
         _exists = false;
         _maximumWidth = 0f;
@@ -117,7 +117,7 @@ public class ScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Current reported scan center angle.
+    /// Current reported absolute scan center angle.
     /// </summary>
     public float CurrentAngle
     {
@@ -141,7 +141,7 @@ public class ScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Last reported target angle.
+    /// Last reported target absolute angle.
     /// </summary>
     public float TargetAngle
     {

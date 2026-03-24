@@ -28,6 +28,7 @@ public class Controllable : INamedUnit
     private Vector _position;
     private Vector _movement;
     private protected HullSubsystem _hull;
+    private protected ShieldSubsystem _shield;
     private protected BatterySubsystem _energyBattery;
     private protected BatterySubsystem _ionBattery;
     private protected BatterySubsystem _neutrinoBattery;
@@ -44,6 +45,7 @@ public class Controllable : INamedUnit
         
         _active = true;
         _hull = null!;
+        _shield = null!;
         _energyBattery = null!;
         _ionBattery = null!;
         _neutrinoBattery = null!;
@@ -94,6 +96,14 @@ public class Controllable : INamedUnit
     public HullSubsystem Hull
     {
         get { return _hull; }
+    }
+
+    /// <summary>
+    /// The shield subsystem of the controllable.
+    /// </summary>
+    public ShieldSubsystem Shield
+    {
+        get { return _shield; }
     }
 
     /// <summary>
@@ -241,6 +251,13 @@ public class Controllable : INamedUnit
         byte neutrinoCellStatus;
         float hullCurrent;
         byte hullStatus;
+        float shieldCurrent;
+        byte shieldActive;
+        float shieldRate;
+        byte shieldStatus;
+        float shieldConsumedEnergyThisTick;
+        float shieldConsumedIonsThisTick;
+        float shieldConsumedNeutrinosThisTick;
 
         if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement) ||
             !reader.Read(out energyBatteryCurrent) || !reader.Read(out energyBatteryConsumedThisTick) || !reader.Read(out energyBatteryStatus) ||
@@ -249,7 +266,10 @@ public class Controllable : INamedUnit
             !reader.Read(out energyCellCollectedThisTick) || !reader.Read(out energyCellStatus) ||
             !reader.Read(out ionCellCollectedThisTick) || !reader.Read(out ionCellStatus) ||
             !reader.Read(out neutrinoCellCollectedThisTick) || !reader.Read(out neutrinoCellStatus) ||
-            !reader.Read(out hullCurrent) || !reader.Read(out hullStatus))
+            !reader.Read(out hullCurrent) || !reader.Read(out hullStatus) ||
+            !reader.Read(out shieldCurrent) || !reader.Read(out shieldActive) || !reader.Read(out shieldRate) ||
+            !reader.Read(out shieldStatus) || !reader.Read(out shieldConsumedEnergyThisTick) ||
+            !reader.Read(out shieldConsumedIonsThisTick) || !reader.Read(out shieldConsumedNeutrinosThisTick))
             throw new InvalidDataException("Couldan't read ControllableUpdate.");
 
         _energyBattery.UpdateRuntime(energyBatteryCurrent, energyBatteryConsumedThisTick, (SubsystemStatus)energyBatteryStatus);
@@ -259,6 +279,8 @@ public class Controllable : INamedUnit
         _ionCell.UpdateRuntime(ionCellCollectedThisTick, (SubsystemStatus)ionCellStatus);
         _neutrinoCell.UpdateRuntime(neutrinoCellCollectedThisTick, (SubsystemStatus)neutrinoCellStatus);
         _hull.UpdateRuntime(hullCurrent, (SubsystemStatus)hullStatus);
+        _shield.UpdateRuntime(shieldCurrent, shieldActive != 0, shieldRate, (SubsystemStatus)shieldStatus, shieldConsumedEnergyThisTick,
+            shieldConsumedIonsThisTick, shieldConsumedNeutrinosThisTick);
         ReadRuntime(reader);
         _alive = true;
         EmitRuntimeEvents();
@@ -273,6 +295,7 @@ public class Controllable : INamedUnit
         _ionCell.ResetRuntime();
         _neutrinoCell.ResetRuntime();
         _hull.ResetRuntime();
+        _shield.ResetRuntime();
     }
 
     private protected virtual void ReadRuntime(PacketReader reader)
@@ -288,6 +311,7 @@ public class Controllable : INamedUnit
         PushRuntimeEvent(_ionCell.CreateRuntimeEvent());
         PushRuntimeEvent(_neutrinoCell.CreateRuntimeEvent());
         PushRuntimeEvent(_hull.CreateRuntimeEvent());
+        PushRuntimeEvent(_shield.CreateRuntimeEvent());
     }
 
     private void PushRuntimeEvent(FlattiverseEvent? @event)

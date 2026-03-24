@@ -1,9 +1,9 @@
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Visible snapshot of a projectile weapon subsystem on a scanned player unit.
+/// Visible snapshot of a dynamic projectile launcher subsystem on a scanned player unit.
 /// </summary>
-public class ShotWeaponSubsystemInfo
+public class DynamicShotLauncherSubsystemInfo
 {
     private bool _exists;
     private float _minimumRelativeMovement;
@@ -23,7 +23,7 @@ public class ShotWeaponSubsystemInfo
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal ShotWeaponSubsystemInfo()
+    internal DynamicShotLauncherSubsystemInfo()
     {
         _exists = false;
         _minimumRelativeMovement = 0f;
@@ -44,9 +44,6 @@ public class ShotWeaponSubsystemInfo
         _consumedNeutrinosThisTick = 0f;
     }
 
-    /// <summary>
-    /// true if the subsystem exists.
-    /// </summary>
     /// <summary>
     /// Indicates whether the subsystem exists on the scanned unit.
     /// </summary>
@@ -152,7 +149,7 @@ public class ShotWeaponSubsystemInfo
     }
 
     /// <summary>
-    /// Status of the reported weapon subsystem.
+    /// Status of the reported launcher subsystem.
     /// </summary>
     public SubsystemStatus Status
     {
@@ -160,7 +157,7 @@ public class ShotWeaponSubsystemInfo
     }
 
     /// <summary>
-    /// Energy consumed by the shot during the tick.
+    /// Energy consumed by the launcher during the tick.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -168,7 +165,7 @@ public class ShotWeaponSubsystemInfo
     }
 
     /// <summary>
-    /// Ions consumed by the shot during the tick.
+    /// Ions consumed by the launcher during the tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -176,7 +173,7 @@ public class ShotWeaponSubsystemInfo
     }
 
     /// <summary>
-    /// Neutrinos consumed by the shot during the tick.
+    /// Neutrinos consumed by the launcher during the tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {

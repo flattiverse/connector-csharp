@@ -27,6 +27,7 @@ public class PlayerUnit : Unit
     private readonly EnergyCellSubsystemInfo _ionCell;
     private readonly EnergyCellSubsystemInfo _neutrinoCell;
     private readonly HullSubsystemInfo _hull;
+    private readonly ShieldSubsystemInfo _shield;
     
     internal PlayerUnit(Cluster cluster, string name, PacketReader reader) : base(cluster, name)
     {
@@ -42,6 +43,7 @@ public class PlayerUnit : Unit
         _ionCell = new EnergyCellSubsystemInfo();
         _neutrinoCell = new EnergyCellSubsystemInfo();
         _hull = new HullSubsystemInfo();
+        _shield = new ShieldSubsystemInfo();
     }
 
     internal PlayerUnit(PlayerUnit unit) : base(unit)
@@ -69,6 +71,9 @@ public class PlayerUnit : Unit
             unit._neutrinoCell.Status);
         _hull = new HullSubsystemInfo();
         _hull.Update(unit._hull.Exists, unit._hull.Maximum, unit._hull.Current, unit._hull.Status);
+        _shield = new ShieldSubsystemInfo();
+        _shield.Update(unit._shield.Exists, unit._shield.Maximum, unit._shield.Current, unit._shield.Active, unit._shield.Rate,
+            unit._shield.Status, unit._shield.ConsumedEnergyThisTick, unit._shield.ConsumedIonsThisTick, unit._shield.ConsumedNeutrinosThisTick);
     }
     
     /// <inheritdoc/>
@@ -142,6 +147,14 @@ public class PlayerUnit : Unit
         get { return _hull; }
     }
 
+    /// <summary>
+    /// Visible snapshot of the shield subsystem.
+    /// </summary>
+    public ShieldSubsystemInfo Shield
+    {
+        get { return _shield; }
+    }
+
     internal override void UpdateMovement(PacketReader reader)
     {
         base.UpdateMovement(reader);
@@ -184,7 +197,16 @@ public class PlayerUnit : Unit
             !reader.Read(out byte hullExists) ||
             !reader.Read(out float hullMaximum) ||
             !reader.Read(out float hullCurrent) ||
-            !reader.Read(out byte hullStatus))
+            !reader.Read(out byte hullStatus) ||
+            !reader.Read(out byte shieldExists) ||
+            !reader.Read(out float shieldMaximum) ||
+            !reader.Read(out float shieldCurrent) ||
+            !reader.Read(out byte shieldActive) ||
+            !reader.Read(out float shieldRate) ||
+            !reader.Read(out byte shieldStatus) ||
+            !reader.Read(out float shieldConsumedEnergyThisTick) ||
+            !reader.Read(out float shieldConsumedIonsThisTick) ||
+            !reader.Read(out float shieldConsumedNeutrinosThisTick))
             throw new InvalidDataException("Couldn't read Unit.");
 
         _energyBattery.Update(energyBatteryExists != 0, energyBatteryMaximum, energyBatteryCurrent, energyBatteryConsumedThisTick,
@@ -197,6 +219,8 @@ public class PlayerUnit : Unit
         _ionCell.Update(ionCellExists != 0, ionCellEfficiency, ionCellCollectedThisTick, (SubsystemStatus)ionCellStatus);
         _neutrinoCell.Update(neutrinoCellExists != 0, neutrinoCellEfficiency, neutrinoCellCollectedThisTick, (SubsystemStatus)neutrinoCellStatus);
         _hull.Update(hullExists != 0, hullMaximum, hullCurrent, (SubsystemStatus)hullStatus);
+        _shield.Update(shieldExists != 0, shieldMaximum, shieldCurrent, shieldActive != 0, shieldRate, (SubsystemStatus)shieldStatus,
+            shieldConsumedEnergyThisTick, shieldConsumedIonsThisTick, shieldConsumedNeutrinosThisTick);
     }
 
     /// <inheritdoc/>
@@ -205,6 +229,7 @@ public class PlayerUnit : Unit
         return $"{base.ToString()}, Player=\"{Player.Name}\", Controllable=\"{ControllableInfo.Name}\", " +
                $"EnergyBattery={_energyBattery.Current:0.###}/{_energyBattery.Maximum:0.###}({_energyBattery.Status}), EnergyConsumed={_energyBattery.ConsumedThisTick:0.###}, " +
                $"EnergyCellCollected={_energyCell.CollectedThisTick:0.###}({_energyCell.Status}), " +
-               $"Hull={_hull.Current:0.###}/{_hull.Maximum:0.###}({_hull.Status})";
+               $"Hull={_hull.Current:0.###}/{_hull.Maximum:0.###}({_hull.Status}), " +
+               $"Shield={_shield.Current:0.###}/{_shield.Maximum:0.###}({_shield.Status}), ShieldActive={_shield.Active}, ShieldRate={_shield.Rate:0.###}, ShieldConsumed=({_shield.ConsumedEnergyThisTick:0.###},{_shield.ConsumedIonsThisTick:0.###},{_shield.ConsumedNeutrinosThisTick:0.###})";
     }
 }

@@ -53,7 +53,7 @@ public class BatterySubsystemInfo
     }
 
     /// <summary>
-    /// The runtime status for the current server tick.
+    /// The status reported for the current server tick.
     /// </summary>
     public SubsystemStatus Status
     {
