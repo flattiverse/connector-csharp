@@ -3,17 +3,18 @@ using System.Text;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Is raised when the server updates galaxy settings.
+/// Raised when the server initializes or updates the mirrored galaxy settings snapshot.
 /// </summary>
 public class GalaxySettingsUpdatedEvent : FlattiverseEvent
 {
     /// <summary>
-    /// The previous settings snapshot. Null when this is the first update.
+    /// Previous settings snapshot.
+    /// <see langword="null" /> when the connector receives the first settings snapshot after connect.
     /// </summary>
     public readonly GalaxySettingsSnapshot? Old;
 
     /// <summary>
-    /// The latest settings snapshot after the update.
+    /// Latest settings snapshot after the update.
     /// </summary>
     public readonly GalaxySettingsSnapshot New;
 

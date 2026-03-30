@@ -6,17 +6,23 @@ using Flattiverse.Connector.GalaxyHierarchy;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
 using Npgsql;
+using System.Globalization;
 using System.Net.WebSockets;
 
 namespace Development;
 
-class Program
+partial class Program
 {
     private const string Uri = "ws://127.0.0.1:5000";
     private const string SpectatorWatchUri = "ws://127.0.0.1:5666";
     private const string TeamName = "Pink";
     private const byte SpectatorsTeamId = 12;
     private const ushort DatabaseGalaxyId = 0;
+    private const string LocalSwitchGateUri = "ws://127.0.0.1:5666";
+    private const string LocalSwitchGateAdminAuth = "a2bf3c8f773d7a460e452a4d8abd7a6ec1d50cf75ca48c2d1523a9f3d5dbcd62";
+    private const string LocalSwitchGatePinkPlayerAuth = "5d5ff7636d95c4d449e828d89b0cb38674fb2c57ddf3c4a039f2309ef84e9ab6";
+    private const string LocalSwitchGatePlayerAuth = "f698708b211b0b98daccec311348cdbf54f0378cd5320328a0f3eaedc26bba38";
+    private const string LocalSwitchGateGreenTeamName = "Green";
     private const string DatabaseConnectionString = "Host=10.252.7.136;Port=5432;Database=flattiverse;Username=postgres";
     private const string AdminAuth = "<INSERT ADMIN API KEY HERE>";
     private const string PlayerAdminAuth = "<INSERT PLAYER-ADMIN API KEY HERE>";
@@ -181,6 +187,36 @@ class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--switch-gate-check-local")
+        {
+            await RunSwitchGateCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--orbiting-check-local")
+        {
+            await RunOrbitingCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--powerup-check-local")
+        {
+            await RunPowerUpCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--interceptor-vs-shot-check-local")
+        {
+            await RunInterceptorVsShotCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--tournament-check-local")
+        {
+            await RunTournamentCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--login-team-selection-check")
         {
             await RunLoginTeamSelectionCheck().ConfigureAwait(false);
@@ -214,6 +250,12 @@ class Program
         if (args.Length > 0 && args[0] == "--avatar-download-check")
         {
             await RunAvatarDownloadCheck(args).ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--chunked-admin-queries-check-local")
+        {
+            await RunChunkedAdminQueriesCheckLocal().ConfigureAwait(false);
             return;
         }
 
@@ -433,13 +475,17 @@ class Program
             {
                 "RoundtripSun",
                 "RoundtripHole",
+                "RoundtripCurrentField",
+                "RoundtripStorm",
                 "RoundtripPlanet",
                 "RoundtripMoon",
                 "RoundtripMeteoroid",
                 "RoundtripBuoy",
                 "RoundtripMissionTarget",
                 "RoundtripFlag",
-                "RoundtripDominationPoint"
+                "RoundtripDominationPoint",
+                "RoundtripSwitch",
+                "RoundtripGate"
             };
 
             bool allFound = true;
@@ -507,6 +553,1361 @@ class Program
         {
             if (adminGalaxy is not null)
                 adminGalaxy.Dispose();
+        }
+    }
+
+    private static async Task RunSwitchGateCheckLocal()
+    {
+        DatabaseAccountRow originalPlayerAccount = QueryAccountRow(LocalSwitchGatePlayerAuth);
+        Galaxy? adminGalaxy = null;
+        Galaxy? playerGalaxy = null;
+        Task? eventPump = null;
+        ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ClassicShipControllable? ship = null;
+        Cluster? adminCluster = null;
+        Flattiverse.Connector.Units.Switch? visibleSwitch = null;
+        Flattiverse.Connector.Units.Gate? visibleGate = null;
+        string shipName = $"SwitchGate{Environment.ProcessId}";
+        string switchName = $"SwitchGateSwitch{Environment.ProcessId}";
+        string gateName = $"SwitchGateGate{Environment.ProcessId}";
+
+        if (HasFreshSession(originalPlayerAccount))
+        {
+            Console.WriteLine($"SWITCH-GATE-LOCAL: SKIPPED (player account already has fresh session, {FormatSessionState(originalPlayerAccount)})");
+            return;
+        }
+
+        if (originalPlayerAccount.SessionGalaxy is not null)
+        {
+            ExecuteDatabaseNonQuery($"""
+                UPDATE public.accounts
+                SET "sessionGalaxy" = NULL,
+                    "sessionTeam" = NULL,
+                    "sessionPlayerKills" = 0,
+                    "sessionPlayerDeaths" = 0,
+                    "sessionFriendlyKills" = 0,
+                    "sessionFriendlyDeaths" = 0,
+                    "sessionNpcKills" = 0,
+                    "sessionNpcDeaths" = 0,
+                    "sessionNeutralDeaths" = 0
+                WHERE "id" = {originalPlayerAccount.AccountId}
+                """);
+
+            Console.WriteLine($"SWITCH-GATE-LOCAL: cleared stale session ({FormatSessionState(originalPlayerAccount)})");
+        }
+
+        try
+        {
+            Console.WriteLine("SWITCH-GATE-LOCAL: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGateAdminAuth, TeamName).ConfigureAwait(false);
+
+            Console.WriteLine("SWITCH-GATE-LOCAL: connecting player...");
+            try
+            {
+                playerGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGatePlayerAuth, TeamName).ConfigureAwait(false);
+            }
+            catch (AccountAlreadyLoggedInGameException)
+            {
+                long nowTicks = DateTime.UtcNow.Ticks;
+
+                ExecuteDatabaseNonQuery($"""
+                    UPDATE public.accounts
+                    SET "datePlayedEnd" = {nowTicks},
+                        "sessionGalaxy" = NULL,
+                        "sessionTeam" = NULL,
+                        "sessionPlayerKills" = 0,
+                        "sessionPlayerDeaths" = 0,
+                        "sessionFriendlyKills" = 0,
+                        "sessionFriendlyDeaths" = 0,
+                        "sessionNpcKills" = 0,
+                        "sessionNpcDeaths" = 0,
+                        "sessionNeutralDeaths" = 0
+                    WHERE encode("apiPlayer", 'hex') = '{LocalSwitchGatePlayerAuth}'
+                       OR encode("apiAdmin", 'hex') = '{LocalSwitchGatePlayerAuth}'
+                    """);
+
+                Console.WriteLine("SWITCH-GATE-LOCAL: forced session cleanup for local player auth and retrying...");
+                await Task.Delay(250).ConfigureAwait(false);
+                playerGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGatePlayerAuth, TeamName).ConfigureAwait(false);
+            }
+
+            eventPump = StartEventPump("SWITCH-GATE-LOCAL", playerGalaxy, playerEvents);
+
+            await Task.Delay(500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+            await ship.Continue().ConfigureAwait(false);
+
+            bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"SWITCH-GATE-LOCAL: ship alive after continue = {shipAlive}");
+
+            if (!shipAlive)
+                return;
+
+            await ship.Engine.Off().ConfigureAwait(false);
+            await ship.MainScanner.Set(90f, 220f, 0f).ConfigureAwait(false);
+            await ship.MainScanner.On().ConfigureAwait(false);
+
+            if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
+                throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
+
+            float switchX = ship.Position.X + 60f;
+            float switchY = ship.Position.Y;
+            float gateX = ship.Position.X + 120f;
+            float gateY = ship.Position.Y + 24f;
+
+            string switchXml =
+                $"<Switch Name=\"{switchName}\" X=\"{switchX.ToString("R", CultureInfo.InvariantCulture)}\" Y=\"{switchY.ToString("R", CultureInfo.InvariantCulture)}\" Radius=\"9\" Gravity=\"0\" Team=\"{SpectatorsTeamId}\" LinkId=\"77\" Range=\"80\" CooldownTicks=\"20\" Mode=\"Toggle\" />";
+            string gateXml =
+                $"<Gate Name=\"{gateName}\" X=\"{gateX.ToString("R", CultureInfo.InvariantCulture)}\" Y=\"{gateY.ToString("R", CultureInfo.InvariantCulture)}\" Radius=\"10\" Gravity=\"0\" LinkId=\"77\" DefaultClosed=\"true\" RestoreTicks=\"15\" />";
+
+            await adminCluster.SetUnit(switchXml).ConfigureAwait(false);
+            await adminCluster.SetUnit(gateXml).ConfigureAwait(false);
+
+            DateTime visibilityDeadline = DateTime.UtcNow.AddMilliseconds(5000);
+            bool switchVisible = false;
+            bool gateVisible = false;
+
+            while (DateTime.UtcNow < visibilityDeadline)
+            {
+                DrainEvents(playerEvents);
+
+                switchVisible = TryFindUnit(playerGalaxy, ship.Cluster.Id, switchName, out visibleSwitch) &&
+                                 visibleSwitch is not null &&
+                                 visibleSwitch.FullStateKnown;
+                gateVisible = TryFindUnit(playerGalaxy, ship.Cluster.Id, gateName, out visibleGate) &&
+                               visibleGate is not null &&
+                               visibleGate.FullStateKnown &&
+                               visibleGate.Closed;
+
+                if (switchVisible && gateVisible)
+                    break;
+
+                await Task.Delay(100).ConfigureAwait(false);
+            }
+
+            Console.WriteLine($"SWITCH-GATE-LOCAL: switch visible/full = {switchVisible}");
+            Console.WriteLine($"SWITCH-GATE-LOCAL: gate visible/full/closed = {gateVisible}");
+
+            await ship.ShotLauncher.Shoot(new Vector(3f, 0f), 20, 2.5f, 1f).ConfigureAwait(false);
+
+            List<FlattiverseEvent> switchPhaseEvents = new List<FlattiverseEvent>();
+            GateSwitchedEvent? gateSwitchedEvent = await WaitForQueuedEvent(playerEvents, 5000, switchPhaseEvents,
+                delegate (GateSwitchedEvent @event)
+                {
+                    return @event.SwitchName == switchName;
+                }).ConfigureAwait(false);
+
+            bool switchedEventObserved = gateSwitchedEvent is not null &&
+                                         gateSwitchedEvent.Cluster.Id == ship.Cluster.Id &&
+                                         gateSwitchedEvent.Gates.Length == 1 &&
+                                         gateSwitchedEvent.Gates[0].GateName == gateName &&
+                                         !gateSwitchedEvent.Gates[0].Closed;
+
+            UpdatedUnitFlattiverseEvent? switchedUnitUpdateEvent = await WaitForQueuedEvent(playerEvents, 2000, switchPhaseEvents,
+                delegate (UpdatedUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit.Name == switchName || @event.Unit.Name == gateName;
+                }).ConfigureAwait(false);
+
+            bool switchedUnitUpdateObserved = switchedUnitUpdateEvent is not null;
+
+            bool switchedStateApplied =
+                TryFindUnit(playerGalaxy, ship.Cluster.Id, switchName, out visibleSwitch) &&
+                visibleSwitch is not null &&
+                visibleSwitch.Switched &&
+                visibleSwitch.CooldownRemainingTicks > 0 &&
+                TryFindUnit(playerGalaxy, ship.Cluster.Id, gateName, out visibleGate) &&
+                visibleGate is not null &&
+                !visibleGate.Closed;
+
+            Console.WriteLine($"SWITCH-GATE-LOCAL: switched event observed = {switchedEventObserved}");
+            Console.WriteLine($"SWITCH-GATE-LOCAL: switched unit update observed = {switchedUnitUpdateObserved}");
+            Console.WriteLine($"SWITCH-GATE-LOCAL: switched state applied = {switchedStateApplied}");
+
+            List<FlattiverseEvent> restorePhaseEvents = new List<FlattiverseEvent>();
+            GateRestoredEvent? gateRestoredEvent = await WaitForQueuedEvent(playerEvents, 4000, restorePhaseEvents,
+                delegate (GateRestoredEvent @event)
+                {
+                    return @event.GateName == gateName;
+                }).ConfigureAwait(false);
+
+            bool restoredEventObserved = gateRestoredEvent is not null &&
+                                         gateRestoredEvent.Cluster.Id == ship.Cluster.Id &&
+                                         gateRestoredEvent.Closed;
+
+            bool restoredUnitUpdateObserved = false;
+
+            for (int index = 0; index < restorePhaseEvents.Count; index++)
+                if (restorePhaseEvents[index] is UpdatedUnitFlattiverseEvent updatedUnitFlattiverseEvent &&
+                    updatedUnitFlattiverseEvent.Unit.Name == gateName)
+                    restoredUnitUpdateObserved = true;
+
+            bool restoredStateApplied =
+                TryFindUnit(playerGalaxy, ship.Cluster.Id, gateName, out visibleGate) &&
+                visibleGate is not null &&
+                visibleGate.Closed &&
+                visibleGate.RestoreRemainingTicks is null;
+
+            Console.WriteLine($"SWITCH-GATE-LOCAL: restored event observed = {restoredEventObserved}");
+            Console.WriteLine($"SWITCH-GATE-LOCAL: restored unit update observed = {restoredUnitUpdateObserved}");
+            Console.WriteLine($"SWITCH-GATE-LOCAL: restored state applied = {restoredStateApplied}");
+
+            bool result = switchVisible &&
+                          gateVisible &&
+                          switchedEventObserved &&
+                          switchedUnitUpdateObserved &&
+                          switchedStateApplied &&
+                          restoredEventObserved &&
+                          restoredUnitUpdateObserved &&
+                          restoredStateApplied;
+
+            if (!result)
+            {
+                Console.WriteLine("SWITCH-GATE-LOCAL: switch-phase events:");
+
+                for (int index = 0; index < switchPhaseEvents.Count; index++)
+                    Console.WriteLine($"  SWITCH[{index}] {switchPhaseEvents[index]}");
+
+                Console.WriteLine("SWITCH-GATE-LOCAL: restore-phase events:");
+
+                for (int index = 0; index < restorePhaseEvents.Count; index++)
+                    Console.WriteLine($"  RESTORE[{index}] {restorePhaseEvents[index]}");
+
+                if (visibleSwitch is not null)
+                    Console.WriteLine($"SWITCH-GATE-LOCAL: switch snapshot after phases = {visibleSwitch}");
+
+                if (visibleGate is not null)
+                    Console.WriteLine($"SWITCH-GATE-LOCAL: gate snapshot after phases = {visibleGate}");
+            }
+
+            Console.WriteLine($"SWITCH-GATE-LOCAL: RESULT = {(result ? "OK" : "FAILED")}");
+        }
+        finally
+        {
+            if (ship is not null)
+                ship.RequestClose();
+
+            if (adminGalaxy is not null && adminCluster is not null)
+            {
+                try
+                {
+                    await adminCluster.RemoveUnit(switchName).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+
+                try
+                {
+                    await adminCluster.RemoveUnit(gateName).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(LocalSwitchGatePlayerAuth, null, 7000).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task RunOrbitingCheckLocal()
+    {
+        const float SampleTolerance = 0.05f;
+        const float ScanCenterOffsetX = 130f;
+        const float ScanCenterOffsetY = 6f;
+        const float ScanFirstDistance = 16f;
+        const float ScanFirstStartAngle = 15f;
+        const int ScanFirstRotationTicks = 120;
+        const float ScanSecondDistance = 4f;
+        const float ScanSecondStartAngle = -90f;
+        const int ScanSecondRotationTicks = -30;
+        const float CollisionCenterOffsetX = 40f;
+        const float CollisionDistance = 40f;
+        const int CollisionRotationTicks = 40;
+
+        DatabaseAccountRow originalPlayerAccount = QueryAccountRow(LocalSwitchGatePlayerAuth);
+        Galaxy? adminGalaxy = null;
+        Galaxy? playerGalaxy = null;
+        Task? eventPump = null;
+        ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ClassicShipControllable? ship = null;
+        Cluster? adminCluster = null;
+        string shipName = $"OrbitingShip{Environment.ProcessId}";
+        string scanGateName = $"OrbitingScanGate{Environment.ProcessId}";
+        string collisionGateName = $"OrbitingCollisionGate{Environment.ProcessId}";
+        bool allOk = true;
+        string? queriedScanXml = null;
+
+        if (HasFreshSession(originalPlayerAccount))
+        {
+            Console.WriteLine($"ORBITING-LOCAL: SKIPPED (player account already has fresh session, {FormatSessionState(originalPlayerAccount)})");
+            return;
+        }
+
+        if (originalPlayerAccount.SessionGalaxy is not null)
+        {
+            ExecuteDatabaseNonQuery($"""
+                UPDATE public.accounts
+                SET "sessionGalaxy" = NULL,
+                    "sessionTeam" = NULL,
+                    "sessionPlayerKills" = 0,
+                    "sessionPlayerDeaths" = 0,
+                    "sessionFriendlyKills" = 0,
+                    "sessionFriendlyDeaths" = 0,
+                    "sessionNpcKills" = 0,
+                    "sessionNpcDeaths" = 0,
+                    "sessionNeutralDeaths" = 0
+                WHERE "id" = {originalPlayerAccount.AccountId}
+                """);
+
+            Console.WriteLine($"ORBITING-LOCAL: cleared stale session ({FormatSessionState(originalPlayerAccount)})");
+        }
+
+        try
+        {
+            Console.WriteLine("ORBITING-LOCAL: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGateAdminAuth, TeamName).ConfigureAwait(false);
+
+            playerGalaxy = await ConnectLocalPlayer(LocalSwitchGatePlayerAuth, TeamName, "ORBITING-LOCAL:PLAYER").ConfigureAwait(false);
+            eventPump = StartEventPump("ORBITING-LOCAL", playerGalaxy, playerEvents);
+
+            await Task.Delay(500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+            await ship.Continue().ConfigureAwait(false);
+
+            bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"ORBITING-LOCAL: ship alive after continue = {shipAlive}");
+
+            if (!shipAlive)
+            {
+                allOk = false;
+                return;
+            }
+
+            await ship.Engine.Off().ConfigureAwait(false);
+            await ship.MainScanner.Set(90f, 240f, 0f).ConfigureAwait(false);
+            await ship.MainScanner.On().ConfigureAwait(false);
+
+            if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
+                throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
+
+            float scanCenterX = ship.Position.X + ScanCenterOffsetX;
+            float scanCenterY = ship.Position.Y + ScanCenterOffsetY;
+            string scanGateXml =
+                $"<Gate Name=\"{scanGateName}\" X=\"{scanCenterX.ToString("R", CultureInfo.InvariantCulture)}\" Y=\"{scanCenterY.ToString("R", CultureInfo.InvariantCulture)}\" Radius=\"10\" Gravity=\"0\" LinkId=\"501\" DefaultClosed=\"false\"><Orbit Distance=\"{ScanFirstDistance.ToString("R", CultureInfo.InvariantCulture)}\" StartAngle=\"{ScanFirstStartAngle.ToString("R", CultureInfo.InvariantCulture)}\" RotationTicks=\"{ScanFirstRotationTicks}\" /><Orbit Distance=\"{ScanSecondDistance.ToString("R", CultureInfo.InvariantCulture)}\" StartAngle=\"{ScanSecondStartAngle.ToString("R", CultureInfo.InvariantCulture)}\" RotationTicks=\"{ScanSecondRotationTicks}\" /></Gate>";
+
+            await adminCluster.SetUnit(scanGateXml).ConfigureAwait(false);
+            queriedScanXml = await adminCluster.QueryUnitXml(scanGateName).ConfigureAwait(false);
+
+            XDocument queriedScanDocument = XDocument.Parse(queriedScanXml, LoadOptions.None);
+            XElement? queriedScanRoot = queriedScanDocument.Root;
+            XElement[] queriedOrbitElements = queriedScanRoot is null ? Array.Empty<XElement>() : queriedScanRoot.Elements("Orbit").ToArray();
+            bool queryXmlOk =
+                queriedScanRoot is not null &&
+                queriedScanRoot.Name.LocalName == "Gate" &&
+                queriedOrbitElements.Length == 2 &&
+                queriedScanRoot.Attribute("X") is XAttribute queriedXAttribute &&
+                queriedScanRoot.Attribute("Y") is XAttribute queriedYAttribute &&
+                float.Parse(queriedXAttribute.Value, CultureInfo.InvariantCulture) == scanCenterX &&
+                float.Parse(queriedYAttribute.Value, CultureInfo.InvariantCulture) == scanCenterY &&
+                queriedOrbitElements[0].Attribute("Distance") is XAttribute queriedFirstDistanceAttribute &&
+                queriedOrbitElements[0].Attribute("StartAngle") is XAttribute queriedFirstStartAngleAttribute &&
+                queriedOrbitElements[0].Attribute("RotationTicks") is XAttribute queriedFirstRotationTicksAttribute &&
+                float.Parse(queriedFirstDistanceAttribute.Value, CultureInfo.InvariantCulture) == ScanFirstDistance &&
+                float.Parse(queriedFirstStartAngleAttribute.Value, CultureInfo.InvariantCulture) == ScanFirstStartAngle &&
+                int.Parse(queriedFirstRotationTicksAttribute.Value, CultureInfo.InvariantCulture) == ScanFirstRotationTicks &&
+                queriedOrbitElements[1].Attribute("Distance") is XAttribute queriedSecondDistanceAttribute &&
+                queriedOrbitElements[1].Attribute("StartAngle") is XAttribute queriedSecondStartAngleAttribute &&
+                queriedOrbitElements[1].Attribute("RotationTicks") is XAttribute queriedSecondRotationTicksAttribute &&
+                float.Parse(queriedSecondDistanceAttribute.Value, CultureInfo.InvariantCulture) == ScanSecondDistance &&
+                float.Parse(queriedSecondStartAngleAttribute.Value, CultureInfo.InvariantCulture) == ScanSecondStartAngle &&
+                int.Parse(queriedSecondRotationTicksAttribute.Value, CultureInfo.InvariantCulture) == ScanSecondRotationTicks;
+
+            Console.WriteLine($"ORBITING-LOCAL: query xml center/orbits = {queryXmlOk}");
+
+            bool sawReduced = false;
+            bool sawFull = false;
+            bool fullStateOk = false;
+            Gate? visibleScanGate = null;
+            DateTime visibilityDeadline = DateTime.UtcNow.AddMilliseconds(5000);
+
+            while (DateTime.UtcNow < visibilityDeadline)
+            {
+                DrainEvents(playerEvents);
+
+                if (TryFindUnit(playerGalaxy, ship.Cluster.Id, scanGateName, out Gate? loopGate) && loopGate is not null)
+                {
+                    visibleScanGate = loopGate;
+
+                    if (!loopGate.FullStateKnown)
+                        sawReduced = true;
+
+                    if (loopGate.FullStateKnown)
+                    {
+                        sawFull = true;
+                        fullStateOk =
+                            loopGate.OrbitingList.Count == 2 &&
+                            MathF.Abs(loopGate.ConfiguredPosition.X - scanCenterX) < 0.001f &&
+                            MathF.Abs(loopGate.ConfiguredPosition.Y - scanCenterY) < 0.001f &&
+                            MathF.Abs(loopGate.OrbitingList[0].Distance - ScanFirstDistance) < 0.001f &&
+                            MathF.Abs(loopGate.OrbitingList[0].StartAngle - ScanFirstStartAngle) < 0.001f &&
+                            loopGate.OrbitingList[0].RotationTicks == ScanFirstRotationTicks &&
+                            MathF.Abs(loopGate.OrbitingList[1].Distance - ScanSecondDistance) < 0.001f &&
+                            MathF.Abs(loopGate.OrbitingList[1].StartAngle - ScanSecondStartAngle) < 0.001f &&
+                            loopGate.OrbitingList[1].RotationTicks == ScanSecondRotationTicks;
+                    }
+                }
+
+                if (sawReduced && sawFull && fullStateOk)
+                    break;
+
+                await Task.Delay(50).ConfigureAwait(false);
+            }
+
+            Console.WriteLine($"ORBITING-LOCAL: reduced visible before full = {sawReduced}");
+            Console.WriteLine($"ORBITING-LOCAL: full visible = {sawFull}");
+            Console.WriteLine($"ORBITING-LOCAL: full state orbit payload = {fullStateOk}");
+
+            DrainEvents(playerEvents);
+
+            List<FlattiverseEvent> firstTickEvents = new List<FlattiverseEvent>();
+            GalaxyTickEvent? firstTickEvent = await WaitForQueuedEvent(playerEvents, 4000, firstTickEvents,
+                delegate (GalaxyTickEvent @event)
+                {
+                    return true;
+                }).ConfigureAwait(false);
+
+            Gate? firstUpdatedGate = FindLastUpdatedUnit<Gate>(firstTickEvents, scanGateName);
+            bool firstTickOk = firstTickEvent is not null && firstUpdatedGate is not null;
+            float firstPositionError = float.PositiveInfinity;
+            float firstCenterDistance = 0f;
+
+            if (firstTickEvent is not null && firstUpdatedGate is not null)
+            {
+                Vector firstExpectedPosition = CalculateOrbitingPosition(firstUpdatedGate.ConfiguredPosition, firstUpdatedGate.OrbitingList, firstTickEvent.Tick);
+
+                firstPositionError = (firstUpdatedGate.Position - firstExpectedPosition).Length;
+                firstCenterDistance = (firstUpdatedGate.Position - firstUpdatedGate.ConfiguredPosition).Length;
+
+                firstTickOk =
+                    firstUpdatedGate.OrbitingList.Count == 2 &&
+                    firstUpdatedGate.Movement.Length > 0.001f &&
+                    firstPositionError <= SampleTolerance &&
+                    firstCenterDistance > 0.5f;
+            }
+
+            Console.WriteLine($"ORBITING-LOCAL: first sampled tick payload = {firstTickOk}");
+            Console.WriteLine($"ORBITING-LOCAL: first sampled position error = {firstPositionError:0.###}");
+
+            List<FlattiverseEvent> secondTickEvents = new List<FlattiverseEvent>();
+            GalaxyTickEvent? secondTickEvent = await WaitForQueuedEvent(playerEvents, 4000, secondTickEvents,
+                delegate (GalaxyTickEvent @event)
+                {
+                    return true;
+                }).ConfigureAwait(false);
+
+            Gate? secondUpdatedGate = FindLastUpdatedUnit<Gate>(secondTickEvents, scanGateName);
+            bool secondTickOk = secondTickEvent is not null && firstUpdatedGate is not null && secondUpdatedGate is not null;
+            float secondPositionError = float.PositiveInfinity;
+            float secondMovementError = float.PositiveInfinity;
+
+            if (secondTickEvent is not null && firstUpdatedGate is not null && secondUpdatedGate is not null)
+            {
+                Vector secondExpectedPosition = CalculateOrbitingPosition(secondUpdatedGate.ConfiguredPosition, secondUpdatedGate.OrbitingList, secondTickEvent.Tick);
+                Vector expectedMovement = secondUpdatedGate.Position - firstUpdatedGate.Position;
+
+                secondPositionError = (secondUpdatedGate.Position - secondExpectedPosition).Length;
+                secondMovementError = (secondUpdatedGate.Movement - expectedMovement).Length;
+
+                secondTickOk =
+                    secondUpdatedGate.Movement.Length > 0.001f &&
+                    secondPositionError <= SampleTolerance &&
+                    secondMovementError <= SampleTolerance;
+            }
+
+            Console.WriteLine($"ORBITING-LOCAL: second sampled tick payload = {secondTickOk}");
+            Console.WriteLine($"ORBITING-LOCAL: second sampled position error = {secondPositionError:0.###}");
+            Console.WriteLine($"ORBITING-LOCAL: sampled movement error = {secondMovementError:0.###}");
+
+            bool scanPhaseOk = queryXmlOk && sawReduced && sawFull && fullStateOk && firstTickOk && secondTickOk;
+
+            await adminCluster.RemoveUnit(scanGateName).ConfigureAwait(false);
+
+            List<FlattiverseEvent> collisionBaseEvents = new List<FlattiverseEvent>();
+            GalaxyTickEvent? collisionBaseTickEvent = await WaitForQueuedEvent(playerEvents, 4000, collisionBaseEvents,
+                delegate (GalaxyTickEvent @event)
+                {
+                    return true;
+                }).ConfigureAwait(false);
+
+            bool collisionBaseTickOk = collisionBaseTickEvent is not null;
+            float collisionCenterX = ship.Position.X + CollisionCenterOffsetX;
+            float collisionCenterY = ship.Position.Y;
+            uint collisionPhaseTick = collisionBaseTickEvent is null ? 0u : collisionBaseTickEvent.Tick % (uint)CollisionRotationTicks;
+            float collisionStartAngle = -360f * collisionPhaseTick / CollisionRotationTicks;
+            string collisionGateXml =
+                $"<Gate Name=\"{collisionGateName}\" X=\"{collisionCenterX.ToString("R", CultureInfo.InvariantCulture)}\" Y=\"{collisionCenterY.ToString("R", CultureInfo.InvariantCulture)}\" Radius=\"10\" Gravity=\"0\" LinkId=\"502\" DefaultClosed=\"true\"><Orbit Distance=\"{CollisionDistance.ToString("R", CultureInfo.InvariantCulture)}\" StartAngle=\"{collisionStartAngle.ToString("R", CultureInfo.InvariantCulture)}\" RotationTicks=\"{CollisionRotationTicks}\" /></Gate>";
+
+            await adminCluster.SetUnit(collisionGateXml).ConfigureAwait(false);
+
+            bool shipDead = await WaitForAliveState(ship, false, 5000).ConfigureAwait(false);
+            List<FlattiverseEvent> collisionEvents = DrainEvents(playerEvents);
+            Gate? collisionUpdatedGate = FindLastUpdatedUnit<Gate>(collisionEvents, collisionGateName);
+            NeutralDestroyedControllableInfoPlayerEvent? neutralDestroyedEvent = null;
+
+            for (int index = 0; index < collisionEvents.Count; index++)
+                if (collisionEvents[index] is NeutralDestroyedControllableInfoPlayerEvent neutralDestroyedControllableInfoPlayerEvent &&
+                    neutralDestroyedControllableInfoPlayerEvent.ControllableInfo.Name == ship.Name &&
+                    neutralDestroyedControllableInfoPlayerEvent.CollidersKind == UnitKind.Gate &&
+                    neutralDestroyedControllableInfoPlayerEvent.CollidersName == collisionGateName)
+                {
+                    neutralDestroyedEvent = neutralDestroyedControllableInfoPlayerEvent;
+                    break;
+                }
+
+            bool collisionEventOk = neutralDestroyedEvent is not null;
+
+            Console.WriteLine($"ORBITING-LOCAL: collision base tick observed = {collisionBaseTickOk}");
+            Console.WriteLine($"ORBITING-LOCAL: ship died from orbiting collision = {shipDead}");
+            Console.WriteLine($"ORBITING-LOCAL: collision event from orbiting gate = {collisionEventOk}");
+
+            allOk = scanPhaseOk && collisionBaseTickOk && shipDead && collisionEventOk;
+
+            if (!allOk)
+            {
+                Console.WriteLine("ORBITING-LOCAL: scan tick 1 events:");
+
+                for (int index = 0; index < firstTickEvents.Count; index++)
+                    Console.WriteLine($"  TICK1[{index}] {firstTickEvents[index]}");
+
+                Console.WriteLine("ORBITING-LOCAL: scan tick 2 events:");
+
+                for (int index = 0; index < secondTickEvents.Count; index++)
+                    Console.WriteLine($"  TICK2[{index}] {secondTickEvents[index]}");
+
+                Console.WriteLine("ORBITING-LOCAL: collision events:");
+
+                for (int index = 0; index < collisionEvents.Count; index++)
+                    Console.WriteLine($"  COLL[{index}] {collisionEvents[index]}");
+
+                if (visibleScanGate is not null)
+                    Console.WriteLine($"ORBITING-LOCAL: visible scan gate snapshot = {visibleScanGate}");
+
+                if (firstUpdatedGate is not null)
+                    Console.WriteLine($"ORBITING-LOCAL: first updated gate snapshot = {firstUpdatedGate}");
+
+                if (secondUpdatedGate is not null)
+                    Console.WriteLine($"ORBITING-LOCAL: second updated gate snapshot = {secondUpdatedGate}");
+
+                if (collisionUpdatedGate is not null)
+                    Console.WriteLine($"ORBITING-LOCAL: collision gate snapshot = {collisionUpdatedGate}");
+
+                if (queriedScanXml is not null)
+                    Console.WriteLine($"ORBITING-LOCAL: queried scan xml = {queriedScanXml}");
+            }
+
+            Console.WriteLine($"ORBITING-LOCAL: RESULT = {(allOk ? "OK" : "FAILED")}");
+        }
+        finally
+        {
+            if (ship is not null)
+                ship.RequestClose();
+
+            if (adminGalaxy is not null && adminCluster is not null)
+            {
+                try
+                {
+                    await adminCluster.RemoveUnit(scanGateName).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+
+                try
+                {
+                    await adminCluster.RemoveUnit(collisionGateName).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(LocalSwitchGatePlayerAuth, null, 7000).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task RunPowerUpCheckLocal()
+    {
+        const int PowerUpRespawnTicks = 60;
+        const float PowerUpRespawnPlayerDistance = 25f;
+
+        DatabaseAccountRow originalPlayerAccount = QueryAccountRow(LocalSwitchGatePlayerAuth);
+        Galaxy? adminGalaxy = null;
+        Galaxy? playerGalaxy = null;
+        Task? eventPump = null;
+        ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ClassicShipControllable? ship = null;
+        Cluster? adminCluster = null;
+        List<string> cleanupNames = new List<string>();
+        bool allOk = true;
+
+        if (HasFreshSession(originalPlayerAccount))
+        {
+            Console.WriteLine($"POWERUP-LOCAL: SKIPPED (player account already has fresh session, {FormatSessionState(originalPlayerAccount)})");
+            return;
+        }
+
+        if (originalPlayerAccount.SessionGalaxy is not null)
+        {
+            ExecuteDatabaseNonQuery($"""
+                UPDATE public.accounts
+                SET "sessionGalaxy" = NULL,
+                    "sessionTeam" = NULL,
+                    "sessionPlayerKills" = 0,
+                    "sessionPlayerDeaths" = 0,
+                    "sessionFriendlyKills" = 0,
+                    "sessionFriendlyDeaths" = 0,
+                    "sessionNpcKills" = 0,
+                    "sessionNpcDeaths" = 0,
+                    "sessionNeutralDeaths" = 0
+                WHERE "id" = {originalPlayerAccount.AccountId}
+                """);
+
+            Console.WriteLine($"POWERUP-LOCAL: cleared stale session ({FormatSessionState(originalPlayerAccount)})");
+        }
+
+        try
+        {
+            Console.WriteLine("POWERUP-LOCAL: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGateAdminAuth, TeamName).ConfigureAwait(false);
+
+            Console.WriteLine("POWERUP-LOCAL: connecting player...");
+
+            try
+            {
+                playerGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGatePlayerAuth, TeamName).ConfigureAwait(false);
+            }
+            catch (AccountAlreadyLoggedInGameException)
+            {
+                long nowTicks = DateTime.UtcNow.Ticks;
+
+                ExecuteDatabaseNonQuery($"""
+                    UPDATE public.accounts
+                    SET "datePlayedEnd" = {nowTicks},
+                        "sessionGalaxy" = NULL,
+                        "sessionTeam" = NULL,
+                        "sessionPlayerKills" = 0,
+                        "sessionPlayerDeaths" = 0,
+                        "sessionFriendlyKills" = 0,
+                        "sessionFriendlyDeaths" = 0,
+                        "sessionNpcKills" = 0,
+                        "sessionNpcDeaths" = 0,
+                        "sessionNeutralDeaths" = 0
+                    WHERE encode("apiPlayer", 'hex') = '{LocalSwitchGatePlayerAuth}'
+                       OR encode("apiAdmin", 'hex') = '{LocalSwitchGatePlayerAuth}'
+                    """);
+
+                Console.WriteLine("POWERUP-LOCAL: forced session cleanup for local player auth and retrying...");
+                await Task.Delay(250).ConfigureAwait(false);
+                playerGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGatePlayerAuth, TeamName).ConfigureAwait(false);
+            }
+
+            eventPump = StartEventPump("POWERUP-LOCAL", playerGalaxy, playerEvents);
+
+            await Task.Delay(500).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            ship = await playerGalaxy.CreateClassicShip($"PowerUpShip{Environment.ProcessId}").ConfigureAwait(false);
+            await ship.Continue().ConfigureAwait(false);
+
+            bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"POWERUP-LOCAL: ship alive after continue = {shipAlive}");
+
+            if (!shipAlive)
+                return;
+
+            await ship.Engine.Off().ConfigureAwait(false);
+            await ship.MainScanner.Set(90f, 60f, 0f).ConfigureAwait(false);
+            await ship.MainScanner.On().ConfigureAwait(false);
+
+            if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
+                throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
+
+            await Task.Delay(250).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            string[] kinds = new string[]
+            {
+                "EnergyChargePowerUp",
+                "IonChargePowerUp",
+                "NeutrinoChargePowerUp",
+                "MetalCargoPowerUp",
+                "CarbonCargoPowerUp",
+                "HydrogenCargoPowerUp",
+                "SiliconCargoPowerUp",
+                "ShieldChargePowerUp",
+                "HullRepairPowerUp",
+                "ShotChargePowerUp"
+            };
+
+            float[] amounts = new float[]
+            {
+                123.5f,
+                7f,
+                11f,
+                3.25f,
+                2.5f,
+                4.75f,
+                1.5f,
+                5f,
+                6f,
+                1.5f
+            };
+
+            for (int index = 0; index < kinds.Length; index++)
+            {
+                string kind = kinds[index];
+                float amount = amounts[index];
+                string powerUpName = $"{kind}{Environment.ProcessId}";
+                float powerUpX = ship.Position.X + 18f;
+                float powerUpY = ship.Position.Y;
+                float beforeMetal = ship.Cargo.CurrentMetal;
+                float beforeCarbon = ship.Cargo.CurrentCarbon;
+                float beforeHydrogen = ship.Cargo.CurrentHydrogen;
+                float beforeSilicon = ship.Cargo.CurrentSilicon;
+                float beforeShield = ship.Shield.Current;
+                float beforeHull = ship.Hull.Current;
+                float beforeShots = ship.ShotMagazine.CurrentShots;
+                UnitKind expectedKind;
+                float expectedAppliedAmount;
+
+                switch (kind)
+                {
+                    case "EnergyChargePowerUp":
+                        expectedKind = UnitKind.EnergyChargePowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                    case "IonChargePowerUp":
+                        expectedKind = UnitKind.IonChargePowerUp;
+                        expectedAppliedAmount = 0f;
+                        break;
+                    case "NeutrinoChargePowerUp":
+                        expectedKind = UnitKind.NeutrinoChargePowerUp;
+                        expectedAppliedAmount = 0f;
+                        break;
+                    case "MetalCargoPowerUp":
+                        expectedKind = UnitKind.MetalCargoPowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                    case "CarbonCargoPowerUp":
+                        expectedKind = UnitKind.CarbonCargoPowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                    case "HydrogenCargoPowerUp":
+                        expectedKind = UnitKind.HydrogenCargoPowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                    case "SiliconCargoPowerUp":
+                        expectedKind = UnitKind.SiliconCargoPowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                    case "ShieldChargePowerUp":
+                        expectedKind = UnitKind.ShieldChargePowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                    case "HullRepairPowerUp":
+                        expectedKind = UnitKind.HullRepairPowerUp;
+                        expectedAppliedAmount = 0f;
+                        break;
+                    default:
+                        expectedKind = UnitKind.ShotChargePowerUp;
+                        expectedAppliedAmount = amount;
+                        break;
+                }
+
+                cleanupNames.Add(powerUpName);
+
+                string xml =
+                    $"<{kind} Name=\"{powerUpName}\" X=\"{powerUpX.ToString("R", CultureInfo.InvariantCulture)}\" Y=\"{powerUpY.ToString("R", CultureInfo.InvariantCulture)}\" Radius=\"6\" Gravity=\"0\" Amount=\"{amount.ToString("R", CultureInfo.InvariantCulture)}\" RespawnTicks=\"{PowerUpRespawnTicks}\" RespawnPlayerDistance=\"{PowerUpRespawnPlayerDistance.ToString("R", CultureInfo.InvariantCulture)}\" />";
+
+                await adminCluster.SetUnit(xml).ConfigureAwait(false);
+
+                DateTime visibilityDeadline = DateTime.UtcNow.AddMilliseconds(1500);
+                bool visibleFull = false;
+
+                while (DateTime.UtcNow < visibilityDeadline)
+                {
+                    if (TryFindUnit(playerGalaxy, ship.Cluster.Id, powerUpName, out Flattiverse.Connector.Units.PowerUp? visiblePowerUp) &&
+                        visiblePowerUp is not null &&
+                        visiblePowerUp.FullStateKnown &&
+                        MathF.Abs(visiblePowerUp.Amount - amount) < 0.001f)
+                    {
+                        visibleFull = true;
+                        break;
+                    }
+
+                    await Task.Delay(25).ConfigureAwait(false);
+                }
+
+                List<FlattiverseEvent> phaseEvents = new List<FlattiverseEvent>();
+                PowerUpCollectedEvent? collectedEvent = await WaitForQueuedEvent(playerEvents, 4000, phaseEvents,
+                    delegate (PowerUpCollectedEvent @event)
+                    {
+                        return @event.PowerUpName == powerUpName;
+                    }).ConfigureAwait(false);
+
+                RemovedUnitFlattiverseEvent? removedEvent = null;
+
+                for (int eventIndex = 0; eventIndex < phaseEvents.Count; eventIndex++)
+                    if (phaseEvents[eventIndex] is RemovedUnitFlattiverseEvent removedUnitFlattiverseEvent &&
+                        removedUnitFlattiverseEvent.Unit.Name == powerUpName)
+                    {
+                        removedEvent = removedUnitFlattiverseEvent;
+                        break;
+                    }
+
+                if (removedEvent is null)
+                    removedEvent = await WaitForQueuedEvent(playerEvents, 2000, phaseEvents,
+                        delegate (RemovedUnitFlattiverseEvent @event)
+                        {
+                            return @event.Unit.Name == powerUpName;
+                        }).ConfigureAwait(false);
+
+                await Task.Delay(200).ConfigureAwait(false);
+                phaseEvents.AddRange(DrainEvents(playerEvents));
+
+                bool removedFromCluster = !TryFindUnit(playerGalaxy, ship.Cluster.Id, powerUpName, out Flattiverse.Connector.Units.PowerUp? _);
+                bool removedFromAdminCluster = !TryFindUnit(adminGalaxy, ship.Cluster.Id, powerUpName, out Flattiverse.Connector.Units.PowerUp? _);
+                bool eventOk = collectedEvent is not null &&
+                    ReferenceEquals(collectedEvent.Controllable, ship) &&
+                    collectedEvent.PowerUpKind == expectedKind &&
+                    collectedEvent.PowerUpName == powerUpName &&
+                    MathF.Abs(collectedEvent.Amount - amount) < 0.001f &&
+                    MathF.Abs(collectedEvent.AppliedAmount - expectedAppliedAmount) < 0.001f;
+                bool stateOk;
+
+                switch (kind)
+                {
+                    case "MetalCargoPowerUp":
+                        stateOk = MathF.Abs(ship.Cargo.CurrentMetal - (beforeMetal + amount)) < 0.001f;
+                        break;
+                    case "CarbonCargoPowerUp":
+                        stateOk = MathF.Abs(ship.Cargo.CurrentCarbon - (beforeCarbon + amount)) < 0.001f;
+                        break;
+                    case "HydrogenCargoPowerUp":
+                        stateOk = MathF.Abs(ship.Cargo.CurrentHydrogen - (beforeHydrogen + amount)) < 0.001f;
+                        break;
+                    case "SiliconCargoPowerUp":
+                        stateOk = MathF.Abs(ship.Cargo.CurrentSilicon - (beforeSilicon + amount)) < 0.001f;
+                        break;
+                    case "ShieldChargePowerUp":
+                        stateOk = MathF.Abs(ship.Shield.Current - (beforeShield + amount)) < 0.001f;
+                        break;
+                    case "HullRepairPowerUp":
+                        stateOk = MathF.Abs(ship.Hull.Current - beforeHull) < 0.001f;
+                        break;
+                    case "ShotChargePowerUp":
+                        stateOk = MathF.Abs(ship.ShotMagazine.CurrentShots - (beforeShots + amount)) < 0.001f;
+                        break;
+                    case "IonChargePowerUp":
+                        stateOk = !ship.IonBattery.Exists && MathF.Abs(ship.IonBattery.Current) < 0.001f;
+                        break;
+                    case "NeutrinoChargePowerUp":
+                        stateOk = !ship.NeutrinoBattery.Exists && MathF.Abs(ship.NeutrinoBattery.Current) < 0.001f;
+                        break;
+                    default:
+                        stateOk = true;
+                        break;
+                }
+
+                bool caseOk = visibleFull && eventOk && removedEvent is not null && removedFromCluster && removedFromAdminCluster && stateOk;
+
+                Console.WriteLine($"POWERUP-LOCAL: {kind} visible={visibleFull} event={eventOk} removed={(removedEvent is not null && removedFromCluster && removedFromAdminCluster)} state={stateOk} applied={(collectedEvent is null ? -1f : collectedEvent.AppliedAmount):0.###}");
+
+                if (!caseOk)
+                {
+                    allOk = false;
+                    Console.WriteLine($"POWERUP-LOCAL: {kind} failed. Events:");
+
+                    for (int eventIndex = 0; eventIndex < phaseEvents.Count; eventIndex++)
+                        Console.WriteLine($"  POWERUP[{eventIndex}] {phaseEvents[eventIndex]}");
+                }
+            }
+
+            string respawnPowerUpName = $"RespawnEnergyChargePowerUp{Environment.ProcessId}";
+            float respawnPowerUpAmount = 9.5f;
+            float respawnPowerUpX = ship.Position.X + 18f;
+            float respawnPowerUpY = ship.Position.Y;
+            bool respawnVisibleFull = false;
+            bool respawnRemoved = false;
+            bool respawnAdminRemoved = false;
+            bool respawnPlayerVisibleAgain = false;
+            bool respawnAdminVisibleAgain = false;
+            bool respawnNewEventOk = false;
+            bool movedAwayEnough = false;
+
+            cleanupNames.Add(respawnPowerUpName);
+            DrainEvents(playerEvents);
+
+            await ship.MainScanner.Set(90f, 140f, 0f).ConfigureAwait(false);
+
+            await adminCluster.SetUnit(
+                $"<EnergyChargePowerUp Name=\"{respawnPowerUpName}\" X=\"{respawnPowerUpX.ToString("R", CultureInfo.InvariantCulture)}\" Y=\"{respawnPowerUpY.ToString("R", CultureInfo.InvariantCulture)}\" Radius=\"6\" Gravity=\"0\" Amount=\"{respawnPowerUpAmount.ToString("R", CultureInfo.InvariantCulture)}\" RespawnTicks=\"{PowerUpRespawnTicks}\" RespawnPlayerDistance=\"{PowerUpRespawnPlayerDistance.ToString("R", CultureInfo.InvariantCulture)}\" />")
+                .ConfigureAwait(false);
+
+            DateTime respawnVisibleDeadline = DateTime.UtcNow.AddMilliseconds(1500);
+
+            while (DateTime.UtcNow < respawnVisibleDeadline)
+            {
+                if (TryFindUnit(playerGalaxy, ship.Cluster.Id, respawnPowerUpName, out Flattiverse.Connector.Units.PowerUp? visibleRespawnPowerUp) &&
+                    visibleRespawnPowerUp is not null &&
+                    visibleRespawnPowerUp.FullStateKnown &&
+                    MathF.Abs(visibleRespawnPowerUp.Amount - respawnPowerUpAmount) < 0.001f)
+                {
+                    respawnVisibleFull = true;
+                    break;
+                }
+
+                await Task.Delay(25).ConfigureAwait(false);
+            }
+
+            List<FlattiverseEvent> respawnPhaseEvents = new List<FlattiverseEvent>();
+            PowerUpCollectedEvent? respawnCollectedEvent = await WaitForQueuedEvent(playerEvents, 4000, respawnPhaseEvents,
+                delegate (PowerUpCollectedEvent @event)
+                {
+                    return @event.PowerUpName == respawnPowerUpName;
+                }).ConfigureAwait(false);
+
+            RemovedUnitFlattiverseEvent? respawnRemovedEvent = null;
+
+            for (int eventIndex = 0; eventIndex < respawnPhaseEvents.Count; eventIndex++)
+                if (respawnPhaseEvents[eventIndex] is RemovedUnitFlattiverseEvent removedUnitFlattiverseEvent &&
+                    removedUnitFlattiverseEvent.Unit.Name == respawnPowerUpName)
+                {
+                    respawnRemovedEvent = removedUnitFlattiverseEvent;
+                    break;
+                }
+
+            if (respawnRemovedEvent is null)
+                respawnRemovedEvent = await WaitForQueuedEvent(playerEvents, 2000, respawnPhaseEvents,
+                    delegate (RemovedUnitFlattiverseEvent @event)
+                    {
+                        return @event.Unit.Name == respawnPowerUpName;
+                    }).ConfigureAwait(false);
+
+            await Task.Delay(200).ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            respawnRemoved = !TryFindUnit(playerGalaxy, ship.Cluster.Id, respawnPowerUpName, out Flattiverse.Connector.Units.PowerUp? _);
+            respawnAdminRemoved = !TryFindUnit(adminGalaxy, ship.Cluster.Id, respawnPowerUpName, out Flattiverse.Connector.Units.PowerUp? _);
+
+            await ship.Engine.Set(new Vector(-ship.Engine.Maximum * 0.9f, 0f)).ConfigureAwait(false);
+
+            DateTime movementDeadline = DateTime.UtcNow.AddMilliseconds(7000);
+
+            while (DateTime.UtcNow < movementDeadline)
+            {
+                if (respawnPowerUpX - ship.Position.X > PowerUpRespawnPlayerDistance + 20f)
+                {
+                    movedAwayEnough = true;
+                    break;
+                }
+
+                await Task.Delay(25).ConfigureAwait(false);
+            }
+
+            await ship.Engine.Off().ConfigureAwait(false);
+            DrainEvents(playerEvents);
+
+            if (movedAwayEnough)
+            {
+                NewUnitFlattiverseEvent? respawnNewEvent = await WaitForQueuedEvent(playerEvents, 4000, respawnPhaseEvents,
+                    delegate (NewUnitFlattiverseEvent @event)
+                    {
+                        return @event.Unit.Name == respawnPowerUpName;
+                    }).ConfigureAwait(false);
+
+                respawnNewEventOk = respawnNewEvent is not null;
+            }
+
+            DateTime respawnReturnDeadline = DateTime.UtcNow.AddMilliseconds(4000);
+
+            while (DateTime.UtcNow < respawnReturnDeadline)
+            {
+                if (!respawnPlayerVisibleAgain &&
+                    TryFindUnit(playerGalaxy, ship.Cluster.Id, respawnPowerUpName, out Flattiverse.Connector.Units.PowerUp? respawnedPlayerPowerUp) &&
+                    respawnedPlayerPowerUp is not null &&
+                    respawnedPlayerPowerUp.FullStateKnown &&
+                    MathF.Abs(respawnedPlayerPowerUp.Amount - respawnPowerUpAmount) < 0.001f)
+                    respawnPlayerVisibleAgain = true;
+
+                if (!respawnAdminVisibleAgain &&
+                    TryFindUnit(adminGalaxy, ship.Cluster.Id, respawnPowerUpName, out Flattiverse.Connector.Units.PowerUp? respawnedAdminPowerUp) &&
+                    respawnedAdminPowerUp is not null &&
+                    respawnedAdminPowerUp.FullStateKnown &&
+                    MathF.Abs(respawnedAdminPowerUp.Amount - respawnPowerUpAmount) < 0.001f)
+                    respawnAdminVisibleAgain = true;
+
+                if (respawnPlayerVisibleAgain && respawnAdminVisibleAgain)
+                    break;
+
+                await Task.Delay(25).ConfigureAwait(false);
+            }
+
+            bool respawnCaseOk = respawnVisibleFull &&
+                respawnCollectedEvent is not null &&
+                respawnRemovedEvent is not null &&
+                respawnRemoved &&
+                respawnAdminRemoved &&
+                movedAwayEnough &&
+                respawnNewEventOk &&
+                respawnPlayerVisibleAgain &&
+                respawnAdminVisibleAgain;
+
+            Console.WriteLine($"POWERUP-LOCAL: respawn visible={respawnVisibleFull} removed={(respawnRemovedEvent is not null && respawnRemoved && respawnAdminRemoved)} movedAway={movedAwayEnough} newEvent={respawnNewEventOk} respawned={(respawnPlayerVisibleAgain && respawnAdminVisibleAgain)}");
+
+            if (!respawnCaseOk)
+            {
+                allOk = false;
+                Console.WriteLine("POWERUP-LOCAL: respawn case failed. Events:");
+
+                for (int eventIndex = 0; eventIndex < respawnPhaseEvents.Count; eventIndex++)
+                    Console.WriteLine($"  RESP[{eventIndex}] {respawnPhaseEvents[eventIndex]}");
+            }
+
+            Console.WriteLine($"POWERUP-LOCAL: RESULT = {(allOk ? "OK" : "FAILED")}");
+        }
+        finally
+        {
+            if (ship is not null)
+                ship.RequestClose();
+
+            if (adminGalaxy is not null && adminCluster is not null)
+                for (int index = 0; index < cleanupNames.Count; index++)
+                    try
+                    {
+                        await adminCluster.RemoveUnit(cleanupNames[index]).ConfigureAwait(false);
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+            if (playerGalaxy is not null)
+                playerGalaxy.Dispose();
+
+            if (eventPump is not null)
+                await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(LocalSwitchGatePlayerAuth, null, 7000).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task RunInterceptorVsShotCheckLocal()
+    {
+        const float PinkSpawnX = 19960f;
+        const float GreenSpawnX = 20040f;
+        const float SpawnY = 0f;
+        const float RegionHalfSize = 1f;
+        const float ProjectileStartDistance = 16f;
+        const ushort GreenShotTicks = 120;
+        const float GreenShotSpeed = 0.2f;
+        const float GreenShotLoad = 2.5f;
+        const float GreenShotDamage = 1f;
+        const ushort InterceptorTicks = 18;
+        const float InterceptorLoad = 25f;
+        const float InterceptorDamage = 1f;
+        const int SetupDelayMs = 500;
+        const int ShotObservationTimeoutMs = 4000;
+        const int InterceptorTimeoutMs = 6000;
+        const int NoExplosionWatchMs = 1500;
+
+        Galaxy? adminGalaxy = null;
+        Galaxy? pinkGalaxy = null;
+        Galaxy? greenGalaxy = null;
+        Galaxy? spectatorGalaxy = null;
+        Task? pinkEventPump = null;
+        Task? greenEventPump = null;
+        Task? spectatorEventPump = null;
+        ConcurrentQueue<FlattiverseEvent> pinkEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ConcurrentQueue<FlattiverseEvent> greenEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ConcurrentQueue<FlattiverseEvent> spectatorEvents = new ConcurrentQueue<FlattiverseEvent>();
+        Dictionary<byte, string>? restoreRegionsByCluster = null;
+        ClassicShipControllable? pinkShip = null;
+        ClassicShipControllable? greenShip = null;
+        List<FlattiverseEvent> spectatorTrace = new List<FlattiverseEvent>();
+        bool result = false;
+        string suffix = $"{Environment.ProcessId}-{DateTime.UtcNow.Ticks % 1000000:000000}";
+        string pinkShipName = $"PinkInterceptor{suffix}";
+        string greenShipName = $"GreenShot{suffix}";
+
+        try
+        {
+            Console.WriteLine("INTERCEPTOR-VS-SHOT-LOCAL: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGateAdminAuth, null).ConfigureAwait(false);
+
+            restoreRegionsByCluster = await CaptureRegionsByCluster(adminGalaxy).ConfigureAwait(false);
+            await RemoveAllRegions(adminGalaxy).ConfigureAwait(false);
+
+            if (!TryGetActiveStartCluster(adminGalaxy, out Cluster? activeCluster) || activeCluster is null)
+                throw new InvalidOperationException("No active start cluster found.");
+
+            if (!TryGetTeamByName(adminGalaxy, TeamName, out Team? pinkTeam) || pinkTeam is null)
+                throw new InvalidOperationException($"Team {TeamName} not found.");
+
+            if (!TryGetTeamByName(adminGalaxy, LocalSwitchGateGreenTeamName, out Team? greenTeam) || greenTeam is null)
+                throw new InvalidOperationException($"Team {LocalSwitchGateGreenTeamName} not found.");
+
+            int pinkRegionId = 200 + Environment.ProcessId % 40;
+            int greenRegionId = pinkRegionId + 1;
+            string pinkRegionXml =
+                $"<Region Id=\"{pinkRegionId}\" Name=\"InterceptorPink-{suffix}\" Left=\"{(PinkSpawnX - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Top=\"{(SpawnY - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Right=\"{(PinkSpawnX + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Bottom=\"{(SpawnY + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\"><Team Id=\"{pinkTeam.Id}\" /></Region>";
+            string greenRegionXml =
+                $"<Region Id=\"{greenRegionId}\" Name=\"InterceptorGreen-{suffix}\" Left=\"{(GreenSpawnX - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Top=\"{(SpawnY - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Right=\"{(GreenSpawnX + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Bottom=\"{(SpawnY + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\"><Team Id=\"{greenTeam.Id}\" /></Region>";
+
+            await activeCluster.SetRegion(pinkRegionXml).ConfigureAwait(false);
+            await activeCluster.SetRegion(greenRegionXml).ConfigureAwait(false);
+
+            Console.WriteLine("INTERCEPTOR-VS-SHOT-LOCAL: prepared local arena regions");
+
+            pinkGalaxy = await ConnectLocalPlayer(LocalSwitchGatePinkPlayerAuth, TeamName, "INTERCEPTOR-VS-SHOT-LOCAL:PINK").ConfigureAwait(false);
+            greenGalaxy = await ConnectLocalPlayer(LocalSwitchGatePlayerAuth, LocalSwitchGateGreenTeamName, "INTERCEPTOR-VS-SHOT-LOCAL:GREEN").ConfigureAwait(false);
+            spectatorGalaxy = await Galaxy.Connect(LocalSwitchGateUri, null, null).ConfigureAwait(false);
+
+            pinkEventPump = StartEventPump("INTERCEPTOR-VS-SHOT-LOCAL:PINK", pinkGalaxy, pinkEvents);
+            greenEventPump = StartEventPump("INTERCEPTOR-VS-SHOT-LOCAL:GREEN", greenGalaxy, greenEvents);
+            spectatorEventPump = StartEventPump("INTERCEPTOR-VS-SHOT-LOCAL:SPECTATOR", spectatorGalaxy, spectatorEvents);
+
+            await Task.Delay(SetupDelayMs).ConfigureAwait(false);
+            DrainEvents(pinkEvents);
+            DrainEvents(greenEvents);
+            DrainEvents(spectatorEvents);
+
+            pinkShip = await pinkGalaxy.CreateClassicShip(pinkShipName).ConfigureAwait(false);
+            greenShip = await greenGalaxy.CreateClassicShip(greenShipName).ConfigureAwait(false);
+
+            await pinkShip.Continue().ConfigureAwait(false);
+            await greenShip.Continue().ConfigureAwait(false);
+
+            bool pinkAlive = await WaitForAliveState(pinkShip, true, 3000).ConfigureAwait(false);
+            bool greenAlive = await WaitForAliveState(greenShip, true, 3000).ConfigureAwait(false);
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: pink alive = {pinkAlive}");
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: green alive = {greenAlive}");
+
+            if (!pinkAlive || !greenAlive)
+                return;
+
+            await pinkShip.Engine.Off().ConfigureAwait(false);
+            await greenShip.Engine.Off().ConfigureAwait(false);
+
+            await Task.Delay(SetupDelayMs).ConfigureAwait(false);
+            DrainEvents(pinkEvents);
+            DrainEvents(greenEvents);
+            DrainEvents(spectatorEvents);
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: pink ship cluster={pinkShip.Cluster.Id} pos={pinkShip.Position} move={pinkShip.Movement}");
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: green ship cluster={greenShip.Cluster.Id} pos={greenShip.Position} move={greenShip.Movement}");
+
+            Vector greenShotRelativeMovement = new Vector(-GreenShotSpeed, 0f);
+
+            if (!greenShip.ShotLauncher.CalculateCost(greenShotRelativeMovement, GreenShotTicks, GreenShotLoad, GreenShotDamage, out float greenShotEnergy,
+                    out float greenShotIons, out float greenShotNeutrinos))
+                throw new InvalidOperationException("Green shot request is invalid.");
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: green shot cost energy={greenShotEnergy:0.###} ions={greenShotIons:0.###} neutrinos={greenShotNeutrinos:0.###}");
+
+            await greenShip.ShotLauncher.Shoot(greenShotRelativeMovement, GreenShotTicks, GreenShotLoad, GreenShotDamage).ConfigureAwait(false);
+
+            NewUnitFlattiverseEvent? shotNewEvent = await WaitForQueuedEvent(spectatorEvents, ShotObservationTimeoutMs, spectatorTrace,
+                delegate (NewUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit is Shot shot &&
+                           shot.ControllableInfo is not null &&
+                           shot.ControllableInfo.Name == greenShipName;
+                }).ConfigureAwait(false);
+
+            Shot? greenShot = shotNewEvent?.Unit as Shot;
+
+            if (greenShot is null)
+            {
+                Console.WriteLine("INTERCEPTOR-VS-SHOT-LOCAL: green shot was not observed");
+                return;
+            }
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: observed shot name={greenShot.Name} pos={greenShot.Position} move={greenShot.Movement} ticks={greenShot.Ticks}");
+
+            Vector futureShotPosition = greenShot.Position + greenShot.Movement * (float)(InterceptorTicks + 1);
+            Vector pinkShipFuturePosition = pinkShip.Position + pinkShip.Movement * InterceptorTicks;
+            Vector interceptorRelativeMovement = futureShotPosition - pinkShipFuturePosition;
+            float startDistance = ProjectileStartDistance;
+
+            if (interceptorRelativeMovement.Length <= startDistance)
+            {
+                Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: interceptor target too close ({interceptorRelativeMovement.Length:0.###} <= {startDistance:0.###})");
+                return;
+            }
+
+            interceptorRelativeMovement.Length = (interceptorRelativeMovement.Length - startDistance) / InterceptorTicks;
+
+            bool interceptorRequestValid = pinkShip.InterceptorLauncher.CalculateCost(interceptorRelativeMovement, InterceptorTicks, InterceptorLoad,
+                InterceptorDamage, out float interceptorEnergy, out float interceptorIons, out float interceptorNeutrinos);
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: interceptor vector={interceptorRelativeMovement} costValid={interceptorRequestValid} energy={interceptorEnergy:0.###} ions={interceptorIons:0.###} neutrinos={interceptorNeutrinos:0.###}");
+
+            if (!interceptorRequestValid)
+                return;
+
+            await pinkShip.InterceptorLauncher.Shoot(interceptorRelativeMovement, InterceptorTicks, InterceptorLoad, InterceptorDamage).ConfigureAwait(false);
+
+            NewUnitFlattiverseEvent? interceptorNewEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                delegate (NewUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit is Interceptor interceptor &&
+                           interceptor.ControllableInfo is not null &&
+                           interceptor.ControllableInfo.Name == pinkShipName;
+                }).ConfigureAwait(false);
+
+            Interceptor? interceptorUnit = interceptorNewEvent?.Unit as Interceptor;
+            bool interceptorObserved = interceptorUnit is not null;
+            bool interceptorRemoved = false;
+            bool interceptorExplosionObserved = false;
+            bool shotRemoved = false;
+            bool shotNormalExplosionObserved = false;
+
+            if (interceptorUnit is not null)
+            {
+                RemovedUnitFlattiverseEvent? interceptorRemovedEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                    delegate (RemovedUnitFlattiverseEvent @event)
+                    {
+                        return @event.Unit.Name == interceptorUnit.Name;
+                    }).ConfigureAwait(false);
+
+                interceptorRemoved = interceptorRemovedEvent is not null;
+
+                NewUnitFlattiverseEvent? interceptorExplosionEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                    delegate (NewUnitFlattiverseEvent @event)
+                    {
+                        return @event.Unit is InterceptorExplosion &&
+                               @event.Unit.Name == interceptorUnit.Name;
+                    }).ConfigureAwait(false);
+
+                interceptorExplosionObserved = interceptorExplosionEvent is not null;
+            }
+
+            RemovedUnitFlattiverseEvent? shotRemovedEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                delegate (RemovedUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit.Name == greenShot.Name;
+                }).ConfigureAwait(false);
+
+            shotRemoved = shotRemovedEvent is not null;
+
+            DateTime noExplosionDeadline = DateTime.UtcNow.AddMilliseconds(NoExplosionWatchMs);
+
+            while (DateTime.UtcNow < noExplosionDeadline)
+            {
+                while (spectatorEvents.TryDequeue(out FlattiverseEvent? @event))
+                {
+                    spectatorTrace.Add(@event);
+
+                    if (@event is NewUnitFlattiverseEvent newUnitFlattiverseEvent &&
+                        newUnitFlattiverseEvent.Unit.Kind == UnitKind.Explosion &&
+                        newUnitFlattiverseEvent.Unit.Name == greenShot.Name)
+                        shotNormalExplosionObserved = true;
+                }
+
+                await Task.Delay(25).ConfigureAwait(false);
+            }
+
+            result = interceptorObserved &&
+                     interceptorRemoved &&
+                     interceptorExplosionObserved &&
+                     shotRemoved &&
+                     !shotNormalExplosionObserved;
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: interceptor observed = {interceptorObserved}");
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: interceptor removed = {interceptorRemoved}");
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: interceptor explosion observed = {interceptorExplosionObserved}");
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: shot removed = {shotRemoved}");
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: normal shot explosion observed = {shotNormalExplosionObserved}");
+
+            if (!result)
+            {
+                Console.WriteLine("INTERCEPTOR-VS-SHOT-LOCAL: spectator trace:");
+
+                for (int index = 0; index < spectatorTrace.Count; index++)
+                    Console.WriteLine($"  TRACE[{index}] {DescribeSpectatorEvent(spectatorTrace[index])}");
+            }
+
+            Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: RESULT = {(result ? "OK" : "FAILED")}");
+        }
+        finally
+        {
+            if (pinkShip is not null)
+                pinkShip.RequestClose();
+
+            if (greenShip is not null)
+                greenShip.RequestClose();
+
+            if (pinkGalaxy is not null)
+                pinkGalaxy.Dispose();
+
+            if (greenGalaxy is not null)
+                greenGalaxy.Dispose();
+
+            if (spectatorGalaxy is not null)
+                spectatorGalaxy.Dispose();
+
+            if (pinkEventPump is not null)
+                await Task.WhenAny(pinkEventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (greenEventPump is not null)
+                await Task.WhenAny(greenEventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (spectatorEventPump is not null)
+                await Task.WhenAny(spectatorEventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null && restoreRegionsByCluster is not null)
+                try
+                {
+                    await RestoreRegionsByCluster(adminGalaxy, restoreRegionsByCluster).ConfigureAwait(false);
+                    Console.WriteLine("INTERCEPTOR-VS-SHOT-LOCAL: regions restored");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine($"INTERCEPTOR-VS-SHOT-LOCAL: region restore failed ({exception.GetType().Name}: {exception.Message})");
+                }
+
+            if (adminGalaxy is not null)
+                adminGalaxy.Dispose();
+
+            await WaitForSessionGalaxy(LocalSwitchGatePinkPlayerAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(LocalSwitchGatePlayerAuth, null, 7000).ConfigureAwait(false);
         }
     }
 
@@ -1285,7 +2686,7 @@ class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=13&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=14&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 
@@ -1526,6 +2927,8 @@ class Program
 
         xml.Add("<Sun Name=\"RoundtripSun\" X=\"100\" Y=\"20\" Radius=\"45\" Gravity=\"0.04\" Energy=\"1.30\" Ions=\"0.20\" Neutrinos=\"0.10\" Heat=\"0.60\" Drain=\"0.05\" />");
         xml.Add("<BlackHole Name=\"RoundtripHole\" X=\"-120\" Y=\"70\" Radius=\"30\" Gravity=\"0.07\" GravityWellRadius=\"220\" GravityWellForce=\"0.18\" />");
+        xml.Add("<CurrentField Name=\"RoundtripCurrentField\" X=\"35\" Y=\"105\" Radius=\"36\" Gravity=\"0\" Mode=\"Relative\" FlowX=\"0\" FlowY=\"0\" RadialForce=\"-0.08\" TangentialForce=\"0.14\" />");
+        xml.Add("<Storm Name=\"RoundtripStorm\" X=\"-15\" Y=\"145\" Radius=\"42\" Gravity=\"0\" SpawnChancePerTick=\"0\" MinAnnouncementTicks=\"12\" MaxAnnouncementTicks=\"18\" MinActiveTicks=\"18\" MaxActiveTicks=\"30\" MinWhirlRadius=\"6\" MaxWhirlRadius=\"10\" MinWhirlSpeed=\"0.14\" MaxWhirlSpeed=\"0.22\" MinWhirlGravity=\"0.003\" MaxWhirlGravity=\"0.009\" Damage=\"3.25\" />");
         xml.Add("<Planet Name=\"RoundtripPlanet\" X=\"-40\" Y=\"-160\" Radius=\"60\" Gravity=\"0.03\" Type=\"OceanWorld\" Metal=\"0.12\" Carbon=\"0.28\" Hydrogen=\"0.74\" Silicon=\"0.19\" />");
         xml.Add("<Moon Name=\"RoundtripMoon\" X=\"170\" Y=\"-140\" Radius=\"24\" Gravity=\"0.01\" Type=\"IceMoon\" Metal=\"0.15\" Carbon=\"0.22\" Hydrogen=\"0.66\" Silicon=\"0.18\" />");
         xml.Add("<Meteoroid Name=\"RoundtripMeteoroid\" X=\"260\" Y=\"110\" Radius=\"15\" Gravity=\"0.002\" Type=\"MetallicSlug\" Metal=\"0.89\" Carbon=\"0.05\" Hydrogen=\"0.03\" Silicon=\"0.21\" />");
@@ -1533,6 +2936,8 @@ class Program
         xml.Add("<MissionTarget Name=\"RoundtripMissionTarget\" X=\"20\" Y=\"30\" Radius=\"8\" Gravity=\"0\" Team=\"0\" SequenceNumber=\"7\"><Vector X=\"40\" Y=\"50\" /><Vector X=\"-60\" Y=\"70\" /></MissionTarget>");
         xml.Add("<Flag Name=\"RoundtripFlag\" X=\"-70\" Y=\"95\" Radius=\"9\" Gravity=\"0\" Team=\"0\" GraceTicks=\"120\" />");
         xml.Add("<DominationPoint Name=\"RoundtripDominationPoint\" X=\"180\" Y=\"-75\" Radius=\"14\" Gravity=\"0\" Team=\"0\" DominationRadius=\"90\" />");
+        xml.Add("<Switch Name=\"RoundtripSwitch\" X=\"15\" Y=\"-25\" Radius=\"11\" Gravity=\"0\" Team=\"12\" LinkId=\"17\" Range=\"140\" CooldownTicks=\"30\" Mode=\"Open\" />");
+        xml.Add("<Gate Name=\"RoundtripGate\" X=\"75\" Y=\"-25\" Radius=\"14\" Gravity=\"0\" LinkId=\"17\" DefaultClosed=\"true\" RestoreTicks=\"80\" />");
 
         return xml;
     }
@@ -1776,6 +3181,45 @@ class Program
         }
 
         return false;
+    }
+
+    private static void ClearLocalAccountSession(string auth, string label)
+    {
+        long nowTicks = DateTime.UtcNow.Ticks;
+
+        ExecuteDatabaseNonQuery($"""
+            UPDATE public.accounts
+            SET "datePlayedEnd" = {nowTicks},
+                "sessionGalaxy" = NULL,
+                "sessionTeam" = NULL,
+                "sessionPlayerKills" = 0,
+                "sessionPlayerDeaths" = 0,
+                "sessionFriendlyKills" = 0,
+                "sessionFriendlyDeaths" = 0,
+                "sessionNpcKills" = 0,
+                "sessionNpcDeaths" = 0,
+                "sessionNeutralDeaths" = 0
+            WHERE encode("apiPlayer", 'hex') = '{auth}'
+               OR encode("apiAdmin", 'hex') = '{auth}'
+            """);
+
+        Console.WriteLine($"{label}: session cleared in database");
+    }
+
+    private static async Task<Galaxy> ConnectLocalPlayer(string auth, string teamName, string label)
+    {
+        try
+        {
+            Console.WriteLine($"{label}: connecting...");
+            return await Galaxy.Connect(LocalSwitchGateUri, auth, teamName).ConfigureAwait(false);
+        }
+        catch (AccountAlreadyLoggedInGameException)
+        {
+            ClearLocalAccountSession(auth, label);
+            await Task.Delay(250).ConfigureAwait(false);
+            Console.WriteLine($"{label}: retry after forced cleanup...");
+            return await Galaxy.Connect(LocalSwitchGateUri, auth, teamName).ConfigureAwait(false);
+        }
     }
 
     private static bool HasFreshSession(DatabaseAccountRow row)
@@ -2207,6 +3651,26 @@ class Program
             XDocument queriedPlanetDocument = XDocument.Parse(queriedPlanetXml, LoadOptions.None);
             bool kindSwitchWorked = queriedPlanetDocument.Root?.Name.LocalName == "Planet";
 
+            string currentFieldXml = $"<CurrentField Name=\"{unitName}\" X=\"-18\" Y=\"22\" Radius=\"17\" Gravity=\"0\" Mode=\"Relative\" FlowX=\"0\" FlowY=\"0\" RadialForce=\"-0.5\" TangentialForce=\"0.75\" />";
+            await clusterValue.SetUnit(currentFieldXml).ConfigureAwait(false);
+
+            string queriedCurrentFieldXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
+            XDocument queriedCurrentFieldDocument = XDocument.Parse(queriedCurrentFieldXml, LoadOptions.None);
+            bool currentFieldKindWorked = queriedCurrentFieldDocument.Root?.Name.LocalName == "CurrentField";
+            bool currentFieldModeWorked = queriedCurrentFieldDocument.Root?.Attribute("Mode")?.Value == "Relative";
+            bool currentFieldRadialWorked = queriedCurrentFieldDocument.Root?.Attribute("RadialForce")?.Value == "-0.5";
+            bool currentFieldTangentialWorked = queriedCurrentFieldDocument.Root?.Attribute("TangentialForce")?.Value == "0.75";
+
+            string stormXml = $"<Storm Name=\"{unitName}\" X=\"-12\" Y=\"44\" Radius=\"23\" Gravity=\"0\" SpawnChancePerTick=\"0\" MinAnnouncementTicks=\"11\" MaxAnnouncementTicks=\"13\" MinActiveTicks=\"17\" MaxActiveTicks=\"19\" MinWhirlRadius=\"6\" MaxWhirlRadius=\"9\" MinWhirlSpeed=\"0.11\" MaxWhirlSpeed=\"0.21\" MinWhirlGravity=\"0.002\" MaxWhirlGravity=\"0.006\" Damage=\"2.75\" />";
+            await clusterValue.SetUnit(stormXml).ConfigureAwait(false);
+
+            string queriedStormXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
+            XDocument queriedStormDocument = XDocument.Parse(queriedStormXml, LoadOptions.None);
+            bool stormKindWorked = queriedStormDocument.Root?.Name.LocalName == "Storm";
+            bool stormDamageWorked = queriedStormDocument.Root?.Attribute("Damage")?.Value == "2.75";
+            bool stormAnnouncementWorked = queriedStormDocument.Root?.Attribute("MinAnnouncementTicks")?.Value == "11" &&
+                                           queriedStormDocument.Root?.Attribute("MaxAnnouncementTicks")?.Value == "13";
+
             string missionTargetXml = $"<MissionTarget Name=\"{unitName}\" X=\"-20\" Y=\"15\" Radius=\"11\" Gravity=\"0\" Team=\"{missionTargetTeamValue.Id}\" SequenceNumber=\"3\"><Vector X=\"1.5\" Y=\"2.5\" /><Vector X=\"-4\" Y=\"8\" /></MissionTarget>";
             await clusterValue.SetUnit(missionTargetXml).ConfigureAwait(false);
 
@@ -2251,6 +3715,26 @@ class Program
             bool dominationPointKindWorked = queriedDominationPointDocument.Root?.Name.LocalName == "DominationPoint";
             bool dominationPointRadiusWorked = queriedDominationPointDocument.Root?.Attribute("DominationRadius")?.Value == "88";
 
+            string switchXml = $"<Switch Name=\"{unitName}\" X=\"30\" Y=\"-15\" Radius=\"9\" Gravity=\"0\" Team=\"{SpectatorsTeamId}\" LinkId=\"321\" Range=\"77\" CooldownTicks=\"44\" Mode=\"Close\" />";
+            await clusterValue.SetUnit(switchXml).ConfigureAwait(false);
+
+            string queriedSwitchXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
+            XDocument queriedSwitchDocument = XDocument.Parse(queriedSwitchXml, LoadOptions.None);
+            bool switchKindWorked = queriedSwitchDocument.Root?.Name.LocalName == "Switch";
+            bool switchTeamWorked = queriedSwitchDocument.Root?.Attribute("Team")?.Value == SpectatorsTeamId.ToString(CultureInfo.InvariantCulture);
+            bool switchLinkWorked = queriedSwitchDocument.Root?.Attribute("LinkId")?.Value == "321";
+            bool switchModeWorked = queriedSwitchDocument.Root?.Attribute("Mode")?.Value == "Close";
+
+            string gateXml = $"<Gate Name=\"{unitName}\" X=\"31\" Y=\"-15\" Radius=\"10\" Gravity=\"0\" LinkId=\"321\" DefaultClosed=\"true\" RestoreTicks=\"19\" />";
+            await clusterValue.SetUnit(gateXml).ConfigureAwait(false);
+
+            string queriedGateXml = await clusterValue.QueryUnitXml(unitName).ConfigureAwait(false);
+            XDocument queriedGateDocument = XDocument.Parse(queriedGateXml, LoadOptions.None);
+            bool gateKindWorked = queriedGateDocument.Root?.Name.LocalName == "Gate";
+            bool gateLinkWorked = queriedGateDocument.Root?.Attribute("LinkId")?.Value == "321";
+            bool gateDefaultWorked = queriedGateDocument.Root?.Attribute("DefaultClosed")?.Value == "true";
+            bool gateRestoreWorked = queriedGateDocument.Root?.Attribute("RestoreTicks")?.Value == "19";
+
             await clusterValue.RemoveUnit(unitName).ConfigureAwait(false);
             unitCreated = false;
 
@@ -2267,8 +3751,8 @@ class Program
                 queryAfterRemoveFailed = exception.Reason == InvalidArgumentKind.EntityNotFound && expectedParameter;
             }
 
-            Console.WriteLine($"  RESULT: {(isSun && kindSwitchWorked && missionTargetKindWorked && missionTargetVectorCountWorked && missionTargetTeamWorked && missionTargetSequenceWorked && flagKindWorked && flagTeamWorked && flagGraceTicksWorked && dominationPointKindWorked && dominationPointRadiusWorked && queryAfterRemoveFailed ? "OK" : "FAILED")} " +
-                              $"(sun={isSun}, kindSwitch={kindSwitchWorked}, missionTargetKind={missionTargetKindWorked}, missionTargetVectors={missionTargetVectorCountWorked}, missionTargetTeam={missionTargetTeamWorked}, missionTargetSequence={missionTargetSequenceWorked}, flagKind={flagKindWorked}, flagTeam={flagTeamWorked}, flagGraceTicks={flagGraceTicksWorked}, dominationPointKind={dominationPointKindWorked}, dominationPointRadius={dominationPointRadiusWorked}, removed={queryAfterRemoveFailed})");
+            Console.WriteLine($"  RESULT: {(isSun && kindSwitchWorked && currentFieldKindWorked && currentFieldModeWorked && currentFieldRadialWorked && currentFieldTangentialWorked && stormKindWorked && stormDamageWorked && stormAnnouncementWorked && missionTargetKindWorked && missionTargetVectorCountWorked && missionTargetTeamWorked && missionTargetSequenceWorked && flagKindWorked && flagTeamWorked && flagGraceTicksWorked && dominationPointKindWorked && dominationPointRadiusWorked && switchKindWorked && switchTeamWorked && switchLinkWorked && switchModeWorked && gateKindWorked && gateLinkWorked && gateDefaultWorked && gateRestoreWorked && queryAfterRemoveFailed ? "OK" : "FAILED")} " +
+                              $"(sun={isSun}, kindSwitch={kindSwitchWorked}, currentFieldKind={currentFieldKindWorked}, currentFieldMode={currentFieldModeWorked}, currentFieldRadial={currentFieldRadialWorked}, currentFieldTangential={currentFieldTangentialWorked}, stormKind={stormKindWorked}, stormDamage={stormDamageWorked}, stormAnnouncement={stormAnnouncementWorked}, missionTargetKind={missionTargetKindWorked}, missionTargetVectors={missionTargetVectorCountWorked}, missionTargetTeam={missionTargetTeamWorked}, missionTargetSequence={missionTargetSequenceWorked}, flagKind={flagKindWorked}, flagTeam={flagTeamWorked}, flagGraceTicks={flagGraceTicksWorked}, dominationPointKind={dominationPointKindWorked}, dominationPointRadius={dominationPointRadiusWorked}, switchKind={switchKindWorked}, switchTeam={switchTeamWorked}, switchLink={switchLinkWorked}, switchMode={switchModeWorked}, gateKind={gateKindWorked}, gateLink={gateLinkWorked}, gateDefault={gateDefaultWorked}, gateRestore={gateRestoreWorked}, removed={queryAfterRemoveFailed})");
         }
         catch (Exception exception)
         {
@@ -2828,12 +4312,12 @@ class Program
 
     private static string DescribeUnitEvent(string prefix, DateTime stamp, Unit unit)
     {
-        if (unit is Shot shot)
+        if (unit is Projectile projectile)
         {
-            string playerName = shot.Player is null ? "-" : $"{shot.Player.Id}:{shot.Player.Name}";
-            string controllableName = shot.ControllableInfo is null ? "-" : $"{shot.ControllableInfo.Id}:{shot.ControllableInfo.Name}";
+            string playerName = projectile.Player is null ? "-" : $"{projectile.Player.Id}:{projectile.Player.Name}";
+            string controllableName = projectile.ControllableInfo is null ? "-" : $"{projectile.ControllableInfo.Id}:{projectile.ControllableInfo.Name}";
 
-            return $"{stamp:HH:mm:ss.fff} {prefix} kind=Shot cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} ticks={shot.Ticks}";
+            return $"{stamp:HH:mm:ss.fff} {prefix} kind={unit.Kind} cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} ticks={projectile.Ticks}";
         }
 
         if (unit is Explosion explosion)
@@ -2841,7 +4325,7 @@ class Program
             string playerName = explosion.Player is null ? "-" : $"{explosion.Player.Id}:{explosion.Player.Name}";
             string controllableName = explosion.ControllableInfo is null ? "-" : $"{explosion.ControllableInfo.Id}:{explosion.ControllableInfo.Name}";
 
-            return $"{stamp:HH:mm:ss.fff} {prefix} kind=Explosion cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} radius={unit.Radius:0.###}";
+            return $"{stamp:HH:mm:ss.fff} {prefix} kind={unit.Kind} cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} radius={unit.Radius:0.###}";
         }
 
         if (unit is ClassicShipPlayerUnit classicShipPlayerUnit)
@@ -2897,6 +4381,27 @@ class Program
             result.Add(@event);
 
         return result;
+    }
+
+    private static async Task<T?> WaitForQueuedEvent<T>(ConcurrentQueue<FlattiverseEvent> events, int timeoutMs, List<FlattiverseEvent> drainedEvents,
+        Func<T, bool> predicate) where T : FlattiverseEvent
+    {
+        DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            while (events.TryDequeue(out FlattiverseEvent? @event))
+            {
+                drainedEvents.Add(@event);
+
+                if (@event is T typedEvent && predicate(typedEvent))
+                    return typedEvent;
+            }
+
+            await Task.Delay(25).ConfigureAwait(false);
+        }
+
+        return null;
     }
 
     private static string BuildConfigurationXml(Galaxy galaxy, ClusterSpec[]? clusters)
@@ -3002,6 +4507,59 @@ class Program
     {
         foreach (Team existingTeam in galaxy.Teams)
             if (existingTeam.Id != SpectatorsTeamId)
+            {
+                team = existingTeam;
+                return true;
+            }
+
+        team = null;
+        return false;
+    }
+
+    private static bool TryFindUnit<T>(Galaxy galaxy, byte clusterId, string name, out T? unit) where T : Unit
+    {
+        unit = null;
+
+        if (!galaxy.Clusters.TryGet(clusterId, out Cluster? cluster) || cluster is null)
+            return false;
+
+        Unit[] units = cluster.Units.ToArray();
+
+        foreach (Unit candidate in units)
+            if (candidate.Name == name && candidate is T typedUnit)
+            {
+                unit = typedUnit;
+                return true;
+            }
+
+        return false;
+    }
+
+    private static T? FindLastUpdatedUnit<T>(List<FlattiverseEvent> events, string unitName) where T : Unit
+    {
+        for (int index = events.Count - 1; index >= 0; index--)
+            if (events[index] is UpdatedUnitFlattiverseEvent updatedUnitFlattiverseEvent &&
+                updatedUnitFlattiverseEvent.Unit.Name == unitName &&
+                updatedUnitFlattiverseEvent.Unit is T typedUnit)
+                return typedUnit;
+
+        return null;
+    }
+
+    private static Vector CalculateOrbitingPosition(Vector configuredPosition, IReadOnlyList<Orbit> orbitingList, uint tick)
+    {
+        Vector current = new Vector(configuredPosition);
+
+        for (int index = 0; index < orbitingList.Count; index++)
+            current += orbitingList[index].CalculateOffset(tick);
+
+        return current;
+    }
+
+    private static bool TryGetTeamByName(Galaxy galaxy, string name, out Team? team)
+    {
+        foreach (Team existingTeam in galaxy.Teams)
+            if (existingTeam.Name == name)
             {
                 team = existingTeam;
                 return true;

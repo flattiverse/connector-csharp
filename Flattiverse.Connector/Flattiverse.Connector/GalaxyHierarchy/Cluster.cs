@@ -203,6 +203,32 @@ public class Cluster : INamedUnit
     }
 
     /// <summary>
+    /// Queries all editable units of this cluster, including currently invisible ones like inactive power-ups.
+    /// </summary>
+    public async Task<EditableUnitSummary[]> QueryEditableUnits(ProgressState? progressState = null)
+    {
+        return await ChunkedTransfer.DownloadItems(Galaxy.Connection, delegate (ref PacketWriter writer, int offset, ushort maximumCount)
+        {
+            writer.Command = 0x27;
+            writer.Write(Id);
+            writer.Write(offset);
+            writer.Write(maximumCount);
+        }, delegate (ref PacketReaderLarge reader, out EditableUnitSummary unit)
+        {
+            if (!reader.Read(out byte kindValue) ||
+                !reader.Read(out string? name) ||
+                name is null)
+            {
+                unit = null!;
+                return false;
+            }
+
+            unit = new EditableUnitSummary(name, (UnitKind)kindValue);
+            return true;
+        }, progressState, ChunkedTransfer.EditableUnitChunkMaximumCount, "editable unit query result").ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Creates or updates a single editable map unit in this cluster.
     /// Root node must be the unit type itself, for example &lt;Sun ... /&gt;.
     /// For &lt;Buoy ... /&gt; an optional Message attribute is supported (max 384 characters).

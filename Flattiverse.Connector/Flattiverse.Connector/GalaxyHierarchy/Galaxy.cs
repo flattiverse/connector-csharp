@@ -14,11 +14,12 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// This represents a flattiverse galaxy that you have connected to.
+/// Connected galaxy session with a local mirror of the current server state.
+/// The instance owns the websocket connection, the event queue, and the owner-side and visible runtime snapshots.
 /// </summary>
-public class Galaxy : IDisposable
+public partial class Galaxy : IDisposable
 {
-    private const string Version = "13";
+    private const string Version = "18";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -67,6 +68,7 @@ public class Galaxy : IDisposable
     private readonly Queue<FlattiverseEvent> _events;
     private TaskCompletionSource? _eventsTcs;
     private readonly object _eventsSync;
+    private Crystal[] _crystals;
 
     /// <summary>
     /// Represents all teams in the galaxy.
@@ -87,17 +89,79 @@ public class Galaxy : IDisposable
     /// Represents all units that you control.
     /// </summary>
     public readonly UniversalHolder<Controllable> Controllables;
+
+    /// <summary>
+    /// Represents the account-wide crystals last received from the server.
+    /// </summary>
+    public IReadOnlyList<Crystal> Crystals
+    {
+        get { return _crystals; }
+    }
     
     /// <summary>
-    /// Connectes to a galaxy on a specific URI.
+    /// Opens a websocket connection to a galaxy endpoint, completes the login handshake, and returns a ready-to-use
+    /// local mirror of the current galaxy state.
     /// </summary>
-    /// <param name="uri">The URI to connect to. This must be the full URI (link) to the galaxy end point.</param>
-    /// <param name="auth">This should be your auth key or null, if you want to join as spectator.</param>
-    /// <param name="team">This should be the name of the team you want to join or null if the galaxy should chose
-    /// the team for you (or if only one team exists).</param>
-    /// <param name="runtimeDisclosure">Optional runtime self-disclosure sent once during login.</param>
-    /// <param name="buildDisclosure">Optional build-assistance self-disclosure sent once during login.</param>
-    /// <returns>The galaxy you have connected to.</returns>
+    /// <param name="uri">
+    /// Base websocket endpoint of the galaxy, for example <c>wss://www.flattiverse.com/galaxies/0/api</c>.
+    /// The connector appends its protocol version and login query parameters automatically.
+    /// </param>
+    /// <param name="auth">
+    /// API key for a player or admin login.
+    /// Pass <see langword="null" /> to join as spectator; the connector then sends the protocol's special all-zero key.
+    /// </param>
+    /// <param name="team">
+    /// Requested team name for a normal player login.
+    /// Pass <see langword="null" /> to let the server choose a team automatically. Outside tournaments this usually
+    /// means the non-spectator team with the fewest connected normal players. During tournaments the server may instead
+    /// force the account's configured tournament team.
+    /// </param>
+    /// <param name="runtimeDisclosure">
+    /// Optional runtime self-disclosure that is sent once during login.
+    /// Some galaxies require this for regular player logins.
+    /// </param>
+    /// <param name="buildDisclosure">
+    /// Optional build-assistance self-disclosure that is sent once during login.
+    /// Some galaxies require this for regular player logins.
+    /// </param>
+    /// <returns>
+    /// A fully initialized <see cref="Galaxy" /> instance.
+    /// When this method returns, the initial galaxy, team, cluster, player, controllable, and visible-unit snapshots
+    /// have already been processed, so properties such as <see cref="Player" />, <see cref="Teams" />,
+    /// <see cref="Clusters" />, <see cref="Players" />, and <see cref="Controllables" /> can be used immediately.
+    /// </returns>
+    /// <remarks>
+    /// This method does more than opening the socket: it waits until the server has delivered the initial state and the
+    /// activation session reply. It therefore returns only after the connector is ready for normal event processing via
+    /// <see cref="NextEvent" />.
+    /// </remarks>
+    /// <exception cref="CantConnectGameException">
+    /// Thrown, if the websocket connection cannot be established or an HTTP proxy in front of the galaxy rejects the
+    /// upgrade before protocol login completes.
+    /// </exception>
+    /// <exception cref="AuthFailedGameException">Thrown, if the supplied API key is missing, invalid, or unusable.</exception>
+    /// <exception cref="TeamSelectionFailedGameException">
+    /// Thrown, if the requested team does not exist or the server cannot choose a valid team automatically.
+    /// </exception>
+    /// <exception cref="SelfDisclosureRequiredGameException">
+    /// Thrown, if the galaxy requires self-disclosure for the chosen login kind and one or both disclosure values are
+    /// missing.
+    /// </exception>
+    /// <exception cref="ServerFullOfPlayerKindGameException">
+    /// Thrown, if the galaxy has no free slot for the requested player kind, for example normal player or spectator.
+    /// </exception>
+    /// <exception cref="AccountAlreadyLoggedInGameException">
+    /// Thrown, if the same account already has another active session on this or another galaxy.
+    /// </exception>
+    /// <exception cref="PersistenceUnavailableGameException">
+    /// Thrown, if the login requires persistent account/session storage and that storage is currently unavailable.
+    /// </exception>
+    /// <exception cref="GameException">
+    /// Thrown, if the galaxy rejects the login with another protocol-level game exception.
+    /// </exception>
+    /// <exception cref="InvalidProtocolVersionGameException">
+    /// Thrown, if the socket connection succeeds but the activation reply cannot be parsed by this connector version.
+    /// </exception>
     public static async Task<Galaxy> Connect(string uri, string? auth = null, string? team = null,
         RuntimeDisclosure? runtimeDisclosure = null, BuildDisclosure? buildDisclosure = null)
     {
@@ -226,6 +290,7 @@ public class Galaxy : IDisposable
 
         _events = new Queue<FlattiverseEvent>();
         _eventsSync = new object();
+        _crystals = Array.Empty<Crystal>();
         
         Teams = new UniversalHolder<Team>(_teams);
         Clusters = new UniversalHolder<Cluster>(_clusters);
@@ -333,12 +398,12 @@ public class Galaxy : IDisposable
     public int PlayerMaxBases => _playerMaxBases;
 
     /// <summary>
-    /// false, if you have been disconnected.
+    /// True while the underlying session and connection are still active.
     /// </summary>
     public bool Active => _active;
 
     /// <summary>
-    /// true if a galaxy admin has enabled maintenance mode. When maintenance mode is enabled, new players or spectators
+    /// True if a galaxy admin has enabled maintenance mode. When maintenance mode is enabled, new players or spectators
     /// cannot connect, and existing players cannot register new ships or continue existing ships. Some things in the
     /// galaxy (such as the game mode) can only be changed when maintenance mode is enabled, in order to maintain a
     /// consistent player state.
@@ -506,6 +571,7 @@ public class Galaxy : IDisposable
     /// Team id 12 (Spectators) must not be included.
     /// Team names must be unique.
     /// Removing a team fails if any remaining cluster still has regions referencing that team.
+    /// Removing a cluster fails if any remaining unit still references that cluster, for example via a worm hole target.
     /// Galaxy/Team/Cluster names must be non-empty and at most 32 characters.
     /// Description must be at most 4096 characters.
     /// At least one cluster must end up with Start="true".
@@ -544,6 +610,16 @@ public class Galaxy : IDisposable
     /// <returns>The controllable of the ship.</returns>
     public async Task<ClassicShipControllable> CreateClassicShip(string name)
     {
+        return await CreateClassicShip(name, string.Empty, string.Empty, string.Empty).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates a classic style ship with up to three equipped crystals.
+    /// </summary>
+    /// <returns>The controllable of the ship.</returns>
+    public async Task<ClassicShipControllable> CreateClassicShip(string name, string crystal0Name, string crystal1Name,
+        string crystal2Name)
+    {
         if (!Utils.CheckName(name))
             throw new InvalidArgumentGameException(InvalidArgumentKind.NameConstraint, "name");
 
@@ -551,12 +627,129 @@ public class Galaxy : IDisposable
         {
             writer.Command = 0x80;
             writer.Write(name);
+            writer.Write(crystal0Name);
+            writer.Write(crystal1Name);
+            writer.Write(crystal2Name);
         });
         
         if (result.Read(out byte id) && _controllables[id] is ClassicShipControllable controllable)
             return controllable;
         
         throw new InvalidDataException("This shouldn't have happened: Couldn't read controllable id or there was no proper controllable.");
+    }
+
+    /// <summary>
+    /// Requests the current account-wide crystal snapshot.
+    /// </summary>
+    public async Task<IReadOnlyList<Crystal>> RequestCrystals()
+    {
+        PacketReaderLarge result = await Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xA0;
+        }).ConfigureAwait(false);
+
+        _crystals = ReadCrystalsSnapshot(ref result);
+        return _crystals;
+    }
+
+    /// <summary>
+    /// Produces a crystal from nebula cargo.
+    /// </summary>
+    /// <returns><c>true</c> if a crystal was created; <c>false</c> if the nebula faded.</returns>
+    public async Task<bool> ProduceCrystal(ClassicShipControllable controllable, string name)
+    {
+        PacketReaderLarge result = await Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x9D;
+            writer.Write(controllable.Id);
+            writer.Write(name);
+        }).ConfigureAwait(false);
+
+        if (!result.Read(out byte produced))
+            throw new InvalidDataException("Couldn't read crystal creation result.");
+
+        _crystals = ReadCrystalsSnapshot(ref result);
+        return produced != 0x00;
+    }
+
+    /// <summary>
+    /// Renames an account-wide crystal.
+    /// </summary>
+    public async Task<IReadOnlyList<Crystal>> RenameCrystal(string oldName, string newName)
+    {
+        PacketReaderLarge result = await Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x9E;
+            writer.Write(oldName);
+            writer.Write(newName);
+        }).ConfigureAwait(false);
+
+        _crystals = ReadCrystalsSnapshot(ref result);
+        return _crystals;
+    }
+
+    /// <summary>
+    /// Destroys an account-wide crystal.
+    /// </summary>
+    public async Task<IReadOnlyList<Crystal>> DestroyCrystal(string name)
+    {
+        PacketReaderLarge result = await Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x9F;
+            writer.Write(name);
+        }).ConfigureAwait(false);
+
+        _crystals = ReadCrystalsSnapshot(ref result);
+        return _crystals;
+    }
+
+    private static Crystal[] ReadCrystalsSnapshot(ref PacketReaderLarge reader)
+    {
+        if (!reader.Read(out byte count))
+            throw new InvalidDataException("Couldn't read crystal count.");
+
+        Crystal[] crystals = new Crystal[count];
+
+        for (int index = 0; index < crystals.Length; index++)
+        {
+            if (!reader.Read(out string? name) ||
+                !reader.Read(out float hue) ||
+                !reader.Read(out byte gradeValue) ||
+                !reader.Read(out float energyBatteryMultiplier) ||
+                !reader.Read(out float ionsBatteryMultiplier) ||
+                !reader.Read(out float neutrinosBatteryMultiplier) ||
+                !reader.Read(out float hullMultiplier) ||
+                !reader.Read(out float shieldMultiplier) ||
+                !reader.Read(out float armorMultiplier) ||
+                !reader.Read(out float energyCellMultiplier) ||
+                !reader.Read(out float ionsCellMultiplier) ||
+                !reader.Read(out float neutrinosCellMultiplier) ||
+                !reader.Read(out float shotWeaponProductionMultiplier) ||
+                !reader.Read(out float interceptorWeaponProductionMultiplier) ||
+                !reader.Read(out float crystalCargoLimitMultiplier) ||
+                !reader.Read(out byte locked))
+                throw new InvalidDataException("Couldn't read crystal snapshot entry.");
+
+            if (name is null)
+                throw new InvalidDataException("Server did send a null crystal name.");
+
+            CrystalGrade grade = gradeValue switch
+            {
+                0x00 => CrystalGrade.LowGrade,
+                0x01 => CrystalGrade.Regular,
+                0x02 => CrystalGrade.Pure,
+                0x03 => CrystalGrade.Mastery,
+                0x04 => CrystalGrade.Divine,
+                _ => throw new InvalidDataException("Server did send an unknown crystal grade.")
+            };
+
+            crystals[index] = new Crystal(name, hue, grade, energyBatteryMultiplier, ionsBatteryMultiplier,
+                neutrinosBatteryMultiplier, hullMultiplier, shieldMultiplier, armorMultiplier, energyCellMultiplier,
+                ionsCellMultiplier, neutrinosCellMultiplier, shotWeaponProductionMultiplier,
+                interceptorWeaponProductionMultiplier, crystalCargoLimitMultiplier, locked != 0x00);
+        }
+
+        return crystals;
     }
     
     [Command(0x00)]
@@ -858,7 +1051,7 @@ public class Galaxy : IDisposable
         if (controllable is null)
             throw new InvalidDataException("Server did send a non existent ControllableInfo.");
 
-        controllable.SetDeadByNeutralColission(unitKind, name);
+        controllable.SetDeadByNeutralCollision(unitKind, name);
     }
 
     [Command(0x24)]
@@ -916,10 +1109,9 @@ public class Galaxy : IDisposable
     }
     
     [Command(0x80)]
-    private void ControllableNew(UnitKind kind, byte id, string name, PacketReader reader)
+    private void ControllableNew(UnitKind kind, byte id, Cluster cluster, string name, PacketReader reader)
     {
-
-        if (Controllable.New(kind, _clusters[0]!, id, name, reader, out Controllable? info))
+        if (Controllable.New(kind, cluster, id, name, reader, out Controllable? info))
         {
             _controllables[id] = info;
             return;
@@ -935,9 +1127,9 @@ public class Galaxy : IDisposable
     }    
     
     [Command(0x82)]
-    private void ControllableDeceased(Controllable controllable, PacketReader reader)
+    private void ControllableDeceased(Controllable controllable, Cluster cluster, PacketReader reader)
     {
-        controllable.Updated(reader);
+        controllable.Updated(cluster, reader);
     }
     
     [Command(0x8F)]
@@ -945,6 +1137,12 @@ public class Galaxy : IDisposable
     {
         controllable.Deactivate();
         _controllables[controllable.Id] = null;
+    }
+
+    [Command(0x8E)]
+    private void PowerUpCollected(Controllable controllable, UnitKind powerUpKind, string powerUpName, float amount, float appliedAmount)
+    {
+        PushEvent(new PowerUpCollectedEvent(controllable, powerUpKind, powerUpName, amount, appliedAmount));
     }
     
     [Command(0x30)]
@@ -1063,14 +1261,75 @@ public class Galaxy : IDisposable
         PushEvent(new PlayerChatPlayerEvent(player, message, this.Player));
     }
 
+    [Command(0xC7)]
+    private void MissionTargetHitChat(Player player, byte controllableId, ushort missionTargetSequence)
+    {
+        ControllableInfo? controllableInfo = player._controllableInfos[controllableId];
+
+        if (controllableInfo is null)
+            throw new InvalidDataException("Server did send a non existent ControllableInfo in mission-target-hit chat.");
+
+        PushEvent(new MissionTargetHitChatEvent(player, controllableInfo, missionTargetSequence));
+    }
+
     [Command(0xC9)]
     private void FlagReactivatedChat(Team flagTeam, string flagName)
     {
         PushEvent(new FlagReactivatedChatEvent(flagTeam, flagName));
     }
 
+    [Command(0xCA)]
+    private void GateSwitched(Cluster cluster, PacketReader reader)
+    {
+        if (!reader.Read(out byte hasInvoker))
+            throw new InvalidDataException("Couldn't read gate switch event header.");
+
+        Player? invokerPlayer = null;
+        ControllableInfo? invokerControllableInfo = null;
+
+        if (hasInvoker != 0x00)
+        {
+            if (!reader.Read(out byte playerId))
+                throw new InvalidDataException("Server did send an incomplete player id in gate switch event.");
+
+            invokerPlayer = _players[playerId];
+
+            if (invokerPlayer is null)
+                throw new InvalidDataException("Server did send an unknown player in gate switch event.");
+
+            if (!reader.Read(out byte controllableId))
+                throw new InvalidDataException("Server did send an incomplete gate switch controllable id.");
+
+            invokerControllableInfo = invokerPlayer._controllableInfos[controllableId];
+
+            if (invokerControllableInfo is null)
+                throw new InvalidDataException("Server did send a non existent ControllableInfo in gate switch event.");
+        }
+
+        if (!reader.Read(out string switchName) || !reader.Read(out ushort gateCount))
+            throw new InvalidDataException("Couldn't read gate switch event payload.");
+
+        GateStateChange[] gates = new GateStateChange[gateCount];
+
+        for (int index = 0; index < gateCount; index++)
+        {
+            if (!reader.Read(out string gateName) || !reader.Read(out byte closed))
+                throw new InvalidDataException("Couldn't read gate switch state entry.");
+
+            gates[index] = new GateStateChange(gateName, closed != 0x00);
+        }
+
+        PushEvent(new GateSwitchedEvent(cluster, switchName, invokerPlayer, invokerControllableInfo, gates));
+    }
+
+    [Command(0xCB)]
+    private void GateRestored(Cluster cluster, string gateName, byte closed)
+    {
+        PushEvent(new GateRestoredEvent(cluster, gateName, closed != 0x00));
+    }
+
     /// <summary>
-    /// Call dispose to close the connection to the galaxy.
+    /// Closes the galaxy connection and gives the background receive loop a short moment to settle.
     /// </summary>
     public void Dispose()
     {

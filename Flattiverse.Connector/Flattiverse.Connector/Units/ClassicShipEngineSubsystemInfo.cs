@@ -27,7 +27,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// true if the subsystem exists.
+    /// Indicates whether the scanned unit actually has this engine subsystem installed.
     /// </summary>
     public bool Exists
     {
@@ -35,7 +35,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The maximum configurable impulse length.
+    /// Maximum configurable impulse length of the engine command.
     /// </summary>
     public float Maximum
     {
@@ -43,7 +43,8 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The current applied engine impulse.
+    /// Current engine impulse applied by the server.
+    /// This is the thrust vector, not the ship's world-space movement vector.
     /// </summary>
     public Vector Current
     {
@@ -51,7 +52,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The configured target engine impulse.
+    /// Target engine impulse currently configured on the server.
     /// </summary>
     public Vector Target
     {
@@ -59,7 +60,7 @@ public class ClassicShipEngineSubsystemInfo
     }
 
     /// <summary>
-    /// The status reported for the current server tick.
+    /// Tick-local runtime status reported for the engine subsystem.
     /// </summary>
     public SubsystemStatus Status
     {

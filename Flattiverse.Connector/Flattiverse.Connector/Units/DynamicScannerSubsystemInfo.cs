@@ -93,7 +93,8 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Whether the scanner was active for the tick.
+    /// Whether the scanner was active during the reported tick.
+    /// After switching the scanner off, the current geometry typically drops back to zero until it is activated again.
     /// </summary>
     public bool Active
     {
@@ -101,7 +102,8 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Current reported scan width.
+    /// Current scan width reported by the server for this tick.
+    /// This is the live runtime value, not necessarily the requested target width.
     /// </summary>
     public float CurrentWidth
     {
@@ -109,7 +111,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Current reported scan length.
+    /// Current scan length reported by the server for this tick.
     /// </summary>
     public float CurrentLength
     {
@@ -117,7 +119,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Current reported absolute scan center angle.
+    /// Current absolute world-space scan center angle reported for this tick.
     /// </summary>
     public float CurrentAngle
     {
@@ -125,7 +127,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Last reported target width.
+    /// Target scan width currently requested on the server.
     /// </summary>
     public float TargetWidth
     {
@@ -133,7 +135,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Last reported target length.
+    /// Target scan length currently requested on the server.
     /// </summary>
     public float TargetLength
     {
@@ -141,7 +143,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Last reported target absolute angle.
+    /// Target absolute world-space scan center angle currently requested on the server.
     /// </summary>
     public float TargetAngle
     {
@@ -149,7 +151,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Status of the reported scanner subsystem.
+    /// Tick-local runtime status reported for the scanner subsystem.
     /// </summary>
     public SubsystemStatus Status
     {
@@ -157,7 +159,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Energy consumed by the scanner during the tick.
+    /// Energy consumed by scanning during the reported tick.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -165,7 +167,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Ions consumed by the scanner during the tick.
+    /// Ions consumed by scanning during the reported tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -173,7 +175,7 @@ public class DynamicScannerSubsystemInfo
     }
 
     /// <summary>
-    /// Neutrinos consumed by the scanner during the tick.
+    /// Neutrinos consumed by scanning during the reported tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {

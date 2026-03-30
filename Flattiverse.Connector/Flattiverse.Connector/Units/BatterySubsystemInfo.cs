@@ -21,7 +21,7 @@ public class BatterySubsystemInfo
     }
 
     /// <summary>
-    /// true if the subsystem exists.
+    /// Indicates whether the scanned unit actually has this battery subsystem installed.
     /// </summary>
     public bool Exists
     {
@@ -29,7 +29,7 @@ public class BatterySubsystemInfo
     }
 
     /// <summary>
-    /// The maximum storable amount.
+    /// Maximum storable amount in this battery.
     /// </summary>
     public float Maximum
     {
@@ -37,7 +37,7 @@ public class BatterySubsystemInfo
     }
 
     /// <summary>
-    /// The currently stored amount.
+    /// Currently stored amount in this battery.
     /// </summary>
     public float Current
     {
@@ -45,7 +45,7 @@ public class BatterySubsystemInfo
     }
 
     /// <summary>
-    /// The amount consumed during the current server tick.
+    /// Amount consumed during the current server tick.
     /// </summary>
     public float ConsumedThisTick
     {
@@ -53,7 +53,7 @@ public class BatterySubsystemInfo
     }
 
     /// <summary>
-    /// The status reported for the current server tick.
+    /// Tick-local runtime status reported for this battery.
     /// </summary>
     public SubsystemStatus Status
     {

@@ -5,7 +5,9 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// General infos about ships or bases.
+/// Persistent roster entry for one player-owned controllable.
+/// This owner-side identity survives deaths and exists independently from the visible
+/// <see cref="PlayerUnit" /> mirror in a cluster.
 /// </summary>
 public class ControllableInfo : INamedUnit
 {
@@ -15,7 +17,7 @@ public class ControllableInfo : INamedUnit
     public readonly Galaxy Galaxy;
 
     /// <summary>
-    /// The player this ControlableInfo belongs to.
+    /// The player who owns this controllable entry.
     /// </summary>
     public readonly Player Player;
 
@@ -51,12 +53,12 @@ public class ControllableInfo : INamedUnit
     public string Name => _name;
 
     /// <summary>
-    /// true, if the corresponding PlayerUnit is alive.
+    /// True while this controllable currently has an alive in-world runtime.
     /// </summary>
     public bool Alive => _alive;
     
     /// <summary>
-    /// true, if the corresponding PlayerUnit is still in use.
+    /// True while this controllable registration still exists on the server.
     /// </summary>
     public bool Active => _active;
 
@@ -66,7 +68,7 @@ public class ControllableInfo : INamedUnit
     public Score Score => _score;
     
     /// <summary>
-    /// Specifies the kind of the PlayerUnit.
+    /// Runtime unit kind this controllable uses while it is alive in the world.
     /// </summary>
     public virtual UnitKind Kind => throw new InvalidOperationException("Must be implemented in the derived class.");
 
@@ -83,7 +85,7 @@ public class ControllableInfo : INamedUnit
         Galaxy.PushEvent(new ContinuedControllableInfoPlayerEvent(Player, this));
     }
 
-    internal void SetDeadByNeutralColission(UnitKind kind, string collider)
+    internal void SetDeadByNeutralCollision(UnitKind kind, string collider)
     {
         _alive = false;
         

@@ -7,12 +7,12 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector;
 
 /// <summary>
-/// An exception happened in the area of flattiverse.
+/// Base type for protocol- and connector-level failures raised by the Flattiverse connector.
 /// </summary>
 public class GameException : Exception
 {
     /// <summary>
-    /// The error number of the exception.
+    /// Numeric connector/protocol error code.
     /// </summary>
     public readonly int ErrorNumber;
 
@@ -134,6 +134,33 @@ public class GameException : Exception
                     return true;
                 case 0x30:
                     exception = new CanOnlyShootOncePerTickGameException();
+                    return true;
+                case 0x31:
+                    exception = new TournamentNotConfiguredGameException();
+                    return true;
+                case 0x32:
+                    exception = new TournamentAlreadyConfiguredGameException();
+                    return true;
+                case 0x33:
+                    exception = new TournamentWrongStageGameException();
+                    return true;
+                case 0x34:
+                    exception = new TournamentMapEditingLockedGameException();
+                    return true;
+                case 0x35:
+                    exception = new TournamentRegistrationClosedGameException();
+                    return true;
+                case 0x36:
+                    exception = new TournamentParticipantRequiredGameException();
+                    return true;
+                case 0x37:
+                    exception = new TournamentSpectatingForbiddenGameException();
+                    return true;
+                case 0x38:
+                    exception = new TournamentTeamMismatchGameException();
+                    return true;
+                case 0x39:
+                    exception = new TournamentModeNotAllowedGameException();
                     return true;
             }
 

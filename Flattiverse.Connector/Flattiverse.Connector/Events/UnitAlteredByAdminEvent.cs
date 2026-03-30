@@ -1,7 +1,8 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// This event informs about a unit that has been altered by an admin through map editing.
+/// Raised when a previously known unit was changed by admin map editing.
+/// This event is a cache invalidation hint, not a full replacement unit snapshot.
 /// </summary>
 public class UnitAlteredByAdminEvent : FlattiverseEvent
 {
@@ -21,10 +22,12 @@ public class UnitAlteredByAdminEvent : FlattiverseEvent
         Name = name;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.UnitAlteredByAdmin;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString()
     {
         return $"{Stamp:HH:mm:ss.fff} Unit altered by admin: ClusterId={ClusterId}, Name=\"{Name}\".";

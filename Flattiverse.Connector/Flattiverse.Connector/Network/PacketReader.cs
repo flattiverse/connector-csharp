@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Flattiverse.Connector.Network;
 
+/// <summary>
+/// Reader for one validated websocket message that may contain one or more Flattiverse packets.
+/// </summary>
 class PacketReader
 {
     /// <summary>
@@ -16,16 +19,38 @@ class PacketReader
     private int _position;
     private int _dataSize;
 
+    /// <summary>
+    /// Creates one packet-stream reader over a reusable raw receive buffer.
+    /// </summary>
+    /// <param name="data">Raw byte buffer used for websocket receives.</param>
     public PacketReader(byte[] data)
     {
         _data = data;
     }
 
+    /// <summary>
+    /// Creates a compact copied reply reader for the current packet.
+    /// </summary>
     public PacketReaderCopy Copy => new PacketReaderCopy(_data, _basePosition);
+
+    /// <summary>
+    /// Creates a heap-backed copied reply reader for the current packet.
+    /// </summary>
     public PacketReaderLarge LargeCopy => new PacketReaderLarge(_data, _basePosition);
     
+    /// <summary>
+    /// Full underlying receive buffer as writable memory for websocket reads.
+    /// </summary>
     public Memory<byte> FullMemory => _data.AsMemory(); 
 
+    /// <summary>
+    /// Validates that the specified byte range contains a well-framed Flattiverse packet stream.
+    /// </summary>
+    /// <param name="data">Raw message bytes.</param>
+    /// <param name="size">Number of valid bytes inside <paramref name="data" />.</param>
+    /// <param name="malformedOffset">Offset of the malformed packet header or trailing bytes.</param>
+    /// <param name="malformedPacketSize">Declared payload size of the malformed packet when available.</param>
+    /// <returns><see langword="true" /> if the packet stream framing is valid; otherwise <see langword="false" />.</returns>
     public static bool TryValidatePacketStream(byte[] data, int size, out int malformedOffset, out ushort malformedPacketSize)
     {
         Debug.Assert(data is not null, "No packet data provided.");
@@ -52,6 +77,11 @@ class PacketReader
         return position == size;
     }
     
+    /// <summary>
+    /// Resets the reader to the first packet in the current receive buffer.
+    /// </summary>
+    /// <param name="size">Number of valid bytes currently stored in the receive buffer.</param>
+    /// <returns><see langword="true" /> if the first packet header and payload fit into the buffer; otherwise <see langword="false" />.</returns>
     public bool Reset(int size)
     {
         Debug.Assert(size <= _data.Length, "Wrong size specified, size > byte[] size.");
@@ -63,6 +93,10 @@ class PacketReader
         return _basePosition + 4 + Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]) <= _dataSize;
     }
 
+    /// <summary>
+    /// Advances to the next packet within the same validated websocket message.
+    /// </summary>
+    /// <returns><see langword="true" /> if another complete packet exists; otherwise <see langword="false" />.</returns>
     public bool Next()
     {
         _basePosition += 4 + Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]);
@@ -71,12 +105,24 @@ class PacketReader
         return _basePosition + 4 <= _dataSize && _basePosition + 4 + Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]) <= _dataSize;
     }
 
+    /// <summary>
+    /// Command byte of the current packet.
+    /// </summary>
     public byte Command => _data[_basePosition];
 
+    /// <summary>
+    /// Session byte of the current packet.
+    /// </summary>
     public byte Session => _data[_basePosition + 1];
 
+    /// <summary>
+    /// Declared payload size of the current packet in bytes.
+    /// </summary>
     public ushort Size => Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]);
 
+    /// <summary>
+    /// Reads one <see cref="byte" /> from the current packet payload.
+    /// </summary>
     public bool Read(out byte data)
     {
         if (_position >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -90,6 +136,9 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="ushort" /> from the current packet payload.
+    /// </summary>
     public bool Read(out ushort data)
     {
         if (_position + 1 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -103,6 +152,9 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="int" /> from the current packet payload.
+    /// </summary>
     public bool Read(out int data)
     {
         if (_position + 3 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -116,6 +168,9 @@ class PacketReader
         return true;
     }
     
+    /// <summary>
+    /// Reads one little-endian <see cref="uint" /> from the current packet payload.
+    /// </summary>
     public bool Read(out uint data)
     {
         if (_position + 3 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -129,6 +184,9 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="long" /> from the current packet payload.
+    /// </summary>
     public bool Read(out long data)
     {
         if (_position + 7 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -142,6 +200,9 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Reads one IEEE-754 single-precision float from the current packet payload.
+    /// </summary>
     public bool Read(out float data)
     {
         if (_position + 3 >= Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -155,6 +216,10 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Reads one protocol string from the current packet payload.
+    /// Empty and <see langword="null" /> strings are encoded identically on the wire.
+    /// </summary>
     public bool Read(out string data)
     {
         int size;
@@ -202,6 +267,9 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Copies raw bytes from the current packet payload into the supplied target buffer.
+    /// </summary>
     public bool Read(byte[] data)
     {
         if (_position + data.Length > Unsafe.As<byte, ushort>(ref _data[_basePosition + 2]))
@@ -213,6 +281,9 @@ class PacketReader
         return true;
     }
 
+    /// <summary>
+    /// Returns a diagnostic hex dump of the current packet in receive notation.
+    /// </summary>
     public override string ToString()
     {
         StringBuilder builder = new StringBuilder();
@@ -227,6 +298,9 @@ class PacketReader
         return builder.ToString();
     }
 
+    /// <summary>
+    /// Returns a diagnostic hex dump of the current packet in send notation.
+    /// </summary>
     public string ClaimWriter()
     {
         StringBuilder builder = new StringBuilder();

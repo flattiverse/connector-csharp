@@ -6,14 +6,14 @@ using InvalidDataException = System.IO.InvalidDataException;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Represents a unit in Flattiverse. Each unit in a Cluster derives from this class. This class has
-/// properties and methods which most units have in common. Derived classes overwrite those properties
-/// and methods, other properties and methods are added via interfaces.
+/// Visible cluster-side mirror of one world unit.
+/// Derived classes add the type-specific data that becomes available once the server has delivered the full state for
+/// the unit.
 /// </summary>
 public class Unit
 {
     /// <summary>
-    /// This is the name of the unit. A unit can't change her name after it has been set up.
+    /// Stable protocol name of the unit inside its cluster.
     /// </summary>
     public readonly string Name;
 
@@ -83,7 +83,7 @@ public class Unit
     public virtual Mobility Mobility => Mobility.Still;
     
     /// <summary>
-    /// The kind of the unit for a better switch() experience.
+    /// Runtime kind of the visible unit.
     /// </summary>
     public virtual UnitKind Kind => UnitKind.Sun;
     
@@ -93,7 +93,9 @@ public class Unit
     public virtual Cluster Cluster => _cluster;
 
     /// <summary>
-    /// true if the connector has received the full state payload for this unit.
+    /// True once the connector has received the type-specific full-state payload for this unit.
+    /// Before that, properties such as editor configuration, orbit data, or advanced subsystem snapshots may still
+    /// contain only their default placeholder values.
     /// </summary>
     public bool FullStateKnown
     {
@@ -101,7 +103,8 @@ public class Unit
     }
     
     /// <summary>
-    /// The team of the unit.
+    /// Owning team of the unit, if the unit belongs to a team at all.
+    /// Neutral map units return <see langword="null" />.
     /// </summary>
     public virtual Team? Team => null;
 
@@ -118,6 +121,21 @@ public class Unit
             case UnitKind.BlackHole:
                 unit = new BlackHole(cluster, name, reader);
                 return true;
+            case UnitKind.CurrentField:
+                unit = new CurrentField(cluster, name, reader);
+                return true;
+            case UnitKind.Nebula:
+                unit = new Nebula(cluster, name, reader);
+                return true;
+            case UnitKind.Storm:
+                unit = new Storm(cluster, name, reader);
+                return true;
+            case UnitKind.StormCommencingWhirl:
+                unit = new StormCommencingWhirl(cluster, name, reader);
+                return true;
+            case UnitKind.StormActiveWhirl:
+                unit = new StormActiveWhirl(cluster, name, reader);
+                return true;
             case UnitKind.Moon:
                 unit = new Moon(cluster, name, reader);
                 return true;
@@ -126,6 +144,9 @@ public class Unit
                 return true;
             case UnitKind.Buoy:
                 unit = new Buoy(cluster, name, reader);
+                return true;
+            case UnitKind.WormHole:
+                unit = new WormHole(cluster, name, reader);
                 return true;
             case UnitKind.MissionTarget:
                 unit = new MissionTarget(cluster, name, reader);
@@ -136,14 +157,59 @@ public class Unit
             case UnitKind.DominationPoint:
                 unit = new DominationPoint(cluster, name, reader);
                 return true;
+            case UnitKind.EnergyChargePowerUp:
+                unit = new EnergyChargePowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.IonChargePowerUp:
+                unit = new IonChargePowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.NeutrinoChargePowerUp:
+                unit = new NeutrinoChargePowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.MetalCargoPowerUp:
+                unit = new MetalCargoPowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.CarbonCargoPowerUp:
+                unit = new CarbonCargoPowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.HydrogenCargoPowerUp:
+                unit = new HydrogenCargoPowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.SiliconCargoPowerUp:
+                unit = new SiliconCargoPowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.ShieldChargePowerUp:
+                unit = new ShieldChargePowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.HullRepairPowerUp:
+                unit = new HullRepairPowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.ShotChargePowerUp:
+                unit = new ShotChargePowerUp(cluster, name, reader);
+                return true;
+            case UnitKind.Switch:
+                unit = new Switch(cluster, name, reader);
+                return true;
+            case UnitKind.Gate:
+                unit = new Gate(cluster, name, reader);
+                return true;
             case UnitKind.Planet:
                 unit = new Planet(cluster, name, reader);
                 return true;
             case UnitKind.Shot:
                 unit = new Shot(cluster, name, reader);
                 return true;
+            case UnitKind.Interceptor:
+                unit = new Interceptor(cluster, name, reader);
+                return true;
+            case UnitKind.Rail:
+                unit = new Rail(cluster, name, reader);
+                return true;
             case UnitKind.Explosion:
                 unit = new Explosion(cluster, name, reader);
+                return true;
+            case UnitKind.InterceptorExplosion:
+                unit = new InterceptorExplosion(cluster, name, reader);
                 return true;
             case UnitKind.ClassicShipPlayerUnit:
                 unit = new ClassicShipPlayerUnit(cluster, name, reader);

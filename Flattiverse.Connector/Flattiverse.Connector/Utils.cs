@@ -6,10 +6,13 @@ namespace Flattiverse.Connector;
 public static class Utils
 {
     /// <summary>
-    /// Checks the name.
+    /// Validates a Flattiverse name against the connector's local name rules.
     /// </summary>
-    /// <param name="name">The name to check.</param>
-    /// <returns>truw if the name is proper, false if the name doesn't pass the check.</returns>
+    /// <param name="name">Candidate name to validate.</param>
+    /// <returns>
+    /// <see langword="true" /> if the name satisfies the local length, whitespace, and character-set rules;
+    /// otherwise <see langword="false" />.
+    /// </returns>
     public static bool CheckName(string? name)
     {
         if (name is null || name.Length < 2 || name.Length > 32)

@@ -1,7 +1,8 @@
 ﻿namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Specifies the various event kinds for a better switch() experience.
+/// Connector-side classification of <see cref="FlattiverseEvent" /> types.
+/// These values are meant for application-side dispatch and do not directly mirror wire-protocol packet opcodes.
 /// </summary>
 public enum EventKind : byte
 {
@@ -56,7 +57,7 @@ public enum EventKind : byte
     PlayerJoined = 0x10,
     
     /// <summary>
-    /// A player has parted the galaxy.
+    /// A player has been removed from the local galaxy mirror.
     /// </summary>
     PlayerParted = 0x11,
 
@@ -71,27 +72,27 @@ public enum EventKind : byte
     PlayerDisconnected = 0x13,
     
     /// <summary>
-    /// A PlayerUnit has been registered.
+    /// A public controllable-registration entry became known.
     /// </summary>
     ControllableInfoRegistered = 0x20,
     
     /// <summary>
-    /// A PlayerUnit did continue the game.
+    /// A public controllable-registration entry became alive in the world.
     /// </summary>
     ControllableInfoContinued = 0x21,
     
     /// <summary>
-    /// A PlayerUnit was destroyed.
+    /// A public controllable-registration entry died.
     /// </summary>
     ControllableInfoDestroyed = 0x22,
     
     /// <summary>
-    /// A PlayerUnit score has been updated.
+    /// The score of a public controllable-registration entry has changed.
     /// </summary>
     ControllableInfoScoreUpdated = 0x25,
 
     /// <summary>
-    /// A PlayerUnit was unregistered.
+    /// A public controllable-registration entry has been finally closed and removed.
     /// </summary>
     ControllableInfoClosed = 0x2F,
 
@@ -139,6 +140,61 @@ public enum EventKind : byte
     /// Runtime update of a shield subsystem on your own controllable.
     /// </summary>
     ShieldSubsystem = 0x88,
+
+    /// <summary>
+    /// Runtime update of an armor subsystem on your own controllable.
+    /// </summary>
+    ArmorSubsystem = 0x89,
+
+    /// <summary>
+    /// Runtime update of a repair subsystem on your own controllable.
+    /// </summary>
+    RepairSubsystem = 0x8A,
+
+    /// <summary>
+    /// Owner-only passive heat and radiation update for the current tick.
+    /// </summary>
+    EnvironmentDamage = 0x8B,
+
+    /// <summary>
+    /// Runtime update of a cargo subsystem on your own controllable.
+    /// </summary>
+    CargoSubsystem = 0x8C,
+
+    /// <summary>
+    /// Runtime update of a resource miner subsystem on your own controllable.
+    /// </summary>
+    ResourceMinerSubsystem = 0x8D,
+
+    /// <summary>
+    /// Your controllable has collected a power-up.
+    /// </summary>
+    PowerUpCollected = 0x8E,
+
+    /// <summary>
+    /// Runtime update of a dynamic interceptor launcher subsystem on your own controllable.
+    /// </summary>
+    DynamicInterceptorLauncherSubsystem = 0x8F,
+
+    /// <summary>
+    /// Runtime update of a dynamic interceptor magazine subsystem on your own controllable.
+    /// </summary>
+    DynamicInterceptorMagazineSubsystem = 0x90,
+
+    /// <summary>
+    /// Runtime update of a dynamic interceptor fabricator subsystem on your own controllable.
+    /// </summary>
+    DynamicInterceptorFabricatorSubsystem = 0x91,
+
+    /// <summary>
+    /// Runtime update of a railgun subsystem on your own controllable.
+    /// </summary>
+    RailgunSubsystem = 0x92,
+
+    /// <summary>
+    /// Runtime update of a nebula collector subsystem on your own controllable.
+    /// </summary>
+    NebulaCollectorSubsystem = 0x93,
     
     /// <summary>
     /// You see a new unit.
@@ -156,7 +212,7 @@ public enum EventKind : byte
     UnitAlteredByAdmin = 0x3E,
     
     /// <summary>
-    /// You don't see the unit anymore.
+    /// A previously known visible unit has left the local visibility mirror.
     /// </summary>
     RemovedUnit = 0x3F,
     
@@ -191,9 +247,44 @@ public enum EventKind : byte
     ChatPlayer = 0xC6,
 
     /// <summary>
+    /// A galaxy-wide system chat announced that a mission target was hit in sequence.
+    /// </summary>
+    MissionTargetHitChat = 0xC7,
+
+    /// <summary>
     /// A galaxy-wide system chat announced that a flag became active again.
     /// </summary>
     FlagReactivatedChat = 0xC9,
+
+    /// <summary>
+    /// A switch changed the state of linked gates.
+    /// </summary>
+    GateSwitched = 0xCA,
+
+    /// <summary>
+    /// A gate restored itself to its configured default state.
+    /// </summary>
+    GateRestored = 0xCB,
+
+    /// <summary>
+    /// A tournament was created.
+    /// </summary>
+    TournamentCreated = 0xD0,
+
+    /// <summary>
+    /// A tournament was updated.
+    /// </summary>
+    TournamentUpdated = 0xD1,
+
+    /// <summary>
+    /// A tournament was removed.
+    /// </summary>
+    TournamentRemoved = 0xD2,
+
+    /// <summary>
+    /// A tournament system message was received.
+    /// </summary>
+    TournamentMessage = 0xD3,
     
     /// <summary>
     /// The connection has been terminated.
@@ -201,7 +292,7 @@ public enum EventKind : byte
     ConnectionTerminated = 0xF0,
     
     /// <summary>
-    /// A tick happened.
+    /// Connector event announcing the next authoritative galaxy tick number.
     /// </summary>
     GalaxyTick = 0xFF
 }

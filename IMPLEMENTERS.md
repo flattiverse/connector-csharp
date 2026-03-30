@@ -5,6 +5,16 @@ This document covers the wire protocol and the connector-relevant runtime behavi
 Use [README.md](README.md) for the normal connector entry point.
 Use [MAPEDITORS.md](MAPEDITORS.md) for XML-based map editing, validation rules, and exhaustive XML examples.
 
+## Connector Terminology
+
+The connector intentionally models three different views that must not be conflated:
+
+* `ControllableInfo`: public roster entry of one player-owned controllable. It survives deaths until the server finally closes that registration.
+* `Controllable`: owner-only runtime handle of one registered controllable of the local player. Commands such as `Continue()`, `Suicide()`, scanner control, jump-drive usage, and subsystem inspection act on this channel.
+* visible unit / `PlayerUnit`: cluster-side scan result for a currently visible runtime object in the world. This is what other players, spectators, and admins see through `0x30` / `0x31` / `0x32`.
+
+In protocol terms, `0x20..0x2F` describe the public controllable roster, `0x80..0x8F` describe the owner's own controllables, and `0x30..0x3F` describe currently visible world units.
+
 ## Endpoint And Login
 
 The public endpoint shape is currently:
@@ -24,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-13
+18
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=13&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=13&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=13&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=13&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=18&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=18&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=18&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=18&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -42,6 +52,7 @@ Important details:
 * The all-zero API key is the special spectator login.
 * The team-less form is used for spectator and admin logins.
 * Normal players may also omit `team`; in that case the server auto-selects the non-spectator team with the fewest currently connected normal players. Ties are resolved by the smallest team id.
+* If a tournament is in `Commencing` or `Running`, spectator logins may be rejected with `0x37`, non-participants may be rejected with `0x36`, and a player login without `team` is auto-assigned to the configured tournament team of that account instead of using least-populated-team selection.
 * `runtimeDisclosure` is a fixed 10-nibble hexadecimal string. Each nibble declares one runtime automation aspect in this order: `EngineControl`, `Navigation`, `ScannerControl`, `WeaponAiming`, `WeaponTargetSelection`, `ResourceControl`, `FleetControl`, `MissionControl`, `LoadoutControl`, `Chat`.
 * Runtime disclosure nibble values: `0=Unsupported`, `1=Manual`, `2=Assisted`, `3=Automated`, `4=Autonomous`, `5=AiControlled`.
 * `buildDisclosure` is a fixed 12-nibble hexadecimal string. Each nibble declares one build-assistance aspect in this order: `SoftwareDesign`, `UI`, `UniverseRendering`, `Input`, `EngineControl`, `Navigation`, `ScannerControl`, `WeaponSystems`, `ResourceControl`, `FleetControl`, `MissionControl`, `Chat`.
@@ -73,6 +84,7 @@ Instead it sends initial state packets first and only completes activation after
 1. initial visible units
 1. for a normal player login: visible `0x30` unit create packets, with immediate `0x32` for units that are already full in that same tick
 1. for a spectator or admin login: every initial unit currently arrives as `0x30` followed immediately by `0x32`
+1. optional tournament packets: `0xD0` tournament snapshot and `0xD2` tournament system message if the galaxy currently has a configured tournament
 1. session reply with `session = 0x01` and payload `byte playerId`
 
 Do not assume that "the first packet after connect" is the activation reply.
@@ -189,6 +201,15 @@ Current server-side on-wire codes:
 * `0x21` `YouNeedToDieFirstGameException`
 * `0x22` `AllStartLocationsAreOvercrowded`
 * `0x30` `CanOnlyShootOncePerTickGameException`
+* `0x31` `TournamentNotConfiguredGameException`
+* `0x32` `TournamentAlreadyConfiguredGameException`
+* `0x33` `TournamentWrongStageGameException`
+* `0x34` `TournamentMapEditingLockedGameException`
+* `0x35` `TournamentRegistrationClosedGameException`
+* `0x36` `TournamentParticipantRequiredGameException`
+* `0x37` `TournamentSpectatingForbiddenGameException`
+* `0x38` `TournamentTeamMismatchGameException`
+* `0x39` `TournamentModeNotAllowedGameException`
 
 Current connector-local-only codes:
 
@@ -217,6 +238,20 @@ Payload details for the important structured exceptions:
 `0x17` is currently used when a client sends `0x84 Continue` for a controllable that has already entered the closing phase.
 
 `0x18` is currently used when a client requests `0xF1` / `0xF2` for a player that has no avatar available.
+
+`0x31` / `0x32` / `0x33` are tournament admin-action failures: no configured tournament, tournament already exists, or wrong tournament stage.
+
+`0x34` is used when an admin tries to edit galaxy metadata, regions, or editable units while any tournament is configured.
+
+`0x35` is used when a player tries to register or continue a controllable while tournament registration is closed.
+
+`0x36` is used when an account is not part of the configured tournament participant lists.
+
+`0x37` is used when a spectator login is attempted in a tournament stage that forbids spectating.
+
+`0x38` is used when a player login or controllable registration targets a team that differs from the configured tournament team of that account.
+
+`0x39` is used when an admin tries to configure a tournament for a galaxy whose `GameMode == Mission`.
 
 Current `InvalidArgumentKind` values:
 
@@ -267,13 +302,22 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x80`: create controllable
 * `0x81`: controllable deceased
 * `0x82`: controllable runtime update and alive
+* `0x8E`: owner-only power-up collected event
 * `0x8F`: controllable finally closed
 * `0xC0`: `GalaxyTickEvent`
 * `0xC1`: flag-scored system chat message
 * `0xC2`: domination-point-scored system chat message
+* `0xC3`: own-flag-hit system chat message
 * `0xC4`: public galaxy chat message
 * `0xC5`: team chat message
 * `0xC6`: private chat message
+* `0xC7`: mission-target-hit system chat message
+* `0xC9`: flag-reactivated system chat message
+* `0xCA`: gate-switched event
+* `0xCB`: gate-restored event
+* `0xD0`: create or update tournament snapshot
+* `0xD1`: remove tournament snapshot
+* `0xD2`: tournament system chat message
 
 Some important snapshot payloads:
 
@@ -347,6 +391,66 @@ Cluster flags:
 
 * bit `0x01`: start cluster
 * bit `0x02`: respawn cluster
+
+### `0xD0` Tournament Snapshot
+
+Payload order:
+
+```text
+byte stage
+byte mode
+uint durationTicks
+byte teamCount
+
+repeat teamCount times:
+    byte teamId
+    byte participantCount
+
+    repeat participantCount times:
+        int    accountId
+        string accountName
+        byte   adminFlag
+        int    rank
+        long   playerKills
+        long   playerDeaths
+        byte   hasAvatarFlag
+        byte   hasTournamentEloFlag
+        if hasTournamentEloFlag != 0:
+            float tournamentElo
+
+byte historyCount
+repeat historyCount times:
+    byte winningTeamId
+```
+
+Tournament stage values:
+
+* `0`: `Preparation`
+* `1`: `Commencing`
+* `2`: `Running`
+
+Tournament mode values:
+
+* `0`: `Solo`
+* `1`: `BestOf3`
+* `2`: `BestOf5`
+* `3`: `BestOf7`
+* `4`: `BestOf9`
+* `5`: `BestOf11`
+
+The ordered history entries represent already finished games. If the history contains three entries, the current live game is match number four.
+
+### `0xD1` Tournament Removed
+
+Payload is empty.
+
+### `0xD2` Tournament System Chat Message
+
+Payload order:
+
+```text
+string message
+```
 
 ### `0x0B` Compiled-With Message
 
@@ -490,6 +594,16 @@ byte   flagTeamId
 string flagName
 ```
 
+### `0xC7` Mission Target Hit System Chat
+
+Payload order:
+
+```text
+byte   playerId
+byte   controllableId
+ushort missionTargetSequence
+```
+
 ### `0xC9` Flag Reactivated System Chat
 
 Payload order:
@@ -499,13 +613,47 @@ byte   flagTeamId
 string flagName
 ```
 
-### `0x80` Controllable Create
+### `0xCA` Gate Switched
 
 Payload order:
 
 ```text
+byte   clusterId
+byte   hasInvoker
+[byte  playerId]
+[byte  controllableId]
+string switchName
+ushort gateCount
+
+repeat gateCount times:
+    string gateName
+    byte   closedFlag
+```
+
+Notes:
+
+* `hasInvoker` is `0x00` or `0x01`
+* when `hasInvoker == 0x00`, the optional player and controllable ids are omitted
+* `closedFlag == 0x01` means the gate ended closed; `0x00` means open
+
+### `0xCB` Gate Restored
+
+Payload order:
+
+```text
+byte   clusterId
+string gateName
+byte   closedFlag
+```
+
+### `0x80` Controllable Create
+
+Base payload order:
+
+```text
 byte   controllableKind
 byte   controllableId
+byte   clusterId
 string controllableName
 Vector position
 Vector movement
@@ -513,8 +661,8 @@ Vector movement
 
 This packet is the owner's authoritative identity channel for a controllable. A player's own controllables are intentionally modeled separately from the visible-unit stream and therefore must be tracked from `0x80` / `0x82`, not from `0x30` / `0x32`.
 
-Static subsystem capabilities such as battery maxima, energy-cell efficiencies, or scanner limits are currently not transmitted here.
-The reference connector initializes them locally by `controllableKind`.
+After the base fields, the packet continues with the owner-visible static subsystem capability block and the initial owner runtime snapshot for that controllable kind.
+This data is intentionally richer than the visible-unit stream because it initializes the local `Controllable` mirror immediately.
 
 ### `0x81` Controllable Deceased
 
@@ -546,6 +694,7 @@ SubsystemSlot ranges:
     0x20..0x2F scanners
     0x30..0x3F engines
     0x40..0x4F dynamic shot subsystems
+    0x50..0x5F resource subsystems
 
 Currently used slots:
     0x00 EnergyBattery
@@ -556,18 +705,29 @@ Currently used slots:
     0x12 NeutrinoCell
     0x18 Hull
     0x19 Shield
+    0x1A Armor
+    0x1B Repair
     0x20 PrimaryScanner
     0x21 SecondaryScanner
     0x30 PrimaryEngine
+    0x33 JumpDrive
     0x40 DynamicShotLauncher
     0x41 DynamicShotMagazine
     0x42 DynamicShotFabricator
+    0x43 DynamicInterceptorLauncher
+    0x44 DynamicInterceptorMagazine
+    0x45 DynamicInterceptorFabricator
+    0x46 Railgun
+    0x50 Cargo
+    0x51 ResourceMiner
+    0x52 NebulaCollector
 ```
 
 Common payload order:
 
 ```text
 byte   controllableId
+byte   clusterId
 Vector position
 Vector movement
 float  energyBatteryCurrent
@@ -594,13 +754,52 @@ byte   shieldStatus
 float  shieldConsumedEnergyThisTick
 float  shieldConsumedIonsThisTick
 float  shieldConsumedNeutrinosThisTick
+float  armorBlockedDirectDamageThisTick
+float  armorBlockedRadiationDamageThisTick
+byte   armorStatus
+float  repairRate
+byte   repairStatus
+float  repairConsumedEnergyThisTick
+float  repairConsumedIonsThisTick
+float  repairConsumedNeutrinosThisTick
+float  repairRepairedHullThisTick
+float  cargoCurrentMetal
+float  cargoCurrentCarbon
+float  cargoCurrentHydrogen
+float  cargoCurrentSilicon
+float  cargoCurrentNebula
+float  cargoNebulaHue
+byte   cargoStatus
+float  resourceMinerRate
+byte   resourceMinerStatus
+float  resourceMinerConsumedEnergyThisTick
+float  resourceMinerConsumedIonsThisTick
+float  resourceMinerConsumedNeutrinosThisTick
+float  resourceMinerMinedMetalThisTick
+float  resourceMinerMinedCarbonThisTick
+float  resourceMinerMinedHydrogenThisTick
+float  resourceMinerMinedSiliconThisTick
+float  environmentHeatThisTick
+float  environmentHeatEnergyCostThisTick
+float  environmentHeatEnergyOverflowThisTick
+float  environmentRadiationThisTick
+float  environmentRadiationDamageBeforeArmorThisTick
+float  environmentArmorBlockedDamageThisTick
+float  environmentHullDamageThisTick
 ```
 
 The remaining payload depends on `controllableKind`.
 
-Current `ClassicShipPlayerUnit` addition:
+Current classic-ship controllable addition:
 
 ```text
+float  nebulaCollectorRate
+byte   nebulaCollectorStatus
+float  nebulaCollectorConsumedEnergyThisTick
+float  nebulaCollectorConsumedIonsThisTick
+float  nebulaCollectorConsumedNeutrinosThisTick
+float  nebulaCollectorCollectedThisTick
+float  nebulaCollectorCollectedHueThisTick
 byte   mainScannerActive
 float  mainScannerCurrentWidth
 float  mainScannerCurrentLength
@@ -645,19 +844,51 @@ byte   shotFabricatorStatus
 float  shotFabricatorConsumedEnergyThisTick
 float  shotFabricatorConsumedIonsThisTick
 float  shotFabricatorConsumedNeutrinosThisTick
+Vector interceptorLauncherRelativeMovement
+ushort interceptorLauncherTicks
+float  interceptorLauncherLoad
+float  interceptorLauncherDamage
+byte   interceptorLauncherStatus
+float  interceptorLauncherConsumedEnergyThisTick
+float  interceptorLauncherConsumedIonsThisTick
+float  interceptorLauncherConsumedNeutrinosThisTick
+float  interceptorMagazineCurrentShots
+byte   interceptorMagazineStatus
+byte   interceptorFabricatorActive
+float  interceptorFabricatorRate
+byte   interceptorFabricatorStatus
+float  interceptorFabricatorConsumedEnergyThisTick
+float  interceptorFabricatorConsumedIonsThisTick
+float  interceptorFabricatorConsumedNeutrinosThisTick
+byte   railgunDirection
+byte   railgunStatus
+float  railgunConsumedEnergyThisTick
+float  railgunConsumedIonsThisTick
+float  railgunConsumedNeutrinosThisTick
 ```
 
 Notes:
 
-* Battery maxima and energy-cell efficiencies are currently initialized locally by controllable kind and are not sent on the wire.
+* Battery maxima, cell efficiencies, hull maxima, shield maxima, armor reduction, cargo capacities, and similar static owner-side capabilities are sent during `0x80 Controllable Create`.
 * `*CellCollectedThisTick` is the post-efficiency amount that was actually loaded through that cell during the current server tick.
-* `hullCurrent` is the current hull integrity after that tick's damage resolution. The reference `ClassicShip` currently initializes hull locally with a maximum of `50`.
-* `shieldCurrent` is the current shield integrity after that tick's damage resolution. The reference `ClassicShip` currently initializes shield locally with a maximum of `20`.
+* `hullCurrent` is the current hull integrity after that tick's damage resolution. The current reference classic ship uses `hullMaximum = 50`.
+* `shieldCurrent` is the current shield integrity after that tick's damage resolution. The current reference classic ship uses `shieldMaximum = 20`.
 * `shieldActive` / `shieldRate` is the owner-visible shield loading configuration. The current placeholder shield cost is `1600 * rate^2`, so the maximum reference rate `0.125` costs `25` energy per tick.
+* `armorBlocked*` reports what the fixed armor reduction absorbed during the current tick. The current reference classic ship uses `Reduction = 0.5`.
+* `repairRate == 0` means the repair subsystem is off. The current reference repair cost is `1600 * rate^2`, with a maximum rate of `0.1`. If ship movement reaches `>= 0.1`, the server clears the configured rate and reports `repairStatus == Failed` for that tick.
+* `cargoCurrent*` is the owner-visible stored resource state. The current reference classic ship uses `cargoMaximumMetal = cargoMaximumCarbon = cargoMaximumHydrogen = cargoMaximumSilicon = 20`.
+* `resourceMinerRate == 0` means the miner is off. The current reference miner cost is `160000 * rate^2`, with a maximum rate of `0.01`, and it mines all in-range `Planet` / `Moon` / `Meteoroid` body resources edge-to-edge within `25`. Those body-side resource values are currently non-depleting.
+* If the miner is active and no mineable resources are in range, the server still pays that tick, reports `resourceMinerStatus == Worked` with zero mined output, and then clears `resourceMinerRate` to `0`.
+* If ship movement reaches `>= 0.1`, the server clears `resourceMinerRate` and reports `resourceMinerStatus == Failed` for that tick.
+* `environment*` is an aggregated owner-only view of passive sun effects after the passive scan at the end of `DoBeforeCalculations()`. Heat drains `15` energy per point; unpaid heat overflows into radiation; radiation damage is reduced by armor before reaching hull.
 * `engineCurrent` is the currently applied engine impulse for this tick. `engineTarget` is the persisted requested impulse.
 * `shotLauncher*` describes the shot request the server actually processed in this tick. If the launcher had no queued shot, the runtime values are zeroed.
 * `shotMagazineCurrentShots` is the owner-visible stored shot resource in `[0; 5]`. `shotMagazineStatus == Failed` means the launcher tried to consume one full shot this tick and the magazine did not have enough stored charge.
 * `shotFabricator*` is the owner-visible production state. While active, the fabricator still consumes its configured energy at a full magazine; only the stored amount is clamped.
+* `interceptorLauncher*` mirrors the shot launcher runtime but produces `Interceptor` instead of `Shot`. If the launcher had no queued interceptor, the runtime values are zeroed.
+* `interceptorMagazineCurrentShots` is the owner-visible stored interceptor resource in `[0; 5]`. `interceptorMagazineStatus == Failed` means the interceptor launcher tried to consume one full interceptor this tick and the magazine did not have enough stored charge.
+* `interceptorFabricator*` mirrors the shot fabricator runtime and fills the interceptor magazine independently.
+* `railgunDirection` uses `0x00 None`, `0x01 Front`, `0x02 Back`. A worked tick consumed `300` energy and `1` metal and produced one `Rail` with relative speed `4`, fixed lifetime `250`, and damage `3.5 * |shipMovement + railRelativeMovement|`. Front/back are derived from the ship movement angle and fall back to world angle `0` while standing still.
 * `mainScannerStatus == Worked` / `secondaryScannerStatus == Worked` tells owner-side tools whether the server actually paid and executed that scan in the current tick.
 * `SecondaryScanner` is currently a disabled subsystem on the reference ClassicShip. Its runtime block is still present and currently zeroed.
 * `Current*` is the server-applied runtime state. `Target*` is the server-side target configuration.
@@ -667,18 +898,29 @@ Notes:
   * `EnergyCellSubsystemEvent`
   * `HullSubsystemEvent`
   * `ShieldSubsystemEvent`
+  * `ArmorSubsystemEvent`
+  * `RepairSubsystemEvent`
+  * `CargoSubsystemEvent`
+  * `ResourceMinerSubsystemEvent`
   * `DynamicScannerSubsystemEvent`
   * `ClassicShipEngineSubsystemEvent`
   * `DynamicShotLauncherSubsystemEvent`
   * `DynamicShotMagazineSubsystemEvent`
   * `DynamicShotFabricatorSubsystemEvent`
-* Those connector-local events currently use `EventKind` values `0x80..0x88`, but no additional wire commands were introduced.
+  * `DynamicInterceptorLauncherSubsystemEvent`
+  * `DynamicInterceptorMagazineSubsystemEvent`
+  * `DynamicInterceptorFabricatorSubsystemEvent`
+  * `RailgunSubsystemEvent`
+* `EnvironmentDamageEvent`
+* `PowerUpCollectedEvent`
+* Those connector-local events currently use `EventKind` values `0x80..0x92`. These enum values are connector-local API identifiers, not an additional wire packet range. `PowerUpCollectedEvent` is backed by the dedicated owner-only wire packet `0x8E`; the subsystem events remain connector-local projections of `0x82`.
+* Power-up respawn does not have a dedicated wire event. After pickup or explosion the server uses the normal `0x3F` visible-unit delete and later reintroduces the same unit name through `0x30` plus `0x32` once the respawn conditions are met.
 
 ### `0x30` Visible Unit Create
 
 For `PlayerKind.Player`, the unit visibility packets `0x30` / `0x31` / `0x32` / `0x3F` are driven by the server-side scan analysis of the player's active ships. Spectators and admins still receive the global unit feed, but the reference server now uses the same reduced/full packet split there as well and follows every newly visible unit with `0x32`.
 
-The visible-unit stream is for other units only. The owner never receives the player's own controllables back through visibility packets, even if those controllables still participate in masking and other geometry during scan analysis.
+The visible-unit stream is for world-visible runtime objects only. The owner never receives the player's own controllables back through visibility packets, even if those controllables still participate in masking and other geometry during scan analysis.
 
 Current runtime rule:
 
@@ -705,23 +947,38 @@ Current reduced `0x30` payloads and promotion thresholds:
 
 * `Sun (0x00)`: `steady unit payload`; `ReducedVisibilityTicks = 100`
 * `BlackHole (0x01)`: `steady unit payload`; `ReducedVisibilityTicks = 200`
+* `CurrentField (0x02)`: `steady unit payload`; `ReducedVisibilityTicks = 20`
+* `Nebula (0x03)`: `steady unit payload`; `ReducedVisibilityTicks = 100`
+* `Storm (0x20)`: `steady unit payload`; `ReducedVisibilityTicks = 20`
+* `StormCommencingWhirl (0x21)`: `Vector position`, `Vector movement`, `float radius`, `float gravity`; `ReducedVisibilityTicks = 4`
+* `StormActiveWhirl (0x22)`: `Vector position`, `Vector movement`, `float radius`, `float gravity`; `ReducedVisibilityTicks = 4`
 * `Planet (0x08)`: `steady unit payload`, `byte planetType`; `ReducedVisibilityTicks = 250`
 * `Moon (0x09)`: `steady unit payload`, `byte moonType`; `ReducedVisibilityTicks = 250`
 * `Meteoroid (0x0A)`: `steady unit payload`, `byte meteoroidType`; `ReducedVisibilityTicks = 250`
 * `Buoy (0x10)`: `steady unit payload`; `ReducedVisibilityTicks = 20`
+* `WormHole (0x11)`: `steady unit payload`; `ReducedVisibilityTicks = 250`
 * `MissionTarget (0x14)`: `steady unit payload`, `byte teamId`; `ReducedVisibilityTicks = 20`
 * `Flag (0x15)`: `steady unit payload`, `byte teamId`; `ReducedVisibilityTicks = 0`
 * `DominationPoint (0x16)`: `steady unit payload`, `byte teamId`, `float dominationRadius`; `ReducedVisibilityTicks = 50`
+* `EnergyChargePowerUp (0x70)` / `IonChargePowerUp (0x71)` / `NeutrinoChargePowerUp (0x72)` / `MetalCargoPowerUp (0x73)` / `CarbonCargoPowerUp (0x74)` / `HydrogenCargoPowerUp (0x75)` / `SiliconCargoPowerUp (0x76)` / `ShieldChargePowerUp (0x77)` / `HullRepairPowerUp (0x78)` / `ShotChargePowerUp (0x79)`: `steady unit payload`; `ReducedVisibilityTicks = 0`
+* `Switch (0x60)`: `steady unit payload`, `byte teamId`, `ushort linkId`, `float range`, `int cooldownTicks`, `byte mode`; `ReducedVisibilityTicks = 20`
+* `Gate (0x61)`: `steady unit payload`, `ushort linkId`, `byte defaultClosedFlag`, `int restoreTicks`; `ReducedVisibilityTicks = 20`
 * `Shot (0xE0)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
+* `Interceptor (0xE1)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
+* `Rail (0xE2)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
 * `ClassicShipPlayerUnit (0xF0)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 100`
+* `InterceptorExplosion (0xFE)`: `byte ownerPlayerId`, `byte ownerControllableId`, `float load`, `float damage`, `Vector position`; `ReducedVisibilityTicks = 0`
 * `Explosion (0xFF)`: `byte ownerPlayerId`, `byte ownerControllableId`, `float load`, `float damage`, `Vector position`; `ReducedVisibilityTicks = 0`
 
 Notes:
 
 * `steady unit payload` means `Vector position`, `float radius`, `float gravity`
+* for orbiting steady units, `position` in `0x30` is the current runtime position, not the configured map-editor center
 * `planetType` / `moonType` / `meteoroidType` are intentionally already part of reduced visibility
-* For `Shot` and `Explosion`, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no owner". The reference connector treats `ownerPlayerId >= 192` as ownerless.
-* `Explosion` and `Flag` are effectively full immediately, but still participate in the same `0x30` + optional `0x32` visibility protocol
+* `Switch.mode` currently uses `0x00 Toggle`, `0x01 Open`, `0x02 Close`
+* `Gate.restoreTicks == -1` on the wire means "no automatic restore configured"
+* For projectile and explosion kinds, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no owner". The reference connector treats `ownerPlayerId >= 192` as ownerless.
+* `Explosion`, `InterceptorExplosion`, and `Flag` are effectively full immediately, but still participate in the same `0x30` + optional `0x32` visibility protocol
 
 ### `0x31` Visible Unit Movement State Update
 
@@ -739,10 +996,32 @@ Current runtime rule:
 
 Current `0x31` payloads:
 
-* steady units (`Sun`, `BlackHole`, `Planet`, `Moon`, `Meteoroid`, `Buoy`, `MissionTarget`, `Flag`, `DominationPoint`): no additional payload
+* steady units (`Sun`, `BlackHole`, `CurrentField`, `Nebula`, `Planet`, `Moon`, `Meteoroid`, `Buoy`, `WormHole`, `MissionTarget`, `Flag`, `DominationPoint`, all visible power-up kinds, `Switch`, `Gate`):
+  ```text
+  Vector position
+  Vector movement
+  ```
+  The reference server currently emits these `0x31` packets only for orbiting steady units.
 * `Shot (0xE0)`:
   ```text
   ushort ticks
+  Vector position
+  Vector movement
+  ```
+* `Interceptor (0xE1)`:
+  ```text
+  ushort ticks
+  Vector position
+  Vector movement
+  ```
+* `Rail (0xE2)`:
+  ```text
+  ushort ticks
+  Vector position
+  Vector movement
+  ```
+* `StormCommencingWhirl (0x21)` / `StormActiveWhirl (0x22)`:
+  ```text
   Vector position
   Vector movement
   ```
@@ -751,6 +1030,7 @@ Current `0x31` payloads:
   Vector position
   Vector movement
   ```
+* `InterceptorExplosion (0xFE)`: no additional payload; the reference connector ignores `0x31` for explosions
 * `Explosion (0xFF)`: no additional payload; the reference connector ignores `0x31` for explosions
 
 ### `0x32` Visible Unit Runtime State Update
@@ -766,6 +1046,19 @@ The remaining payload depends on the unit type.
 
 Current `0x32` payloads:
 
+* all steady units (`Sun`, `BlackHole`, `CurrentField`, `Nebula`, `Planet`, `Moon`, `Meteoroid`, `Buoy`, `WormHole`, `MissionTarget`, `Flag`, `DominationPoint`, all power-up kinds, `Switch`, `Gate`) start with:
+  ```text
+  Vector configuredPosition
+  byte   orbitCount
+  orbitCount * (
+    float distance
+    float startAngle
+    int   rotationTicks
+  )
+  ```
+  `configuredPosition` is the canonical map-editor center returned by `QueryUnitXml(...)`.
+  For non-orbiting steady units, `orbitCount == 0` and `configuredPosition == runtime position`.
+  Clients can combine this payload with `0xC0` galaxy tick updates to recompute the runtime position deterministically.
 * `Sun (0x00)`:
   ```text
   float energy
@@ -779,6 +1072,42 @@ Current `0x32` payloads:
   float gravityWellRadius
   float gravityWellForce
   ```
+* `CurrentField (0x02)`:
+  ```text
+  byte  mode
+  Vector flow
+  float radialForce
+  float tangentialForce
+  ```
+  `mode` currently uses `0x00 Directional`, `0x01 Relative`.
+* `Nebula (0x03)`:
+  ```text
+  float hue
+  ```
+* `Storm (0x20)`:
+  ```text
+  float  spawnChancePerTick
+  ushort minAnnouncementTicks
+  ushort maxAnnouncementTicks
+  ushort minActiveTicks
+  ushort maxActiveTicks
+  float  minWhirlRadius
+  float  maxWhirlRadius
+  float  minWhirlSpeed
+  float  maxWhirlSpeed
+  float  minWhirlGravity
+  float  maxWhirlGravity
+  float  damage
+  ```
+* `StormCommencingWhirl (0x21)`:
+  ```text
+  ushort remainingAnnouncementTicks
+  ```
+* `StormActiveWhirl (0x22)`:
+  ```text
+  ushort remainingActiveTicks
+  float  damage
+  ```
 * `Planet (0x08)` / `Moon (0x09)` / `Meteoroid (0x0A)`:
   ```text
   float metal
@@ -786,13 +1115,23 @@ Current `0x32` payloads:
   float hydrogen
   float silicon
   ```
+  These values are also the current non-depleting mining yields for those bodies.
 * `Buoy (0x10)`:
   ```text
   string? message
   ```
+* `WormHole (0x11)`:
+  ```text
+  byte  targetClusterId
+  float targetLeft
+  float targetTop
+  float targetRight
+  float targetBottom
+  ```
+  This payload is intentionally only present in full visibility. Reduced worm-hole sightings therefore do not disclose the destination yet.
 * `MissionTarget (0x14)`:
   ```text
-  int    sequenceNumber
+  ushort sequenceNumber
   ushort vectorCount
   vectorCount * Vector
   ```
@@ -807,7 +1146,32 @@ Current `0x32` payloads:
   int  domination
   int  scoreCountdown
   ```
+* `EnergyChargePowerUp (0x70)` / `IonChargePowerUp (0x71)` / `NeutrinoChargePowerUp (0x72)` / `MetalCargoPowerUp (0x73)` / `CarbonCargoPowerUp (0x74)` / `HydrogenCargoPowerUp (0x75)` / `SiliconCargoPowerUp (0x76)` / `ShieldChargePowerUp (0x77)` / `HullRepairPowerUp (0x78)` / `ShotChargePowerUp (0x79)`:
+  ```text
+  float amount
+  ```
+* `Switch (0x60)`:
+  ```text
+  int  cooldownRemainingTicks
+  byte switchedFlag
+  ```
+* `Gate (0x61)`:
+  ```text
+  byte closedFlag
+  int  restoreRemainingTicks
+  ```
+  `restoreRemainingTicks == -1` means that no auto-restore timer is currently armed.
 * `Shot (0xE0)`:
+  ```text
+  float load
+  float damage
+  ```
+* `Interceptor (0xE1)`:
+  ```text
+  float load
+  float damage
+  ```
+* `Rail (0xE2)`:
   ```text
   float load
   float damage
@@ -854,6 +1218,42 @@ Current `0x32` payloads:
   float shieldConsumedEnergyThisTick
   float shieldConsumedIonsThisTick
   float shieldConsumedNeutrinosThisTick
+  byte  armorExists
+  float armorReduction
+  byte  armorStatus
+  float armorBlockedDirectDamageThisTick
+  float armorBlockedRadiationDamageThisTick
+  byte  repairExists
+  float repairMinimumRate
+  float repairMaximumRate
+  float repairRate
+  byte  repairStatus
+  float repairConsumedEnergyThisTick
+  float repairConsumedIonsThisTick
+  float repairConsumedNeutrinosThisTick
+  float repairRepairedHullThisTick
+  byte  cargoExists
+  float cargoMaximumMetal
+  float cargoMaximumCarbon
+  float cargoMaximumHydrogen
+  float cargoMaximumSilicon
+  float cargoCurrentMetal
+  float cargoCurrentCarbon
+  float cargoCurrentHydrogen
+  float cargoCurrentSilicon
+  byte  cargoStatus
+  byte  resourceMinerExists
+  float resourceMinerMinimumRate
+  float resourceMinerMaximumRate
+  float resourceMinerRate
+  byte  resourceMinerStatus
+  float resourceMinerConsumedEnergyThisTick
+  float resourceMinerConsumedIonsThisTick
+  float resourceMinerConsumedNeutrinosThisTick
+  float resourceMinerMinedMetalThisTick
+  float resourceMinerMinedCarbonThisTick
+  float resourceMinerMinedHydrogenThisTick
+  float resourceMinerMinedSiliconThisTick
   byte  mainScannerExists
   float mainScannerMaximumWidth
   float mainScannerMaximumLength
@@ -926,7 +1326,48 @@ Current `0x32` payloads:
   float shotFabricatorConsumedEnergyThisTick
   float shotFabricatorConsumedIonsThisTick
   float shotFabricatorConsumedNeutrinosThisTick
+  byte  interceptorLauncherExists
+  float interceptorLauncherMinimumRelativeMovement
+  float interceptorLauncherMaximumRelativeMovement
+  ushort interceptorLauncherMinimumTicks
+  ushort interceptorLauncherMaximumTicks
+  float interceptorLauncherMinimumLoad
+  float interceptorLauncherMaximumLoad
+  float interceptorLauncherMinimumDamage
+  float interceptorLauncherMaximumDamage
+  Vector interceptorLauncherRelativeMovement
+  ushort interceptorLauncherTicks
+  float interceptorLauncherLoad
+  float interceptorLauncherDamage
+  byte  interceptorLauncherStatus
+  float interceptorLauncherConsumedEnergyThisTick
+  float interceptorLauncherConsumedIonsThisTick
+  float interceptorLauncherConsumedNeutrinosThisTick
+  byte  interceptorMagazineExists
+  float interceptorMagazineMaximumShots
+  float interceptorMagazineCurrentShots
+  byte  interceptorMagazineStatus
+  byte  interceptorFabricatorExists
+  float interceptorFabricatorMinimumRate
+  float interceptorFabricatorMaximumRate
+  byte  interceptorFabricatorActive
+  float interceptorFabricatorRate
+  byte  interceptorFabricatorStatus
+  float interceptorFabricatorConsumedEnergyThisTick
+  float interceptorFabricatorConsumedIonsThisTick
+  float interceptorFabricatorConsumedNeutrinosThisTick
+  byte  railgunExists
+  float railgunEnergyCost
+  float railgunMetalCost
+  byte  railgunDirection
+  byte  railgunStatus
+  float railgunConsumedEnergyThisTick
+  float railgunConsumedIonsThisTick
+  float railgunConsumedNeutrinosThisTick
+  byte  jumpDriveExists
+  float jumpDriveEnergyCost
   ```
+* `InterceptorExplosion (0xFE)`: no additional payload
 * `Explosion (0xFF)`: no additional payload
 
 For unit and controllable payload details, inspect the current reference implementation types in `Flattiverse.Connector/Units` and `Flattiverse.Connector/GalaxyHierarchy`.
@@ -962,9 +1403,15 @@ The client must echo the challenge value it most recently received in a `0x00` p
 * `0x24`: set or overwrite one region, payload `byte clusterId`, `string xml`
 * `0x25`: remove one region, payload `byte clusterId`, `byte regionId`
 * `0x26`: query all regions of one cluster, payload `byte clusterId`
+* `0x27`: query editable units of one cluster, payload `byte clusterId`, `int offset`, `ushort maximumCount`
 * `0x28`: set or overwrite one editable unit, payload `byte clusterId`, `string xml`
 * `0x29`: remove one editable unit, payload `byte clusterId`, `string unitName`
 * `0x2A`: query XML of one editable unit, payload `byte clusterId`, `string unitName`
+* `0x60`: configure tournament, payload `string xml`
+* `0x61`: commence tournament, empty payload
+* `0x62`: start tournament, empty payload
+* `0x63`: cancel tournament, empty payload
+* `0x64`: query accounts for tournament tooling, payload `int offset`, `ushort maximumCount`
 
 Reply format of `0x26`:
 
@@ -987,19 +1434,57 @@ Reply format of `0x2A`:
 string xml
 ```
 
+Reply format of `0x27`:
+
+```text
+int    totalCount
+int    offset
+ushort returnedCount
+
+repeat returnedCount times:
+    byte   unitKind
+    string unitName
+```
+
+Reply format of `0x64`:
+
+```text
+int    totalCount
+int    offset
+ushort returnedCount
+
+repeat returnedCount times:
+    int    accountId
+    string accountName
+    byte   adminFlag
+    int    rank
+    long   playerKills
+    long   playerDeaths
+    byte   hasAvatarFlag
+    byte   hasTournamentEloFlag
+    if hasTournamentEloFlag != 0:
+        float tournamentElo
+```
+
 Important notes:
 
 * `0x26` is binary on the wire. The reference connector converts the binary reply into `<Regions>...</Regions>` XML only as a convenience API.
+* `0x27` is admin-only and returns all `CanBeEdited = true` named units of the cluster, including currently invisible ones such as inactive power-ups.
 * `0x29` and `0x2A` resolve the unit by `(clusterId, unitName)` on the server side.
 * `0x28`, `0x29`, and `0x2A` only work for unit types with `CanBeEdited = true`.
 * Empty or unreadable XML on protocol level is rejected as `0x12 InvalidArgumentGameException` with `InvalidArgumentKind.AmbiguousXmlData` and parameter name `xml`.
 * `0x2A` rejects non-editable units with `0x16 InvalidXmlNodeValueGameException`.
-* Editable target kinds currently include `MissionTarget`, `Flag`, and `DominationPoint`.
+* Editable target kinds currently include `CurrentField`, `Nebula`, `Storm`, `MissionTarget`, `Flag`, `DominationPoint`, `Switch`, and `Gate`.
+* `0x04` also rejects cluster removal while any remaining unit still references that cluster. The current example is a `WormHole` whose `TargetCluster` points to the cluster you are trying to remove.
+* `0x60` accepts `<Tournament ...>` XML with `Mode`, `DurationTicks`, exactly two `<Team Id="...">` elements containing `<Account Id="..."/>` children, and optional `<Match WinnerTeamId="..."/>` elements that describe already finished games in order.
+* `0x60` is admin-only and rejects `GameMode == Mission` with `0x39 TournamentModeNotAllowedGameException`.
+* `0x61`, `0x62`, and `0x63` are admin-only tournament lifecycle actions.
+* `0x64` is admin-only, filters server-side to account statuses `user` and `reoptin`, orders by `lower(name), id`, and returns connector-style account snapshots for tournament configuration UIs.
 * XML semantics, whitelists, validation rules, and examples are intentionally documented in [MAPEDITORS.md](MAPEDITORS.md), not duplicated here.
 
 ### Player Commands
 
-* `0x80`: register classic ship, payload `string name`, reply payload `byte controllableId`
+* `0x80`: register classic ship, payload `string name`, `string crystal0Name`, `string crystal1Name`, `string crystal2Name`, reply payload `byte controllableId`
 * `0x84`: continue controllable, payload `byte controllableId`
 * `0x85`: suicide controllable, payload `byte controllableId`
 * `0x87`: move controllable, payload `byte controllableId`, `Vector movement`
@@ -1014,31 +1499,70 @@ Important notes:
 * `0x90`: configure shield loading, payload `byte controllableId`, `float rate`
 * `0x91`: activate shield loading, payload `byte controllableId`
 * `0x92`: deactivate shield loading, payload `byte controllableId`
+* `0x93`: configure repair rate, payload `byte controllableId`, `float rate`
+* `0x94`: configure resource miner rate, payload `byte controllableId`, `float rate`
+* `0x95`: trigger worm-hole jump, payload `byte controllableId`
+* `0x96`: shoot interceptor, payload `byte controllableId`, `Vector movement`, `ushort ticks`, `float load`, `float damage`
+* `0x97`: configure interceptor fabricator, payload `byte controllableId`, `float rate`
+* `0x98`: activate interceptor fabricator, payload `byte controllableId`
+* `0x99`: deactivate interceptor fabricator, payload `byte controllableId`
+* `0x9A`: fire railgun forward, payload `byte controllableId`
+* `0x9B`: fire railgun backward, payload `byte controllableId`
+* `0x9C`: configure nebula collector rate, payload `byte controllableId`, `float rate`
+* `0x9D`: produce crystal, payload `byte controllableId`, `string name`, reply payload `byte produced`, `byte crystalCount`, repeated crystal snapshot entries
+* `0x9E`: rename crystal, payload `string oldName`, `string newName`, reply payload `byte crystalCount`, repeated crystal snapshot entries
+* `0x9F`: destroy crystal, payload `string name`, reply payload `byte crystalCount`, repeated crystal snapshot entries
+* `0xA0`: request crystals, empty payload, reply payload `byte crystalCount`, repeated crystal snapshot entries
 * `0xC4`: send galaxy chat, payload `string message`
 * `0xC5`: send team chat, payload `byte teamId`, `string message`
 * `0xC6`: send private chat, payload `byte playerId`, `string message`
-* `0xF1`: download small avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
-* `0xF2`: download big avatar, payload `byte playerId`, reply payload `byte[] avatarBytes`
+* `0xF1`: download small avatar chunk, payload `byte playerId`, `int offset`, `ushort maximumLength`
+* `0xF2`: download big avatar chunk, payload `byte playerId`, `int offset`, `ushort maximumLength`
+* `0xF3`: download small account avatar chunk, payload `int accountId`, `int offset`, `ushort maximumLength`
+* `0xF4`: download big account avatar chunk, payload `int accountId`, `int offset`, `ushort maximumLength`
+
+Reply format of `0xF1` / `0xF2` / `0xF3` / `0xF4`:
+
+```text
+int    totalLength
+int    offset
+ushort chunkLength
+byte[] chunkBytes
+```
 
 Notes:
 
 * `0xC5` resolves the target team by id on the server side.
 * `0xC6` resolves the target player by id on the server side.
-* `0xF1` / `0xF2` resolve the target player by id on the server side and return the avatar bytes cached on that server-side player at login time.
-* `0xC1` and `0xC2` are server-originated objective system chat packets. They are not sent by clients.
+* `0xF1` / `0xF2` resolve the target player by id on the server side and stream the avatar bytes cached on that server-side player at login time.
+* `0xF3` / `0xF4` resolve the target account by id on the server side and stream the persisted account avatar bytes.
+* `0xC1`, `0xC2`, and `0xC7` are server-originated objective system chat packets. They are not sent by clients.
 * `0x10 Player Create` contains `hasAvatar`, so clients can avoid sending `0xF1` / `0xF2` for players without avatars.
 * If `hasAvatar == 0`, the reference connector throws locally before sending `0xF1` / `0xF2`.
 * The server still validates `0xF1` / `0xF2` and returns `0x18 AvatarNotAvailableGameException` if no avatar is available.
-* `0x8F` is not an immediate removal. The server may keep a living controllable alive for 30 ticks before finally closing it, and dead controllables stay registered until no shot/explosion references remain.
+* `0xF3` / `0xF4` also return `0x18 AvatarNotAvailableGameException` if the target account has no stored avatar.
+* Clients repeat the avatar request with increasing `offset` until `offset + chunkLength == totalLength`.
+* `0x8F` is not an immediate removal. The server may keep a living controllable alive for 30 ticks before finally closing it. Dead controllables stay registered and can be `Continue()`d until the owner explicitly closes them.
 * During that cleanup window the owning player may already have `stateFlags & 0x01 != 0`, meaning the connection is gone even though the player and controllable infos are still present.
 * String validation for names and chat messages happens on the server even if a client already validated locally.
 * `0x88` currently validates `movement.Length` in `[0.1; 3]`, `ticks` in `[2; 140]`, `load` in `[2.5; 25]`, and `damage` in `[1; 20]`. Firing additionally requires at least one full stored shot in `ShotMagazine`; otherwise the launcher runtime stays failed for that tick.
+* `0x96` currently uses the same validation as `0x88`, but consumes from `InterceptorMagazine` and produces `Interceptor`.
 * The current reference ClassicShip supports `scannerId = 0` for `MainScanner`. `scannerId = 1` addresses `SecondaryScanner`, which currently does not exist and therefore returns `0x10 SpecifiedElementNotFoundGameException`.
 * `0x89` currently validates scanner `width` in `[5; 90]`, `length` in `[20; 300]`, and any finite `angle` as an absolute world angle.
 * While a dynamic scanner is off, its current width, length, and angle are zero. On the next active tick after re-activation, width and length ramp from `2.5 x 10` and the angle starts again from `0` toward the configured target.
 * `0x8C` currently validates fabricator `rate` in `[0; 0.025]`. `0x8D` / `0x8E` only toggle `Active`; they do not change the configured rate.
+* `0x97` currently validates fabricator `rate` in `[0; 0.025]`. `0x98` / `0x99` only toggle `Active`; they do not change the configured rate.
 * `0x90` currently validates shield `rate` in `[0; 0.125]`. `0x91` / `0x92` only toggle shield loading `Active`; they do not change the configured rate.
-* On revive, the reference `ClassicShip` restores `ShotMagazine` to `2`, resets `ShotFabricator` to `Active=false`, `Rate=0`, and resets `Shield` to `Current=0`, `Active=false`, `Rate=0`.
+* `0x93` currently validates repair `rate` in `[0; 0.1]`. `rate == 0` means off. Repair only affects hull, costs `1600 * rate^2`, and the server clears the rate if the ship movement reaches `>= 0.1`.
+* `0x94` currently validates miner `rate` in `[0; 0.01]`. `rate == 0` means off. The miner costs `160000 * rate^2`, mines non-depleting `Planet` / `Moon` / `Meteoroid` body resources within edge-to-edge distance `25`, clears the rate with `Failed` once the ship movement reaches `>= 0.1`, and also clears the rate after a paid zero-yield tick when no mineable resources are in range.
+* `0x9C` currently validates collector `rate` in `[0; 0.1]`. `rate == 0` means off. The collector costs `1600 * rate^2`, requires ship movement `< 0.1`, collects from the first in-range `Nebula` within edge-to-edge distance `25`, and clears the configured rate after a paid zero-yield tick when no nebula is in range.
+* `0x9D` always clears nebula cargo if `cargoCurrentNebula < 4`, returns `produced = 0`, and still replies with the full crystal snapshot. For valid creation attempts with `cargoCurrentNebula >= 4`, the account is capped at `64` crystals.
+* `0x9E` / `0x9F` reject locked crystals with `0x13 PermissionFailedGameException`. Foreign-account access still surfaces as `0x12 InvalidArgumentGameException` with `EntityNotFound`.
+* Crystal snapshot entries are ordered as `string name`, `float hue`, `byte grade`, `12` multiplier floats in the effect-axis order, then `byte locked`.
+* `0x95` currently succeeds only while the controllable is alive, touches exactly one `WormHole`, has at least `1000` energy available, and the worm-hole target region in the target cluster has a free spawn position. Successful jumps always zero the ship movement.
+* `0x9A` / `0x9B` fire a fixed rail shot. They currently require `300` energy and `1` metal, derive front/back from the controllable's movement angle, and fall back to world angle `0` at standstill.
+* `InterceptorExplosion` only affects projectile kinds. Normal `Explosion` currently does not destroy `Rail`; `Rail` is only removed by solid collisions, lifetime expiry, or `InterceptorExplosion`.
+* On revive, the reference `ClassicShip` restores both `ShotMagazine` and `InterceptorMagazine` to `2`, resets `ShotFabricator` and `InterceptorFabricator` to `Active=false`, `Rate=0`, and resets `Shield` to `Current=0`, `Active=false`, `Rate=0`.
 
 ## Practical Compatibility Notes
 

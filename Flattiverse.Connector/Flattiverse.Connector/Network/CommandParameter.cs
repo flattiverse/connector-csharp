@@ -6,12 +6,25 @@ using Flattiverse.Connector.Units;
 
 namespace Flattiverse.Connector.Network;
 
+/// <summary>
+/// Reflection-backed description of one incoming handler parameter and its packet binding logic.
+/// </summary>
 class CommandParameter
 {
+    /// <summary>
+    /// Decoded binding kind used when reading the parameter from the packet stream.
+    /// </summary>
     public readonly CommandParameterKind Kind;
     
+    /// <summary>
+    /// Reflected method-parameter name.
+    /// </summary>
     public readonly string Name;
 
+    /// <summary>
+    /// Creates one reflected parameter-binding descriptor.
+    /// </summary>
+    /// <param name="info">Reflected handler parameter metadata.</param>
     public CommandParameter(ParameterInfo info)
     {
         Name = info.Name!;
@@ -83,6 +96,13 @@ class CommandParameter
         }
     }
 
+    /// <summary>
+    /// Reads and resolves one handler parameter from the current packet stream.
+    /// </summary>
+    /// <param name="galaxy">Current galaxy mirror used for id-to-object resolution.</param>
+    /// <param name="reader">Reader positioned at the packet payload.</param>
+    /// <param name="value">Resolved parameter value on success.</param>
+    /// <returns><see langword="true" /> if the parameter could be read and resolved; otherwise <see langword="false" />.</returns>
     public bool TryRead(Galaxy galaxy, PacketReader reader, [NotNullWhen(true)] out object? value)
     {
         switch (Kind)

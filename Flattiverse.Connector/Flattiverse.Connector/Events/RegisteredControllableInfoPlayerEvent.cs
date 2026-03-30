@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Someone registered a PlayerUnit.
+/// Raised when a player registers a new public controllable entry.
 /// </summary>
 public class RegisteredControllableInfoPlayerEvent : ControllableInfoPlayerEvent
 {
@@ -12,9 +12,11 @@ public class RegisteredControllableInfoPlayerEvent : ControllableInfoPlayerEvent
     {
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.ControllableInfoRegistered;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString() => $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} registered controllable {ControllableInfo.Name} of type {ControllableInfo.Kind}.";
 }

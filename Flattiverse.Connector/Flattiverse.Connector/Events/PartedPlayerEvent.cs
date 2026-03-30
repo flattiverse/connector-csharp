@@ -3,17 +3,19 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// This event is raised when a player leaves the universe.
+/// Raised when a player snapshot is removed from the local galaxy mirror.
 /// </summary>
 public class PartedPlayerEvent : PlayerEvent
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.PlayerParted;
     
     internal PartedPlayerEvent(Player player) : base(player)
     {
     }
     
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString() => $"{Stamp:HH:mm:ss.fff} \"{Player.Name}\" parted the galaxy with team {Player.Team.Name} as {Player.Kind}.";
 }

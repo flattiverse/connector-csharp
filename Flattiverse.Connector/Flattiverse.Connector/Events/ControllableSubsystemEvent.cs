@@ -3,7 +3,7 @@ using Flattiverse.Connector.GalaxyHierarchy;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Base class for subsystem runtime events of your own controllables.
+/// Base type for owner-only subsystem runtime events of your own controllables.
 /// </summary>
 public abstract class ControllableSubsystemEvent : FlattiverseEvent
 {
@@ -18,7 +18,8 @@ public abstract class ControllableSubsystemEvent : FlattiverseEvent
     public readonly SubsystemSlot Slot;
 
     /// <summary>
-    /// The status reported for the current server tick.
+    /// Runtime status reported for the current server tick.
+    /// This status is independent from configuration flags such as <c>Active</c> on specific subsystem types.
     /// </summary>
     public readonly SubsystemStatus Status;
 

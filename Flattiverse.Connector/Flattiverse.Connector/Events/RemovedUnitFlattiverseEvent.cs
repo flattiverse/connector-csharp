@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// This event informs about an removed unit.
+/// Raised when a previously known visible unit leaves the local visibility mirror.
 /// </summary>
 public class RemovedUnitFlattiverseEvent : UnitFlattiverseEvent
 {
@@ -11,10 +11,12 @@ public class RemovedUnitFlattiverseEvent : UnitFlattiverseEvent
     {
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.RemovedUnit;
     
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString()
     {
         return $"{Stamp:HH:mm:ss.fff} Removed Unit: {Unit}.";

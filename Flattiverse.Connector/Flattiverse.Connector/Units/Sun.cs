@@ -4,7 +4,7 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A sun.
+/// Stellar map unit that acts as a major energy intake source and environmental hazard.
 /// </summary>
 public class Sun : SteadyUnit
 {
@@ -16,6 +16,7 @@ public class Sun : SteadyUnit
 
     /// <summary>
     /// Photon flux emitted by this sun.
+    /// Energy cells can harvest this field.
     /// </summary>
     public float Energy
     {
@@ -24,6 +25,7 @@ public class Sun : SteadyUnit
 
     /// <summary>
     /// Plasma wind emitted by this sun.
+    /// Ion cells can harvest this field.
     /// </summary>
     public float Ions
     {
@@ -39,7 +41,7 @@ public class Sun : SteadyUnit
     }
 
     /// <summary>
-    /// Thermal radiation. Heat raises energy costs.
+    /// Thermal radiation. Each point drains 15 energy per tick before any remaining overflow turns into radiation damage.
     /// </summary>
     public float Heat
     {
@@ -47,7 +49,7 @@ public class Sun : SteadyUnit
     }
 
     /// <summary>
-    /// Radiation drain component reserved for future shield-drain mechanics.
+    /// Ionizing radiation component. Each point causes 0.125 hull damage per tick after armor reduction.
     /// </summary>
     public float Drain
     {

@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// An info about a ClassicShipPlayerUnit which exists.
+/// Roster entry for one classic-ship controllable of a player.
 /// </summary>
 public class ClassicShipControllableInfo : ControllableInfo
 {

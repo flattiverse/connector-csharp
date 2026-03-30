@@ -1,41 +1,47 @@
 ﻿namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Specifies why a PlayerUnit has been destroyed.
+/// Describes why a public controllable-registration entry died.
 /// </summary>
 public enum PlayerUnitDestroyedReason
 {
     /// <summary>
-    /// PlayerUnit got destroyed due to server rules like when the player disconnects or the Galaxy switched to
-    /// maintenance mode.
+    /// Destroyed by global server rules, for example disconnect cleanup or maintenance transitions.
     /// </summary>
     ByRules = 0x00,
+
     /// <summary>
-    /// The player called Kill().
+    /// Destroyed because the owner explicitly called <c>Suicide()</c>.
     /// </summary>
     Suicided = 0x10,
+
     /// <summary>
-    /// The PlayerUnit got destroyed because its cluster was removed.
+    /// Destroyed because the containing cluster was removed.
     /// </summary>
     ByClusterRemoval = 0x01,
+
     /// <summary>
-    /// The PlayerUnit collided with a neutral unit.
+    /// Destroyed by collision with a non-player unit.
     /// </summary>
     CollidedWithNeutralUnit = 0x20,
+
     /// <summary>
-    /// The PlayerUnit collided with an enemy PlayerUnit. 
+    /// Destroyed by collision with an enemy player-controlled unit.
     /// </summary>
     CollidedWithEnemyPlayerUnit = 0x28,
+
     /// <summary>
-    /// The PlayerUnit collided with a friendly PlayerUnit.
+    /// Destroyed by collision with a friendly player-controlled unit.
     /// </summary>
     CollidedWithFriendlyPlayerUnit = 0x29,
+
     /// <summary>
-    /// The PlayerUnit has been shot by an enemy PlayerUnit.
+    /// Destroyed by hostile player-originated weapon damage.
     /// </summary>
     ShotByEnemyPlayerUnit = 0x38,
+
     /// <summary>
-    /// The PlayerUnit has been shot by a friendly PlayerUnit.
+    /// Destroyed by friendly-fire weapon damage.
     /// </summary>
     ShotByFriendlyPlayerUnit = 0x39
 }

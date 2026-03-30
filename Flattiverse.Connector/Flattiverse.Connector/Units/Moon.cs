@@ -4,7 +4,7 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A moon.
+/// Moon map unit that can act as a mining target.
 /// </summary>
 public class Moon : SteadyUnit
 {
@@ -23,7 +23,7 @@ public class Moon : SteadyUnit
     }
 
     /// <summary>
-    /// Metal richness of this moon.
+    /// Metal richness of this moon for the current mining model.
     /// </summary>
     public float Metal
     {
@@ -31,7 +31,7 @@ public class Moon : SteadyUnit
     }
 
     /// <summary>
-    /// Carbon richness of this moon.
+    /// Carbon richness of this moon for the current mining model.
     /// </summary>
     public float Carbon
     {
@@ -39,7 +39,7 @@ public class Moon : SteadyUnit
     }
 
     /// <summary>
-    /// Hydrogen richness of this moon.
+    /// Hydrogen richness of this moon for the current mining model.
     /// </summary>
     public float Hydrogen
     {
@@ -47,7 +47,7 @@ public class Moon : SteadyUnit
     }
 
     /// <summary>
-    /// Silicon richness of this moon.
+    /// Silicon richness of this moon for the current mining model.
     /// </summary>
     public float Silicon
     {

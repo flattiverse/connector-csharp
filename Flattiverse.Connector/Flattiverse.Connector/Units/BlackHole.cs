@@ -4,7 +4,7 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A black hole.
+/// Black hole map unit with an additional intensified gravity well around the main body.
 /// </summary>
 public class BlackHole : SteadyUnit
 {

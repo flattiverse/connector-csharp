@@ -3,17 +3,17 @@
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// Represents a player in the galaxy.
+/// Represents one player account inside the connected galaxy session.
 /// </summary>
 public class Player : INamedUnit
 {
     /// <summary>
-    /// The Id of the player.
+    /// Protocol id of the player.
     /// </summary>
     public readonly byte Id;
 
     /// <summary>
-    /// The kind of the player.
+    /// Login kind of the player, for example normal player, spectator, or admin.
     /// </summary>
     public readonly PlayerKind Kind;
     
@@ -53,12 +53,12 @@ public class Player : INamedUnit
     internal ControllableInfo?[] _controllableInfos;
     
     /// <summary>
-    /// Holds infos about all PlayerUnits this player controls.
+    /// Owner-side roster entries of all controllables registered to this player in the current galaxy session.
     /// </summary>
     public readonly UniversalHolder<ControllableInfo> ControllableInfos;
     
     /// <summary>
-    /// The galaxy (connection to flattiverse) the player belongs to.
+    /// The connected galaxy session this player belongs to.
     /// </summary>
     public readonly Galaxy Galaxy;
 
@@ -100,7 +100,7 @@ public class Player : INamedUnit
     /// <summary>
     /// Sends a private chat message to the player.
     /// </summary>
-    /// <param name="message">The message ot send.</param>
+    /// <param name="message">The message to send.</param>
     public async Task Chat(string message)
     {
         await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
@@ -114,64 +114,60 @@ public class Player : INamedUnit
     /// <summary>
     /// Downloads the player's cached small avatar image bytes.
     /// </summary>
-    public async Task<byte[]> DownloadSmallAvatar()
+    /// <exception cref="AvatarNotAvailableGameException">
+    /// Thrown, if the player currently has no cached avatar on the server.
+    /// </exception>
+    public async Task<byte[]> DownloadSmallAvatar(ProgressState? progressState = null)
     {
         if (!_hasAvatar)
             throw new AvatarNotAvailableGameException();
 
-        PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        return await ChunkedTransfer.DownloadBytes(Galaxy.Connection, delegate (ref PacketWriter writer, int offset, ushort maximumLength)
         {
             writer.Command = 0xF1;
             writer.Write(Id);
-        }).ConfigureAwait(false);
-
-        byte[] avatar = new byte[reader.Length];
-
-        if (!reader.Read(avatar))
-            throw new InvalidDataException("Couldn't read small avatar payload.");
-
-        return avatar;
+            writer.Write(offset);
+            writer.Write(maximumLength);
+        }, progressState, "small avatar").ConfigureAwait(false);
     }
 
     /// <summary>
     /// Downloads the player's cached big avatar image bytes.
     /// </summary>
-    public async Task<byte[]> DownloadBigAvatar()
+    /// <exception cref="AvatarNotAvailableGameException">
+    /// Thrown, if the player currently has no cached avatar on the server.
+    /// </exception>
+    public async Task<byte[]> DownloadBigAvatar(ProgressState? progressState = null)
     {
         if (!_hasAvatar)
             throw new AvatarNotAvailableGameException();
 
-        PacketReaderLarge reader = await Galaxy.Connection.SendSessionRequestAndGetReplyLarge(delegate (ref PacketWriter writer)
+        return await ChunkedTransfer.DownloadBytes(Galaxy.Connection, delegate (ref PacketWriter writer, int offset, ushort maximumLength)
         {
             writer.Command = 0xF2;
             writer.Write(Id);
-        }).ConfigureAwait(false);
-
-        byte[] avatar = new byte[reader.Length];
-
-        if (!reader.Read(avatar))
-            throw new InvalidDataException("Couldn't read big avatar payload.");
-
-        return avatar;
+            writer.Write(offset);
+            writer.Write(maximumLength);
+        }, progressState, "big avatar").ConfigureAwait(false);
     }
     
     /// <summary>
-    /// The account name.
+    /// Account display name inside this galaxy session.
     /// </summary>
     public string Name => _name;
     
     /// <summary>
-    /// true, if the player is still represented in the current galaxy session.
+    /// True while this player is still represented in the current galaxy session.
     /// </summary>
     public bool Active => _active;
 
     /// <summary>
-    /// true, if the player's connection has already disconnected and only cleanup remains.
+    /// True when the player's connection has already dropped and only session cleanup remains.
     /// </summary>
     public bool Disconnected => _disconnected;
     
     /// <summary>
-    /// The ping in ms of the player.
+    /// Latest ping in milliseconds reported by the server.
     /// </summary>
     public float Ping => _ping;
 

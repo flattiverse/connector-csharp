@@ -4,17 +4,17 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// A PlayerUnit got destroyed by collision with a neutral unit.
+/// Raised when one controllable runtime is destroyed by colliding with a neutral world unit.
 /// </summary>
 public class NeutralDestroyedControllableInfoPlayerEvent : DestroyedControllableInfoPlayerEvent
 {
     /// <summary>
-    /// The UnitKind of the unit the PlayerUnit collided with.
+    /// Unit kind of the neutral collider.
     /// </summary>
     public readonly UnitKind CollidersKind;
     
     /// <summary>
-    /// The name of the unit the PlayerUnit collided with.
+    /// Name of the neutral collider.
     /// </summary>
     public readonly string CollidersName;
     

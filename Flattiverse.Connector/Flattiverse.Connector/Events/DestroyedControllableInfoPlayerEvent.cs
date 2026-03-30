@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// A PlayerUnit got destroyed.
+/// Raised when a public controllable entry dies.
 /// </summary>
 public class DestroyedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
 {
@@ -18,10 +18,12 @@ public class DestroyedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
         Reason = reason;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.ControllableInfoDestroyed;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString()
     {
         switch (Reason)

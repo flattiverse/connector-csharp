@@ -18,10 +18,5 @@ public enum GameMode
     /// <summary>
     /// In this game mode players fight over control points.
     /// </summary>
-    Domination = 0x02,
-        
-    /// <summary>
-    /// In this game mode players try to get the fastest time on a track.
-    /// </summary>
-    Race = 0x03
+    Domination = 0x02
 }

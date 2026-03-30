@@ -1,4 +1,4 @@
-﻿using Flattiverse.Connector.GalaxyHierarchy;
+using Flattiverse.Connector.GalaxyHierarchy;
 using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.Units;
@@ -6,111 +6,16 @@ namespace Flattiverse.Connector.Units;
 /// <summary>
 /// Represents a shot.
 /// </summary>
-public class Shot : Unit
+public class Shot : Projectile
 {
-    /// <summary>
-    /// Represents the player which invoked the shot or null, if the shot hasn't been invoked by a player.
-    /// </summary>
-    public readonly Player? Player;
-    
-    /// <summary>
-    /// Represents the ControllableInfo which invoked the shot or null, if the shot hasn't been invoked by a player.
-    /// </summary>
-    public readonly ControllableInfo? ControllableInfo;
-    
-    private Vector _position;
-    private Vector _movement;
-
-    private ushort _ticks;
-    private float _load;
-    private float _damage;
-    
-    /// <summary>
-    /// The size of the generated explosion.
-    /// </summary>
-    public float Load
+    internal Shot(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
-        get { return _load; }
     }
-    
-    /// <summary>
-    /// The damage inflicted.
-    /// </summary>
-    public float Damage
-    {
-        get { return _damage; }
-    }
-    
-    internal Shot(Cluster cluster, string name, PacketReader reader) : base(cluster, name)
-    {
-        if (!reader.Read(out byte playerId) || !reader.Read(out byte controllableId) || !reader.Read(out _ticks) || !Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
-            throw new InvalidDataException("Couldn't read Unit.");
 
-        _load = 0f;
-        _damage = 0f;
-
-        if (playerId < 192)
-        {
-            Player = cluster.Galaxy.Players[playerId];
-            ControllableInfo = Player.ControllableInfos[controllableId];
-        }
-    }
-    
     internal Shot(Shot unit) : base(unit)
     {
-        Player = unit.Player;
-        ControllableInfo = unit.ControllableInfo;
-        
-        _ticks = unit._ticks;
-        _load = unit._load;
-        _damage = unit._damage;
-        
-        _position = new Vector(unit._position);
-        _movement = new Vector(unit._movement);
-    }
-    
-    /// <inheritdoc/>
-    public override Vector Position => _position;
-    
-    /// <inheritdoc/>
-    public override Vector Movement => _movement;
-    
-    /// <inheritdoc/>
-    public override float Angle => _movement.Angle;
-
-    /// <inheritdoc/>
-    public override float Radius => 1f;
-
-    /// <inheritdoc/>
-    public override Mobility Mobility => Mobility.Mobile;
-    
-    /// <inheritdoc/>
-    public override Team? Team => Player?.Team;
-
-    /// <inheritdoc/>
-    public override bool IsMasking => false;
-    
-    /// <summary>
-    /// The countdown of when the shot explodes.
-    /// </summary>
-    public ushort Ticks => _ticks;
-
-    internal override void UpdateMovement(PacketReader reader)
-    {
-        base.UpdateMovement(reader);
-        
-        if (!reader.Read(out _ticks) || !Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
-            throw new InvalidDataException("Couldn't read Unit.");
     }
 
-    internal override void UpdateState(PacketReader reader)
-    {
-        base.UpdateState(reader);
-
-        if (!reader.Read(out _load) || !reader.Read(out _damage))
-            throw new InvalidDataException("Couldn't read Unit.");
-    }
-    
     /// <inheritdoc/>
     public override Unit Clone()
     {
@@ -119,13 +24,4 @@ public class Shot : Unit
 
     /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.Shot;
-
-    /// <inheritdoc/>
-    public override string ToString()
-    {
-        string playerName = Player is null ? "-" : Player.Name;
-        string controllableName = ControllableInfo is null ? "-" : ControllableInfo.Name;
-
-        return $"{base.ToString()}, Player=\"{playerName}\", Controllable=\"{controllableName}\", Ticks={_ticks}, Load={_load:0.000}, Damage={_damage:0.000}";
-    }
 }

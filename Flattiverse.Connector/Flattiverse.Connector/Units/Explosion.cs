@@ -4,17 +4,18 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Represents an explosion.
+/// Visible explosion unit created by a projectile or another gameplay effect.
+/// The current connector model exposes explosions as immediate damage-phase objects without a separate shockwave phase.
 /// </summary>
 public class Explosion : Unit
 {
     /// <summary>
-    /// Represents the player which invoked the shot or null, if the shot hasn't been invoked by a player.
+    /// Player that caused the explosion, or <see langword="null" /> if no player-owned source is known.
     /// </summary>
     public readonly Player? Player;
     
     /// <summary>
-    /// Represents the ControllableInfo which invoked the shot or null, if the shot hasn't been invoked by a player.
+    /// Controllable entry that caused the explosion, or <see langword="null" /> if no player-owned source is known.
     /// </summary>
     public readonly ControllableInfo? ControllableInfo;
     
@@ -75,12 +76,14 @@ public class Explosion : Unit
     public override UnitKind Kind => UnitKind.Explosion;
 
     /// <summary>
-    /// Defines whether this explosion is in the damage phase or not.
+    /// Whether this explosion is currently in its damage phase.
+    /// In the current connector model this is always <see langword="true" />.
     /// </summary>
     public bool DamagePhase => true;
     
     /// <summary>
-    /// Defines whether this explosion is in the shockwave phase or not.
+    /// Whether this explosion is currently in its shockwave phase.
+    /// In the current connector model this is always <see langword="false" />.
     /// </summary>
     public bool ShockWavePhase => false;
 

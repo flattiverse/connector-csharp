@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// An event which informs about a new unit.
+/// Raised when a visible unit becomes newly known to the local visibility mirror.
 /// </summary>
 public class NewUnitFlattiverseEvent : UnitFlattiverseEvent
 {
@@ -11,10 +11,12 @@ public class NewUnitFlattiverseEvent : UnitFlattiverseEvent
     {
     }
     
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.NewUnit;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString()
     {
         return $"{Stamp:HH:mm:ss.fff} New Unit: {Unit}.";

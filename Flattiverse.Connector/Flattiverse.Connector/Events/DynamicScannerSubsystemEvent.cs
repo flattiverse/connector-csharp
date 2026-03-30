@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Events;
 public class DynamicScannerSubsystemEvent : ControllableSubsystemEvent
 {
     /// <summary>
-    /// true if the scanner is active.
+    /// Whether the scanner was active during this server tick.
     /// </summary>
     public readonly bool Active;
 

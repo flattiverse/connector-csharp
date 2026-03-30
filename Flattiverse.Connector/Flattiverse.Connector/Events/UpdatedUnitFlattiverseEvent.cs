@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// this event informs about an updated unit.
+/// Raised when the connector updates the snapshot of a currently visible unit.
 /// </summary>
 public class UpdatedUnitFlattiverseEvent : UnitFlattiverseEvent
 {
@@ -11,10 +11,12 @@ public class UpdatedUnitFlattiverseEvent : UnitFlattiverseEvent
     {
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.UpdatedUnit;
     
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString()
     {
         return $"{Stamp:HH:mm:ss.fff} Updated Unit: {Unit}.";

@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class MissionTarget : Target
 {
-    private int _sequenceNumber;
+    private ushort _sequenceNumber;
     private Vector[] _vectors;
 
     internal MissionTarget(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
@@ -30,9 +30,9 @@ public class MissionTarget : Target
     public override UnitKind Kind => UnitKind.MissionTarget;
 
     /// <summary>
-    /// Sequence number of this mission target.
+    /// Sequence number of this mission target within the scenario.
     /// </summary>
-    public int SequenceNumber => _sequenceNumber;
+    public ushort SequenceNumber => _sequenceNumber;
 
     /// <summary>
     /// Number of configured waypoint vectors.
@@ -40,7 +40,8 @@ public class MissionTarget : Target
     public int VectorCount => _vectors.Length;
 
     /// <summary>
-    /// Returns a copy of all configured waypoint vectors.
+    /// Returns a copy of all configured mission vectors.
+    /// Their exact scenario-specific meaning depends on the mission script or map logic.
     /// </summary>
     public Vector[] Vectors
     {

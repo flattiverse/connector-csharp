@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// Represents a team.
+/// Represents one team inside the connected galaxy session.
 /// </summary>
 public class Team : INamedUnit
 {
@@ -22,7 +22,7 @@ public class Team : INamedUnit
     private bool _active;
 
     /// <summary>
-    /// The galaxy (connection to flattiverse) this team belongs to.
+    /// The connected galaxy session this team belongs to.
     /// </summary>
     public readonly Galaxy Galaxy;
 

@@ -9,11 +9,11 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class ShieldSubsystem : Subsystem
 {
-    private const float MaximumValue = 20f;
     private const float MinimumRateValue = 0f;
     private const float MaximumRateValue = 0.125f;
     private const float EnergyScale = 1600f;
 
+    private float _maximum;
     private float _current;
     private bool _active;
     private float _rate;
@@ -24,6 +24,7 @@ public class ShieldSubsystem : Subsystem
     internal ShieldSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
+        _maximum = exists ? 20f : 0f;
         _current = 0f;
         _active = false;
         _rate = 0f;
@@ -42,7 +43,7 @@ public class ShieldSubsystem : Subsystem
     /// </summary>
     public float Maximum
     {
-        get { return Exists ? MaximumValue : 0f; }
+        get { return _maximum; }
     }
 
     /// <summary>
@@ -67,6 +68,14 @@ public class ShieldSubsystem : Subsystem
     public float MaximumRate
     {
         get { return MaximumRateValue; }
+    }
+
+    internal void SetMaximum(float maximum)
+    {
+        _maximum = Exists ? maximum : 0f;
+
+        if (_current > _maximum)
+            _current = _maximum;
     }
 
     /// <summary>

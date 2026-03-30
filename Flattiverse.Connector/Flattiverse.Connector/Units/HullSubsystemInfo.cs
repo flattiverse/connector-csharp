@@ -19,7 +19,7 @@ public class HullSubsystemInfo
     }
 
     /// <summary>
-    /// true if the subsystem exists.
+    /// Indicates whether the scanned unit actually has this hull subsystem installed.
     /// </summary>
     public bool Exists
     {
@@ -27,7 +27,7 @@ public class HullSubsystemInfo
     }
 
     /// <summary>
-    /// The maximum hull integrity.
+    /// Maximum hull integrity of the scanned unit.
     /// </summary>
     public float Maximum
     {
@@ -35,7 +35,7 @@ public class HullSubsystemInfo
     }
 
     /// <summary>
-    /// The current hull integrity.
+    /// Current hull integrity of the scanned unit.
     /// </summary>
     public float Current
     {
@@ -43,7 +43,7 @@ public class HullSubsystemInfo
     }
 
     /// <summary>
-    /// The status reported for the current server tick.
+    /// Tick-local runtime status reported for the hull subsystem.
     /// </summary>
     public SubsystemStatus Status
     {

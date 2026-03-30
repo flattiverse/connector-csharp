@@ -1,7 +1,8 @@
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Visible snapshot of a dynamic projectile launcher subsystem on a scanned player unit.
+/// Visible snapshot of a configurable shot launcher on a scanned player unit.
+/// The launcher stores the currently configured projectile profile that would be used for the next shot.
 /// </summary>
 public class DynamicShotLauncherSubsystemInfo
 {
@@ -117,7 +118,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Reported movement vector for the last shot request.
+    /// Projectile movement relative to the launching unit that is currently configured on the server.
     /// </summary>
     public Vector RelativeMovement
     {
@@ -125,7 +126,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Lifetime of the processed shot.
+    /// Configured projectile lifetime in ticks.
     /// </summary>
     public ushort Ticks
     {
@@ -133,7 +134,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Explosion load applied when the shot expired.
+    /// Configured explosion load applied when the projectile expires.
     /// </summary>
     public float Load
     {
@@ -141,7 +142,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Damage applied by the reported shot.
+    /// Configured direct damage of the projectile.
     /// </summary>
     public float Damage
     {
@@ -149,7 +150,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Status of the reported launcher subsystem.
+    /// Tick-local runtime status reported for the launcher subsystem.
     /// </summary>
     public SubsystemStatus Status
     {
@@ -157,7 +158,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Energy consumed by the launcher during the tick.
+    /// Energy consumed by the launcher during the reported tick.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -165,7 +166,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Ions consumed by the launcher during the tick.
+    /// Ions consumed by the launcher during the reported tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -173,7 +174,7 @@ public class DynamicShotLauncherSubsystemInfo
     }
 
     /// <summary>
-    /// Neutrinos consumed by the launcher during the tick.
+    /// Neutrinos consumed by the launcher during the reported tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {

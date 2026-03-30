@@ -5,6 +5,9 @@ using Flattiverse.Connector.GalaxyHierarchy;
 
 namespace Flattiverse.Connector.Network;
 
+/// <summary>
+/// Low-level websocket connection wrapper for Flattiverse protocol traffic, send buffering, and request/reply sessions.
+/// </summary>
 class Connection
 {
     private readonly WebSocket _socket;
@@ -28,10 +31,26 @@ class Connection
     private readonly Session?[] _sessions;
     private byte _sessionPosition;
     
+    /// <summary>
+    /// Low-level callback that writes one protocol packet into a <see cref="PacketWriter" />.
+    /// </summary>
     public delegate void PacketWriterAction(ref PacketWriter writer);
+
+    /// <summary>
+    /// Callback raised when the connection is terminated and a textual reason is available.
+    /// </summary>
     public delegate void DisconnectedHandler(string reason);
+
+    /// <summary>
+    /// Raised once the connection is closed locally, regardless of whether the root cause was remote or local.
+    /// </summary>
     public event DisconnectedHandler? Disconnected;
     
+    /// <summary>
+    /// Creates one low-level websocket connection wrapper with its send worker and session table.
+    /// </summary>
+    /// <param name="socket">Connected websocket used for protocol traffic.</param>
+    /// <param name="sendBufferSize">Size of each internal send buffer in bytes.</param>
     public Connection(WebSocket socket, int sendBufferSize)
     {
         _socket = socket;
@@ -47,20 +66,36 @@ class Connection
         ThreadPool.QueueUserWorkItem(async delegate { await SendWorker(); });
     }
     
+    /// <summary>
+    /// Sends one session-bound request and waits for a small reply packet or a transported <see cref="GameException" />.
+    /// </summary>
+    /// <param name="action">Callback that writes the request payload.</param>
+    /// <returns>Copied small reply packet.</returns>
     public async Task<PacketReaderCopy> SendSessionRequestAndGetReply(PacketWriterAction action)
     {
         Session session = StartSessionRequest(action, false);
         return await session.GetReplyOrThrow().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Sends one session-bound request and waits for a large reply packet or a transported <see cref="GameException" />.
+    /// </summary>
+    /// <param name="action">Callback that writes the request payload.</param>
+    /// <returns>Copied large reply packet.</returns>
     public async Task<PacketReaderLarge> SendSessionRequestAndGetReplyLarge(PacketWriterAction action)
     {
         Session session = StartSessionRequest(action, true);
         return await session.GetLargeReplyOrThrow().ConfigureAwait(false);
     }
     
+    /// <summary>
+    /// Whether the connection has already been closed locally.
+    /// </summary>
     public bool Disposed => _disposed;
 
+    /// <summary>
+    /// Best locally known textual close reason, if the connection has already been terminated.
+    /// </summary>
     public string? CloseReason => _closeReason;
 
     private Session StartSessionRequest(PacketWriterAction action, bool largeReply)
@@ -106,6 +141,11 @@ class Connection
         return session;
     }
     
+    /// <summary>
+    /// Appends one non-session protocol packet to the current send buffer.
+    /// The packet is only buffered; call <see cref="Flush" /> to wake the send worker immediately.
+    /// </summary>
+    /// <param name="action">Callback that writes the packet payload.</param>
     public void Send(PacketWriterAction action)
     {
         lock (_sync)
@@ -119,6 +159,10 @@ class Connection
         }
     }
 
+    /// <summary>
+    /// Appends already serialized packets from another buffer to the current send buffer.
+    /// </summary>
+    /// <param name="buffer">Buffer whose occupied bytes should be appended.</param>
     public void Send(SendBuffer buffer)
     {
         lock (_sync)
@@ -131,6 +175,9 @@ class Connection
         }
     }
 
+    /// <summary>
+    /// Wakes the send worker so that buffered packets are written to the websocket immediately.
+    /// </summary>
     public void Flush()
     {
         lock (_sync)
@@ -152,10 +199,9 @@ class Connection
     }
 
     /// <summary>
-    /// Injects the initial session which will result in an exception if something went wrong while logging on or
-    /// returns properly when everything is Ok and all meta information 
+    /// Reserves session id <c>1</c> for the initial connect/login activation flow.
     /// </summary>
-    /// <returns>The session.</returns>
+    /// <returns>The reserved initial session.</returns>
     public Session InitializeInitialSession()
     {
         Debug.Assert(_sessions[1] is null, "Can't initialize the initial session when a session is already there on session slot 1.");
@@ -168,10 +214,13 @@ class Connection
     }
     
     /// <summary>
-    /// Answer a session with a packet.
+    /// Resolves one incoming session reply against the currently open session table.
     /// </summary>
-    /// <param name="reader">The reader at the current packet position.</param>
-    /// <returns>true, if everything is Ok, false if the corresponding session didn't exist.</returns>
+    /// <param name="reader">Reader positioned at the current reply packet.</param>
+    /// <returns>
+    /// <see langword="true" /> if a matching session existed and could be completed;
+    /// otherwise <see langword="false" />.
+    /// </returns>
     public bool SessionReply(PacketReader reader)
     {
 
@@ -213,10 +262,14 @@ class Connection
     }
     
     /// <summary>
-    /// This is called from the outside to initiate receiving of packets.
+    /// Receives one websocket message, validates it as a Flattiverse packet stream, and positions the reader on the
+    /// first packet.
     /// </summary>
-    /// <param name="packets">The packets we receive into.</param>
-    /// <returns>true, if the connection was open and everything could be read.</returns>
+    /// <param name="packets">Reusable packet reader buffer that receives the raw websocket bytes.</param>
+    /// <returns>
+    /// <see langword="true" /> if a binary packet stream was received successfully;
+    /// otherwise <see langword="false" />.
+    /// </returns>
     public async Task<bool> TryRead(PacketReader packets)
     {
         if (_disconnected)
@@ -358,6 +411,10 @@ class Connection
         }
     }
 
+    /// <summary>
+    /// Closes the connection, fails all outstanding sessions, stops the send worker, and disposes the websocket.
+    /// </summary>
+    /// <param name="reason">Best available textual close reason.</param>
     public void Close(string reason)
     {
         lock (_sync)

@@ -5,17 +5,39 @@ using System.Text;
 
 namespace Flattiverse.Connector.Network;
 
+/// <summary>
+/// Compact inline copy of a small session-reply packet payload.
+/// </summary>
 unsafe struct PacketReaderCopy
 {
+    /// <summary>
+    /// Maximum payload size for the compact inline reply representation.
+    /// </summary>
     public const int InlineCapacity = 28;
 
+    /// <summary>
+    /// Command byte of the copied packet.
+    /// </summary>
     public readonly byte Command;
+
+    /// <summary>
+    /// Session byte of the copied packet.
+    /// </summary>
     public readonly byte Session;
+
+    /// <summary>
+    /// Payload length of the copied packet in bytes.
+    /// </summary>
     public readonly ushort Length;
 
     private ushort _position;
     private fixed byte _data[InlineCapacity];
 
+    /// <summary>
+    /// Creates a compact inline copy of a small packet payload.
+    /// </summary>
+    /// <param name="data">Source buffer containing the current packet.</param>
+    /// <param name="basePosition">Offset of the packet header inside <paramref name="data" />.</param>
     public PacketReaderCopy(byte[] data, int basePosition)
     {
         ushort size = Unsafe.As<byte, ushort>(ref data[basePosition + 2]);
@@ -33,6 +55,9 @@ unsafe struct PacketReaderCopy
                 Unsafe.CopyBlockUnaligned(target, source, size);
     }
 
+    /// <summary>
+    /// Reads one <see cref="byte" /> from the copied payload.
+    /// </summary>
     public bool Read(out byte data)
     {
         if (_position >= Length)
@@ -48,6 +73,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="ushort" /> from the copied payload.
+    /// </summary>
     public bool Read(out ushort data)
     {
         if (_position + 1 >= Length)
@@ -63,6 +91,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="int" /> from the copied payload.
+    /// </summary>
     public bool Read(out int data)
     {
         if (_position + 3 >= Length)
@@ -78,6 +109,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="uint" /> from the copied payload.
+    /// </summary>
     public bool Read(out uint data)
     {
         if (_position + 3 >= Length)
@@ -93,6 +127,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Reads one little-endian <see cref="long" /> from the copied payload.
+    /// </summary>
     public bool Read(out long data)
     {
         if (_position + 7 >= Length)
@@ -108,6 +145,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Reads one IEEE-754 single-precision float from the copied payload.
+    /// </summary>
     public bool Read(out float data)
     {
         if (_position + 3 >= Length)
@@ -123,6 +163,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Reads one protocol string from the copied payload.
+    /// </summary>
     public bool Read([NotNullWhen(true)] out string? data)
     {
         int size;
@@ -176,6 +219,9 @@ unsafe struct PacketReaderCopy
         return true;
     }
 
+    /// <summary>
+    /// Copies raw bytes from the copied payload into the supplied target buffer.
+    /// </summary>
     public bool Read(byte[] data)
     {
         if (_position + data.Length > Length)

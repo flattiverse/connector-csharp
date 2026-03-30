@@ -1,17 +1,17 @@
 ﻿namespace Flattiverse.Connector.Network;
 
 /// <summary>
-/// Thrown, if a given Parameter is wrong.
+/// Thrown when the server rejects one specific argument or field value.
 /// </summary>
 public class InvalidArgumentGameException : GameException
 {
     /// <summary>
-    /// What was the issue with the argument?
+    /// Server-provided validation category.
     /// </summary>
     public readonly InvalidArgumentKind Reason;
     
     /// <summary>
-    /// The name of the parameter.
+    /// Server-provided parameter or field name that failed validation.
     /// </summary>
     public readonly string Parameter;
     

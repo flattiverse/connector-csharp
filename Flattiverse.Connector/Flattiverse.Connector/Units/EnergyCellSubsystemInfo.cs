@@ -19,7 +19,7 @@ public class EnergyCellSubsystemInfo
     }
 
     /// <summary>
-    /// true if the subsystem exists.
+    /// Indicates whether the scanned unit actually has this energy-cell subsystem installed.
     /// </summary>
     public bool Exists
     {
@@ -27,7 +27,7 @@ public class EnergyCellSubsystemInfo
     }
 
     /// <summary>
-    /// The loading efficiency.
+    /// Conversion efficiency of the cell for its matching environmental intake source.
     /// </summary>
     public float Efficiency
     {
@@ -35,7 +35,7 @@ public class EnergyCellSubsystemInfo
     }
 
     /// <summary>
-    /// The amount collected during the current server tick.
+    /// Amount collected during the current server tick.
     /// </summary>
     public float CollectedThisTick
     {
@@ -43,7 +43,7 @@ public class EnergyCellSubsystemInfo
     }
 
     /// <summary>
-    /// The status reported for the current server tick.
+    /// Tick-local runtime status reported for this energy cell.
     /// </summary>
     public SubsystemStatus Status
     {

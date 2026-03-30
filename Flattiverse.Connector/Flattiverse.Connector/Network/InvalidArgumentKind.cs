@@ -1,12 +1,12 @@
 ﻿namespace Flattiverse.Connector.Network;
 
 /// <summary>
-/// Specifies how much an argument is wrong.
+/// Server-side validation category transported with <see cref="InvalidArgumentGameException" />.
 /// </summary>
 public enum InvalidArgumentKind : byte
 {
     /// <summary>
-    /// It's not specified how the parameter is invalid.
+    /// The server rejected the value but did not provide a more specific category.
     /// </summary>
     Unknown = 0x00,
     /// <summary>
@@ -18,11 +18,11 @@ public enum InvalidArgumentKind : byte
     /// </summary>
     TooLarge = 0x02,
     /// <summary>
-    /// The arguments value doesn't match the name constraint.
+    /// The value violates the server-side naming rules.
     /// </summary>
     NameConstraint = 0x03,
     /// <summary>
-    /// The arguments value doesn't match the chat message constraint.
+    /// The value violates the server-side chat-message rules.
     /// </summary>
     ChatConstraint = 0x04,
     /// <summary>
@@ -30,23 +30,23 @@ public enum InvalidArgumentKind : byte
     /// </summary>
     AmbiguousXmlData = 0x05,
     /// <summary>
-    /// The specified entity has not been found.
+    /// The referenced entity could not be resolved by the server.
     /// </summary>
     EntityNotFound = 0xFB,
     /// <summary>
-    /// The specified name is already taken.
+    /// The requested name is already in use.
     /// </summary>
     NameInUse = 0xFC,
     /// <summary>
-    /// The arguments value did contain a Not a Number value.
+    /// The supplied value contained a floating-point <c>NaN</c>.
     /// </summary>
     ContainedNaN = 0xFD,
     /// <summary>
-    /// The argument contains an infinite value.
+    /// The supplied value contained positive or negative infinity.
     /// </summary>
     ContainedInfinity = 0xFE,
     /// <summary>
-    /// The argument is actually valid.
+    /// Sentinel value meaning that no validation error exists.
     /// </summary>
     Valid = 0xFF
 }

@@ -3,9 +3,9 @@
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// A generic collection type for NamedUnits.
+/// Sparse read-only lookup wrapper for named connector objects such as teams, clusters, players, or controllables.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">Concrete connector object type stored in this holder.</typeparam>
 public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
 {
     private readonly T?[] _data;
@@ -16,10 +16,10 @@ public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
     }
 
     /// <summary>
-    /// Gathers the object on the specified index.
+    /// Gets the existing element at the specified protocol index.
     /// </summary>
     /// <param name="index">The index to look up.</param>
-    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the element doesn't exist.</exception>
+    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if no active element exists at that index.</exception>
     public T this[int index]
     {
         get
@@ -37,10 +37,10 @@ public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
     }
     
     /// <summary>
-    /// Gathers the object with the specified name.
+    /// Gets the existing element with the specified name.
     /// </summary>
     /// <param name="name">The name of the object.</param>
-    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the object hasn't been found.</exception>
+    /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if no active element with that name exists.</exception>
     public T this[string name]
     {
         get
@@ -54,11 +54,11 @@ public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
     }
     
     /// <summary>
-    /// Tries to gather the object with the corresponding name.
+    /// Tries to find an active element with the specified name.
     /// </summary>
     /// <param name="name">The name of the object.</param>
-    /// <param name="element">The found element or null, if not found.</param>
-    /// <returns>true, if the element has been found, false otherwise.</returns>
+    /// <param name="element">The found element, or <see langword="null" /> if none exists.</param>
+    /// <returns><see langword="true" /> if an element with that name exists; otherwise <see langword="false" />.</returns>
     public bool TryGet(string name, [NotNullWhen(true)] out T? element)
     {
         foreach (T? t in _data)
@@ -73,11 +73,11 @@ public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
     }
 
     /// <summary>
-    /// Tries to gather the object on the specified index.
+    /// Tries to find an active element at the specified protocol index.
     /// </summary>
     /// <param name="index">The index to look up.</param>
-    /// <param name="element">The found element or null, if not found.</param>
-    /// <returns>true, if the element has been found, false otherwise.</returns>
+    /// <param name="element">The found element, or <see langword="null" /> if none exists.</param>
+    /// <returns><see langword="true" /> if an active element exists at that index; otherwise <see langword="false" />.</returns>
     public bool TryGet(int index, [NotNullWhen(returnValue: true)] out T? element)
     {
         if (index < 0 || index >= _data.Length)
@@ -99,7 +99,7 @@ public class UniversalHolder<T> : IEnumerable<T> where T: class, INamedUnit
     }
 
     /// <summary>
-    /// Counts the found elements.
+    /// Counts currently active elements in the holder.
     /// </summary>
     public int Count
     {

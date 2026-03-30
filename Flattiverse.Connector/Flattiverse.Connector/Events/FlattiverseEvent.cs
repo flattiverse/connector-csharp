@@ -1,12 +1,13 @@
 ﻿namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// The base class for FlattiverseEvents.
+/// Base type of all connector events returned by <c>Galaxy.NextEvent()</c>.
 /// </summary>
 public class FlattiverseEvent
 {
     /// <summary>
-    /// The UTC timestamp when this event has been received or generated.
+    /// UTC timestamp when this event instance was created inside the connector.
+    /// This is a local connector timestamp, not the authoritative server tick time.
     /// </summary>
     public readonly DateTime Stamp;
 
@@ -16,13 +17,13 @@ public class FlattiverseEvent
     }
 
     /// <summary>
-    /// The kind of the event.
+    /// Connector-side event classification used for event dispatch and switch statements.
     /// </summary>
     public virtual EventKind Kind => throw new NotImplementedException("Kind must be overwritten.");
 
     /// <summary>
-    /// A user readable message.
+    /// Human-readable diagnostic representation of the event payload.
     /// </summary>
-    /// <returns>This event formatted as string.</returns>
+    /// <returns>This event formatted as a string.</returns>
     public override string ToString() => throw new NotImplementedException("ToString must be overwritten.");
 }

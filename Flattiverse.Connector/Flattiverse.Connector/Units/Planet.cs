@@ -4,7 +4,7 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A planet.
+/// Planetary map unit that can act as a mining target.
 /// </summary>
 public class Planet : SteadyUnit
 {
@@ -23,7 +23,8 @@ public class Planet : SteadyUnit
     }
 
     /// <summary>
-    /// Metal richness of this planet.
+    /// Metal richness of this planet for the current mining model.
+    /// This is a source characteristic, not a depleting stockpile.
     /// </summary>
     public float Metal
     {
@@ -31,7 +32,7 @@ public class Planet : SteadyUnit
     }
 
     /// <summary>
-    /// Carbon richness of this planet.
+    /// Carbon richness of this planet for the current mining model.
     /// </summary>
     public float Carbon
     {
@@ -39,7 +40,7 @@ public class Planet : SteadyUnit
     }
 
     /// <summary>
-    /// Hydrogen richness of this planet.
+    /// Hydrogen richness of this planet for the current mining model.
     /// </summary>
     public float Hydrogen
     {
@@ -47,7 +48,7 @@ public class Planet : SteadyUnit
     }
 
     /// <summary>
-    /// Silicon richness of this planet.
+    /// Silicon richness of this planet for the current mining model.
     /// </summary>
     public float Silicon
     {

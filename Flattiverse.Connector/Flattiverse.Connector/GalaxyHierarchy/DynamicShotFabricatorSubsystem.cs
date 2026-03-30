@@ -5,14 +5,14 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
-/// Dynamic shot fabricator subsystem of a controllable.
+/// Persistent shot-fabricator subsystem configuration and runtime state of a controllable.
 /// </summary>
 public class DynamicShotFabricatorSubsystem : Subsystem
 {
     private const float MinimumRateValue = 0f;
-    private const float MaximumRateValue = 0.025f;
     private const float EnergyScale = 32000f;
 
+    private float _maximumRate;
     private bool _active;
     private float _rate;
     private float _consumedEnergyThisTick;
@@ -22,6 +22,7 @@ public class DynamicShotFabricatorSubsystem : Subsystem
     internal DynamicShotFabricatorSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
+        _maximumRate = exists ? 0.025f : 0f;
         _active = false;
         _rate = 0f;
         _consumedEnergyThisTick = 0f;
@@ -42,11 +43,11 @@ public class DynamicShotFabricatorSubsystem : Subsystem
     /// </summary>
     public float MaximumRate
     {
-        get { return MaximumRateValue; }
+        get { return _maximumRate; }
     }
 
     /// <summary>
-    /// true if the fabricator is active.
+    /// True when the fabricator was active during the latest reported server tick.
     /// </summary>
     public bool Active
     {
@@ -86,7 +87,8 @@ public class DynamicShotFabricatorSubsystem : Subsystem
     }
 
     /// <summary>
-    /// Calculates the resource costs for one shot fabrication tick at the specified rate.
+    /// Calculates the current placeholder resource costs for one fabrication tick at the specified rate.
+    /// The current model consumes only energy.
     /// </summary>
     public bool CalculateCost(float rate, out float energy, out float ions, out float neutrinos)
     {
@@ -97,7 +99,7 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRate, out rate) != InvalidArgumentKind.Valid)
             return false;
 
         energy = rate * rate * EnergyScale;
@@ -125,7 +127,7 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate);
+        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRate, out rate);
 
         if (rateValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(rateValidity, "rate");
@@ -176,6 +178,14 @@ public class DynamicShotFabricatorSubsystem : Subsystem
             writer.Command = 0x8E;
             writer.Write(Controllable.Id);
         });
+    }
+
+    internal void SetMaximumRate(float maximumRate)
+    {
+        _maximumRate = Exists ? maximumRate : 0f;
+
+        if (_rate > _maximumRate)
+            _rate = _maximumRate;
     }
 
     internal void ResetRuntime()

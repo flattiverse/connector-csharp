@@ -46,6 +46,31 @@ public enum SubsystemSlot : byte
     Shield = 0x19,
 
     /// <summary>
+    /// Armor integrity slot.
+    /// </summary>
+    Armor = 0x1A,
+
+    /// <summary>
+    /// Hull repair slot.
+    /// </summary>
+    Repair = 0x1B,
+
+    /// <summary>
+    /// Cargo slot.
+    /// </summary>
+    Cargo = 0x50,
+
+    /// <summary>
+    /// Resource miner slot.
+    /// </summary>
+    ResourceMiner = 0x51,
+
+    /// <summary>
+    /// Nebula collector slot.
+    /// </summary>
+    NebulaCollector = 0x52,
+
+    /// <summary>
     /// Primary scanner slot.
     /// </summary>
     PrimaryScanner = 0x20,
@@ -76,6 +101,11 @@ public enum SubsystemSlot : byte
     TertiaryEngine = 0x32,
 
     /// <summary>
+    /// Jump-drive slot.
+    /// </summary>
+    JumpDrive = 0x33,
+
+    /// <summary>
     /// Dynamic shot launcher slot.
     /// </summary>
     DynamicShotLauncher = 0x40,
@@ -89,4 +119,24 @@ public enum SubsystemSlot : byte
     /// Dynamic shot fabricator slot.
     /// </summary>
     DynamicShotFabricator = 0x42,
+
+    /// <summary>
+    /// Dynamic interceptor launcher slot.
+    /// </summary>
+    DynamicInterceptorLauncher = 0x43,
+
+    /// <summary>
+    /// Dynamic interceptor magazine slot.
+    /// </summary>
+    DynamicInterceptorMagazine = 0x44,
+
+    /// <summary>
+    /// Dynamic interceptor fabricator slot.
+    /// </summary>
+    DynamicInterceptorFabricator = 0x45,
+
+    /// <summary>
+    /// Railgun slot.
+    /// </summary>
+    Railgun = 0x46,
 }

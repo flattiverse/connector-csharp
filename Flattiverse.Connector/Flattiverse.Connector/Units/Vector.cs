@@ -1,10 +1,11 @@
-﻿using System.Text;
+using System.Text;
 using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A vector representing X and Y coordinates and has some support functions.
+/// Mutable two-dimensional vector with degree-based angle helpers.
+/// The public fields <see cref="X" /> and <see cref="Y" /> can be changed directly.
 /// </summary>
 public class Vector
 {
@@ -21,7 +22,7 @@ public class Vector
     public float Y;
 
     /// <summary>
-    /// Instantiates a null (0, 0) vector.
+    /// Creates the zero vector <c>(0, 0)</c>.
     /// </summary>
     public Vector()
     {
@@ -36,7 +37,7 @@ public class Vector
 
         if (!reader.Read(out x) || !reader.Read(out y))
         {
-            vector = new Vector();;
+            vector = new Vector();
             return false;
         }
 
@@ -51,9 +52,9 @@ public class Vector
     }
 
     /// <summary>
-    /// Copies a vector.
+    /// Creates a copy of another vector.
     /// </summary>
-    /// <param name="vectorToCopy"></param>
+    /// <param name="vectorToCopy">Vector to copy.</param>
     public Vector(Vector vectorToCopy)
     {
         X = vectorToCopy.X;
@@ -63,8 +64,8 @@ public class Vector
     /// <summary>
     /// Creates a new vector with the given coordinates.
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
+    /// <param name="x">X component.</param>
+    /// <param name="y">Y component.</param>
     public Vector(float x, float y)
     {
         X = x;
@@ -72,18 +73,19 @@ public class Vector
     }
 
     /// <summary>
-    /// Creates a vector form angle and length.
+    /// Creates a vector from a direction and a length.
     /// </summary>
-    /// <param name="angle">The angle of the new vector.</param>
-    /// <param name="length">The length of the new vector.</param>
-    /// <returns>The vector</returns>
+    /// <param name="angle">Direction in degrees.</param>
+    /// <param name="length">Vector length.</param>
+    /// <returns>New vector with the requested polar coordinates.</returns>
     public static Vector FromAngleLength(float angle, float length)
     {
         return new Vector(MathF.Cos(angle * GradStep) * length, MathF.Sin(angle * GradStep) * length);
     }
 
     /// <summary>
-    /// The Angle of the vector.
+    /// Direction of the vector in degrees.
+    /// Setting this keeps the current <see cref="Length" /> and rotates the vector accordingly.
     /// </summary>
     public float Angle
     {
@@ -99,12 +101,13 @@ public class Vector
     }
 
     /// <summary>
-    /// The sqared length of the vector.
+    /// Squared length of the vector.
     /// </summary>
     public float LengthSquared => X * X + Y * Y;
 
     /// <summary>
-    /// The length of the vector.
+    /// Length of the vector.
+    /// Setting this scales the vector while keeping its current direction whenever possible.
     /// </summary>
     public float Length
     {
@@ -127,9 +130,9 @@ public class Vector
     }
 
     /// <summary>
-    /// Rotates the vector by an angle.
+    /// Rotates the vector in place by the specified angle in degrees.
     /// </summary>
-    /// <param name="angle">The nagle to rotate the vector.</param>
+    /// <param name="angle">Rotation angle in degrees.</param>
     public void RotatedBy(float angle)
     {
         float alpha = angle * GradStep;
@@ -141,10 +144,10 @@ public class Vector
     }
 
     /// <summary>
-    /// Returns the Angle between this and the given vector.
+    /// Returns the wrapped angle difference in degrees between this vector and another vector.
     /// </summary>
-    /// <param name="v">The vector to calculate the angle from.</param>
-    /// <returns>The angle in degrees.</returns>
+    /// <param name="v">Other vector. If <see langword="null" />, this vector's own <see cref="Angle" /> is returned.</param>
+    /// <returns>Angle difference in degrees in the range <c>[0; 360)</c>.</returns>
     public float AngleFrom(Vector? v)
     {
         if (v is null)
@@ -159,52 +162,52 @@ public class Vector
     }
 
     /// <summary>
-    /// The addition operator overload.
+    /// Adds two vectors component-wise.
     /// </summary>
-    /// <param name="l">The left vector.</param>
-    /// <param name="r">The right vector.</param>
-    /// <returns>The summed up vector.</returns>
+    /// <param name="l">Left vector.</param>
+    /// <param name="r">Right vector.</param>
+    /// <returns>Sum of both vectors.</returns>
     public static Vector operator +(Vector l, Vector r) => new Vector(l.X + r.X, l.Y + r.Y);
 
     /// <summary>
-    /// The subtraction operator overload.
+    /// Subtracts one vector from another component-wise.
     /// </summary>
-    /// <param name="l">The left vector.</param>
-    /// <param name="r">The right vector.</param>
-    /// <returns>The subtracted vector.</returns>
+    /// <param name="l">Left vector.</param>
+    /// <param name="r">Right vector.</param>
+    /// <returns>Difference of both vectors.</returns>
     public static Vector operator -(Vector l, Vector r) => new Vector(l.X - r.X, l.Y - r.Y);
 
     /// <summary>
-    /// Multiplies the vector by the given length.
+    /// Scales the vector by a scalar factor.
     /// </summary>
-    /// <param name="vector">The vector to multiply.</param>
-    /// <param name="factor">The factor to multiply the vector with.</param>
-    /// <returns>The multiplied vector.</returns>
+    /// <param name="vector">Vector to scale.</param>
+    /// <param name="factor">Scalar factor.</param>
+    /// <returns>Scaled vector.</returns>
     public static Vector operator *(Vector vector, float factor) => new Vector(factor * vector.X, factor * vector.Y);
 
     /// <summary>
-    /// Divides the vector by the given length.
+    /// Divides the vector by a scalar factor.
     /// </summary>
-    /// <param name="vector">The vector to divide.</param>
-    /// <param name="divisor">The factor to divide the vector with.</param>
-    /// <returns>The divided vector.</returns>
+    /// <param name="vector">Vector to divide.</param>
+    /// <param name="divisor">Scalar divisor.</param>
+    /// <returns>Scaled vector.</returns>
     public static Vector operator /(Vector vector, float divisor) =>
         new Vector(vector.X / divisor, vector.Y / divisor);
 
     /// <summary>
-    /// Compares two vectors.
+    /// Compares two vectors using the connector's small tolerance threshold.
     /// </summary>
-    /// <param name="l">The vector to compare.</param>
-    /// <param name="r">The other vector to compare.</param>
-    /// <returns>true if the vector is round about the same.</returns>
+    /// <param name="l">Left vector.</param>
+    /// <param name="r">Right vector.</param>
+    /// <returns><see langword="true" /> if both vectors are approximately equal.</returns>
     public static bool operator ==(Vector l, Vector r) => l - r < 0.00015f;
 
     /// <summary>
-    /// Compares the length of the vector.
+    /// Compares the vector length against a scalar using the connector's tolerance threshold.
     /// </summary>
-    /// <param name="l">The vector to compare.</param>
-    /// <param name="r">The length to compare.</param>
-    /// <returns>true if the vector is round about the length.</returns>
+    /// <param name="l">Vector to compare.</param>
+    /// <param name="r">Length to compare against.</param>
+    /// <returns><see langword="true" /> if the vector length is approximately equal to the scalar.</returns>
     public static bool operator ==(Vector l, float r)
     {
         float length = MathF.Sqrt(l.X * l.X + l.Y * l.Y);
@@ -213,72 +216,72 @@ public class Vector
     }
 
     /// <summary>
-    /// Compares if one vector is longer than the other.
+    /// Compares whether the left vector is longer than the right vector.
     /// </summary>
-    /// <param name="l">The left vector.</param>
-    /// <param name="r">The right vector.</param>
-    /// <returns>true if the left vector is longer than the right vector.</returns>
+    /// <param name="l">Left vector.</param>
+    /// <param name="r">Right vector.</param>
+    /// <returns><see langword="true" /> if the left vector has a greater length.</returns>
     public static bool operator >(Vector l, Vector r) => l.X * l.X + l.Y * l.Y > r.X * r.X + r.Y * r.Y;
 
     /// <summary>
-    /// Compares if one vector is not like the other vector.
+    /// Compares two vectors for approximate inequality.
     /// </summary>
-    /// <param name="l">The left vector.</param>
-    /// <param name="r">The right vector.</param>
-    /// <returns>true if the left and the right vector are not the same in direction and length.</returns>
+    /// <param name="l">Left vector.</param>
+    /// <param name="r">Right vector.</param>
+    /// <returns><see langword="true" /> if the vectors are not approximately equal.</returns>
     public static bool operator !=(Vector l, Vector r) => !(l == r);
 
     /// <summary>
-    /// Compares if one vector is not as long as the given factor.
+    /// Compares the vector length against a scalar for approximate inequality.
     /// </summary>
-    /// <param name="l">The left vector.</param>
-    /// <param name="r">The right length.</param>
-    /// <returns>true if the left vector and the length are not about the same length.</returns>
+    /// <param name="l">Vector to compare.</param>
+    /// <param name="r">Length to compare against.</param>
+    /// <returns><see langword="true" /> if the vector length is not approximately equal to the scalar.</returns>
     public static bool operator !=(Vector l, float r) => !(l == r);
 
     /// <summary>
-    /// Compares if one vector is shorter than the other.
+    /// Compares whether the left vector is shorter than the right vector.
     /// </summary>
-    /// <param name="l">The left vector.</param>
-    /// <param name="r">The right vector.</param>
-    /// <returns>true if the left vector is shorter than the right vector.</returns>
+    /// <param name="l">Left vector.</param>
+    /// <param name="r">Right vector.</param>
+    /// <returns><see langword="true" /> if the left vector has a smaller length.</returns>
     public static bool operator <(Vector l, Vector r) => l.X * l.X + l.Y * l.Y < r.X * r.X + r.Y * r.Y;
 
     /// <summary>
-    /// Compares if the vector is longer than the scalar.
+    /// Compares whether the vector is longer than the given scalar length.
     /// </summary>
-    /// <param name="l">The vector.</param>
-    /// <param name="r">The scalar.</param>
-    /// <returns>true if the vector is longer than the scalar.</returns>
+    /// <param name="l">Vector to compare.</param>
+    /// <param name="r">Scalar length.</param>
+    /// <returns><see langword="true" /> if the vector length is greater than the scalar.</returns>
     public static bool operator >(Vector l, float r) => l.X * l.X + l.Y * l.Y > r * r;
 
     /// <summary>
-    /// Compares if the vector is shorter than the scalar.
+    /// Compares whether the vector is shorter than the given scalar length.
     /// </summary>
-    /// <param name="l">The vector.</param>
-    /// <param name="r">The scalar.</param>
-    /// <returns>true if the vector is shorter than the scalar.</returns>
+    /// <param name="l">Vector to compare.</param>
+    /// <param name="r">Scalar length.</param>
+    /// <returns><see langword="true" /> if the vector length is smaller than the scalar.</returns>
     public static bool operator <(Vector l, float r) => l.X * l.X + l.Y * l.Y < r * r;
 
     /// <summary>
-    /// true, if any component contains NaN or such values.
+    /// True if either component contains <c>NaN</c> or an infinity value.
     /// </summary>
     public bool IsDamaged => float.IsInfinity(X) || float.IsNaN(X) || float.IsInfinity(Y) || float.IsNaN(Y);
 
     /// <summary>
-    /// Returns the squared distance between the two vectors.
+    /// Returns the squared distance between two vectors.
     /// </summary>
-    /// <param name="a">The first vector.</param>
-    /// <param name="b">The second vector.</param>
-    /// <returns>The squared distance.</returns>
+    /// <param name="a">First vector.</param>
+    /// <param name="b">Second vector.</param>
+    /// <returns>Squared Euclidean distance.</returns>
     public static float SquaredDistance(Vector a, Vector b) => (b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y);
 
     /// <summary>
-    /// Returns the distance between the two vectors.
+    /// Returns the distance between two vectors.
     /// </summary>
-    /// <param name="a">The first vector.</param>
-    /// <param name="b">The second vector.</param>
-    /// <returns>The distance.</returns>
+    /// <param name="a">First vector.</param>
+    /// <param name="b">Second vector.</param>
+    /// <returns>Euclidean distance.</returns>
     public static float Distance(Vector a, Vector b) =>
         MathF.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
 
@@ -317,22 +320,22 @@ public class Vector
     }
 
     /// <summary>
-    /// Compares if the object is equal.
+    /// Compares this vector with another object using the connector's approximate vector equality.
     /// </summary>
-    /// <param name="obj">The object to compare</param>
-    /// <returns>truw, if they are equal.</returns>
+    /// <param name="obj">Object to compare with.</param>
+    /// <returns><see langword="true" /> if the object is a vector and is approximately equal.</returns>
     public override bool Equals(object? obj) => obj is Vector vector && this == vector;
 
     /// <summary>
-    /// Generates the HashCode.
+    /// Generates the hash code from the raw vector components.
     /// </summary>
-    /// <returns>The hashcode.</returns>
+    /// <returns>Hash code derived from <see cref="X" /> and <see cref="Y" />.</returns>
     public override int GetHashCode() => HashCode.Combine(X, Y);
 
     /// <summary>
-    /// Tests if the other vector is equal to this one.
+    /// Tests whether another vector is approximately equal to this one.
     /// </summary>
-    /// <param name="other">The other vector.</param>
-    /// <returns>true, if compatible</returns>
+    /// <param name="other">Other vector.</param>
+    /// <returns><see langword="true" /> if the vectors are approximately equal.</returns>
     public bool Equals(Vector other) => this == other;
 }

@@ -53,7 +53,8 @@ public class ShieldSubsystemInfo
     }
 
     /// <summary>
-    /// Whether shield loading was active for the tick.
+    /// Whether shield loading was active for the reported tick.
+    /// A shield can exist while being inactive, for example when its configured rate is zero.
     /// </summary>
     public bool Active
     {
@@ -61,7 +62,8 @@ public class ShieldSubsystemInfo
     }
 
     /// <summary>
-    /// The configured shield load rate.
+    /// Configured shield loading rate.
+    /// Higher rates charge faster but also increase the quadratic tick cost.
     /// </summary>
     public float Rate
     {
@@ -69,7 +71,7 @@ public class ShieldSubsystemInfo
     }
 
     /// <summary>
-    /// Status of the reported shield subsystem.
+    /// Tick-local runtime status reported for the shield subsystem.
     /// </summary>
     public SubsystemStatus Status
     {
@@ -77,7 +79,8 @@ public class ShieldSubsystemInfo
     }
 
     /// <summary>
-    /// Energy consumed by the shield during the tick.
+    /// Energy consumed by shield loading during the reported tick.
+    /// This is usually zero if the shield was inactive or already full.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -85,7 +88,7 @@ public class ShieldSubsystemInfo
     }
 
     /// <summary>
-    /// Ions consumed by the shield during the tick.
+    /// Ions consumed by shield loading during the reported tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -93,7 +96,7 @@ public class ShieldSubsystemInfo
     }
 
     /// <summary>
-    /// Neutrinos consumed by the shield during the tick.
+    /// Neutrinos consumed by shield loading during the reported tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {

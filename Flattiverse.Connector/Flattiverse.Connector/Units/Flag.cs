@@ -4,7 +4,7 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A flag target.
+/// Flag target used by capture-style scenarios.
 /// </summary>
 public class Flag : Target
 {
@@ -27,12 +27,12 @@ public class Flag : Target
     public override UnitKind Kind => UnitKind.Flag;
 
     /// <summary>
-    /// Configured flag grace time in ticks.
+    /// Grace or cooldown time in ticks configured for this flag.
     /// </summary>
     public int GraceTicks => _graceTicks;
 
     /// <summary>
-    /// True while the flag can currently be scored.
+    /// True while the flag is currently active and can be interacted with normally.
     /// </summary>
     public bool Active => _active;
 

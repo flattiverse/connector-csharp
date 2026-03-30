@@ -4,17 +4,17 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// A PlayerUnit got destroyed by another PlayerUnit.
+/// Raised when one controllable runtime is destroyed by another player-owned controllable runtime.
 /// </summary>
 public class PlayerUnitDestroyedControllableInfoPlayerEvent : DestroyedControllableInfoPlayerEvent
 {
     /// <summary>
-    /// The PlayerUnit which destroyed the PlayerUnit in question.
+    /// Controllable entry of the destroyer.
     /// </summary>
     public readonly ControllableInfo DestroyerUnit;
     
     /// <summary>
-    /// The Player of the unit which destroyed the PlayerUnit.
+    /// Owner of the destroyer controllable.
     /// </summary>
     public readonly Player DestroyerPlayer;
     

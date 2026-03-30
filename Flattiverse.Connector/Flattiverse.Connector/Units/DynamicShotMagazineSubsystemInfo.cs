@@ -35,7 +35,7 @@ public class DynamicShotMagazineSubsystemInfo
     }
 
     /// <summary>
-    /// The currently stored shots.
+    /// Currently available ammunition measured in shots.
     /// </summary>
     public float CurrentShots
     {
@@ -43,7 +43,7 @@ public class DynamicShotMagazineSubsystemInfo
     }
 
     /// <summary>
-    /// Status of the reported shot magazine subsystem.
+    /// Tick-local runtime status reported for the shot magazine subsystem.
     /// </summary>
     public SubsystemStatus Status
     {

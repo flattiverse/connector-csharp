@@ -4,7 +4,7 @@ using Flattiverse.Connector.Network;
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// A meteoroid.
+/// Meteoroid map unit that can act as a mining target.
 /// </summary>
 public class Meteoroid : SteadyUnit
 {
@@ -23,7 +23,7 @@ public class Meteoroid : SteadyUnit
     }
 
     /// <summary>
-    /// Metal richness of this meteoroid.
+    /// Metal richness of this meteoroid for the current mining model.
     /// </summary>
     public float Metal
     {
@@ -31,7 +31,7 @@ public class Meteoroid : SteadyUnit
     }
 
     /// <summary>
-    /// Carbon richness of this meteoroid.
+    /// Carbon richness of this meteoroid for the current mining model.
     /// </summary>
     public float Carbon
     {
@@ -39,7 +39,7 @@ public class Meteoroid : SteadyUnit
     }
 
     /// <summary>
-    /// Hydrogen richness of this meteoroid.
+    /// Hydrogen richness of this meteoroid for the current mining model.
     /// </summary>
     public float Hydrogen
     {
@@ -47,7 +47,7 @@ public class Meteoroid : SteadyUnit
     }
 
     /// <summary>
-    /// Silicon richness of this meteoroid.
+    /// Silicon richness of this meteoroid for the current mining model.
     /// </summary>
     public float Silicon
     {

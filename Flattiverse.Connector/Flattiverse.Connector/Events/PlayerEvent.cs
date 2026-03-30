@@ -3,12 +3,12 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// A parent event managing player events.
+/// Base type for events that are primarily about one player snapshot.
 /// </summary>
 public class PlayerEvent : FlattiverseEvent
 {
     /// <summary>
-    /// The player this event handles.
+    /// Player snapshot this event refers to.
     /// </summary>
     public readonly Player Player;
 

@@ -3,12 +3,13 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// A parent event managing controllable info events.
+/// Base type for events about a player's public <see cref="GalaxyHierarchy.ControllableInfo" /> entries.
 /// </summary>
 public class ControllableInfoPlayerEvent : PlayerEvent
 {
     /// <summary>
-    /// The corresponding PlayerUnit the ControllableInfo informs about. 
+    /// Public controllable-registration snapshot the event refers to.
+    /// This is not the owner-side <see cref="GalaxyHierarchy.Controllable" /> runtime object.
     /// </summary>
     public readonly ControllableInfo ControllableInfo;
 

@@ -162,7 +162,7 @@ public class DynamicScannerSubsystem : Subsystem
     }
 
     /// <summary>
-    /// true if the scanner is active.
+    /// Whether the scanner is currently active on the server.
     /// </summary>
     public bool Active
     {

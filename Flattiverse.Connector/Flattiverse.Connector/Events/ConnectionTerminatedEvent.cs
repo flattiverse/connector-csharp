@@ -1,7 +1,7 @@
 ﻿namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Is fired when the connection to the flattiverse server has been terminated.
+/// Raised when the galaxy connection has terminated and no further protocol traffic will arrive.
 /// </summary>
 public class ConnectionTerminatedEvent : FlattiverseEvent
 {
@@ -9,7 +9,7 @@ public class ConnectionTerminatedEvent : FlattiverseEvent
     public override EventKind Kind => EventKind.ConnectionTerminated;
     
     /// <summary>
-    /// The message which describes why the connection was terminated.
+    /// Optional close reason supplied by the local connector or the remote endpoint.
     /// </summary>
     public readonly string? Message;
 

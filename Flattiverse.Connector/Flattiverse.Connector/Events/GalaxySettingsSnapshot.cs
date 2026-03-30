@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Snapshot of all server-driven galaxy setting values.
+/// Immutable snapshot of all server-driven galaxy setting values mirrored by the connector.
 /// </summary>
 public class GalaxySettingsSnapshot
 {
@@ -98,7 +98,7 @@ public class GalaxySettingsSnapshot
     public readonly bool Maintenance;
 
     /// <summary>
-    /// Requires self-disclosure from regular player logins.
+    /// Whether regular player logins must provide runtime and build self-disclosure.
     /// </summary>
     public readonly bool RequiresSelfDisclosure;
 

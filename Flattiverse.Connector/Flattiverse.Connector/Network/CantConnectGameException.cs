@@ -1,7 +1,8 @@
 ﻿namespace Flattiverse.Connector.Network;
 
 /// <summary>
-/// This error message is thrown, if the game can't connect to a specific galaxy.
+/// Thrown when the connector cannot establish and activate a connection to a galaxy endpoint.
+/// This covers websocket, HTTP proxy, and pre-activation failures.
 /// </summary>
 public class CantConnectGameException : GameException
 {

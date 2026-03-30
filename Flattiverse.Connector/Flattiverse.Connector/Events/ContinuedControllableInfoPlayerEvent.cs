@@ -3,7 +3,7 @@
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Someone continued a PlayerUnit.
+/// Raised when a public controllable entry becomes alive in the world again.
 /// </summary>
 public class ContinuedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
 {
@@ -12,9 +12,11 @@ public class ContinuedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
     {
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override EventKind Kind => EventKind.ControllableInfoContinued;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns a compact diagnostic representation of the event.
+    /// </summary>
     public override string ToString() => $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} continued controllable {ControllableInfo.Name} of type {ControllableInfo.Kind}.";
 }

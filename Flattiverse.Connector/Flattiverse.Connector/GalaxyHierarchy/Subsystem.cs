@@ -41,7 +41,8 @@ public abstract class Subsystem
     }
 
     /// <summary>
-    /// true if this controllable actually provides the subsystem.
+    /// True if this controllable actually has the subsystem installed in this slot.
+    /// Missing subsystems keep reporting default values and cannot be commanded.
     /// </summary>
     public bool Exists
     {

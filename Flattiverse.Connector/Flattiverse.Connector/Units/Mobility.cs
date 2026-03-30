@@ -1,20 +1,22 @@
 ﻿namespace Flattiverse.Connector.Units;
 
 /// <summary>
-/// Specified the mobility of a unit.
+/// Describes how a unit moves on the map.
 /// </summary>
 public enum Mobility
 {
     /// <summary>
-    /// The unit doesn't move at all.
+    /// The unit does not move.
     /// </summary>
     Still = 0x01,
+
     /// <summary>
-    /// The unit has a steady movement.
+    /// The unit moves with a predefined steady movement.
     /// </summary>
     Steady = 0x02,
+
     /// <summary>
-    /// The unit is mobile.
+    /// The unit can actively change its movement at runtime.
     /// </summary>
     Mobile = 0x04
 }

@@ -53,7 +53,8 @@ public class DynamicShotFabricatorSubsystemInfo
     }
 
     /// <summary>
-    /// Whether the fabricator was active for the tick.
+    /// Whether the fabricator was active during the reported tick.
+    /// This is separate from <see cref="Rate" /> because a non-zero configured rate can still be inactive.
     /// </summary>
     public bool Active
     {
@@ -61,7 +62,7 @@ public class DynamicShotFabricatorSubsystemInfo
     }
 
     /// <summary>
-    /// The configured shot fabrication rate.
+    /// Configured shot fabrication rate.
     /// </summary>
     public float Rate
     {
@@ -69,7 +70,7 @@ public class DynamicShotFabricatorSubsystemInfo
     }
 
     /// <summary>
-    /// Status of the reported shot fabricator subsystem.
+    /// Tick-local runtime status reported for the shot fabricator subsystem.
     /// </summary>
     public SubsystemStatus Status
     {
@@ -77,7 +78,7 @@ public class DynamicShotFabricatorSubsystemInfo
     }
 
     /// <summary>
-    /// Energy consumed by the fabricator during the tick.
+    /// Energy consumed by fabrication during the reported tick.
     /// </summary>
     public float ConsumedEnergyThisTick
     {
@@ -85,7 +86,7 @@ public class DynamicShotFabricatorSubsystemInfo
     }
 
     /// <summary>
-    /// Ions consumed by the fabricator during the tick.
+    /// Ions consumed by fabrication during the reported tick.
     /// </summary>
     public float ConsumedIonsThisTick
     {
@@ -93,7 +94,7 @@ public class DynamicShotFabricatorSubsystemInfo
     }
 
     /// <summary>
-    /// Neutrinos consumed by the fabricator during the tick.
+    /// Neutrinos consumed by fabrication during the reported tick.
     /// </summary>
     public float ConsumedNeutrinosThisTick
     {
