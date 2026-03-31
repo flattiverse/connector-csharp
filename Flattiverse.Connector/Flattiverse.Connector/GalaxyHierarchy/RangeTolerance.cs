@@ -61,7 +61,7 @@ static class RangeTolerance
 
     public static InvalidArgumentKind ClampRange(float value, float minimum, float maximum, out float clampedValue)
     {
-        Debug.Assert(minimum >= 0f && maximum >= minimum && !float.IsNaN(minimum) && !float.IsInfinity(minimum) &&
+        Debug.Assert(maximum >= minimum && !float.IsNaN(minimum) && !float.IsInfinity(minimum) &&
             !float.IsNaN(maximum) && !float.IsInfinity(maximum), "Invalid scalar range specified.");
 
         InvalidArgumentKind validity = Validate(value);
@@ -72,13 +72,16 @@ static class RangeTolerance
             return validity;
         }
 
-        if (value < minimum * LowerFactor)
+        float toleratedMinimum = minimum >= 0f ? minimum * LowerFactor : minimum * UpperFactor;
+        float toleratedMaximum = maximum >= 0f ? maximum * UpperFactor : maximum * LowerFactor;
+
+        if (value < toleratedMinimum)
         {
             clampedValue = 0f;
             return InvalidArgumentKind.TooSmall;
         }
 
-        if (value > maximum * UpperFactor)
+        if (value > toleratedMaximum)
         {
             clampedValue = 0f;
             return InvalidArgumentKind.TooLarge;

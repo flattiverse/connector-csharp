@@ -333,16 +333,13 @@ byte   maxPlayers
 ushort maxSpectators
 ushort galaxyMaxTotalShips
 ushort galaxyMaxClassicShips
-ushort galaxyMaxNewShips
-ushort galaxyMaxBases
+ushort galaxyMaxModernShips
 ushort teamMaxTotalShips
 ushort teamMaxClassicShips
-ushort teamMaxNewShips
-ushort teamMaxBases
+ushort teamMaxModernShips
 byte   playerMaxTotalShips
 byte   playerMaxClassicShips
-byte   playerMaxNewShips
-byte   playerMaxBases
+byte   playerMaxModernShips
 byte   maintenanceFlag
 byte   requiresSelfDisclosureFlag
 ```
@@ -657,6 +654,8 @@ byte   clusterId
 string controllableName
 Vector position
 Vector movement
+float  angle
+float  angularVelocity
 ```
 
 This packet is the owner's authoritative identity channel for a controllable. A player's own controllables are intentionally modeled separately from the visible-unit stream and therefore must be tracked from `0x80` / `0x82`, not from `0x30` / `0x32`.
@@ -695,6 +694,8 @@ SubsystemSlot ranges:
     0x30..0x3F engines
     0x40..0x4F dynamic shot subsystems
     0x50..0x5F resource subsystems
+    0x60..0x7F static modern weapon subsystems
+    0x80..0x8F modern railguns
 
 Currently used slots:
     0x00 EnergyBattery
@@ -709,8 +710,24 @@ Currently used slots:
     0x1B Repair
     0x20 PrimaryScanner
     0x21 SecondaryScanner
+    0x23 ModernScannerN
+    0x24 ModernScannerNE
+    0x25 ModernScannerE
+    0x26 ModernScannerSE
+    0x27 ModernScannerS
+    0x28 ModernScannerSW
+    0x29 ModernScannerW
+    0x2A ModernScannerNW
     0x30 PrimaryEngine
     0x33 JumpDrive
+    0x34 ModernEngineN
+    0x35 ModernEngineNE
+    0x36 ModernEngineE
+    0x37 ModernEngineSE
+    0x38 ModernEngineS
+    0x39 ModernEngineSW
+    0x3A ModernEngineW
+    0x3B ModernEngineNW
     0x40 DynamicShotLauncher
     0x41 DynamicShotMagazine
     0x42 DynamicShotFabricator
@@ -721,6 +738,16 @@ Currently used slots:
     0x50 Cargo
     0x51 ResourceMiner
     0x52 NebulaCollector
+    0x60..0x67 StaticShotLauncherN..NW
+    0x68..0x6F StaticShotMagazineN..NW
+    0x70..0x77 StaticShotFabricatorN..NW
+    0x78 StaticInterceptorLauncherE
+    0x79 StaticInterceptorLauncherW
+    0x7A StaticInterceptorMagazineE
+    0x7B StaticInterceptorMagazineW
+    0x7C StaticInterceptorFabricatorE
+    0x7D StaticInterceptorFabricatorW
+    0x80..0x87 ModernRailgunN..NW
 ```
 
 Common payload order:
@@ -730,6 +757,8 @@ byte   controllableId
 byte   clusterId
 Vector position
 Vector movement
+float  angle
+float  angularVelocity
 float  energyBatteryCurrent
 float  energyBatteryConsumedThisTick
 byte   energyBatteryStatus
@@ -911,9 +940,10 @@ Notes:
   * `DynamicInterceptorMagazineSubsystemEvent`
   * `DynamicInterceptorFabricatorSubsystemEvent`
   * `RailgunSubsystemEvent`
+  * `ModernShipEngineSubsystemEvent`
 * `EnvironmentDamageEvent`
 * `PowerUpCollectedEvent`
-* Those connector-local events currently use `EventKind` values `0x80..0x92`. These enum values are connector-local API identifiers, not an additional wire packet range. `PowerUpCollectedEvent` is backed by the dedicated owner-only wire packet `0x8E`; the subsystem events remain connector-local projections of `0x82`.
+* Those connector-local events currently use `EventKind` values `0x80..0x94`. These enum values are connector-local API identifiers, not an additional wire packet range. `PowerUpCollectedEvent` is backed by the dedicated owner-only wire packet `0x8E`; the subsystem events remain connector-local projections of `0x82`.
 * Power-up respawn does not have a dedicated wire event. After pickup or explosion the server uses the normal `0x3F` visible-unit delete and later reintroduces the same unit name through `0x30` plus `0x32` once the respawn conditions are met.
 
 ### `0x30` Visible Unit Create
@@ -966,7 +996,8 @@ Current reduced `0x30` payloads and promotion thresholds:
 * `Shot (0xE0)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
 * `Interceptor (0xE1)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
 * `Rail (0xE2)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
-* `ClassicShipPlayerUnit (0xF0)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 100`
+* `ClassicShipPlayerUnit (0xF0)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 100`
+* `ModernShipPlayerUnit (0xF1)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 100`
 * `InterceptorExplosion (0xFE)`: `byte ownerPlayerId`, `byte ownerControllableId`, `float load`, `float damage`, `Vector position`; `ReducedVisibilityTicks = 0`
 * `Explosion (0xFF)`: `byte ownerPlayerId`, `byte ownerControllableId`, `float load`, `float damage`, `Vector position`; `ReducedVisibilityTicks = 0`
 
@@ -1029,6 +1060,15 @@ Current `0x31` payloads:
   ```text
   Vector position
   Vector movement
+  float  angle
+  float  angularVelocity
+  ```
+* `ModernShipPlayerUnit (0xF1)`:
+  ```text
+  Vector position
+  Vector movement
+  float  angle
+  float  angularVelocity
   ```
 * `InterceptorExplosion (0xFE)`: no additional payload; the reference connector ignores `0x31` for explosions
 * `Explosion (0xFF)`: no additional payload; the reference connector ignores `0x31` for explosions
@@ -1485,6 +1525,7 @@ Important notes:
 ### Player Commands
 
 * `0x80`: register classic ship, payload `string name`, `string crystal0Name`, `string crystal1Name`, `string crystal2Name`, reply payload `byte controllableId`
+* `0x81`: register modern ship, payload `string name`, `string crystal0Name`, `string crystal1Name`, `string crystal2Name`, reply payload `byte controllableId`
 * `0x84`: continue controllable, payload `byte controllableId`
 * `0x85`: suicide controllable, payload `byte controllableId`
 * `0x87`: move controllable, payload `byte controllableId`, `Vector movement`
@@ -1513,6 +1554,19 @@ Important notes:
 * `0x9E`: rename crystal, payload `string oldName`, `string newName`, reply payload `byte crystalCount`, repeated crystal snapshot entries
 * `0x9F`: destroy crystal, payload `string name`, reply payload `byte crystalCount`, repeated crystal snapshot entries
 * `0xA0`: request crystals, empty payload, reply payload `byte crystalCount`, repeated crystal snapshot entries
+* `0xA1`: set modern engine thrust, payload `byte controllableId`, `byte slot`, `float thrust`
+* `0xA2`: configure modern scanner, payload `byte controllableId`, `byte slot`, `float width`, `float length`, `float angleOffset`
+* `0xA3`: activate modern scanner, payload `byte controllableId`, `byte slot`
+* `0xA4`: deactivate modern scanner, payload `byte controllableId`, `byte slot`
+* `0xA5`: shoot modern shot launcher, payload `byte controllableId`, `byte slot`, `float relativeSpeed`, `ushort ticks`, `float load`, `float damage`
+* `0xA6`: configure modern shot fabricator, payload `byte controllableId`, `byte slot`, `float rate`
+* `0xA7`: activate modern shot fabricator, payload `byte controllableId`, `byte slot`
+* `0xA8`: deactivate modern shot fabricator, payload `byte controllableId`, `byte slot`
+* `0xA9`: shoot modern interceptor launcher, payload `byte controllableId`, `byte slot`, `float relativeSpeed`, `float angleOffset`, `ushort ticks`, `float load`, `float damage`
+* `0xAA`: configure modern interceptor fabricator, payload `byte controllableId`, `byte slot`, `float rate`
+* `0xAB`: activate modern interceptor fabricator, payload `byte controllableId`, `byte slot`
+* `0xAC`: deactivate modern interceptor fabricator, payload `byte controllableId`, `byte slot`
+* `0xAD`: fire modern railgun, payload `byte controllableId`, `byte slot`
 * `0xC4`: send galaxy chat, payload `string message`
 * `0xC5`: send team chat, payload `byte teamId`, `string message`
 * `0xC6`: send private chat, payload `byte playerId`, `string message`
@@ -1552,6 +1606,11 @@ Notes:
 * While a dynamic scanner is off, its current width, length, and angle are zero. On the next active tick after re-activation, width and length ramp from `2.5 x 10` and the angle starts again from `0` toward the configured target.
 * `0x8C` currently validates fabricator `rate` in `[0; 0.025]`. `0x8D` / `0x8E` only toggle `Active`; they do not change the configured rate.
 * `0x97` currently validates fabricator `rate` in `[0; 0.025]`. `0x98` / `0x99` only toggle `Active`; they do not change the configured rate.
+* `0xA1` currently validates thrust against the addressed modern engine's installed `MaximumReverseThrust` / `MaximumForwardThrust`. The current reference values are `0.06` / `0.06` with `MaximumThrustChangePerTick = 0.02`.
+* `0xA2` currently validates modern scanner `width` in `[5; 10]`, `length` in `[20; 350]`, and `angleOffset` in `[-22.5; +22.5]` relative to the scanner's local ship slot angle.
+* `0xA5` currently uses the classic shot limits, but the produced modern shot leaves the launcher with `+0.5` projectile speed compared to the classic launcher.
+* `0xA6` / `0xAA` currently validate modern fabricator `rate` in `[0; 0.025]`. `0xA7` / `0xA8` and `0xAB` / `0xAC` only toggle `Active`.
+* `0xA9` currently uses the classic interceptor limits plus `angleOffset` in `[-45; +45]` relative to the addressed local `E` / `W` launcher direction.
 * `0x90` currently validates shield `rate` in `[0; 0.125]`. `0x91` / `0x92` only toggle shield loading `Active`; they do not change the configured rate.
 * `0x93` currently validates repair `rate` in `[0; 0.1]`. `rate == 0` means off. Repair only affects hull, costs `1600 * rate^2`, and the server clears the rate if the ship movement reaches `>= 0.1`.
 * `0x94` currently validates miner `rate` in `[0; 0.01]`. `rate == 0` means off. The miner costs `160000 * rate^2`, mines non-depleting `Planet` / `Moon` / `Meteoroid` body resources within edge-to-edge distance `25`, clears the rate with `Failed` once the ship movement reaches `>= 0.1`, and also clears the rate after a paid zero-yield tick when no mineable resources are in range.

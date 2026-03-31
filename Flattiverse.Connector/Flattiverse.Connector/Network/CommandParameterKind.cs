@@ -1,4 +1,4 @@
-﻿namespace Flattiverse.Connector.Network;
+namespace Flattiverse.Connector.Network;
 
 enum CommandParameterKind
 {

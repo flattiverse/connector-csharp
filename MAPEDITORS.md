@@ -70,16 +70,13 @@ Example:
   MaxSpectators="64"
   GalaxyMaxTotalShips="8"
   GalaxyMaxClassicShips="8"
-  GalaxyMaxNewShips="8"
-  GalaxyMaxBases="0"
+  GalaxyMaxModernShips="8"
   TeamMaxTotalShips="8"
   TeamMaxClassicShips="8"
-  TeamMaxNewShips="8"
-  TeamMaxBases="0"
+  TeamMaxModernShips="8"
   PlayerMaxTotalShips="1"
   PlayerMaxClassicShips="1"
-  PlayerMaxNewShips="1"
-  PlayerMaxBases="0"
+  PlayerMaxModernShips="1"
   Maintenance="false"
   RequiresSelfDisclosure="false">
   <Team Id="0" Name="Pink" ColorR="255" ColorG="0" ColorB="200" />
@@ -98,16 +95,13 @@ Allowed `Galaxy` attributes:
 - `MaxSpectators`: maximum number of spectator connections allowed at the same time.
 - `GalaxyMaxTotalShips`: galaxy-wide cap for all player-owned controllables combined.
 - `GalaxyMaxClassicShips`: galaxy-wide cap for classic-ship controllable runtimes (`ClassicShipPlayerUnit` on the wire).
-- `GalaxyMaxNewShips`: galaxy-wide cap for new-ship controllable runtimes (`NewShipPlayerUnit` on the wire).
-- `GalaxyMaxBases`: galaxy-wide cap for future or custom base-type controllables.
+- `GalaxyMaxModernShips`: galaxy-wide cap for new-ship controllable runtimes (`ModernShipPlayerUnit` on the wire).
 - `TeamMaxTotalShips`: per-team cap for all player-owned controllables combined.
 - `TeamMaxClassicShips`: per-team cap for classic-ship controllable runtimes (`ClassicShipPlayerUnit` on the wire).
-- `TeamMaxNewShips`: per-team cap for new-ship controllable runtimes (`NewShipPlayerUnit` on the wire).
-- `TeamMaxBases`: per-team cap for future or custom base-type controllables.
+- `TeamMaxModernShips`: per-team cap for new-ship controllable runtimes (`ModernShipPlayerUnit` on the wire).
 - `PlayerMaxTotalShips`: per-player cap for all owned controllables combined.
 - `PlayerMaxClassicShips`: per-player cap for classic-ship controllable runtimes (`ClassicShipPlayerUnit` on the wire).
-- `PlayerMaxNewShips`: per-player cap for new-ship controllable runtimes (`NewShipPlayerUnit` on the wire).
-- `PlayerMaxBases`: per-player cap for future or custom base-type controllables.
+- `PlayerMaxModernShips`: per-player cap for new-ship controllable runtimes (`ModernShipPlayerUnit` on the wire).
 - `Maintenance`: if `true`, the galaxy is marked as being under maintenance.
 - `RequiresSelfDisclosure`: if `true`, regular player logins must provide both self-disclosure strings during connect.
 
@@ -250,7 +244,7 @@ Not editable:
 - `StormCommencingWhirl`
 - `StormActiveWhirl`
 - `ClassicShipPlayerUnit`
-- `NewShipPlayerUnit`
+- `ModernShipPlayerUnit`
 - `InterceptorExplosion`
 - `Explosion`
 

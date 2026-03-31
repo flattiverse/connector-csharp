@@ -1,4 +1,4 @@
-﻿using Flattiverse.Connector.GalaxyHierarchy;
+using Flattiverse.Connector.GalaxyHierarchy;
 
 namespace Flattiverse.Connector.Events;
 
@@ -45,12 +45,7 @@ public class GalaxySettingsSnapshot
     /// <summary>
     /// Maximum new ships for the whole galaxy.
     /// </summary>
-    public readonly ushort GalaxyMaxNewShips;
-
-    /// <summary>
-    /// Maximum bases for the whole galaxy.
-    /// </summary>
-    public readonly ushort GalaxyMaxBases;
+    public readonly ushort GalaxyMaxModernShips;
 
     /// <summary>
     /// Maximum total ships per team.
@@ -65,12 +60,7 @@ public class GalaxySettingsSnapshot
     /// <summary>
     /// Maximum new ships per team.
     /// </summary>
-    public readonly ushort TeamMaxNewShips;
-
-    /// <summary>
-    /// Maximum bases per team.
-    /// </summary>
-    public readonly ushort TeamMaxBases;
+    public readonly ushort TeamMaxModernShips;
 
     /// <summary>
     /// Maximum total ships per player.
@@ -85,12 +75,7 @@ public class GalaxySettingsSnapshot
     /// <summary>
     /// Maximum new ships per player.
     /// </summary>
-    public readonly byte PlayerMaxNewShips;
-
-    /// <summary>
-    /// Maximum bases per player.
-    /// </summary>
-    public readonly byte PlayerMaxBases;
+    public readonly byte PlayerMaxModernShips;
 
     /// <summary>
     /// Maintenance mode flag.
@@ -103,9 +88,9 @@ public class GalaxySettingsSnapshot
     public readonly bool RequiresSelfDisclosure;
 
     internal GalaxySettingsSnapshot(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
-        ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxNewShips, ushort galaxyMaxBases,
-        ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, bool maintenance,
+        ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxModernShips,
+        ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxModernShips,
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, bool maintenance,
         bool requiresSelfDisclosure)
     {
         GameMode = gameMode;
@@ -117,18 +102,15 @@ public class GalaxySettingsSnapshot
 
         GalaxyMaxTotalShips = galaxyMaxTotalShips;
         GalaxyMaxClassicShips = galaxyMaxClassicShips;
-        GalaxyMaxNewShips = galaxyMaxNewShips;
-        GalaxyMaxBases = galaxyMaxBases;
+        GalaxyMaxModernShips = galaxyMaxModernShips;
 
         TeamMaxTotalShips = teamMaxTotalShips;
         TeamMaxClassicShips = teamMaxClassicShips;
-        TeamMaxNewShips = teamMaxNewShips;
-        TeamMaxBases = teamMaxBases;
+        TeamMaxModernShips = teamMaxModernShips;
 
         PlayerMaxTotalShips = playerMaxTotalShips;
         PlayerMaxClassicShips = playerMaxClassicShips;
-        PlayerMaxNewShips = playerMaxNewShips;
-        PlayerMaxBases = playerMaxBases;
+        PlayerMaxModernShips = playerMaxModernShips;
         Maintenance = maintenance;
         RequiresSelfDisclosure = requiresSelfDisclosure;
     }

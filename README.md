@@ -51,12 +51,19 @@ while (galaxy.Active)
 - observe respawning power-ups through the normal visible-unit create/delete lifecycle; the connector does not use a dedicated respawn packet
 - inspect `Player.Score` and `Team.Score`, and react to `PlayerScoreUpdatedEvent` and `TeamScoreUpdatedEvent`
 - create and control classic ships
+- create and control modern ships
 - create classic ships with up to three equipped crystal names
+- create modern ships with up to three equipped crystal names
 - request, create, rename and destroy account-wide crystals through `Galaxy.RequestCrystals()`, `Galaxy.ProduceCrystal(...)`, `Galaxy.RenameCrystal(...)` and `Galaxy.DestroyCrystal(...)`
 - inspect and control the `ClassicShipControllable.Engine` subsystem
+- inspect and control `ModernShipControllable.EngineN` .. `EngineNW`
 - inspect owner-side integrity runtime via `Controllable.Hull` and `Controllable.Shield`
 - inspect owner-side nebula cargo via `Controllable.Cargo.MaximumNebula`, `CurrentNebula` and `NebulaHue`
 - inspect and control `ClassicShipControllable.NebulaCollector`
+- inspect and control `ModernShipControllable.ScannerN` .. `ScannerNW`
+- inspect and use `ModernShipControllable.ShotLauncherN` .. `ShotLauncherNW`, the matching magazines and shot fabricators
+- inspect and use `ModernShipControllable.InterceptorLauncherE` / `InterceptorLauncherW`, the matching magazines and interceptor fabricators
+- inspect and use `ModernShipControllable.RailgunN` .. `RailgunNW`
 - inspect and use the `ClassicShipControllable.ShotLauncher`, `ClassicShipControllable.ShotMagazine`, and `ClassicShipControllable.ShotFabricator` subsystems
 - inspect and use the `ClassicShipControllable.InterceptorLauncher`, `ClassicShipControllable.InterceptorMagazine`, and `ClassicShipControllable.InterceptorFabricator` subsystems
 - inspect and use `ClassicShipControllable.Railgun` via `FireFront()` / `FireBack()`
@@ -105,10 +112,9 @@ The connector currently materializes these unit kinds as visible units or own co
 - `Interceptor`
 - `Rail`
 - `ClassicShipPlayerUnit`
+- `ModernShipPlayerUnit`
 - `InterceptorExplosion`
 - `Explosion`
-
-`NewShipPlayerUnit` already exists in `UnitKind` and `ControllableInfo`, but the connector currently has no visible-unit or owner-side runtime type for it.
 
 ## Core API
 
@@ -128,6 +134,7 @@ Player-facing commands:
 
 - [`Galaxy.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L488)
 - [`Galaxy.CreateClassicShip(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L555)
+- [`Galaxy.CreateModernShip(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L645)
 - [`Galaxy.RequestCrystals()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L581)
 - [`Galaxy.ProduceCrystal(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L594)
 - [`Galaxy.RenameCrystal(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L613)
@@ -140,6 +147,7 @@ Player-facing commands:
 - [`ClassicShipControllable.MainScanner`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
 - [`ClassicShipControllable.SecondaryScanner`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
 - [`ClassicShipControllable.Engine`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
+- [`ModernShipControllable`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ModernShipControllable.cs)
 - [`Controllable.Hull`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Controllable.cs)
 - [`Controllable.Shield`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Controllable.cs)
 - [`ClassicShipControllable.ShotLauncher`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/ClassicShipControllable.cs)
@@ -180,6 +188,7 @@ Admin-facing commands:
 - `Cluster.QueryEditableUnits(...)` returns `(Name, Kind)` summaries for all editable units of the cluster, including currently invisible ones such as inactive power-ups.
 - Battery maxima, cell efficiencies, hull and shield maxima, cargo capacities, and similar owner-side static subsystem capabilities are initialized from `0x80 Controllable Create`.
 - Scanner subsystems are server-authoritative runtime objects. `Set(...)`, `On()`, and `Off()` send player commands; `Current*`, `Target*`, and `Active` are mirrored back via `0x82`.
+- `Controllable.Angle` / `AngularVelocity` and visible `PlayerUnit.Angle` / `AngularVelocity` are authoritative wire values. They are no longer derived from movement.
 - Worm holes are visible units. Their destination is intentionally absent in reduced visibility and only appears once the unit reaches full visibility. Triggering a jump is an explicit owner command through `JumpDrive.Jump()`, not an automatic collision effect.
 - `CurrentField` is a non-solid visible map unit. `Mode=Directional` exposes a fixed world-space `Flow`, while `Mode=Relative` exposes `RadialForce` and `TangentialForce`.
 - `Storm` is an editable non-solid map unit that spawns mobile storm whirls. `StormCommencingWhirl` is visible early and only exposes its remaining announcement ticks in full visibility, while `StormActiveWhirl` is masking and additionally exposes `Damage`.

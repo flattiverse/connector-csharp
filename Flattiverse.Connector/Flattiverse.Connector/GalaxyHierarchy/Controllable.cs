@@ -29,6 +29,8 @@ public class Controllable : INamedUnit
 
     private Vector _position;
     private Vector _movement;
+    private float _angle;
+    private float _angularVelocity;
     private protected HullSubsystem _hull;
     private protected ShieldSubsystem _shield;
     private protected ArmorSubsystem _armor;
@@ -79,6 +81,9 @@ public class Controllable : INamedUnit
 
         if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
             throw new InvalidDataException("Couldn't read controllable.");
+
+        if (!reader.Read(out _angle) || !reader.Read(out _angularVelocity))
+            throw new InvalidDataException("Couldn't read controllable angle.");
     }
 
     /// <summary>
@@ -105,6 +110,22 @@ public class Controllable : INamedUnit
     /// The movement of the unit.
     /// </summary>
     public Vector Movement => new Vector(_movement);
+
+    /// <summary>
+    /// The facing angle of the unit.
+    /// </summary>
+    public float Angle
+    {
+        get { return _angle; }
+    }
+
+    /// <summary>
+    /// The angular velocity of the unit.
+    /// </summary>
+    public float AngularVelocity
+    {
+        get { return _angularVelocity; }
+    }
 
     /// <summary>
     /// The energy battery subsystem of the controllable.
@@ -373,6 +394,9 @@ public class Controllable : INamedUnit
             case UnitKind.ClassicShipPlayerUnit:
                 controllable = new ClassicShipControllable(cluster, id, name, reader);
                 return true;
+            case UnitKind.ModernShipPlayerUnit:
+                controllable = new ModernShipControllable(cluster, id, name, reader);
+                return true;
             default:
                 controllable = null;
                 return false;
@@ -395,6 +419,8 @@ public class Controllable : INamedUnit
         
         _position = new Vector();
         _movement = new Vector();
+        _angle = 0f;
+        _angularVelocity = 0f;
         ResetRuntime();
     }
 
@@ -596,6 +622,7 @@ public class Controllable : INamedUnit
         float environmentHullDamageThisTick;
 
         if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement) ||
+            !reader.Read(out _angle) || !reader.Read(out _angularVelocity) ||
             !reader.Read(out energyBatteryCurrent) || !reader.Read(out energyBatteryConsumedThisTick) || !reader.Read(out energyBatteryStatus) ||
             !reader.Read(out ionBatteryCurrent) || !reader.Read(out ionBatteryConsumedThisTick) || !reader.Read(out ionBatteryStatus) ||
             !reader.Read(out neutrinoBatteryCurrent) || !reader.Read(out neutrinoBatteryConsumedThisTick) || !reader.Read(out neutrinoBatteryStatus) ||

@@ -1,4 +1,4 @@
-﻿namespace Flattiverse.Connector.Units;
+namespace Flattiverse.Connector.Units;
 
 /// <summary>
 /// Specifies of which kind a unit is. 
@@ -132,7 +132,7 @@ public enum UnitKind : byte
     /// <summary>
     /// Represents a new style player ship.
     /// </summary>
-    NewShipPlayerUnit = 0xF1,
+    ModernShipPlayerUnit = 0xF1,
     /// <summary>
     /// Represents an interceptor explosion.
     /// </summary>

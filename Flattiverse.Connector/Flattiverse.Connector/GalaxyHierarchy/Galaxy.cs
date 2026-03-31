@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.WebSockets;
@@ -34,18 +34,15 @@ public partial class Galaxy : IDisposable
     
     private ushort _galaxyMaxTotalShips;
     private ushort _galaxyMaxClassicShips;
-    private ushort _galaxyMaxNewShips;
-    private ushort _galaxyMaxBases;
+    private ushort _galaxyMaxModernShips;
     
     private ushort _teamMaxTotalShips;
     private ushort _teamMaxClassicShips;
-    private ushort _teamMaxNewShips;
-    private ushort _teamMaxBases;
+    private ushort _teamMaxModernShips;
     
     private byte _playerMaxTotalShips;
     private byte _playerMaxClassicShips;
-    private byte _playerMaxNewShips;
-    private byte _playerMaxBases;
+    private byte _playerMaxModernShips;
 
     private bool _maintenance;
     private bool _requiresSelfDisclosure;
@@ -350,12 +347,7 @@ public partial class Galaxy : IDisposable
     /// <summary>
     /// The maximum amount of new style ships allowed in the galaxy.
     /// </summary>
-    public int GalaxyMaxNewShips => _galaxyMaxNewShips;
-
-    /// <summary>
-    /// The maximum amount of bases allowed in the galaxy.
-    /// </summary>
-    public int GalaxyMaxBases => _galaxyMaxBases;
+    public int GalaxyMaxModernShips => _galaxyMaxModernShips;
 
     /// <summary>
     /// The maximum amount of total ships allowed per team in the galaxy.
@@ -370,12 +362,7 @@ public partial class Galaxy : IDisposable
     /// <summary>
     /// The maximum amount of new style ships allowed per team in the galaxy.
     /// </summary>
-    public int TeamMaxNewShips => _teamMaxNewShips;
-
-    /// <summary>
-    /// The maximum amount of bases allowed per team in the galaxy.
-    /// </summary>
-    public int TeamMaxBases => _teamMaxBases;
+    public int TeamMaxModernShips => _teamMaxModernShips;
 
     /// <summary>
     /// The maximum amount of total ships allowed per player in the galaxy.
@@ -390,12 +377,7 @@ public partial class Galaxy : IDisposable
     /// <summary>
     /// The maximum amount of new style ships allowed per player in the galaxy.
     /// </summary>
-    public int PlayerMaxNewShips => _playerMaxNewShips;
-
-    /// <summary>
-    /// The maximum amount of bases allowed per player in the galaxy.
-    /// </summary>
-    public int PlayerMaxBases => _playerMaxBases;
+    public int PlayerMaxModernShips => _playerMaxModernShips;
 
     /// <summary>
     /// True while the underlying session and connection are still active.
@@ -639,6 +621,40 @@ public partial class Galaxy : IDisposable
     }
 
     /// <summary>
+    /// Creates a modern style ship.
+    /// </summary>
+    /// <returns>The controllable of the ship.</returns>
+    public async Task<ModernShipControllable> CreateModernShip(string name)
+    {
+        return await CreateModernShip(name, string.Empty, string.Empty, string.Empty).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates a modern style ship with up to three equipped crystals.
+    /// </summary>
+    /// <returns>The controllable of the ship.</returns>
+    public async Task<ModernShipControllable> CreateModernShip(string name, string crystal0Name, string crystal1Name,
+        string crystal2Name)
+    {
+        if (!Utils.CheckName(name))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.NameConstraint, "name");
+
+        PacketReaderCopy result = await Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x81;
+            writer.Write(name);
+            writer.Write(crystal0Name);
+            writer.Write(crystal1Name);
+            writer.Write(crystal2Name);
+        });
+
+        if (result.Read(out byte id) && _controllables[id] is ModernShipControllable controllable)
+            return controllable;
+
+        throw new InvalidDataException("This shouldn't have happened: Couldn't read controllable id or there was no proper controllable.");
+    }
+
+    /// <summary>
     /// Requests the current account-wide crystal snapshot.
     /// </summary>
     public async Task<IReadOnlyList<Crystal>> RequestCrystals()
@@ -765,18 +781,18 @@ public partial class Galaxy : IDisposable
     
     [Command(0x01)]
     private void UpdateGalaxy(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
-        ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxNewShips, ushort galaxyMaxBases,
-        ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxNewShips, ushort teamMaxBases,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxNewShips, byte playerMaxBases, byte maintenance,
+        ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxModernShips,
+        ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxModernShips,
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, byte maintenance,
         byte requiresSelfDisclosure)
     {
         GalaxySettingsSnapshot? oldSettings;
 
         if (_receivedGalaxySettings)
             oldSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
-                _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
-                _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
-                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance,
+                _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxModernShips,
+                _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxModernShips,
+                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
                 _requiresSelfDisclosure);
         else
             oldSettings = null;
@@ -788,25 +804,22 @@ public partial class Galaxy : IDisposable
         _maxSpectators = maxSpectators;
         _galaxyMaxTotalShips = galaxyMaxTotalShips;
         _galaxyMaxClassicShips = galaxyMaxClassicShips;
-        _galaxyMaxNewShips = galaxyMaxNewShips;
-        _galaxyMaxBases = galaxyMaxBases;
+        _galaxyMaxModernShips = galaxyMaxModernShips;
         _teamMaxTotalShips = teamMaxTotalShips;
         _teamMaxClassicShips = teamMaxClassicShips;
-        _teamMaxNewShips = teamMaxNewShips;
-        _teamMaxBases = teamMaxBases;
+        _teamMaxModernShips = teamMaxModernShips;
         _playerMaxTotalShips = playerMaxTotalShips;
         _playerMaxClassicShips = playerMaxClassicShips;
-        _playerMaxNewShips = playerMaxNewShips;
-        _playerMaxBases = playerMaxBases;
+        _playerMaxModernShips = playerMaxModernShips;
         _maintenance = maintenance != 0;
         _requiresSelfDisclosure = requiresSelfDisclosure != 0;
 
         _receivedGalaxySettings = true;
 
         GalaxySettingsSnapshot newSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
-            _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxNewShips, _galaxyMaxBases,
-            _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxNewShips, _teamMaxBases,
-            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxNewShips, _playerMaxBases, _maintenance,
+            _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxModernShips,
+            _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxModernShips,
+            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
             _requiresSelfDisclosure);
 
         PushEvent(new GalaxySettingsUpdatedEvent(oldSettings, newSettings));

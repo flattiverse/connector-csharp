@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Units;
 
@@ -113,8 +113,8 @@ public class ControllableInfo : INamedUnit
             case UnitKind.ClassicShipPlayerUnit:
                 info = new ClassicShipControllableInfo(player.Galaxy, player, id, name, alive);
                 return true;
-            case UnitKind.NewShipPlayerUnit:
-                info = new NewShipControllableInfo(player.Galaxy, player, id, name, alive);
+            case UnitKind.ModernShipPlayerUnit:
+                info = new ModernShipControllableInfo(player.Galaxy, player, id, name, alive);
                 return true;
             default:
                 info = null;

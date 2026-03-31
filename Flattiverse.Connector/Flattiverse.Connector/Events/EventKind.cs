@@ -195,6 +195,11 @@ public enum EventKind : byte
     /// Runtime update of a nebula collector subsystem on your own controllable.
     /// </summary>
     NebulaCollectorSubsystem = 0x93,
+
+    /// <summary>
+    /// Runtime update of a modern-ship engine subsystem on your own controllable.
+    /// </summary>
+    ModernShipEngineSubsystem = 0x94,
     
     /// <summary>
     /// You see a new unit.

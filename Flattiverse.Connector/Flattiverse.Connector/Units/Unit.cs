@@ -214,6 +214,9 @@ public class Unit
             case UnitKind.ClassicShipPlayerUnit:
                 unit = new ClassicShipPlayerUnit(cluster, name, reader);
                 return true;
+            case UnitKind.ModernShipPlayerUnit:
+                unit = new ModernShipPlayerUnit(cluster, name, reader);
+                return true;
         }
     }
 

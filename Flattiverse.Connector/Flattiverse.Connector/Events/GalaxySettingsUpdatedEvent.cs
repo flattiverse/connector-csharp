@@ -35,9 +35,9 @@ public class GalaxySettingsUpdatedEvent : FlattiverseEvent
                 $"{Stamp:HH:mm:ss.fff} Galaxy settings initialized: " +
                 $"GameMode={New.GameMode}, Name=\"{New.Name}\", Description=\"{New.Description}\", " +
                 $"MaxPlayers={New.MaxPlayers}, MaxSpectators={New.MaxSpectators}, " +
-                $"GalaxyMaxTotalShips={New.GalaxyMaxTotalShips}, GalaxyMaxClassicShips={New.GalaxyMaxClassicShips}, GalaxyMaxNewShips={New.GalaxyMaxNewShips}, GalaxyMaxBases={New.GalaxyMaxBases}, " +
-                $"TeamMaxTotalShips={New.TeamMaxTotalShips}, TeamMaxClassicShips={New.TeamMaxClassicShips}, TeamMaxNewShips={New.TeamMaxNewShips}, TeamMaxBases={New.TeamMaxBases}, " +
-                $"PlayerMaxTotalShips={New.PlayerMaxTotalShips}, PlayerMaxClassicShips={New.PlayerMaxClassicShips}, PlayerMaxNewShips={New.PlayerMaxNewShips}, PlayerMaxBases={New.PlayerMaxBases}, Maintenance={New.Maintenance}, RequiresSelfDisclosure={New.RequiresSelfDisclosure}.";
+                $"GalaxyMaxTotalShips={New.GalaxyMaxTotalShips}, GalaxyMaxClassicShips={New.GalaxyMaxClassicShips}, GalaxyMaxModernShips={New.GalaxyMaxModernShips}, " +
+                $"TeamMaxTotalShips={New.TeamMaxTotalShips}, TeamMaxClassicShips={New.TeamMaxClassicShips}, TeamMaxModernShips={New.TeamMaxModernShips}, " +
+                $"PlayerMaxTotalShips={New.PlayerMaxTotalShips}, PlayerMaxClassicShips={New.PlayerMaxClassicShips}, PlayerMaxModernShips={New.PlayerMaxModernShips}, Maintenance={New.Maintenance}, RequiresSelfDisclosure={New.RequiresSelfDisclosure}.";
 
         GalaxySettingsSnapshot oldSettings = Old;
         StringBuilder builder = new StringBuilder($"{Stamp:HH:mm:ss.fff} Galaxy settings updated: ");
@@ -106,21 +106,12 @@ public class GalaxySettingsUpdatedEvent : FlattiverseEvent
             appendedAtLeastOneChange = true;
         }
 
-        if (oldSettings.GalaxyMaxNewShips != New.GalaxyMaxNewShips)
+        if (oldSettings.GalaxyMaxModernShips != New.GalaxyMaxModernShips)
         {
             if (appendedAtLeastOneChange)
                 builder.Append(", ");
 
-            builder.Append($"GalaxyMaxNewShips={oldSettings.GalaxyMaxNewShips}->{New.GalaxyMaxNewShips}");
-            appendedAtLeastOneChange = true;
-        }
-
-        if (oldSettings.GalaxyMaxBases != New.GalaxyMaxBases)
-        {
-            if (appendedAtLeastOneChange)
-                builder.Append(", ");
-
-            builder.Append($"GalaxyMaxBases={oldSettings.GalaxyMaxBases}->{New.GalaxyMaxBases}");
+            builder.Append($"GalaxyMaxModernShips={oldSettings.GalaxyMaxModernShips}->{New.GalaxyMaxModernShips}");
             appendedAtLeastOneChange = true;
         }
 
@@ -142,21 +133,12 @@ public class GalaxySettingsUpdatedEvent : FlattiverseEvent
             appendedAtLeastOneChange = true;
         }
 
-        if (oldSettings.TeamMaxNewShips != New.TeamMaxNewShips)
+        if (oldSettings.TeamMaxModernShips != New.TeamMaxModernShips)
         {
             if (appendedAtLeastOneChange)
                 builder.Append(", ");
 
-            builder.Append($"TeamMaxNewShips={oldSettings.TeamMaxNewShips}->{New.TeamMaxNewShips}");
-            appendedAtLeastOneChange = true;
-        }
-
-        if (oldSettings.TeamMaxBases != New.TeamMaxBases)
-        {
-            if (appendedAtLeastOneChange)
-                builder.Append(", ");
-
-            builder.Append($"TeamMaxBases={oldSettings.TeamMaxBases}->{New.TeamMaxBases}");
+            builder.Append($"TeamMaxModernShips={oldSettings.TeamMaxModernShips}->{New.TeamMaxModernShips}");
             appendedAtLeastOneChange = true;
         }
 
@@ -178,21 +160,12 @@ public class GalaxySettingsUpdatedEvent : FlattiverseEvent
             appendedAtLeastOneChange = true;
         }
 
-        if (oldSettings.PlayerMaxNewShips != New.PlayerMaxNewShips)
+        if (oldSettings.PlayerMaxModernShips != New.PlayerMaxModernShips)
         {
             if (appendedAtLeastOneChange)
                 builder.Append(", ");
 
-            builder.Append($"PlayerMaxNewShips={oldSettings.PlayerMaxNewShips}->{New.PlayerMaxNewShips}");
-            appendedAtLeastOneChange = true;
-        }
-
-        if (oldSettings.PlayerMaxBases != New.PlayerMaxBases)
-        {
-            if (appendedAtLeastOneChange)
-                builder.Append(", ");
-
-            builder.Append($"PlayerMaxBases={oldSettings.PlayerMaxBases}->{New.PlayerMaxBases}");
+            builder.Append($"PlayerMaxModernShips={oldSettings.PlayerMaxModernShips}->{New.PlayerMaxModernShips}");
             appendedAtLeastOneChange = true;
         }
 
