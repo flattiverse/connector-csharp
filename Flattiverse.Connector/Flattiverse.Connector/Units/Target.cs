@@ -30,6 +30,9 @@ public abstract class Target : SteadyUnit
     public override bool IsSolid => false;
 
     /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
+    /// <inheritdoc/>
     public override Team? Team => _team;
 
     /// <summary>

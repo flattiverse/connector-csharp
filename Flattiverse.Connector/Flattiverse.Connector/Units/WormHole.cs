@@ -41,6 +41,9 @@ public class WormHole : SteadyUnit
     /// <inheritdoc/>
     public override bool IsSolid => false;
 
+    /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
     /// <summary>
     /// The cluster a jump leads to, once the full state is known.
     /// </summary>

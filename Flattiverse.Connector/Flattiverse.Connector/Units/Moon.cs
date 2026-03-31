@@ -79,6 +79,9 @@ public class Moon : SteadyUnit
     public override UnitKind Kind => UnitKind.Moon;
 
     /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
+    /// <inheritdoc/>
     public override Unit Clone()
     {
         return new Moon(this);

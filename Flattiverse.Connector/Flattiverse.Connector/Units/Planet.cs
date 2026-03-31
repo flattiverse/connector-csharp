@@ -80,6 +80,9 @@ public class Planet : SteadyUnit
     public override UnitKind Kind => UnitKind.Planet;
 
     /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
+    /// <inheritdoc/>
     public override Unit Clone()
     {
         return new Planet(this);

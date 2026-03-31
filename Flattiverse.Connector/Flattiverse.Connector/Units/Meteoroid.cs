@@ -79,6 +79,9 @@ public class Meteoroid : SteadyUnit
     public override UnitKind Kind => UnitKind.Meteoroid;
 
     /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
+    /// <inheritdoc/>
     public override Unit Clone()
     {
         return new Meteoroid(this);

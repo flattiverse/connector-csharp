@@ -78,6 +78,9 @@ public class Sun : SteadyUnit
     public override UnitKind Kind => UnitKind.Sun;
 
     /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
+    /// <inheritdoc/>
     public override Unit Clone()
     {
         return new Sun(this);

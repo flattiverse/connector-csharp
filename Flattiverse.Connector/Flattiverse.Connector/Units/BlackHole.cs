@@ -43,6 +43,9 @@ public class BlackHole : SteadyUnit
     public override UnitKind Kind => UnitKind.BlackHole;
 
     /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
+    /// <inheritdoc/>
     public override Unit Clone()
     {
         return new BlackHole(this);

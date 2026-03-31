@@ -29,6 +29,9 @@ public class Buoy : SteadyUnit
     /// <inheritdoc/>
     public override bool IsSolid => false;
 
+    /// <inheritdoc/>
+    public override bool CanBeEdited => true;
+
     /// <summary>
     /// Optional buoy message. Null means no message.
     /// </summary>
