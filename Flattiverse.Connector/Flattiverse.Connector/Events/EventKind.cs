@@ -1,4 +1,4 @@
-﻿namespace Flattiverse.Connector.Events;
+namespace Flattiverse.Connector.Events;
 
 /// <summary>
 /// Connector-side classification of <see cref="FlattiverseEvent" /> types.
@@ -189,7 +189,7 @@ public enum EventKind : byte
     /// <summary>
     /// Runtime update of a railgun subsystem on your own controllable.
     /// </summary>
-    RailgunSubsystem = 0x92,
+    ClassicRailgunSubsystem = 0x92,
 
     /// <summary>
     /// Runtime update of a nebula collector subsystem on your own controllable.
@@ -200,6 +200,11 @@ public enum EventKind : byte
     /// Runtime update of a modern-ship engine subsystem on your own controllable.
     /// </summary>
     ModernShipEngineSubsystem = 0x94,
+
+    /// <summary>
+    /// Runtime update of a modern railgun subsystem on your own controllable.
+    /// </summary>
+    ModernRailgunSubsystem = 0x95,
     
     /// <summary>
     /// You see a new unit.

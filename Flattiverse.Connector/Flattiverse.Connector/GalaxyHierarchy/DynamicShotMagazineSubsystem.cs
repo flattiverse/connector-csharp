@@ -7,13 +7,13 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class DynamicShotMagazineSubsystem : Subsystem
 {
-    private const float MaximumShotsValue = 5f;
-
+    private float _maximumShots;
     private float _currentShots;
 
     internal DynamicShotMagazineSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
+        _maximumShots = 0f;
         _currentShots = 0f;
     }
 
@@ -22,7 +22,7 @@ public class DynamicShotMagazineSubsystem : Subsystem
     /// </summary>
     public float MaximumShots
     {
-        get { return MaximumShotsValue; }
+        get { return _maximumShots; }
     }
 
     /// <summary>
@@ -39,6 +39,13 @@ public class DynamicShotMagazineSubsystem : Subsystem
         ResetRuntimeStatus();
     }
 
+    internal void SetMaximumShots(float maximumShots)
+    {
+        _maximumShots = Exists ? maximumShots : 0f;
+
+        RefreshTier();
+    }
+
     internal void UpdateRuntime(float currentShots, SubsystemStatus status)
     {
         _currentShots = currentShots;
@@ -51,5 +58,46 @@ public class DynamicShotMagazineSubsystem : Subsystem
             return null;
 
         return new DynamicShotMagazineSubsystemEvent(Controllable, Slot, Status, _currentShots);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        byte maximumTier = (byte)(TierInfos.Count - 1);
+
+        for (byte tier = 1; tier <= maximumTier; tier++)
+        {
+            float maximumShots;
+            float startingShots;
+            float load;
+
+            if (Slot is SubsystemSlot.DynamicShotMagazine or SubsystemSlot.DynamicInterceptorMagazine)
+            {
+                if (this is DynamicInterceptorMagazineSubsystem or StaticInterceptorMagazineSubsystem)
+                    ShipBalancing.GetDynamicInterceptorMagazine(tier, out maximumShots, out startingShots, out load);
+                else
+                    ShipBalancing.GetDynamicShotMagazine(tier, out maximumShots, out startingShots, out load);
+            }
+            else
+            {
+                if (this is DynamicInterceptorMagazineSubsystem or StaticInterceptorMagazineSubsystem)
+                    ShipBalancing.GetStaticInterceptorMagazine(tier, out maximumShots, out startingShots, out load);
+                else
+                    ShipBalancing.GetStaticShotMagazine(tier, out maximumShots, out startingShots, out load);
+            }
+
+            if (Matches(_maximumShots, maximumShots))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

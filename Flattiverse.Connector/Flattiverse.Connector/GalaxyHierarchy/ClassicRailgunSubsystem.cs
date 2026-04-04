@@ -7,20 +7,24 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// <summary>
 /// Railgun subsystem of a controllable.
 /// </summary>
-public class RailgunSubsystem : Subsystem
+public class ClassicRailgunSubsystem : Subsystem
 {
-    private const float ProjectileSpeedValue = 4f;
-    private const ushort ProjectileLifetimeValue = 250;
-    private const float EnergyCostValue = 300f;
-    private const float MetalCostValue = 1f;
+    private float _projectileSpeed;
+    private ushort _projectileLifetime;
+    private float _energyCost;
+    private float _metalCost;
 
     private RailgunDirection _direction;
     private float _consumedEnergyThisTick;
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal RailgunSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) : base(controllable, name, exists, slot)
+    internal ClassicRailgunSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) : base(controllable, name, exists, slot)
     {
+        _projectileSpeed = 4f;
+        _projectileLifetime = 250;
+        _energyCost = 300f;
+        _metalCost = 1f;
         _direction = RailgunDirection.None;
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
@@ -32,7 +36,7 @@ public class RailgunSubsystem : Subsystem
     /// </summary>
     public float ProjectileSpeed
     {
-        get { return ProjectileSpeedValue; }
+        get { return _projectileSpeed; }
     }
 
     /// <summary>
@@ -40,7 +44,7 @@ public class RailgunSubsystem : Subsystem
     /// </summary>
     public ushort ProjectileLifetime
     {
-        get { return ProjectileLifetimeValue; }
+        get { return _projectileLifetime; }
     }
 
     /// <summary>
@@ -48,7 +52,7 @@ public class RailgunSubsystem : Subsystem
     /// </summary>
     public float EnergyCost
     {
-        get { return EnergyCostValue; }
+        get { return _energyCost; }
     }
 
     /// <summary>
@@ -56,7 +60,17 @@ public class RailgunSubsystem : Subsystem
     /// </summary>
     public float MetalCost
     {
-        get { return MetalCostValue; }
+        get { return _metalCost; }
+    }
+
+    internal void SetCapabilities(float projectileSpeed, ushort projectileLifetime, float energyCost, float metalCost)
+    {
+        _projectileSpeed = Exists ? projectileSpeed : 0f;
+        _projectileLifetime = Exists ? projectileLifetime : (ushort)0;
+        _energyCost = Exists ? energyCost : 0f;
+        _metalCost = Exists ? metalCost : 0f;
+
+        RefreshTier();
     }
 
     /// <summary>
@@ -103,7 +117,7 @@ public class RailgunSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        energy = EnergyCostValue;
+        energy = _energyCost;
         return true;
     }
 
@@ -162,7 +176,38 @@ public class RailgunSubsystem : Subsystem
         if (!Exists || !ShouldEmitRuntimeEvent())
             return null;
 
-        return new RailgunSubsystemEvent(Controllable, Slot, Status, _direction, _consumedEnergyThisTick, _consumedIonsThisTick,
+        if (this is ModernRailgunSubsystem)
+            return new ModernRailgunSubsystemEvent(Controllable, Slot, Status, _direction, _consumedEnergyThisTick, _consumedIonsThisTick,
+                _consumedNeutrinosThisTick);
+
+        return new ClassicRailgunSubsystemEvent(Controllable, Slot, Status, _direction, _consumedEnergyThisTick, _consumedIonsThisTick,
             _consumedNeutrinosThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        byte maximumTier = (byte)(TierInfos.Count - 1);
+        bool modern = this is ModernRailgunSubsystem;
+
+        for (byte tier = 1; tier <= maximumTier; tier++)
+        {
+            ShipBalancing.GetRailgun(tier, modern, out float projectileSpeed, out ushort projectileLifetime, out float energyCost,
+                out float metalCost, out float load);
+
+            if (Matches(_projectileSpeed, projectileSpeed) && _projectileLifetime == projectileLifetime
+                && Matches(_energyCost, energyCost) && Matches(_metalCost, metalCost))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

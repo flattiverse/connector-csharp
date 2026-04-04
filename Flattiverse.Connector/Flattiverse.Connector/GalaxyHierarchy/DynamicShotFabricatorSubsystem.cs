@@ -10,7 +10,6 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 public class DynamicShotFabricatorSubsystem : Subsystem
 {
     private const float MinimumRateValue = 0f;
-    private const float EnergyScale = 32000f;
 
     private float _maximumRate;
     private bool _active;
@@ -102,7 +101,7 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRate, out rate) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = rate * rate * EnergyScale;
+        energy = ShipBalancing.CalculateEngineEnergy(rate, MaximumRate, FullCostFromMaximumRate(MaximumRate));
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -111,6 +110,38 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         }
 
         return true;
+    }
+
+    private static float FullCostFromMaximumRate(float maximumRate)
+    {
+        if (maximumRate <= 0.00331f)
+            return 2.64f;
+
+        if (maximumRate <= 0.00496f)
+            return 3.76f;
+
+        if (maximumRate <= 0.00688f)
+            return 5.50f;
+
+        if (maximumRate <= 0.00908f)
+            return 8.62f;
+
+        if (maximumRate <= 0.01156f)
+            return 13.86f;
+
+        if (maximumRate <= 0.0121f)
+            return 8f;
+
+        if (maximumRate <= 0.0181f)
+            return 11f;
+
+        if (maximumRate <= 0.0251f)
+            return 16f;
+
+        if (maximumRate <= 0.0331f)
+            return 25f;
+
+        return 39f;
     }
 
     /// <summary>
@@ -186,6 +217,8 @@ public class DynamicShotFabricatorSubsystem : Subsystem
 
         if (_rate > _maximumRate)
             _rate = _maximumRate;
+
+        RefreshTier();
     }
 
     internal void ResetRuntime()
@@ -216,5 +249,46 @@ public class DynamicShotFabricatorSubsystem : Subsystem
 
         return new DynamicShotFabricatorSubsystemEvent(Controllable, Slot, Status, _active, _rate, _consumedEnergyThisTick,
             _consumedIonsThisTick, _consumedNeutrinosThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        byte maximumTier = (byte)(TierInfos.Count - 1);
+
+        for (byte tier = 1; tier <= maximumTier; tier++)
+        {
+            float maximumRate;
+            float fullCost;
+            float load;
+
+            if (Slot is SubsystemSlot.DynamicShotFabricator or SubsystemSlot.DynamicInterceptorFabricator)
+            {
+                if (this is DynamicInterceptorFabricatorSubsystem or StaticInterceptorFabricatorSubsystem)
+                    ShipBalancing.GetDynamicInterceptorFabricator(tier, out maximumRate, out fullCost, out load);
+                else
+                    ShipBalancing.GetDynamicShotFabricator(tier, out maximumRate, out fullCost, out load);
+            }
+            else
+            {
+                if (this is DynamicInterceptorFabricatorSubsystem or StaticInterceptorFabricatorSubsystem)
+                    ShipBalancing.GetStaticInterceptorFabricator(tier, out maximumRate, out fullCost, out load);
+                else
+                    ShipBalancing.GetStaticShotFabricator(tier, out maximumRate, out fullCost, out load);
+            }
+
+            if (Matches(_maximumRate, maximumRate))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

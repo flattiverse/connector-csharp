@@ -9,11 +9,9 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class ShieldSubsystem : Subsystem
 {
-    private const float MinimumRateValue = 0f;
-    private const float MaximumRateValue = 0.125f;
-    private const float EnergyScale = 1600f;
-
     private float _maximum;
+    private float _minimumRate;
+    private float _maximumRate;
     private float _current;
     private bool _active;
     private float _rate;
@@ -25,6 +23,8 @@ public class ShieldSubsystem : Subsystem
         base(controllable, name, exists, slot)
     {
         _maximum = exists ? 20f : 0f;
+        _minimumRate = 0f;
+        _maximumRate = 0.125f;
         _current = 0f;
         _active = false;
         _rate = 0f;
@@ -59,7 +59,7 @@ public class ShieldSubsystem : Subsystem
     /// </summary>
     public float MinimumRate
     {
-        get { return MinimumRateValue; }
+        get { return _minimumRate; }
     }
 
     /// <summary>
@@ -67,15 +67,23 @@ public class ShieldSubsystem : Subsystem
     /// </summary>
     public float MaximumRate
     {
-        get { return MaximumRateValue; }
+        get { return _maximumRate; }
     }
 
     internal void SetMaximum(float maximum)
     {
         _maximum = Exists ? maximum : 0f;
+        RefreshTier();
 
         if (_current > _maximum)
             _current = _maximum;
+    }
+
+    internal void SetRateCapabilities(float minimumRate, float maximumRate)
+    {
+        _minimumRate = Exists ? minimumRate : 0f;
+        _maximumRate = Exists ? maximumRate : 0f;
+        RefreshTier();
     }
 
     /// <summary>
@@ -130,10 +138,17 @@ public class ShieldSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = rate * rate * EnergyScale;
+        if (RateToTier(_maximum, _maximumRate) == 5)
+        {
+            ions = _maximumRate > 0f ? 0.9f * rate / _maximumRate : 0f;
+            return true;
+        }
+
+        energy = ShipBalancing.CalculateShieldEnergy((byte)RateToTier(_maximum, _maximumRate), rate, _maximumRate,
+            FullCostFromCapabilities(_maximum, _maximumRate));
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -142,6 +157,36 @@ public class ShieldSubsystem : Subsystem
         }
 
         return true;
+    }
+
+    private static int RateToTier(float maximum, float maximumRate)
+    {
+        if (maximum <= 20.5f && maximumRate <= 0.101f)
+            return 1;
+
+        if (maximum <= 35.5f && maximumRate <= 0.141f)
+            return 2;
+
+        if (maximum <= 50.5f && maximumRate <= 0.181f)
+            return 3;
+
+        if (maximum <= 65.5f && maximumRate <= 0.231f)
+            return 4;
+
+        return 5;
+    }
+
+    private static float FullCostFromCapabilities(float maximum, float maximumRate)
+    {
+        return RateToTier(maximum, maximumRate) switch
+        {
+            1 => 16f,
+            2 => 26f,
+            3 => 39f,
+            4 => 58f,
+            5 => 82f,
+            _ => 0f
+        };
     }
 
     /// <summary>
@@ -158,7 +203,7 @@ public class ShieldSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate);
+        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate);
 
         if (rateValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(rateValidity, "rate");
@@ -241,5 +286,27 @@ public class ShieldSubsystem : Subsystem
 
         return new ShieldSubsystemEvent(Controllable, Slot, Status, _current, _active, _rate, _consumedEnergyThisTick,
             _consumedIonsThisTick, _consumedNeutrinosThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetShield(tier, out float maximum, out float maximumRate, out float fullCost, out float load);
+
+            if (Matches(_maximum, maximum) && Matches(_maximumRate, maximumRate))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

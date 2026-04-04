@@ -3,7 +3,7 @@ namespace Flattiverse.Connector.Units;
 /// <summary>
 /// Visible snapshot of a railgun subsystem on a scanned player unit.
 /// </summary>
-public class RailgunSubsystemInfo
+public class ClassicRailgunSubsystemInfo
 {
     private bool _exists;
     private float _energyCost;
@@ -14,7 +14,7 @@ public class RailgunSubsystemInfo
     private float _consumedIonsThisTick;
     private float _consumedNeutrinosThisTick;
 
-    internal RailgunSubsystemInfo()
+    internal ClassicRailgunSubsystemInfo()
     {
         _exists = false;
         _energyCost = 0f;

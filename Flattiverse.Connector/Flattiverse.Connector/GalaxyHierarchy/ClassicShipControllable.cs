@@ -17,7 +17,7 @@ public class ClassicShipControllable : Controllable
     private readonly DynamicInterceptorLauncherSubsystem _interceptorLauncher;
     private readonly DynamicInterceptorMagazineSubsystem _interceptorMagazine;
     private readonly DynamicInterceptorFabricatorSubsystem _interceptorFabricator;
-    private readonly RailgunSubsystem _railgun;
+    private readonly ClassicRailgunSubsystem _railgun;
     private readonly DynamicScannerSubsystem _mainScanner;
     private readonly DynamicScannerSubsystem _secondaryScanner;
     private readonly JumpDriveSubsystem _jumpDrive;
@@ -31,6 +31,7 @@ public class ClassicShipControllable : Controllable
         _repair = RepairSubsystem.CreateClassicShipRepair(this);
         _cargo = CargoSubsystem.CreateClassicShipCargo(this);
         _resourceMiner = ResourceMinerSubsystem.CreateClassicShipResourceMiner(this);
+        _structureOptimizer = new StructureOptimizerSubsystem(this, false, 0f);
         _nebulaCollector = NebulaCollectorSubsystem.CreateClassicShipNebulaCollector(this);
         _energyBattery = BatterySubsystem.CreateClassicShipEnergyBattery(this);
         _ionBattery = BatterySubsystem.CreateMissingBattery(this, "IonBattery", SubsystemSlot.IonBattery);
@@ -49,7 +50,7 @@ public class ClassicShipControllable : Controllable
             SubsystemSlot.DynamicInterceptorMagazine);
         _interceptorFabricator = new DynamicInterceptorFabricatorSubsystem(this, "InterceptorFabricator", true,
             SubsystemSlot.DynamicInterceptorFabricator);
-        _railgun = new RailgunSubsystem(this, "Railgun", true, SubsystemSlot.Railgun);
+        _railgun = new ClassicRailgunSubsystem(this, "Railgun", true, SubsystemSlot.Railgun);
         _mainScanner = DynamicScannerSubsystem.CreateClassicShipPrimaryScanner(this);
         _secondaryScanner = DynamicScannerSubsystem.CreateClassicShipSecondaryScanner(this);
         _jumpDrive = new JumpDriveSubsystem(this, true);
@@ -58,6 +59,7 @@ public class ClassicShipControllable : Controllable
         ReadInitialState(reader);
 
         if (!reader.Read(out byte nebulaCollectorExists) ||
+            !reader.Read(out byte nebulaCollectorTier) ||
             !reader.Read(out float nebulaCollectorMinimumRate) ||
             !reader.Read(out float nebulaCollectorMaximumRate) ||
             !reader.Read(out float nebulaCollectorRate) ||
@@ -68,6 +70,7 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float nebulaCollectorCollectedThisTick) ||
             !reader.Read(out float nebulaCollectorCollectedHueThisTick) ||
             !reader.Read(out byte mainScannerExists) ||
+            !reader.Read(out byte mainScannerTier) ||
             !reader.Read(out float mainScannerMaximumWidth) ||
             !reader.Read(out float mainScannerMaximumLength) ||
             !reader.Read(out float mainScannerWidthSpeed) ||
@@ -85,6 +88,7 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float mainScannerConsumedIonsThisTick) ||
             !reader.Read(out float mainScannerConsumedNeutrinosThisTick) ||
             !reader.Read(out byte secondaryScannerExists) ||
+            !reader.Read(out byte secondaryScannerTier) ||
             !reader.Read(out float secondaryScannerMaximumWidth) ||
             !reader.Read(out float secondaryScannerMaximumLength) ||
             !reader.Read(out float secondaryScannerWidthSpeed) ||
@@ -102,6 +106,7 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float secondaryScannerConsumedIonsThisTick) ||
             !reader.Read(out float secondaryScannerConsumedNeutrinosThisTick) ||
             !reader.Read(out byte engineExists) ||
+            !reader.Read(out byte engineTier) ||
             !reader.Read(out float engineMaximum) ||
             !Vector.FromReader(reader, out Vector? engineCurrent) ||
             !Vector.FromReader(reader, out Vector? engineTarget) ||
@@ -110,6 +115,7 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float engineConsumedIonsThisTick) ||
             !reader.Read(out float engineConsumedNeutrinosThisTick) ||
             !reader.Read(out byte shotLauncherExists) ||
+            !reader.Read(out byte shotLauncherTier) ||
             !reader.Read(out float shotLauncherMinimumRelativeMovement) ||
             !reader.Read(out float shotLauncherMaximumRelativeMovement) ||
             !reader.Read(out ushort shotLauncherMinimumTicks) ||
@@ -127,10 +133,12 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float shotLauncherConsumedIonsThisTick) ||
             !reader.Read(out float shotLauncherConsumedNeutrinosThisTick) ||
             !reader.Read(out byte shotMagazineExists) ||
+            !reader.Read(out byte shotMagazineTier) ||
             !reader.Read(out float shotMagazineMaximumShots) ||
             !reader.Read(out float shotMagazineCurrentShots) ||
             !reader.Read(out byte shotMagazineStatus) ||
             !reader.Read(out byte shotFabricatorExists) ||
+            !reader.Read(out byte shotFabricatorTier) ||
             !reader.Read(out float shotFabricatorMinimumRate) ||
             !reader.Read(out float shotFabricatorMaximumRate) ||
             !reader.Read(out byte shotFabricatorActive) ||
@@ -140,6 +148,7 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float shotFabricatorConsumedIonsThisTick) ||
             !reader.Read(out float shotFabricatorConsumedNeutrinosThisTick) ||
             !reader.Read(out byte interceptorLauncherExists) ||
+            !reader.Read(out byte interceptorLauncherTier) ||
             !reader.Read(out float interceptorLauncherMinimumRelativeMovement) ||
             !reader.Read(out float interceptorLauncherMaximumRelativeMovement) ||
             !reader.Read(out ushort interceptorLauncherMinimumTicks) ||
@@ -157,10 +166,12 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float interceptorLauncherConsumedIonsThisTick) ||
             !reader.Read(out float interceptorLauncherConsumedNeutrinosThisTick) ||
             !reader.Read(out byte interceptorMagazineExists) ||
+            !reader.Read(out byte interceptorMagazineTier) ||
             !reader.Read(out float interceptorMagazineMaximumShots) ||
             !reader.Read(out float interceptorMagazineCurrentShots) ||
             !reader.Read(out byte interceptorMagazineStatus) ||
             !reader.Read(out byte interceptorFabricatorExists) ||
+            !reader.Read(out byte interceptorFabricatorTier) ||
             !reader.Read(out float interceptorFabricatorMinimumRate) ||
             !reader.Read(out float interceptorFabricatorMaximumRate) ||
             !reader.Read(out byte interceptorFabricatorActive) ||
@@ -170,6 +181,9 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float interceptorFabricatorConsumedIonsThisTick) ||
             !reader.Read(out float interceptorFabricatorConsumedNeutrinosThisTick) ||
             !reader.Read(out byte railgunExists) ||
+            !reader.Read(out byte railgunTier) ||
+            !reader.Read(out float railgunProjectileSpeed) ||
+            !reader.Read(out ushort railgunProjectileLifetime) ||
             !reader.Read(out float railgunEnergyCost) ||
             !reader.Read(out float railgunMetalCost) ||
             !reader.Read(out byte railgunDirection) ||
@@ -178,42 +192,81 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out float railgunConsumedIonsThisTick) ||
             !reader.Read(out float railgunConsumedNeutrinosThisTick) ||
             !reader.Read(out byte jumpDriveExists) ||
+            !reader.Read(out byte jumpDriveTier) ||
             !reader.Read(out float jumpDriveEnergyCost) ||
             !reader.Read(out _equippedCrystals[0]) ||
             !reader.Read(out _equippedCrystals[1]) ||
             !reader.Read(out _equippedCrystals[2]))
             throw new InvalidDataException("Couldn't read ClassicShipControllable create state.");
 
+        _nebulaCollector.SetExists(nebulaCollectorExists != 0);
+        _nebulaCollector.SetCapabilities(nebulaCollectorMinimumRate, nebulaCollectorMaximumRate);
         _nebulaCollector.UpdateRuntime(nebulaCollectorRate, (SubsystemStatus)nebulaCollectorStatus, nebulaCollectorConsumedEnergyThisTick,
             nebulaCollectorConsumedIonsThisTick, nebulaCollectorConsumedNeutrinosThisTick, nebulaCollectorCollectedThisTick,
             nebulaCollectorCollectedHueThisTick);
+        _nebulaCollector.SetReportedTier(nebulaCollectorTier);
+        _mainScanner.SetExists(mainScannerExists != 0);
+        _mainScanner.SetCapabilities(mainScannerMaximumWidth, mainScannerMaximumLength, mainScannerWidthSpeed, mainScannerLengthSpeed,
+            mainScannerAngleSpeed);
         _mainScanner.UpdateRuntime(mainScannerActive != 0, mainScannerCurrentWidth, mainScannerCurrentLength, mainScannerCurrentAngle,
             mainScannerTargetWidth, mainScannerTargetLength, mainScannerTargetAngle, (SubsystemStatus)mainScannerStatus,
             mainScannerConsumedEnergyThisTick, mainScannerConsumedIonsThisTick, mainScannerConsumedNeutrinosThisTick);
+        _mainScanner.SetReportedTier(mainScannerTier);
+        _secondaryScanner.SetExists(secondaryScannerExists != 0);
+        _secondaryScanner.SetCapabilities(secondaryScannerMaximumWidth, secondaryScannerMaximumLength, secondaryScannerWidthSpeed,
+            secondaryScannerLengthSpeed, secondaryScannerAngleSpeed);
         _secondaryScanner.UpdateRuntime(secondaryScannerActive != 0, secondaryScannerCurrentWidth, secondaryScannerCurrentLength,
             secondaryScannerCurrentAngle, secondaryScannerTargetWidth, secondaryScannerTargetLength,
             secondaryScannerTargetAngle, (SubsystemStatus)secondaryScannerStatus, secondaryScannerConsumedEnergyThisTick,
             secondaryScannerConsumedIonsThisTick, secondaryScannerConsumedNeutrinosThisTick);
+        _secondaryScanner.SetReportedTier(secondaryScannerTier);
+        _engine.SetExists(engineExists != 0);
+        _engine.SetMaximum(engineMaximum);
         _engine.UpdateRuntime(engineCurrent, engineTarget, (SubsystemStatus)engineStatus, engineConsumedEnergyThisTick,
             engineConsumedIonsThisTick, engineConsumedNeutrinosThisTick);
+        _engine.SetReportedTier(engineTier);
+        _shotLauncher.SetExists(shotLauncherExists != 0);
+        _shotLauncher.SetCapabilities(shotLauncherMinimumRelativeMovement, shotLauncherMaximumRelativeMovement, shotLauncherMinimumTicks,
+            shotLauncherMaximumTicks, shotLauncherMinimumLoad, shotLauncherMaximumLoad, shotLauncherMinimumDamage, shotLauncherMaximumDamage);
         _shotLauncher.UpdateRuntime(shotLauncherRelativeMovement, shotLauncherTicks, shotLauncherLoad, shotLauncherDamage,
             (SubsystemStatus)shotLauncherStatus, shotLauncherConsumedEnergyThisTick, shotLauncherConsumedIonsThisTick,
             shotLauncherConsumedNeutrinosThisTick);
+        _shotLauncher.SetReportedTier(shotLauncherTier);
+        _shotMagazine.SetExists(shotMagazineExists != 0);
+        _shotMagazine.SetMaximumShots(shotMagazineMaximumShots);
         _shotMagazine.UpdateRuntime(shotMagazineCurrentShots, (SubsystemStatus)shotMagazineStatus);
+        _shotMagazine.SetReportedTier(shotMagazineTier);
+        _shotFabricator.SetExists(shotFabricatorExists != 0);
         _shotFabricator.SetMaximumRate(shotFabricatorMaximumRate);
         _shotFabricator.UpdateRuntime(shotFabricatorActive != 0, shotFabricatorRate, (SubsystemStatus)shotFabricatorStatus,
             shotFabricatorConsumedEnergyThisTick, shotFabricatorConsumedIonsThisTick, shotFabricatorConsumedNeutrinosThisTick);
+        _shotFabricator.SetReportedTier(shotFabricatorTier);
+        _interceptorLauncher.SetExists(interceptorLauncherExists != 0);
+        _interceptorLauncher.SetCapabilities(interceptorLauncherMinimumRelativeMovement, interceptorLauncherMaximumRelativeMovement,
+            interceptorLauncherMinimumTicks, interceptorLauncherMaximumTicks, interceptorLauncherMinimumLoad, interceptorLauncherMaximumLoad,
+            interceptorLauncherMinimumDamage, interceptorLauncherMaximumDamage);
         _interceptorLauncher.UpdateRuntime(interceptorLauncherRelativeMovement, interceptorLauncherTicks, interceptorLauncherLoad,
             interceptorLauncherDamage, (SubsystemStatus)interceptorLauncherStatus, interceptorLauncherConsumedEnergyThisTick,
             interceptorLauncherConsumedIonsThisTick, interceptorLauncherConsumedNeutrinosThisTick);
+        _interceptorLauncher.SetReportedTier(interceptorLauncherTier);
+        _interceptorMagazine.SetExists(interceptorMagazineExists != 0);
+        _interceptorMagazine.SetMaximumShots(interceptorMagazineMaximumShots);
         _interceptorMagazine.UpdateRuntime(interceptorMagazineCurrentShots, (SubsystemStatus)interceptorMagazineStatus);
+        _interceptorMagazine.SetReportedTier(interceptorMagazineTier);
+        _interceptorFabricator.SetExists(interceptorFabricatorExists != 0);
         _interceptorFabricator.SetMaximumRate(interceptorFabricatorMaximumRate);
         _interceptorFabricator.UpdateRuntime(interceptorFabricatorActive != 0, interceptorFabricatorRate,
             (SubsystemStatus)interceptorFabricatorStatus, interceptorFabricatorConsumedEnergyThisTick,
             interceptorFabricatorConsumedIonsThisTick, interceptorFabricatorConsumedNeutrinosThisTick);
+        _interceptorFabricator.SetReportedTier(interceptorFabricatorTier);
+        _railgun.SetExists(railgunExists != 0);
+        _railgun.SetCapabilities(railgunProjectileSpeed, railgunProjectileLifetime, railgunEnergyCost, railgunMetalCost);
         _railgun.UpdateRuntime((RailgunDirection)railgunDirection, (SubsystemStatus)railgunStatus, railgunConsumedEnergyThisTick,
             railgunConsumedIonsThisTick, railgunConsumedNeutrinosThisTick);
+        _railgun.SetReportedTier(railgunTier);
+        _jumpDrive.SetExists(jumpDriveExists != 0);
         _jumpDrive.SetEnergyCost(jumpDriveEnergyCost);
+        _jumpDrive.SetReportedTier(jumpDriveTier);
     }
 
     /// <summary>
@@ -275,7 +328,7 @@ public class ClassicShipControllable : Controllable
     /// <summary>
     /// The railgun subsystem of the classic ship.
     /// </summary>
-    public RailgunSubsystem Railgun
+    public ClassicRailgunSubsystem Railgun
     {
         get { return _railgun; }
     }
@@ -324,6 +377,23 @@ public class ClassicShipControllable : Controllable
     public IReadOnlyList<string> EquippedCrystals
     {
         get { return _equippedCrystals; }
+    }
+
+    internal override float GetProjectedRawStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
+    {
+        return GetCommonProjectedStructuralLoad(slot, projectedStructuralLoad) +
+            StructuralLoadFor(_nebulaCollector, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_engine, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_shotLauncher, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_shotMagazine, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_shotFabricator, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_interceptorLauncher, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_interceptorMagazine, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_interceptorFabricator, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_railgun, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_mainScanner, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_secondaryScanner, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_jumpDrive, slot, projectedStructuralLoad);
     }
 
     private protected override void ResetRuntime()
@@ -417,6 +487,10 @@ public class ClassicShipControllable : Controllable
         float railgunConsumedEnergyThisTick;
         float railgunConsumedIonsThisTick;
         float railgunConsumedNeutrinosThisTick;
+        byte jumpDriveStatus;
+        float jumpDriveConsumedEnergyThisTick;
+        float jumpDriveConsumedIonsThisTick;
+        float jumpDriveConsumedNeutrinosThisTick;
 
         if (!reader.Read(out nebulaCollectorRate) ||
             !reader.Read(out nebulaCollectorStatus) ||
@@ -455,7 +529,9 @@ public class ClassicShipControllable : Controllable
             !reader.Read(out interceptorFabricatorConsumedEnergyThisTick) || !reader.Read(out interceptorFabricatorConsumedIonsThisTick) ||
             !reader.Read(out interceptorFabricatorConsumedNeutrinosThisTick) || !reader.Read(out railgunDirection) ||
             !reader.Read(out railgunStatus) || !reader.Read(out railgunConsumedEnergyThisTick) ||
-            !reader.Read(out railgunConsumedIonsThisTick) || !reader.Read(out railgunConsumedNeutrinosThisTick))
+            !reader.Read(out railgunConsumedIonsThisTick) || !reader.Read(out railgunConsumedNeutrinosThisTick) ||
+            !reader.Read(out jumpDriveStatus) || !reader.Read(out jumpDriveConsumedEnergyThisTick) ||
+            !reader.Read(out jumpDriveConsumedIonsThisTick) || !reader.Read(out jumpDriveConsumedNeutrinosThisTick))
             throw new InvalidDataException("Couldn't read ClassicShipControllable runtime.");
 
         _nebulaCollector.UpdateRuntime(nebulaCollectorRate, (SubsystemStatus)nebulaCollectorStatus, nebulaCollectorConsumedEnergyThisTick,
@@ -485,6 +561,8 @@ public class ClassicShipControllable : Controllable
             interceptorFabricatorConsumedIonsThisTick, interceptorFabricatorConsumedNeutrinosThisTick);
         _railgun.UpdateRuntime((RailgunDirection)railgunDirection, (SubsystemStatus)railgunStatus, railgunConsumedEnergyThisTick,
             railgunConsumedIonsThisTick, railgunConsumedNeutrinosThisTick);
+        _jumpDrive.UpdateRuntime((SubsystemStatus)jumpDriveStatus, jumpDriveConsumedEnergyThisTick, jumpDriveConsumedIonsThisTick,
+            jumpDriveConsumedNeutrinosThisTick);
     }
 
     private protected override void EmitRuntimeEvents()

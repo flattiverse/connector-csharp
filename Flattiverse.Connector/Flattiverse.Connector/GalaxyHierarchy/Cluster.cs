@@ -291,6 +291,128 @@ public class Cluster : INamedUnit
     }
 
     /// <summary>
+    /// Admin-only helper that force-sets one player-unit subsystem tier inside this cluster.
+    /// Intended for debugging and balancing tests.
+    /// </summary>
+    /// <param name="unitName">Player-unit name.</param>
+    /// <param name="slot">Concrete subsystem slot.</param>
+    /// <param name="tier">Target tier.</param>
+    public async Task DebugSetPlayerUnitSubsystemTier(string unitName, SubsystemSlot slot, byte tier)
+    {
+        if (string.IsNullOrEmpty(unitName))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "unitName");
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x2B;
+            writer.Write(Id);
+            writer.Write(unitName);
+            writer.Write((byte)slot);
+            writer.Write(tier);
+        });
+    }
+
+    /// <summary>
+    /// Admin-only helper that force-sets the current shield value of one player-unit inside this cluster.
+    /// Intended for debugging and balancing tests.
+    /// </summary>
+    /// <param name="unitName">Player-unit name.</param>
+    /// <param name="current">Target shield value.</param>
+    public async Task DebugSetPlayerUnitShieldCurrent(string unitName, float current)
+    {
+        if (string.IsNullOrEmpty(unitName))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "unitName");
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x2C;
+            writer.Write(Id);
+            writer.Write(unitName);
+            writer.Write(current);
+        });
+    }
+
+    /// <summary>
+    /// Admin-only helper that force-sets the current hull value of one player-unit inside this cluster.
+    /// Intended for debugging and balancing tests.
+    /// </summary>
+    /// <param name="unitName">Player-unit name.</param>
+    /// <param name="current">Target hull value.</param>
+    public async Task DebugSetPlayerUnitHullCurrent(string unitName, float current)
+    {
+        if (string.IsNullOrEmpty(unitName))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "unitName");
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x2D;
+            writer.Write(Id);
+            writer.Write(unitName);
+            writer.Write(current);
+        });
+    }
+
+    /// <summary>
+    /// Admin-only helper that force-sets the position of one player-unit inside this cluster and clears its movement.
+    /// Intended for debugging and balancing tests.
+    /// </summary>
+    /// <param name="unitName">Player-unit name.</param>
+    /// <param name="position">Target position.</param>
+    public async Task DebugSetPlayerUnitPosition(string unitName, Vector position)
+    {
+        if (string.IsNullOrEmpty(unitName))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "unitName");
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x2E;
+            writer.Write(Id);
+            writer.Write(unitName);
+            position.Write(ref writer);
+        });
+    }
+
+    /// <summary>
+    /// Admin-only helper that clears the non-metal cargo contents of one player-unit inside this cluster.
+    /// Intended for debugging and balancing tests.
+    /// </summary>
+    /// <param name="unitName">Target player-unit name.</param>
+    public async Task DebugClearPlayerUnitNonMetalCargo(string unitName)
+    {
+        if (string.IsNullOrEmpty(unitName))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "unitName");
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x2F;
+            writer.Write(Id);
+            writer.Write(unitName);
+        });
+    }
+
+    /// <summary>
+    /// Admin-only helper that force-sets one battery current value of one player-unit inside this cluster.
+    /// Intended for debugging and balancing tests.
+    /// </summary>
+    /// <param name="unitName">Player-unit name.</param>
+    /// <param name="slot">Battery slot to modify.</param>
+    /// <param name="current">Target battery value.</param>
+    public async Task DebugSetPlayerUnitBatteryCurrent(string unitName, SubsystemSlot slot, float current)
+    {
+        if (string.IsNullOrEmpty(unitName))
+            throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "unitName");
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0x30;
+            writer.Write(Id);
+            writer.Write(unitName);
+            writer.Write((byte)slot);
+            writer.Write(current);
+        });
+    }
+
+    /// <summary>
     /// If false, you have been disconnected or the cluster has been removed and therefore disabled.
     /// </summary>
     public bool Active => _active;

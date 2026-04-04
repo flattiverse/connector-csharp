@@ -9,10 +9,8 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class RepairSubsystem : Subsystem
 {
-    private const float MinimumRateValue = 0f;
-    private const float MaximumRateValue = 0.1f;
-    private const float EnergyScale = 1600f;
-
+    private float _minimumRate;
+    private float _maximumRate;
     private float _rate;
     private float _consumedEnergyThisTick;
     private float _consumedIonsThisTick;
@@ -22,6 +20,8 @@ public class RepairSubsystem : Subsystem
     internal RepairSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
+        _minimumRate = 0f;
+        _maximumRate = 0.1f;
         _rate = 0f;
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
@@ -39,7 +39,7 @@ public class RepairSubsystem : Subsystem
     /// </summary>
     public float MinimumRate
     {
-        get { return MinimumRateValue; }
+        get { return _minimumRate; }
     }
 
     /// <summary>
@@ -47,7 +47,14 @@ public class RepairSubsystem : Subsystem
     /// </summary>
     public float MaximumRate
     {
-        get { return MaximumRateValue; }
+        get { return _maximumRate; }
+    }
+
+    internal void SetCapabilities(float minimumRate, float maximumRate)
+    {
+        _minimumRate = Exists ? minimumRate : 0f;
+        _maximumRate = Exists ? maximumRate : 0f;
+        RefreshTier();
     }
 
     /// <summary>
@@ -102,10 +109,10 @@ public class RepairSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = rate * rate * EnergyScale;
+        energy = ShipBalancing.CalculateRepairEnergy(RateToTier(_maximumRate), rate, _maximumRate);
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -114,6 +121,23 @@ public class RepairSubsystem : Subsystem
         }
 
         return true;
+    }
+
+    private static byte RateToTier(float maximumRate)
+    {
+        if (maximumRate <= 0.051f)
+            return 1;
+
+        if (maximumRate <= 0.071f)
+            return 2;
+
+        if (maximumRate <= 0.101f)
+            return 3;
+
+        if (maximumRate <= 0.141f)
+            return 4;
+
+        return 5;
     }
 
     /// <summary>
@@ -130,7 +154,7 @@ public class RepairSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate);
+        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate);
 
         if (rateValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(rateValidity, "rate");
@@ -171,5 +195,27 @@ public class RepairSubsystem : Subsystem
 
         return new RepairSubsystemEvent(Controllable, Slot, Status, _rate, _consumedEnergyThisTick, _consumedIonsThisTick,
             _consumedNeutrinosThisTick, _repairedHullThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetRepair(tier, out float maximumRate, out float load);
+
+            if (Matches(_maximumRate, maximumRate))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

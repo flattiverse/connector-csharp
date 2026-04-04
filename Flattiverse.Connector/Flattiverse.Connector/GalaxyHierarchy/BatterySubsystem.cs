@@ -66,6 +66,7 @@ public class BatterySubsystem : Subsystem
     internal void SetMaximum(float maximum)
     {
         _maximum = Exists ? maximum : 0f;
+        RefreshTier();
 
         if (_current > _maximum)
             _current = _maximum;
@@ -91,5 +92,45 @@ public class BatterySubsystem : Subsystem
             return null;
 
         return new BatterySubsystemEvent(Controllable, Slot, Status, _current, _consumedThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            float maximum;
+            float load;
+
+            switch (Slot)
+            {
+                case SubsystemSlot.EnergyBattery:
+                    ShipBalancing.GetBattery(tier, out maximum, out load);
+                    break;
+                case SubsystemSlot.IonBattery:
+                    ShipBalancing.GetIonBattery(tier, out maximum, out load);
+                    break;
+                case SubsystemSlot.NeutrinoBattery:
+                    ShipBalancing.GetNeutrinoBattery(tier, out maximum, out load);
+                    break;
+                default:
+                    maximum = 0f;
+                    load = 0f;
+                    break;
+            }
+
+            if (Matches(_maximum, maximum))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

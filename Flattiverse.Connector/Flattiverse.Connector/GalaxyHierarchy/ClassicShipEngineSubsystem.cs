@@ -1,3 +1,4 @@
+using System.Linq;
 using Flattiverse.Connector.Events;
 using Flattiverse.Connector.Network;
 using Flattiverse.Connector.Units;
@@ -9,7 +10,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class ClassicShipEngineSubsystem : Subsystem
 {
-    private readonly float _maximum;
+    private float _maximum;
 
     private Vector _current;
     private Vector _target;
@@ -34,6 +35,40 @@ public class ClassicShipEngineSubsystem : Subsystem
     public float Maximum
     {
         get { return _maximum; }
+    }
+
+    public override IReadOnlyList<SubsystemTierInfo> TierInfos
+    {
+        get
+        {
+            IReadOnlyList<SubsystemTierInfo> baseInfos = base.TierInfos;
+            SubsystemTierInfo[] result = new SubsystemTierInfo[baseInfos.Count];
+
+            for (int index = 0; index < baseInfos.Count; index++)
+            {
+                SubsystemTierInfo baseInfo = baseInfos[index];
+
+                if (!baseInfo.TryGetProperty("maximumThrust", out SubsystemPropertyInfo? property) || property is null)
+                {
+                    result[index] = baseInfo;
+                    continue;
+                }
+
+                float effectiveStructuralLoad = Controllable.CalculateProjectedEffectiveStructuralLoad(Slot, baseInfo.StructuralLoad);
+                float adjustedMaximum = property.MaximumValue * SubsystemTierInfo.CalculateEngineEfficiency(effectiveStructuralLoad);
+                SubsystemPropertyInfo[] properties = ReplaceMaximumThrust(baseInfo.Properties, adjustedMaximum);
+                result[index] = new SubsystemTierInfo(baseInfo.SubsystemKind, baseInfo.Tier, baseInfo.StructuralLoad,
+                    baseInfo.ResourceUsages.ToArray(), baseInfo.UpgradeCost, baseInfo.DowngradeCost, properties, baseInfo.Description);
+            }
+
+            return result;
+        }
+    }
+
+    internal void SetMaximum(float maximum)
+    {
+        _maximum = Exists ? maximum : 0f;
+        RefreshTier();
     }
 
     /// <summary>
@@ -94,7 +129,7 @@ public class ClassicShipEngineSubsystem : Subsystem
         if (RangeTolerance.ClampMaximum(movement, _maximum, out Vector clampedMovement) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = clampedMovement.Length * clampedMovement.Length * clampedMovement.Length * 12000f;
+        energy = ShipBalancing.CalculateEngineEnergy(clampedMovement.Length, _maximum, FullCostFromMaximum(_maximum));
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -103,6 +138,23 @@ public class ClassicShipEngineSubsystem : Subsystem
         }
 
         return true;
+    }
+
+    private static float FullCostFromMaximum(float maximum)
+    {
+        if (maximum <= 0.0381f)
+            return 8f;
+
+        if (maximum <= 0.0551f)
+            return 13f;
+
+        if (maximum <= 0.0731f)
+            return 18f;
+
+        if (maximum <= 0.0921f)
+            return 25f;
+
+        return 35f;
     }
 
     /// <summary>
@@ -169,5 +221,44 @@ public class ClassicShipEngineSubsystem : Subsystem
 
         return new ClassicShipEngineSubsystemEvent(Controllable, Slot, Status, _current, _target,
             _consumedEnergyThisTick, _consumedIonsThisTick, _consumedNeutrinosThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetClassicEngine(tier, out float maximum, out float fullCost, out float load);
+
+            if (Matches(_maximum, maximum))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
+    }
+
+    private static SubsystemPropertyInfo[] ReplaceMaximumThrust(IReadOnlyList<SubsystemPropertyInfo> source, float maximumThrust)
+    {
+        SubsystemPropertyInfo[] result = new SubsystemPropertyInfo[source.Count];
+
+        for (int index = 0; index < source.Count; index++)
+        {
+            SubsystemPropertyInfo property = source[index];
+
+            if (property.Key == "maximumThrust")
+                result[index] = new SubsystemPropertyInfo(property.Key, property.Label, property.Unit, maximumThrust, maximumThrust);
+            else
+                result[index] = property;
+        }
+
+        return result;
     }
 }

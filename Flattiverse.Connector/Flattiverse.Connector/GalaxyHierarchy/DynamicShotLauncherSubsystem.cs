@@ -9,14 +9,14 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class DynamicShotLauncherSubsystem : Subsystem
 {
-    private const float RelativeMovementMinimum = 0.1f;
-    private const float RelativeMovementMaximum = 3f;
-    private const ushort TicksMinimum = 2;
-    private const ushort TicksMaximum = 140;
-    private const float LoadMinimum = 2.5f;
-    private const float LoadMaximum = 25f;
-    private const float DamageMinimum = 1f;
-    private const float DamageMaximum = 20f;
+    private float _minimumRelativeMovement;
+    private float _maximumRelativeMovement;
+    private ushort _minimumTicks;
+    private ushort _maximumTicks;
+    private float _minimumLoad;
+    private float _maximumLoad;
+    private float _minimumDamage;
+    private float _maximumDamage;
 
     private Vector _relativeMovement;
     private ushort _ticks;
@@ -29,6 +29,14 @@ public class DynamicShotLauncherSubsystem : Subsystem
     internal DynamicShotLauncherSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
     {
+        _minimumRelativeMovement = 0.1f;
+        _maximumRelativeMovement = 3f;
+        _minimumTicks = 2;
+        _maximumTicks = 140;
+        _minimumLoad = 2.5f;
+        _maximumLoad = 25f;
+        _minimumDamage = 1f;
+        _maximumDamage = 20f;
         _relativeMovement = new Vector();
         _ticks = 0;
         _load = 0f;
@@ -43,7 +51,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public float MinimumRelativeMovement
     {
-        get { return RelativeMovementMinimum; }
+        get { return _minimumRelativeMovement; }
     }
 
     /// <summary>
@@ -51,7 +59,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public float MaximumRelativeMovement
     {
-        get { return RelativeMovementMaximum; }
+        get { return _maximumRelativeMovement; }
     }
 
     /// <summary>
@@ -59,7 +67,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public ushort MinimumTicks
     {
-        get { return TicksMinimum; }
+        get { return _minimumTicks; }
     }
 
     /// <summary>
@@ -67,7 +75,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public ushort MaximumTicks
     {
-        get { return TicksMaximum; }
+        get { return _maximumTicks; }
     }
 
     /// <summary>
@@ -75,7 +83,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public float MinimumLoad
     {
-        get { return LoadMinimum; }
+        get { return _minimumLoad; }
     }
 
     /// <summary>
@@ -83,7 +91,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public float MaximumLoad
     {
-        get { return LoadMaximum; }
+        get { return _maximumLoad; }
     }
 
     /// <summary>
@@ -91,7 +99,7 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public float MinimumDamage
     {
-        get { return DamageMinimum; }
+        get { return _minimumDamage; }
     }
 
     /// <summary>
@@ -99,7 +107,22 @@ public class DynamicShotLauncherSubsystem : Subsystem
     /// </summary>
     public float MaximumDamage
     {
-        get { return DamageMaximum; }
+        get { return _maximumDamage; }
+    }
+
+    internal void SetCapabilities(float minimumRelativeMovement, float maximumRelativeMovement, ushort minimumTicks, ushort maximumTicks,
+        float minimumLoad, float maximumLoad, float minimumDamage, float maximumDamage)
+    {
+        _minimumRelativeMovement = Exists ? minimumRelativeMovement : 0f;
+        _maximumRelativeMovement = Exists ? maximumRelativeMovement : 0f;
+        _minimumTicks = minimumTicks;
+        _maximumTicks = maximumTicks;
+        _minimumLoad = Exists ? minimumLoad : 0f;
+        _maximumLoad = Exists ? maximumLoad : 0f;
+        _minimumDamage = Exists ? minimumDamage : 0f;
+        _maximumDamage = Exists ? maximumDamage : 0f;
+
+        RefreshTier();
     }
 
     /// <summary>
@@ -179,29 +202,19 @@ public class DynamicShotLauncherSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        if (RangeTolerance.ClampRange(relativeMovement, RelativeMovementMinimum, RelativeMovementMaximum, out relativeMovement) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(relativeMovement, _minimumRelativeMovement, _maximumRelativeMovement, out relativeMovement) != InvalidArgumentKind.Valid)
             return false;
 
-        if (ticks < TicksMinimum || ticks > TicksMaximum)
+        if (ticks < _minimumTicks || ticks > _maximumTicks)
             return false;
 
-        if (RangeTolerance.ClampRange(load, LoadMinimum, LoadMaximum, out load) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(load, _minimumLoad, _maximumLoad, out load) != InvalidArgumentKind.Valid)
             return false;
 
-        if (RangeTolerance.ClampRange(damage, DamageMinimum, DamageMaximum, out damage) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(damage, _minimumDamage, _maximumDamage, out damage) != InvalidArgumentKind.Valid)
             return false;
 
-        float speed = relativeMovement.Length;
-        float speed01 = (speed - RelativeMovementMinimum) / (RelativeMovementMaximum - RelativeMovementMinimum);
-        float ticks01 = (ticks - TicksMinimum) / (float)(TicksMaximum - TicksMinimum);
-        float load01 = (load - LoadMinimum) / (LoadMaximum - LoadMinimum);
-        float damage01 = (damage - DamageMinimum) / (DamageMaximum - DamageMinimum);
-
-        energy = 10f
-            + 250f * speed01 * speed01 * speed01
-            + 240f * ticks01 * ticks01
-            + 600f * load01 * load01
-            + 700f * damage01 * damage01;
+        energy = ShipBalancing.CalculateShotLaunchEnergy(relativeMovement.Length, ticks, load, damage);
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -234,23 +247,23 @@ public class DynamicShotLauncherSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind movementValidity = RangeTolerance.ClampRange(relativeMovement, RelativeMovementMinimum, RelativeMovementMaximum, out relativeMovement);
+        InvalidArgumentKind movementValidity = RangeTolerance.ClampRange(relativeMovement, _minimumRelativeMovement, _maximumRelativeMovement, out relativeMovement);
 
         if (movementValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(movementValidity, "relativeMovement");
 
-        if (ticks < TicksMinimum)
+        if (ticks < _minimumTicks)
             throw new InvalidArgumentGameException(InvalidArgumentKind.TooSmall, "ticks");
 
-        if (ticks > TicksMaximum)
+        if (ticks > _maximumTicks)
             throw new InvalidArgumentGameException(InvalidArgumentKind.TooLarge, "ticks");
 
-        InvalidArgumentKind loadValidity = RangeTolerance.ClampRange(load, LoadMinimum, LoadMaximum, out load);
+        InvalidArgumentKind loadValidity = RangeTolerance.ClampRange(load, _minimumLoad, _maximumLoad, out load);
 
         if (loadValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(loadValidity, "load");
 
-        InvalidArgumentKind damageValidity = RangeTolerance.ClampRange(damage, DamageMinimum, DamageMaximum, out damage);
+        InvalidArgumentKind damageValidity = RangeTolerance.ClampRange(damage, _minimumDamage, _maximumDamage, out damage);
 
         if (damageValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(damageValidity, "damage");
@@ -298,5 +311,40 @@ public class DynamicShotLauncherSubsystem : Subsystem
 
         return new DynamicShotLauncherSubsystemEvent(Controllable, Slot, Status, _relativeMovement, _ticks, _load, _damage,
             _consumedEnergyThisTick, _consumedIonsThisTick, _consumedNeutrinosThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        byte maximumTier = (byte)(TierInfos.Count - 1);
+
+        for (byte tier = 1; tier <= maximumTier; tier++)
+        {
+            float maximumRelativeMovement;
+            ushort maximumTicks;
+            float maximumLoad;
+            float maximumDamage;
+
+            if (Slot is SubsystemSlot.DynamicShotLauncher)
+                ShipBalancing.GetDynamicShotLauncher(tier, out maximumRelativeMovement, out maximumTicks, out maximumLoad,
+                    out maximumDamage, out float _);
+            else
+                ShipBalancing.GetStaticShotLauncher(tier, out maximumRelativeMovement, out maximumTicks, out maximumLoad,
+                    out maximumDamage, out float _);
+
+            if (Matches(_maximumRelativeMovement, maximumRelativeMovement) && _maximumTicks == maximumTicks
+                && Matches(_maximumLoad, maximumLoad) && Matches(_maximumDamage, maximumDamage))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

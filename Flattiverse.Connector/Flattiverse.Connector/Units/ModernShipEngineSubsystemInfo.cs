@@ -6,8 +6,7 @@ namespace Flattiverse.Connector.Units;
 public class ModernShipEngineSubsystemInfo
 {
     private bool _exists;
-    private float _maximumForwardThrust;
-    private float _maximumReverseThrust;
+    private float _maximumThrust;
     private float _maximumThrustChangePerTick;
     private float _currentThrust;
     private float _targetThrust;
@@ -19,8 +18,7 @@ public class ModernShipEngineSubsystemInfo
     internal ModernShipEngineSubsystemInfo()
     {
         _exists = false;
-        _maximumForwardThrust = 0f;
-        _maximumReverseThrust = 0f;
+        _maximumThrust = 0f;
         _maximumThrustChangePerTick = 0f;
         _currentThrust = 0f;
         _targetThrust = 0f;
@@ -35,14 +33,19 @@ public class ModernShipEngineSubsystemInfo
         get { return _exists; }
     }
 
+    public float MaximumThrust
+    {
+        get { return _maximumThrust; }
+    }
+
     public float MaximumForwardThrust
     {
-        get { return _maximumForwardThrust; }
+        get { return _maximumThrust; }
     }
 
     public float MaximumReverseThrust
     {
-        get { return _maximumReverseThrust; }
+        get { return _maximumThrust; }
     }
 
     public float MaximumThrustChangePerTick
@@ -80,13 +83,12 @@ public class ModernShipEngineSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float maximumForwardThrust, float maximumReverseThrust, float maximumThrustChangePerTick,
+    internal void Update(bool exists, float maximumThrust, float maximumThrustChangePerTick,
         float currentThrust, float targetThrust, SubsystemStatus status, float consumedEnergyThisTick, float consumedIonsThisTick,
         float consumedNeutrinosThisTick)
     {
         _exists = exists;
-        _maximumForwardThrust = exists ? maximumForwardThrust : 0f;
-        _maximumReverseThrust = exists ? maximumReverseThrust : 0f;
+        _maximumThrust = exists ? maximumThrust : 0f;
         _maximumThrustChangePerTick = exists ? maximumThrustChangePerTick : 0f;
         _currentThrust = exists ? currentThrust : 0f;
         _targetThrust = exists ? targetThrust : 0f;

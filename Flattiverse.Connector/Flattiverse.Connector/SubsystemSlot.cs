@@ -71,6 +71,11 @@ public enum SubsystemSlot : byte
     NebulaCollector = 0x52,
 
     /// <summary>
+    /// Structure optimizer slot.
+    /// </summary>
+    StructureOptimizer = 0x53,
+
+    /// <summary>
     /// Primary scanner slot.
     /// </summary>
     PrimaryScanner = 0x20,

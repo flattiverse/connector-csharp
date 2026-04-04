@@ -9,16 +9,15 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class DynamicScannerSubsystem : Subsystem
 {
-    private const float EnergyScale = 0.000282943f;
     private const float MinimumWidthValue = 5f;
     private const float MinimumLengthValue = 20f;
 
     private readonly byte _id;
-    private readonly float _maximumWidth;
-    private readonly float _maximumLength;
-    private readonly float _widthSpeed;
-    private readonly float _lengthSpeed;
-    private readonly float _angleSpeed;
+    private float _maximumWidth;
+    private float _maximumLength;
+    private float _widthSpeed;
+    private float _lengthSpeed;
+    private float _angleSpeed;
 
     private float _currentWidth;
     private float _currentLength;
@@ -111,6 +110,17 @@ public class DynamicScannerSubsystem : Subsystem
     public float AngleSpeed
     {
         get { return _angleSpeed; }
+    }
+
+    internal void SetCapabilities(float maximumWidth, float maximumLength, float widthSpeed, float lengthSpeed, float angleSpeed)
+    {
+        _maximumWidth = Exists ? maximumWidth : 0f;
+        _maximumLength = Exists ? maximumLength : 0f;
+        _widthSpeed = Exists ? widthSpeed : 0f;
+        _lengthSpeed = Exists ? lengthSpeed : 0f;
+        _angleSpeed = Exists ? angleSpeed : 0f;
+
+        RefreshTier();
     }
 
     /// <summary>
@@ -214,7 +224,13 @@ public class DynamicScannerSubsystem : Subsystem
         if (RangeTolerance.ClampMaximum(length, _maximumLength, out length) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = MathF.PI * length * length * width / 360f * EnergyScale;
+        if (_maximumLength > 430f)
+        {
+            neutrinos = ShipBalancing.CalculateScannerEnergy(width, length) / 100f;
+            return true;
+        }
+
+        energy = ShipBalancing.CalculateScannerEnergy(width, length);
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -348,5 +364,41 @@ public class DynamicScannerSubsystem : Subsystem
 
         return new DynamicScannerSubsystemEvent(Controllable, Slot, Status, _active, _currentWidth, _currentLength, _currentAngle,
             _targetWidth, _targetLength, _targetAngle, _consumedEnergyThisTick, _consumedIonsThisTick, _consumedNeutrinosThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        byte maximumTier = (byte)(TierInfos.Count - 1);
+
+        for (byte tier = 1; tier <= maximumTier; tier++)
+        {
+            float maximumWidth;
+            float maximumLength;
+            float widthSpeed;
+            float lengthSpeed;
+            float angleSpeed;
+
+            if (Slot is SubsystemSlot.PrimaryScanner or SubsystemSlot.SecondaryScanner or SubsystemSlot.TertiaryScanner)
+                ShipBalancing.GetClassicScanner(tier, out maximumWidth, out maximumLength, out widthSpeed, out lengthSpeed, out angleSpeed,
+                    out float _);
+            else
+                ShipBalancing.GetModernScanner(tier, out maximumWidth, out maximumLength, out widthSpeed, out lengthSpeed, out angleSpeed,
+                    out float _);
+
+            if (Matches(_maximumWidth, maximumWidth) && Matches(_maximumLength, maximumLength) && Matches(_widthSpeed, widthSpeed)
+                && Matches(_lengthSpeed, lengthSpeed) && Matches(_angleSpeed, angleSpeed))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

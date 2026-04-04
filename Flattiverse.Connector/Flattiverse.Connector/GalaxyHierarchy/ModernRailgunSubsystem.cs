@@ -7,7 +7,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// <summary>
 /// Railgun subsystem of a modern ship.
 /// </summary>
-public class ModernRailgunSubsystem : RailgunSubsystem
+public class ModernRailgunSubsystem : ClassicRailgunSubsystem
 {
     internal ModernRailgunSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)

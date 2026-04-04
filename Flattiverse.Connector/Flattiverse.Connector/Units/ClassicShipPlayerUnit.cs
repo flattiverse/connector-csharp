@@ -1,4 +1,4 @@
-﻿using Flattiverse.Connector.GalaxyHierarchy;
+using Flattiverse.Connector.GalaxyHierarchy;
 using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.Units;
@@ -18,7 +18,7 @@ public class ClassicShipPlayerUnit : PlayerUnit
     private readonly DynamicInterceptorLauncherSubsystemInfo _interceptorLauncher;
     private readonly DynamicInterceptorMagazineSubsystemInfo _interceptorMagazine;
     private readonly DynamicInterceptorFabricatorSubsystemInfo _interceptorFabricator;
-    private readonly RailgunSubsystemInfo _railgun;
+    private readonly ClassicRailgunSubsystemInfo _railgun;
     private readonly DynamicScannerSubsystemInfo _mainScanner;
     private readonly DynamicScannerSubsystemInfo _secondaryScanner;
     private readonly JumpDriveSubsystemInfo _jumpDrive;
@@ -33,7 +33,7 @@ public class ClassicShipPlayerUnit : PlayerUnit
         _interceptorLauncher = new DynamicInterceptorLauncherSubsystemInfo();
         _interceptorMagazine = new DynamicInterceptorMagazineSubsystemInfo();
         _interceptorFabricator = new DynamicInterceptorFabricatorSubsystemInfo();
-        _railgun = new RailgunSubsystemInfo();
+        _railgun = new ClassicRailgunSubsystemInfo();
         _mainScanner = new DynamicScannerSubsystemInfo();
         _secondaryScanner = new DynamicScannerSubsystemInfo();
         _jumpDrive = new JumpDriveSubsystemInfo();
@@ -77,7 +77,7 @@ public class ClassicShipPlayerUnit : PlayerUnit
             unit._interceptorFabricator.MaximumRate, unit._interceptorFabricator.Active, unit._interceptorFabricator.Rate,
             unit._interceptorFabricator.Status, unit._interceptorFabricator.ConsumedEnergyThisTick,
             unit._interceptorFabricator.ConsumedIonsThisTick, unit._interceptorFabricator.ConsumedNeutrinosThisTick);
-        _railgun = new RailgunSubsystemInfo();
+        _railgun = new ClassicRailgunSubsystemInfo();
         _railgun.Update(unit._railgun.Exists, unit._railgun.EnergyCost, unit._railgun.MetalCost, unit._railgun.Direction,
             unit._railgun.Status, unit._railgun.ConsumedEnergyThisTick, unit._railgun.ConsumedIonsThisTick,
             unit._railgun.ConsumedNeutrinosThisTick);
@@ -174,7 +174,7 @@ public class ClassicShipPlayerUnit : PlayerUnit
     /// <summary>
     /// Visible snapshot of the railgun subsystem.
     /// </summary>
-    public RailgunSubsystemInfo Railgun
+    public ClassicRailgunSubsystemInfo Railgun
     {
         get { return _railgun; }
     }

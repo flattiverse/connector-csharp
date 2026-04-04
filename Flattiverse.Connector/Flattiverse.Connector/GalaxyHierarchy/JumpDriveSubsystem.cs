@@ -9,10 +9,16 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 public class JumpDriveSubsystem : Subsystem
 {
     private float _energyCost;
+    private float _consumedEnergyThisTick;
+    private float _consumedIonsThisTick;
+    private float _consumedNeutrinosThisTick;
 
     internal JumpDriveSubsystem(Controllable controllable, bool exists) : base(controllable, "JumpDrive", exists, SubsystemSlot.JumpDrive)
     {
-        _energyCost = exists ? 1000f : 0f;
+        _energyCost = exists ? 6000f : 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
     }
 
     /// <summary>
@@ -21,6 +27,30 @@ public class JumpDriveSubsystem : Subsystem
     public float EnergyCost
     {
         get { return _energyCost; }
+    }
+
+    /// <summary>
+    /// Standard energy consumed by the jump drive during the current tick.
+    /// </summary>
+    public float ConsumedEnergyThisTick
+    {
+        get { return _consumedEnergyThisTick; }
+    }
+
+    /// <summary>
+    /// Ions consumed by the jump drive during the current tick.
+    /// </summary>
+    public float ConsumedIonsThisTick
+    {
+        get { return _consumedIonsThisTick; }
+    }
+
+    /// <summary>
+    /// Neutrinos consumed by the jump drive during the current tick.
+    /// </summary>
+    public float ConsumedNeutrinosThisTick
+    {
+        get { return _consumedNeutrinosThisTick; }
     }
 
     /// <summary>
@@ -62,11 +92,36 @@ public class JumpDriveSubsystem : Subsystem
 
     internal void ResetRuntime()
     {
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
         ResetRuntimeStatus();
+    }
+
+    internal void UpdateRuntime(SubsystemStatus status, float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick)
+    {
+        _consumedEnergyThisTick = consumedEnergyThisTick;
+        _consumedIonsThisTick = consumedIonsThisTick;
+        _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
+        UpdateRuntimeStatus(status);
     }
 
     internal void SetEnergyCost(float energyCost)
     {
         _energyCost = Exists ? energyCost : 0f;
+
+        RefreshTier();
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        ShipBalancing.GetJumpDrive(out float energyCost, out float load);
+        SetTier(Matches(_energyCost, energyCost) ? (byte)1 : (byte)0);
     }
 }

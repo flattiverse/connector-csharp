@@ -5,7 +5,7 @@ namespace Flattiverse.Connector.Events;
 /// <summary>
 /// Runtime update of a railgun subsystem on your own controllable.
 /// </summary>
-public class RailgunSubsystemEvent : ControllableSubsystemEvent
+public class ClassicRailgunSubsystemEvent : ControllableSubsystemEvent
 {
     /// <summary>
     /// The direction processed in the current tick.
@@ -27,7 +27,7 @@ public class RailgunSubsystemEvent : ControllableSubsystemEvent
     /// </summary>
     public readonly float ConsumedNeutrinosThisTick;
 
-    internal RailgunSubsystemEvent(Controllable controllable, SubsystemSlot slot, SubsystemStatus status, RailgunDirection direction,
+    internal ClassicRailgunSubsystemEvent(Controllable controllable, SubsystemSlot slot, SubsystemStatus status, RailgunDirection direction,
         float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick) : base(controllable, slot, status)
     {
         Direction = direction;
@@ -37,7 +37,7 @@ public class RailgunSubsystemEvent : ControllableSubsystemEvent
     }
 
     /// <inheritdoc/>
-    public override EventKind Kind => EventKind.RailgunSubsystem;
+    public override EventKind Kind => EventKind.ClassicRailgunSubsystem;
 
     /// <inheritdoc/>
     public override string ToString()

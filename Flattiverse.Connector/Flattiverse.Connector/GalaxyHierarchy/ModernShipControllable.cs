@@ -13,10 +13,10 @@ public class ModernShipControllable : Controllable
     private readonly ModernShipEngineSubsystem[] _engines;
     private readonly StaticScannerSubsystem[] _scanners;
     private readonly StaticShotLauncherSubsystem[] _shotLaunchers;
-    private readonly DynamicShotMagazineSubsystem[] _shotMagazines;
+    private readonly StaticShotMagazineSubsystem[] _shotMagazines;
     private readonly StaticShotFabricatorSubsystem[] _shotFabricators;
     private readonly StaticInterceptorLauncherSubsystem[] _interceptorLaunchers;
-    private readonly DynamicInterceptorMagazineSubsystem[] _interceptorMagazines;
+    private readonly StaticInterceptorMagazineSubsystem[] _interceptorMagazines;
     private readonly StaticInterceptorFabricatorSubsystem[] _interceptorFabricators;
     private readonly ModernRailgunSubsystem[] _railguns;
     private readonly JumpDriveSubsystem _jumpDrive;
@@ -30,6 +30,7 @@ public class ModernShipControllable : Controllable
         _repair = RepairSubsystem.CreateClassicShipRepair(this);
         _cargo = CargoSubsystem.CreateClassicShipCargo(this);
         _resourceMiner = ResourceMinerSubsystem.CreateClassicShipResourceMiner(this);
+        _structureOptimizer = new StructureOptimizerSubsystem(this, false, 0f);
         _nebulaCollector = NebulaCollectorSubsystem.CreateClassicShipNebulaCollector(this);
         _energyBattery = BatterySubsystem.CreateClassicShipEnergyBattery(this);
         _ionBattery = BatterySubsystem.CreateMissingBattery(this, "IonBattery", SubsystemSlot.IonBattery);
@@ -80,6 +81,7 @@ public class ModernShipControllable : Controllable
                 throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
 
         if (!reader.Read(out byte jumpDriveExists) ||
+            !reader.Read(out byte jumpDriveTier) ||
             !reader.Read(out float jumpDriveEnergyCost) ||
             !reader.Read(out _equippedCrystals[0]) ||
             !reader.Read(out _equippedCrystals[1]) ||
@@ -89,10 +91,10 @@ public class ModernShipControllable : Controllable
         _engines = new ModernShipEngineSubsystem[ModernShipGeometry.EngineSlots.Length];
         _scanners = new StaticScannerSubsystem[ModernShipGeometry.ScannerSlots.Length];
         _shotLaunchers = new StaticShotLauncherSubsystem[ModernShipGeometry.ShotLauncherSlots.Length];
-        _shotMagazines = new DynamicShotMagazineSubsystem[ModernShipGeometry.ShotMagazineSlots.Length];
+        _shotMagazines = new StaticShotMagazineSubsystem[ModernShipGeometry.ShotMagazineSlots.Length];
         _shotFabricators = new StaticShotFabricatorSubsystem[ModernShipGeometry.ShotFabricatorSlots.Length];
         _interceptorLaunchers = new StaticInterceptorLauncherSubsystem[2];
-        _interceptorMagazines = new DynamicInterceptorMagazineSubsystem[2];
+        _interceptorMagazines = new StaticInterceptorMagazineSubsystem[2];
         _interceptorFabricators = new StaticInterceptorFabricatorSubsystem[2];
         _railguns = new ModernRailgunSubsystem[ModernShipGeometry.RailgunSlots.Length];
 
@@ -102,10 +104,15 @@ public class ModernShipControllable : Controllable
         InitializeInterceptors(interceptorLauncherStates, interceptorMagazineStates, interceptorFabricatorStates);
         InitializeRailguns(railgunStates);
 
+        _nebulaCollector.SetExists(nebulaCollectorState.Exists);
+        _nebulaCollector.SetCapabilities(nebulaCollectorState.MinimumRate, nebulaCollectorState.MaximumRate);
         _nebulaCollector.UpdateRuntime(nebulaCollectorState.Rate, nebulaCollectorState.Status, nebulaCollectorState.ConsumedEnergyThisTick,
             nebulaCollectorState.ConsumedIonsThisTick, nebulaCollectorState.ConsumedNeutrinosThisTick, nebulaCollectorState.CollectedThisTick,
             nebulaCollectorState.CollectedHueThisTick);
+        _nebulaCollector.SetReportedTier(nebulaCollectorState.Tier);
+        _jumpDrive.SetExists(jumpDriveExists != 0);
         _jumpDrive.SetEnergyCost(jumpDriveEnergyCost);
+        _jumpDrive.SetReportedTier(jumpDriveTier);
     }
 
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
@@ -117,7 +124,7 @@ public class ModernShipControllable : Controllable
     public IReadOnlyList<ModernShipEngineSubsystem> Engines => _engines;
     public IReadOnlyList<StaticScannerSubsystem> Scanners => _scanners;
     public IReadOnlyList<StaticShotLauncherSubsystem> ShotLaunchers => _shotLaunchers;
-    public IReadOnlyList<DynamicShotMagazineSubsystem> ShotMagazines => _shotMagazines;
+    public IReadOnlyList<StaticShotMagazineSubsystem> ShotMagazines => _shotMagazines;
     public IReadOnlyList<StaticShotFabricatorSubsystem> ShotFabricators => _shotFabricators;
     public IReadOnlyList<ModernRailgunSubsystem> Railguns => _railguns;
 
@@ -148,14 +155,14 @@ public class ModernShipControllable : Controllable
     public StaticShotLauncherSubsystem ShotLauncherW => _shotLaunchers[6];
     public StaticShotLauncherSubsystem ShotLauncherNW => _shotLaunchers[7];
 
-    public DynamicShotMagazineSubsystem ShotMagazineN => _shotMagazines[0];
-    public DynamicShotMagazineSubsystem ShotMagazineNE => _shotMagazines[1];
-    public DynamicShotMagazineSubsystem ShotMagazineE => _shotMagazines[2];
-    public DynamicShotMagazineSubsystem ShotMagazineSE => _shotMagazines[3];
-    public DynamicShotMagazineSubsystem ShotMagazineS => _shotMagazines[4];
-    public DynamicShotMagazineSubsystem ShotMagazineSW => _shotMagazines[5];
-    public DynamicShotMagazineSubsystem ShotMagazineW => _shotMagazines[6];
-    public DynamicShotMagazineSubsystem ShotMagazineNW => _shotMagazines[7];
+    public StaticShotMagazineSubsystem ShotMagazineN => _shotMagazines[0];
+    public StaticShotMagazineSubsystem ShotMagazineNE => _shotMagazines[1];
+    public StaticShotMagazineSubsystem ShotMagazineE => _shotMagazines[2];
+    public StaticShotMagazineSubsystem ShotMagazineSE => _shotMagazines[3];
+    public StaticShotMagazineSubsystem ShotMagazineS => _shotMagazines[4];
+    public StaticShotMagazineSubsystem ShotMagazineSW => _shotMagazines[5];
+    public StaticShotMagazineSubsystem ShotMagazineW => _shotMagazines[6];
+    public StaticShotMagazineSubsystem ShotMagazineNW => _shotMagazines[7];
 
     public StaticShotFabricatorSubsystem ShotFabricatorN => _shotFabricators[0];
     public StaticShotFabricatorSubsystem ShotFabricatorNE => _shotFabricators[1];
@@ -168,8 +175,8 @@ public class ModernShipControllable : Controllable
 
     public StaticInterceptorLauncherSubsystem InterceptorLauncherE => _interceptorLaunchers[0];
     public StaticInterceptorLauncherSubsystem InterceptorLauncherW => _interceptorLaunchers[1];
-    public DynamicInterceptorMagazineSubsystem InterceptorMagazineE => _interceptorMagazines[0];
-    public DynamicInterceptorMagazineSubsystem InterceptorMagazineW => _interceptorMagazines[1];
+    public StaticInterceptorMagazineSubsystem InterceptorMagazineE => _interceptorMagazines[0];
+    public StaticInterceptorMagazineSubsystem InterceptorMagazineW => _interceptorMagazines[1];
     public StaticInterceptorFabricatorSubsystem InterceptorFabricatorE => _interceptorFabricators[0];
     public StaticInterceptorFabricatorSubsystem InterceptorFabricatorW => _interceptorFabricators[1];
 
@@ -181,6 +188,38 @@ public class ModernShipControllable : Controllable
     public ModernRailgunSubsystem RailgunSW => _railguns[5];
     public ModernRailgunSubsystem RailgunW => _railguns[6];
     public ModernRailgunSubsystem RailgunNW => _railguns[7];
+
+    internal override float GetProjectedRawStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
+    {
+        float result = GetCommonProjectedStructuralLoad(slot, projectedStructuralLoad) +
+            StructuralLoadFor(_nebulaCollector, slot, projectedStructuralLoad) +
+            StructuralLoadFor(_jumpDrive, slot, projectedStructuralLoad);
+
+        for (int index = 0; index < _engines.Length; index++)
+            result += StructuralLoadFor(_engines[index], slot, projectedStructuralLoad);
+
+        for (int index = 0; index < _scanners.Length; index++)
+            result += StructuralLoadFor(_scanners[index], slot, projectedStructuralLoad);
+
+        for (int index = 0; index < _shotLaunchers.Length; index++)
+        {
+            result += StructuralLoadFor(_shotLaunchers[index], slot, projectedStructuralLoad);
+            result += StructuralLoadFor(_shotMagazines[index], slot, projectedStructuralLoad);
+            result += StructuralLoadFor(_shotFabricators[index], slot, projectedStructuralLoad);
+        }
+
+        for (int index = 0; index < _interceptorLaunchers.Length; index++)
+        {
+            result += StructuralLoadFor(_interceptorLaunchers[index], slot, projectedStructuralLoad);
+            result += StructuralLoadFor(_interceptorMagazines[index], slot, projectedStructuralLoad);
+            result += StructuralLoadFor(_interceptorFabricators[index], slot, projectedStructuralLoad);
+        }
+
+        for (int index = 0; index < _railguns.Length; index++)
+            result += StructuralLoadFor(_railguns[index], slot, projectedStructuralLoad);
+
+        return result;
+    }
 
     private protected override void ResetRuntime()
     {
@@ -282,6 +321,15 @@ public class ModernShipControllable : Controllable
             _railguns[index].UpdateRuntime(railgunRuntime.Direction, railgunRuntime.Status, railgunRuntime.ConsumedEnergyThisTick,
                 railgunRuntime.ConsumedIonsThisTick, railgunRuntime.ConsumedNeutrinosThisTick);
         }
+
+        if (!reader.Read(out byte jumpDriveStatus) ||
+            !reader.Read(out float jumpDriveConsumedEnergyThisTick) ||
+            !reader.Read(out float jumpDriveConsumedIonsThisTick) ||
+            !reader.Read(out float jumpDriveConsumedNeutrinosThisTick))
+            throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+
+        _jumpDrive.UpdateRuntime((SubsystemStatus)jumpDriveStatus, jumpDriveConsumedEnergyThisTick, jumpDriveConsumedIonsThisTick,
+            jumpDriveConsumedNeutrinosThisTick);
     }
 
     private protected override void EmitRuntimeEvents()
@@ -324,6 +372,7 @@ public class ModernShipControllable : Controllable
                 engineStates[index].MaximumThrustChangePerTick);
             engine.UpdateRuntime(engineStates[index].CurrentThrust, engineStates[index].TargetThrust, engineStates[index].Status,
                 engineStates[index].ConsumedEnergyThisTick, engineStates[index].ConsumedIonsThisTick, engineStates[index].ConsumedNeutrinosThisTick);
+            engine.SetReportedTier(engineStates[index].Tier);
             _engines[index] = engine;
         }
     }
@@ -340,6 +389,7 @@ public class ModernShipControllable : Controllable
                 scannerStates[index].CurrentAngle, scannerStates[index].TargetWidth, scannerStates[index].TargetLength,
                 scannerStates[index].TargetAngle, scannerStates[index].Status, scannerStates[index].ConsumedEnergyThisTick,
                 scannerStates[index].ConsumedIonsThisTick, scannerStates[index].ConsumedNeutrinosThisTick);
+            scanner.SetReportedTier(scannerStates[index].Tier);
             _scanners[index] = scanner;
         }
     }
@@ -349,21 +399,28 @@ public class ModernShipControllable : Controllable
         for (int index = 0; index < _shotLaunchers.Length; index++)
         {
             string suffix = GetSlotSuffix(ModernShipGeometry.ShotLauncherSlots[index]);
-            DynamicShotMagazineSubsystem magazine = new DynamicShotMagazineSubsystem(this, $"ShotMagazine{suffix}",
+            StaticShotMagazineSubsystem magazine = new StaticShotMagazineSubsystem(this, $"ShotMagazine{suffix}",
                 magazineStates[index].Exists, ModernShipGeometry.ShotMagazineSlots[index]);
             StaticShotFabricatorSubsystem fabricator = new StaticShotFabricatorSubsystem(this, $"ShotFabricator{suffix}",
                 fabricatorStates[index].Exists, ModernShipGeometry.ShotFabricatorSlots[index]);
             StaticShotLauncherSubsystem launcher = new StaticShotLauncherSubsystem(this, $"ShotLauncher{suffix}",
                 launcherStates[index].Exists, ModernShipGeometry.ShotLauncherSlots[index]);
 
+            magazine.SetMaximumShots(magazineStates[index].MaximumShots);
             magazine.UpdateRuntime(magazineStates[index].CurrentShots, magazineStates[index].Status);
             fabricator.SetMaximumRate(fabricatorStates[index].MaximumRate);
             fabricator.UpdateRuntime(fabricatorStates[index].Active, fabricatorStates[index].Rate, fabricatorStates[index].Status,
                 fabricatorStates[index].ConsumedEnergyThisTick, fabricatorStates[index].ConsumedIonsThisTick,
                 fabricatorStates[index].ConsumedNeutrinosThisTick);
+            launcher.SetCapabilities(launcherStates[index].MinimumRelativeMovement, launcherStates[index].MaximumRelativeMovement,
+                launcherStates[index].MinimumTicks, launcherStates[index].MaximumTicks, launcherStates[index].MinimumLoad,
+                launcherStates[index].MaximumLoad, launcherStates[index].MinimumDamage, launcherStates[index].MaximumDamage);
             launcher.UpdateRuntime(launcherStates[index].RelativeMovement, launcherStates[index].Ticks, launcherStates[index].Load,
                 launcherStates[index].Damage, launcherStates[index].Status, launcherStates[index].ConsumedEnergyThisTick,
                 launcherStates[index].ConsumedIonsThisTick, launcherStates[index].ConsumedNeutrinosThisTick);
+            magazine.SetReportedTier(magazineStates[index].Tier);
+            fabricator.SetReportedTier(fabricatorStates[index].Tier);
+            launcher.SetReportedTier(launcherStates[index].Tier);
 
             _shotMagazines[index] = magazine;
             _shotFabricators[index] = fabricator;
@@ -380,21 +437,28 @@ public class ModernShipControllable : Controllable
         for (int index = 0; index < _interceptorLaunchers.Length; index++)
         {
             string suffix = GetSlotSuffix(launcherSlots[index]);
-            DynamicInterceptorMagazineSubsystem magazine = new DynamicInterceptorMagazineSubsystem(this, $"InterceptorMagazine{suffix}",
+            StaticInterceptorMagazineSubsystem magazine = new StaticInterceptorMagazineSubsystem(this, $"InterceptorMagazine{suffix}",
                 magazineStates[index].Exists, magazineSlots[index]);
             StaticInterceptorFabricatorSubsystem fabricator = new StaticInterceptorFabricatorSubsystem(this,
                 $"InterceptorFabricator{suffix}", fabricatorStates[index].Exists, fabricatorSlots[index]);
             StaticInterceptorLauncherSubsystem launcher = new StaticInterceptorLauncherSubsystem(this, $"InterceptorLauncher{suffix}",
                 launcherStates[index].Exists, launcherSlots[index]);
 
+            magazine.SetMaximumShots(magazineStates[index].MaximumShots);
             magazine.UpdateRuntime(magazineStates[index].CurrentShots, magazineStates[index].Status);
             fabricator.SetMaximumRate(fabricatorStates[index].MaximumRate);
             fabricator.UpdateRuntime(fabricatorStates[index].Active, fabricatorStates[index].Rate, fabricatorStates[index].Status,
                 fabricatorStates[index].ConsumedEnergyThisTick, fabricatorStates[index].ConsumedIonsThisTick,
                 fabricatorStates[index].ConsumedNeutrinosThisTick);
+            launcher.SetCapabilities(launcherStates[index].MinimumRelativeMovement, launcherStates[index].MaximumRelativeMovement,
+                launcherStates[index].MinimumTicks, launcherStates[index].MaximumTicks, launcherStates[index].MinimumLoad,
+                launcherStates[index].MaximumLoad, launcherStates[index].MinimumDamage, launcherStates[index].MaximumDamage);
             launcher.UpdateRuntime(launcherStates[index].RelativeMovement, launcherStates[index].Ticks, launcherStates[index].Load,
                 launcherStates[index].Damage, launcherStates[index].Status, launcherStates[index].ConsumedEnergyThisTick,
                 launcherStates[index].ConsumedIonsThisTick, launcherStates[index].ConsumedNeutrinosThisTick);
+            magazine.SetReportedTier(magazineStates[index].Tier);
+            fabricator.SetReportedTier(fabricatorStates[index].Tier);
+            launcher.SetReportedTier(launcherStates[index].Tier);
 
             _interceptorMagazines[index] = magazine;
             _interceptorFabricators[index] = fabricator;
@@ -409,8 +473,11 @@ public class ModernShipControllable : Controllable
             string suffix = GetSlotSuffix(ModernShipGeometry.RailgunSlots[index]);
             ModernRailgunSubsystem railgun = new ModernRailgunSubsystem(this, $"Railgun{suffix}", railgunStates[index].Exists,
                 ModernShipGeometry.RailgunSlots[index]);
+            railgun.SetCapabilities(railgunStates[index].ProjectileSpeed, railgunStates[index].ProjectileLifetime, railgunStates[index].EnergyCost,
+                railgunStates[index].MetalCost);
             railgun.UpdateRuntime(railgunStates[index].Direction, railgunStates[index].Status, railgunStates[index].ConsumedEnergyThisTick,
                 railgunStates[index].ConsumedIonsThisTick, railgunStates[index].ConsumedNeutrinosThisTick);
+            railgun.SetReportedTier(railgunStates[index].Tier);
             _railguns[index] = railgun;
         }
     }
@@ -426,6 +493,7 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
             !reader.Read(out float minimumRate) ||
             !reader.Read(out float maximumRate) ||
             !reader.Read(out float rate) ||
@@ -438,6 +506,7 @@ public class ModernShipControllable : Controllable
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
         state.MinimumRate = minimumRate;
         state.MaximumRate = maximumRate;
         state.Rate = rate;
@@ -479,6 +548,7 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
             !reader.Read(out float maximumWidth) ||
             !reader.Read(out float maximumLength) ||
             !reader.Read(out float widthSpeed) ||
@@ -498,6 +568,7 @@ public class ModernShipControllable : Controllable
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
         state.MaximumWidth = maximumWidth;
         state.MaximumLength = maximumLength;
         state.WidthSpeed = widthSpeed;
@@ -553,6 +624,7 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
             !reader.Read(out float maximumForwardThrust) ||
             !reader.Read(out float maximumReverseThrust) ||
             !reader.Read(out float maximumThrustChangePerTick) ||
@@ -565,6 +637,7 @@ public class ModernShipControllable : Controllable
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
         state.MaximumForwardThrust = maximumForwardThrust;
         state.MaximumReverseThrust = maximumReverseThrust;
         state.MaximumThrustChangePerTick = maximumThrustChangePerTick;
@@ -603,6 +676,7 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
             !reader.Read(out float minimumRelativeMovement) ||
             !reader.Read(out float maximumRelativeMovement) ||
             !reader.Read(out ushort minimumTicks) ||
@@ -622,6 +696,7 @@ public class ModernShipControllable : Controllable
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
         state.MinimumRelativeMovement = minimumRelativeMovement;
         state.MaximumRelativeMovement = maximumRelativeMovement;
         state.MinimumTicks = minimumTicks;
@@ -671,12 +746,14 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
             !reader.Read(out float maximumShots) ||
             !reader.Read(out float currentShots) ||
             !reader.Read(out byte status))
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
         state.MaximumShots = maximumShots;
         state.CurrentShots = currentShots;
         state.Status = (SubsystemStatus)status;
@@ -701,6 +778,7 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
             !reader.Read(out float minimumRate) ||
             !reader.Read(out float maximumRate) ||
             !reader.Read(out byte active) ||
@@ -712,6 +790,7 @@ public class ModernShipControllable : Controllable
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
         state.MinimumRate = minimumRate;
         state.MaximumRate = maximumRate;
         state.Active = active != 0;
@@ -749,6 +828,9 @@ public class ModernShipControllable : Controllable
         state = default;
 
         if (!reader.Read(out byte exists) ||
+            !reader.Read(out byte tier) ||
+            !reader.Read(out float projectileSpeed) ||
+            !reader.Read(out ushort projectileLifetime) ||
             !reader.Read(out float energyCost) ||
             !reader.Read(out float metalCost) ||
             !reader.Read(out byte direction) ||
@@ -759,6 +841,9 @@ public class ModernShipControllable : Controllable
             return false;
 
         state.Exists = exists != 0;
+        state.Tier = tier;
+        state.ProjectileSpeed = projectileSpeed;
+        state.ProjectileLifetime = projectileLifetime;
         state.EnergyCost = energyCost;
         state.MetalCost = metalCost;
         state.Direction = (RailgunDirection)direction;
@@ -862,6 +947,7 @@ public class ModernShipControllable : Controllable
     private struct NebulaCollectorState
     {
         public bool Exists;
+        public byte Tier;
         public float MinimumRate;
         public float MaximumRate;
         public float Rate;
@@ -876,6 +962,7 @@ public class ModernShipControllable : Controllable
     private struct ScannerState
     {
         public bool Exists;
+        public byte Tier;
         public float MaximumWidth;
         public float MaximumLength;
         public float WidthSpeed;
@@ -912,6 +999,7 @@ public class ModernShipControllable : Controllable
     private struct EngineState
     {
         public bool Exists;
+        public byte Tier;
         public float MaximumForwardThrust;
         public float MaximumReverseThrust;
         public float MaximumThrustChangePerTick;
@@ -936,6 +1024,7 @@ public class ModernShipControllable : Controllable
     private struct LauncherState
     {
         public bool Exists;
+        public byte Tier;
         public float MinimumRelativeMovement;
         public float MaximumRelativeMovement;
         public ushort MinimumTicks;
@@ -969,6 +1058,7 @@ public class ModernShipControllable : Controllable
     private struct MagazineState
     {
         public bool Exists;
+        public byte Tier;
         public float MaximumShots;
         public float CurrentShots;
         public SubsystemStatus Status;
@@ -983,6 +1073,7 @@ public class ModernShipControllable : Controllable
     private struct FabricatorState
     {
         public bool Exists;
+        public byte Tier;
         public float MinimumRate;
         public float MaximumRate;
         public bool Active;
@@ -1006,6 +1097,9 @@ public class ModernShipControllable : Controllable
     private struct RailgunState
     {
         public bool Exists;
+        public byte Tier;
+        public float ProjectileSpeed;
+        public ushort ProjectileLifetime;
         public float EnergyCost;
         public float MetalCost;
         public RailgunDirection Direction;

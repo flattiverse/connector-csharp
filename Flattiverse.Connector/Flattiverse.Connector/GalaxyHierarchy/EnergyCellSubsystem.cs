@@ -48,6 +48,7 @@ public class EnergyCellSubsystem : Subsystem
     internal void SetEfficiency(float efficiency)
     {
         _efficiency = Exists ? efficiency : 0f;
+        RefreshTier();
     }
 
     internal void ResetRuntime()
@@ -68,5 +69,27 @@ public class EnergyCellSubsystem : Subsystem
             return null;
 
         return new EnergyCellSubsystemEvent(Controllable, Slot, Status, _collectedThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetEnergyCell(tier, out float efficiency, out float load);
+
+            if (Matches(_efficiency, efficiency))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

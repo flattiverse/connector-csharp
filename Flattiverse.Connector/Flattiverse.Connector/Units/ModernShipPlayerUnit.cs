@@ -12,12 +12,12 @@ public class ModernShipPlayerUnit : PlayerUnit
     private readonly ModernShipEngineSubsystemInfo[] _engines;
     private readonly DynamicScannerSubsystemInfo[] _scanners;
     private readonly DynamicShotLauncherSubsystemInfo[] _shotLaunchers;
-    private readonly DynamicShotMagazineSubsystemInfo[] _shotMagazines;
+    private readonly StaticShotMagazineSubsystemInfo[] _shotMagazines;
     private readonly DynamicShotFabricatorSubsystemInfo[] _shotFabricators;
     private readonly DynamicInterceptorLauncherSubsystemInfo[] _interceptorLaunchers;
-    private readonly DynamicInterceptorMagazineSubsystemInfo[] _interceptorMagazines;
+    private readonly StaticInterceptorMagazineSubsystemInfo[] _interceptorMagazines;
     private readonly DynamicInterceptorFabricatorSubsystemInfo[] _interceptorFabricators;
-    private readonly RailgunSubsystemInfo[] _railguns;
+    private readonly ModernRailgunSubsystemInfo[] _railguns;
     private readonly JumpDriveSubsystemInfo _jumpDrive;
 
     internal ModernShipPlayerUnit(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
@@ -62,12 +62,12 @@ public class ModernShipPlayerUnit : PlayerUnit
     public IReadOnlyList<ModernShipEngineSubsystemInfo> Engines => _engines;
     public IReadOnlyList<DynamicScannerSubsystemInfo> Scanners => _scanners;
     public IReadOnlyList<DynamicShotLauncherSubsystemInfo> ShotLaunchers => _shotLaunchers;
-    public IReadOnlyList<DynamicShotMagazineSubsystemInfo> ShotMagazines => _shotMagazines;
+    public IReadOnlyList<StaticShotMagazineSubsystemInfo> ShotMagazines => _shotMagazines;
     public IReadOnlyList<DynamicShotFabricatorSubsystemInfo> ShotFabricators => _shotFabricators;
     public IReadOnlyList<DynamicInterceptorLauncherSubsystemInfo> InterceptorLaunchers => _interceptorLaunchers;
-    public IReadOnlyList<DynamicInterceptorMagazineSubsystemInfo> InterceptorMagazines => _interceptorMagazines;
+    public IReadOnlyList<StaticInterceptorMagazineSubsystemInfo> InterceptorMagazines => _interceptorMagazines;
     public IReadOnlyList<DynamicInterceptorFabricatorSubsystemInfo> InterceptorFabricators => _interceptorFabricators;
-    public IReadOnlyList<RailgunSubsystemInfo> Railguns => _railguns;
+    public IReadOnlyList<ModernRailgunSubsystemInfo> Railguns => _railguns;
     public JumpDriveSubsystemInfo JumpDrive => _jumpDrive;
 
     public override Unit Clone()
@@ -118,8 +118,8 @@ public class ModernShipPlayerUnit : PlayerUnit
         ModernShipEngineSubsystemInfo[] clone = CreateEngineInfos(source.Length);
 
         for (int index = 0; index < clone.Length; index++)
-            clone[index].Update(source[index].Exists, source[index].MaximumForwardThrust, source[index].MaximumReverseThrust,
-                source[index].MaximumThrustChangePerTick, source[index].CurrentThrust, source[index].TargetThrust, source[index].Status,
+            clone[index].Update(source[index].Exists, source[index].MaximumThrust, source[index].MaximumThrustChangePerTick,
+                source[index].CurrentThrust, source[index].TargetThrust, source[index].Status,
                 source[index].ConsumedEnergyThisTick, source[index].ConsumedIonsThisTick, source[index].ConsumedNeutrinosThisTick);
 
         return clone;
@@ -153,9 +153,9 @@ public class ModernShipPlayerUnit : PlayerUnit
         return clone;
     }
 
-    private static DynamicShotMagazineSubsystemInfo[] CloneShotMagazines(DynamicShotMagazineSubsystemInfo[] source)
+    private static StaticShotMagazineSubsystemInfo[] CloneShotMagazines(StaticShotMagazineSubsystemInfo[] source)
     {
-        DynamicShotMagazineSubsystemInfo[] clone = CreateShotMagazineInfos(source.Length);
+        StaticShotMagazineSubsystemInfo[] clone = CreateShotMagazineInfos(source.Length);
 
         for (int index = 0; index < clone.Length; index++)
             clone[index].Update(source[index].Exists, source[index].MaximumShots, source[index].CurrentShots, source[index].Status);
@@ -189,9 +189,9 @@ public class ModernShipPlayerUnit : PlayerUnit
         return clone;
     }
 
-    private static DynamicInterceptorMagazineSubsystemInfo[] CloneInterceptorMagazines(DynamicInterceptorMagazineSubsystemInfo[] source)
+    private static StaticInterceptorMagazineSubsystemInfo[] CloneInterceptorMagazines(StaticInterceptorMagazineSubsystemInfo[] source)
     {
-        DynamicInterceptorMagazineSubsystemInfo[] clone = CreateInterceptorMagazineInfos(source.Length);
+        StaticInterceptorMagazineSubsystemInfo[] clone = CreateInterceptorMagazineInfos(source.Length);
 
         for (int index = 0; index < clone.Length; index++)
             clone[index].Update(source[index].Exists, source[index].MaximumShots, source[index].CurrentShots, source[index].Status);
@@ -211,9 +211,9 @@ public class ModernShipPlayerUnit : PlayerUnit
         return clone;
     }
 
-    private static RailgunSubsystemInfo[] CloneRailguns(RailgunSubsystemInfo[] source)
+    private static ModernRailgunSubsystemInfo[] CloneRailguns(ModernRailgunSubsystemInfo[] source)
     {
-        RailgunSubsystemInfo[] clone = CreateRailgunInfos(source.Length);
+        ModernRailgunSubsystemInfo[] clone = CreateRailgunInfos(source.Length);
 
         for (int index = 0; index < clone.Length; index++)
             clone[index].Update(source[index].Exists, source[index].EnergyCost, source[index].MetalCost, source[index].Direction,
@@ -253,12 +253,12 @@ public class ModernShipPlayerUnit : PlayerUnit
         return infos;
     }
 
-    private static DynamicShotMagazineSubsystemInfo[] CreateShotMagazineInfos(int length)
+    private static StaticShotMagazineSubsystemInfo[] CreateShotMagazineInfos(int length)
     {
-        DynamicShotMagazineSubsystemInfo[] infos = new DynamicShotMagazineSubsystemInfo[length];
+        StaticShotMagazineSubsystemInfo[] infos = new StaticShotMagazineSubsystemInfo[length];
 
         for (int index = 0; index < infos.Length; index++)
-            infos[index] = new DynamicShotMagazineSubsystemInfo();
+            infos[index] = new StaticShotMagazineSubsystemInfo();
 
         return infos;
     }
@@ -283,12 +283,12 @@ public class ModernShipPlayerUnit : PlayerUnit
         return infos;
     }
 
-    private static DynamicInterceptorMagazineSubsystemInfo[] CreateInterceptorMagazineInfos(int length)
+    private static StaticInterceptorMagazineSubsystemInfo[] CreateInterceptorMagazineInfos(int length)
     {
-        DynamicInterceptorMagazineSubsystemInfo[] infos = new DynamicInterceptorMagazineSubsystemInfo[length];
+        StaticInterceptorMagazineSubsystemInfo[] infos = new StaticInterceptorMagazineSubsystemInfo[length];
 
         for (int index = 0; index < infos.Length; index++)
-            infos[index] = new DynamicInterceptorMagazineSubsystemInfo();
+            infos[index] = new StaticInterceptorMagazineSubsystemInfo();
 
         return infos;
     }
@@ -303,12 +303,12 @@ public class ModernShipPlayerUnit : PlayerUnit
         return infos;
     }
 
-    private static RailgunSubsystemInfo[] CreateRailgunInfos(int length)
+    private static ModernRailgunSubsystemInfo[] CreateRailgunInfos(int length)
     {
-        RailgunSubsystemInfo[] infos = new RailgunSubsystemInfo[length];
+        ModernRailgunSubsystemInfo[] infos = new ModernRailgunSubsystemInfo[length];
 
         for (int index = 0; index < infos.Length; index++)
-            infos[index] = new RailgunSubsystemInfo();
+            infos[index] = new ModernRailgunSubsystemInfo();
 
         return infos;
     }
@@ -373,8 +373,8 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float consumedNeutrinosThisTick))
             return false;
 
-        engine.Update(exists != 0, maximumForwardThrust, maximumReverseThrust, maximumThrustChangePerTick, currentThrust, targetThrust,
-            (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
+        engine.Update(exists != 0, MathF.Max(maximumForwardThrust, maximumReverseThrust), maximumThrustChangePerTick, currentThrust,
+            targetThrust, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
         return true;
     }
 
@@ -435,7 +435,7 @@ public class ModernShipPlayerUnit : PlayerUnit
         return true;
     }
 
-    private static bool ReadRailgunState(PacketReader reader, RailgunSubsystemInfo railgun)
+    private static bool ReadRailgunState(PacketReader reader, ModernRailgunSubsystemInfo railgun)
     {
         if (!reader.Read(out byte exists) ||
             !reader.Read(out float energyCost) ||

@@ -211,6 +211,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--balance-upgrade-check-local")
+        {
+            await RunBalanceUpgradeCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--tournament-check-local")
         {
             await RunTournamentCheckLocal().ConfigureAwait(false);

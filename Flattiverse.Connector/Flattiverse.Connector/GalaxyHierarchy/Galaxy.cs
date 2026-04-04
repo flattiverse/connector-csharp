@@ -1124,6 +1124,9 @@ public partial class Galaxy : IDisposable
     [Command(0x80)]
     private void ControllableNew(UnitKind kind, byte id, Cluster cluster, string name, PacketReader reader)
     {
+        if (_controllables[id] is Controllable oldControllable)
+            oldControllable.Deactivate();
+
         if (Controllable.New(kind, cluster, id, name, reader, out Controllable? info))
         {
             _controllables[id] = info;

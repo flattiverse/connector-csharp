@@ -9,10 +9,8 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class NebulaCollectorSubsystem : Subsystem
 {
-    private const float MinimumRateValue = 0f;
-    private const float MaximumRateValue = 0.1f;
-    private const float EnergyScale = 1600f;
-
+    private float _minimumRate;
+    private float _maximumRate;
     private float _rate;
     private float _consumedEnergyThisTick;
     private float _consumedIonsThisTick;
@@ -23,6 +21,8 @@ public class NebulaCollectorSubsystem : Subsystem
     internal NebulaCollectorSubsystem(Controllable controllable, bool exists, SubsystemSlot slot) :
         base(controllable, "NebulaCollector", exists, slot)
     {
+        _minimumRate = 0f;
+        _maximumRate = 0.1f;
         _rate = 0f;
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
@@ -42,7 +42,7 @@ public class NebulaCollectorSubsystem : Subsystem
     /// </summary>
     public float MinimumRate
     {
-        get { return MinimumRateValue; }
+        get { return _minimumRate; }
     }
 
     /// <summary>
@@ -50,7 +50,14 @@ public class NebulaCollectorSubsystem : Subsystem
     /// </summary>
     public float MaximumRate
     {
-        get { return MaximumRateValue; }
+        get { return _maximumRate; }
+    }
+
+    internal void SetCapabilities(float minimumRate, float maximumRate)
+    {
+        _minimumRate = Exists ? minimumRate : 0f;
+        _maximumRate = Exists ? maximumRate : 0f;
+        RefreshTier();
     }
 
     /// <summary>
@@ -122,10 +129,10 @@ public class NebulaCollectorSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = rate * rate * EnergyScale;
+        energy = ShipBalancing.CalculateEngineEnergy(rate, _maximumRate, FullCostFromMaximumRate(_maximumRate));
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -134,6 +141,23 @@ public class NebulaCollectorSubsystem : Subsystem
         }
 
         return true;
+    }
+
+    private static float FullCostFromMaximumRate(float maximumRate)
+    {
+        if (maximumRate <= 0.0166f)
+            return 6f;
+
+        if (maximumRate <= 0.0243f)
+            return 9f;
+
+        if (maximumRate <= 0.0342f)
+            return 14f;
+
+        if (maximumRate <= 0.0463f)
+            return 22f;
+
+        return 34f;
     }
 
     /// <summary>
@@ -158,7 +182,7 @@ public class NebulaCollectorSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate);
+        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate);
 
         if (rateValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(rateValidity, "rate");
@@ -209,5 +233,27 @@ public class NebulaCollectorSubsystem : Subsystem
 
         return new NebulaCollectorSubsystemEvent(Controllable, Slot, Status, _rate, _consumedEnergyThisTick,
             _consumedIonsThisTick, _consumedNeutrinosThisTick, _collectedThisTick, _collectedHueThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetNebulaCollector(tier, ModernShip, out float maximumRate, out float fullCost, out float load);
+
+            if (Matches(_maximumRate, maximumRate))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

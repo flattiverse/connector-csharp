@@ -37,6 +37,9 @@ public class DestroyedControllableInfoPlayerEvent : ControllableInfoPlayerEvent
             case PlayerUnitDestroyedReason.ByClusterRemoval:
                 return
                     $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} got destroyed because its cluster was removed.";
+            case PlayerUnitDestroyedReason.Rebuilding:
+                return
+                    $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} went offline for a subsystem rebuild.";
             default:
                 return
                     $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} got destroyed.";

@@ -902,11 +902,11 @@ Notes:
 * `*CellCollectedThisTick` is the post-efficiency amount that was actually loaded through that cell during the current server tick.
 * `hullCurrent` is the current hull integrity after that tick's damage resolution. The current reference classic ship uses `hullMaximum = 50`.
 * `shieldCurrent` is the current shield integrity after that tick's damage resolution. The current reference classic ship uses `shieldMaximum = 20`.
-* `shieldActive` / `shieldRate` is the owner-visible shield loading configuration. The current placeholder shield cost is `1600 * rate^2`, so the maximum reference rate `0.125` costs `25` energy per tick.
+* `shieldActive` / `shieldRate` is the owner-visible shield loading configuration. Exact per-tier costs and caps are exposed through `ShieldSubsystem.TierInfo` / `ShieldSubsystem.TierInfos`.
 * `armorBlocked*` reports what the fixed armor reduction absorbed during the current tick. The current reference classic ship uses `Reduction = 0.5`.
-* `repairRate == 0` means the repair subsystem is off. The current reference repair cost is `1600 * rate^2`, with a maximum rate of `0.1`. If ship movement reaches `>= 0.1`, the server clears the configured rate and reports `repairStatus == Failed` for that tick.
+* `repairRate == 0` means the repair subsystem is off. Exact per-tier costs and caps are exposed through `RepairSubsystem.TierInfo` / `RepairSubsystem.TierInfos`. If ship movement reaches `>= 0.1`, the server clears the configured rate and reports `repairStatus == Failed` for that tick.
 * `cargoCurrent*` is the owner-visible stored resource state. The current reference classic ship uses `cargoMaximumMetal = cargoMaximumCarbon = cargoMaximumHydrogen = cargoMaximumSilicon = 20`.
-* `resourceMinerRate == 0` means the miner is off. The current reference miner cost is `160000 * rate^2`, with a maximum rate of `0.01`, and it mines all in-range `Planet` / `Moon` / `Meteoroid` body resources edge-to-edge within `25`. Those body-side resource values are currently non-depleting.
+* `resourceMinerRate == 0` means the miner is off. Exact per-tier costs and caps are exposed through `ResourceMinerSubsystem.TierInfo` / `ResourceMinerSubsystem.TierInfos`. It mines all in-range `Planet` / `Moon` / `Meteoroid` body resources edge-to-edge within `25`. Those body-side resource values are currently non-depleting.
 * If the miner is active and no mineable resources are in range, the server still pays that tick, reports `resourceMinerStatus == Worked` with zero mined output, and then clears `resourceMinerRate` to `0`.
 * If ship movement reaches `>= 0.1`, the server clears `resourceMinerRate` and reports `resourceMinerStatus == Failed` for that tick.
 * `environment*` is an aggregated owner-only view of passive sun effects after the passive scan at the end of `DoBeforeCalculations()`. Heat drains `15` energy per point; unpaid heat overflows into radiation; radiation damage is reduced by armor before reaching hull.
@@ -921,7 +921,20 @@ Notes:
 * `mainScannerStatus == Worked` / `secondaryScannerStatus == Worked` tells owner-side tools whether the server actually paid and executed that scan in the current tick.
 * `SecondaryScanner` is currently a disabled subsystem on the reference ClassicShip. Its runtime block is still present and currently zeroed.
 * `Current*` is the server-applied runtime state. `Target*` is the server-side target configuration.
-* The current placeholder scanner energy cost is `PI * length^2 * width / 360 * 0.000282943`, so the reference `ClassicShip` maximum scan `90 x 300` costs about `20` energy per tick.
+* Exact per-tier subsystem metadata is available directly in the connector on owner-side subsystems:
+  * `Subsystem.Tier`
+  * `Subsystem.TargetTier`
+  * `Subsystem.RemainingTierChangeTicks`
+  * `Subsystem.TierInfo`
+  * `Subsystem.TierInfos`
+* `SubsystemTierInfo` provides:
+  * `StructuralLoad`
+  * `UpgradeCost`
+  * `DowngradeCost`
+  * numeric `Properties`
+  * `ResourceUsages` formulas grouped by subsystem component
+  * `Description`
+* Use `SubsystemTierInfo.CalculateResourceUsage(...)` to evaluate the metadata formulas for a concrete runtime operating point and compare them with the current tick's `Consumed*ThisTick` values.
 * The reference connector does not expose additional wire events for subsystem runtime. Instead it parses these owner-only runtime blocks and raises connector-local subsystem events:
   * `BatterySubsystemEvent`
   * `EnergyCellSubsystemEvent`
@@ -939,7 +952,8 @@ Notes:
   * `DynamicInterceptorLauncherSubsystemEvent`
   * `DynamicInterceptorMagazineSubsystemEvent`
   * `DynamicInterceptorFabricatorSubsystemEvent`
-  * `RailgunSubsystemEvent`
+  * `ClassicRailgunSubsystemEvent`
+  * `ModernRailgunSubsystemEvent`
   * `ModernShipEngineSubsystemEvent`
 * `EnvironmentDamageEvent`
 * `PowerUpCollectedEvent`

@@ -43,6 +43,7 @@ public class HullSubsystem : Subsystem
     internal void SetMaximum(float maximum)
     {
         _maximum = Exists ? maximum : 0f;
+        RefreshTier();
 
         if (_current > _maximum)
             _current = _maximum;
@@ -66,5 +67,27 @@ public class HullSubsystem : Subsystem
             return null;
 
         return new HullSubsystemEvent(Controllable, Slot, Status, _current);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetHull(tier, out float maximum, out float load);
+
+            if (Matches(_maximum, maximum))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

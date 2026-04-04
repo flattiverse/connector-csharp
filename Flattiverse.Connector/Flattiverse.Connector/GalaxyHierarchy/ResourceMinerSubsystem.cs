@@ -9,10 +9,8 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class ResourceMinerSubsystem : Subsystem
 {
-    private const float MinimumRateValue = 0f;
-    private const float MaximumRateValue = 0.01f;
-    private const float EnergyScale = 160000f;
-
+    private float _minimumRate;
+    private float _maximumRate;
     private float _rate;
     private float _consumedEnergyThisTick;
     private float _consumedIonsThisTick;
@@ -25,6 +23,8 @@ public class ResourceMinerSubsystem : Subsystem
     internal ResourceMinerSubsystem(Controllable controllable, bool exists, SubsystemSlot slot) :
         base(controllable, "ResourceMiner", exists, slot)
     {
+        _minimumRate = 0f;
+        _maximumRate = 0.01f;
         _rate = 0f;
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
@@ -45,7 +45,7 @@ public class ResourceMinerSubsystem : Subsystem
     /// </summary>
     public float MinimumRate
     {
-        get { return MinimumRateValue; }
+        get { return _minimumRate; }
     }
 
     /// <summary>
@@ -53,7 +53,14 @@ public class ResourceMinerSubsystem : Subsystem
     /// </summary>
     public float MaximumRate
     {
-        get { return MaximumRateValue; }
+        get { return _maximumRate; }
+    }
+
+    internal void SetCapabilities(float minimumRate, float maximumRate)
+    {
+        _minimumRate = Exists ? minimumRate : 0f;
+        _maximumRate = Exists ? maximumRate : 0f;
+        RefreshTier();
     }
 
     /// <summary>
@@ -132,10 +139,10 @@ public class ResourceMinerSubsystem : Subsystem
         if (!Exists)
             return false;
 
-        if (RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate) != InvalidArgumentKind.Valid)
+        if (RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate) != InvalidArgumentKind.Valid)
             return false;
 
-        energy = rate * rate * EnergyScale;
+        energy = ShipBalancing.CalculateEngineEnergy(rate, _maximumRate, FullCostFromMaximumRate(_maximumRate));
 
         if (float.IsNaN(energy) || float.IsInfinity(energy))
         {
@@ -144,6 +151,23 @@ public class ResourceMinerSubsystem : Subsystem
         }
 
         return true;
+    }
+
+    private static float FullCostFromMaximumRate(float maximumRate)
+    {
+        if (maximumRate <= 0.00221f)
+            return 10f;
+
+        if (maximumRate <= 0.00331f)
+            return 14f;
+
+        if (maximumRate <= 0.00461f)
+            return 20f;
+
+        if (maximumRate <= 0.00611f)
+            return 30f;
+
+        return 44f;
     }
 
     /// <summary>
@@ -160,7 +184,7 @@ public class ResourceMinerSubsystem : Subsystem
         if (!Controllable.Alive)
             throw new YouNeedToContinueFirstGameException();
 
-        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, MinimumRateValue, MaximumRateValue, out rate);
+        InvalidArgumentKind rateValidity = RangeTolerance.ClampRange(rate, _minimumRate, _maximumRate, out rate);
 
         if (rateValidity != InvalidArgumentKind.Valid)
             throw new InvalidArgumentGameException(rateValidity, "rate");
@@ -216,5 +240,27 @@ public class ResourceMinerSubsystem : Subsystem
 
         return new ResourceMinerSubsystemEvent(Controllable, Slot, Status, _rate, _consumedEnergyThisTick, _consumedIonsThisTick,
             _consumedNeutrinosThisTick, _minedMetalThisTick, _minedCarbonThisTick, _minedHydrogenThisTick, _minedSiliconThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetResourceMiner(tier, ModernShip, out float maximumRate, out float fullCost, out float load);
+
+            if (Matches(_maximumRate, maximumRate))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }

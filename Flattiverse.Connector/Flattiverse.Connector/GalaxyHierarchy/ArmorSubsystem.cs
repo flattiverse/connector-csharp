@@ -59,6 +59,7 @@ public class ArmorSubsystem : Subsystem
     internal void SetReduction(float reduction)
     {
         _reduction = Exists ? reduction : 0f;
+        RefreshTier();
     }
 
     internal void ResetRuntime()
@@ -81,5 +82,27 @@ public class ArmorSubsystem : Subsystem
             return null;
 
         return new ArmorSubsystemEvent(Controllable, Slot, Status, _reduction, _blockedDirectDamageThisTick, _blockedRadiationDamageThisTick);
+    }
+
+    protected override void RefreshTier()
+    {
+        if (!Exists)
+        {
+            SetTier(0);
+            return;
+        }
+
+        for (byte tier = 1; tier <= ShipUpgradeBalancing.GetMaximumTier(Slot); tier++)
+        {
+            ShipBalancing.GetArmor(tier, out float reduction, out float load);
+
+            if (Matches(_reduction, reduction))
+            {
+                SetTier(tier);
+                return;
+            }
+        }
+
+        SetTier(0);
     }
 }
