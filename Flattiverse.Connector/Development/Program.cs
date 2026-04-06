@@ -241,6 +241,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--achievement-check-local")
+        {
+            await RunAchievementCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--hull-neutral-death-check")
         {
             await RunHullNeutralDeathCheck().ConfigureAwait(false);
@@ -4429,10 +4435,19 @@ partial class Program
 
     private static string BuildConfigurationXml(Galaxy galaxy, TeamSpec[]? teams, ClusterSpec[]? clusters, bool? requiresSelfDisclosure = null)
     {
+        return BuildConfigurationXml(galaxy, teams, clusters, requiresSelfDisclosure, null, false);
+    }
+
+    private static string BuildConfigurationXml(Galaxy galaxy, TeamSpec[]? teams, ClusterSpec[]? clusters, bool? requiresSelfDisclosure,
+        string? requiredAchievement, bool includeRequiredAchievement)
+    {
         XElement root = new XElement("Galaxy");
 
         if (requiresSelfDisclosure is not null)
             root.Add(new XAttribute("RequiresSelfDisclosure", requiresSelfDisclosure.Value));
+
+        if (includeRequiredAchievement)
+            root.Add(new XAttribute("RequiredAchievement", requiredAchievement ?? string.Empty));
 
         if (teams is null)
             foreach (Team team in galaxy.Teams)

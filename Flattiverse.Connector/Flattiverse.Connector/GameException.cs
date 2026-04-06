@@ -132,6 +132,15 @@ public class GameException : Exception
                 case 0x22:
                     exception = new AllStartLocationsAreOvercrowded();
                     return true;
+                case 0x23:
+                    if (packetReader.Read(out str))
+                    {
+                        exception = new MissingAchievementGameException(str);
+                        return true;
+                    }
+
+                    exception = null;
+                    return false;
                 case 0x30:
                     exception = new CanOnlyShootOncePerTickGameException();
                     return true;

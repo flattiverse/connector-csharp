@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-20
+21
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=20&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=20&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=20&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=20&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=21&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=21&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=21&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=21&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -59,6 +59,7 @@ Important details:
 * `buildDisclosure` is a fixed 12-nibble hexadecimal string. Each nibble declares one build-assistance aspect in this order: `SoftwareDesign`, `UI`, `UniverseRendering`, `Input`, `EngineControl`, `Navigation`, `ScannerControl`, `WeaponSystems`, `ResourceControl`, `FleetControl`, `MissionControl`, `Chat`.
 * Build disclosure nibble values: `0=None`, `1=SearchOnly`, `2=FreeLlm`, `3=PaidLlm`, `4=IntegratedLlm`, `5=AgenticTool`.
 * If a galaxy has `RequiresSelfDisclosure=true`, regular player logins must provide both disclosure strings. Admin and spectator logins are currently exempt.
+* If a galaxy has `RequiredAchievement="KEY"`, regular player logins must already own that case-insensitive achievement key. Admin and spectator logins are currently exempt.
 * A player account may have only one active galaxy session at a time. The same lock covers both `apiPlayer` and `apiAdmin` of that account, so an admin login also blocks a normal login and vice versa while a fresh session heartbeat exists.
 * A plain HTTP request without WebSocket upgrade currently returns HTTP `426 Upgrade Required`.
 
@@ -201,6 +202,7 @@ Current server-side on-wire codes:
 * `0x20` `YouNeedToContinueFirstGameException`
 * `0x21` `YouNeedToDieFirstGameException`
 * `0x22` `AllStartLocationsAreOvercrowded`
+* `0x23` `MissingAchievementGameException`
 * `0x30` `CanOnlyShootOncePerTickGameException`
 * `0x31` `TournamentNotConfiguredGameException`
 * `0x32` `TournamentAlreadyConfiguredGameException`
@@ -220,6 +222,12 @@ Current connector-local-only codes:
 
 * `0x01` `CantConnectGameException`
 * `0x0C` `SessionsExhaustedException`
+
+Structured exception payloads currently used by the server:
+
+* `0x12`: `byte reason`, `string parameter`
+* `0x16`: `byte reason`, `string nodePath`, `string hint`
+* `0x23`: `string achievementName`
 
 ## Static Map Rebuild And Tick Profiling
 
@@ -381,9 +389,11 @@ byte   playerMaxClassicShips
 byte   playerMaxModernShips
 byte   maintenanceFlag
 byte   requiresSelfDisclosureFlag
+string requiredAchievement
 ```
 
 `maintenanceFlag` and `requiresSelfDisclosureFlag` are `0x00` or `0x01`.
+`requiredAchievement == ""` means there is no requirement configured.
 
 ### `0x02` Team Snapshot
 
@@ -1228,6 +1238,7 @@ Current `0x32` payloads:
   ushort vectorCount
   vectorCount * Vector
   ```
+  `Achievement` is configuration-only metadata and is not mirrored on the wire.
 * `Flag (0x15)`:
   ```text
   int  graceTicks

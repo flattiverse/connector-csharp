@@ -37,7 +37,7 @@ public class GalaxySettingsUpdatedEvent : FlattiverseEvent
                 $"MaxPlayers={New.MaxPlayers}, MaxSpectators={New.MaxSpectators}, " +
                 $"GalaxyMaxTotalShips={New.GalaxyMaxTotalShips}, GalaxyMaxClassicShips={New.GalaxyMaxClassicShips}, GalaxyMaxModernShips={New.GalaxyMaxModernShips}, " +
                 $"TeamMaxTotalShips={New.TeamMaxTotalShips}, TeamMaxClassicShips={New.TeamMaxClassicShips}, TeamMaxModernShips={New.TeamMaxModernShips}, " +
-                $"PlayerMaxTotalShips={New.PlayerMaxTotalShips}, PlayerMaxClassicShips={New.PlayerMaxClassicShips}, PlayerMaxModernShips={New.PlayerMaxModernShips}, Maintenance={New.Maintenance}, RequiresSelfDisclosure={New.RequiresSelfDisclosure}.";
+                $"PlayerMaxTotalShips={New.PlayerMaxTotalShips}, PlayerMaxClassicShips={New.PlayerMaxClassicShips}, PlayerMaxModernShips={New.PlayerMaxModernShips}, Maintenance={New.Maintenance}, RequiresSelfDisclosure={New.RequiresSelfDisclosure}, RequiredAchievement={New.RequiredAchievement ?? "<none>"}.";
 
         GalaxySettingsSnapshot oldSettings = Old;
         StringBuilder builder = new StringBuilder($"{Stamp:HH:mm:ss.fff} Galaxy settings updated: ");
@@ -184,6 +184,15 @@ public class GalaxySettingsUpdatedEvent : FlattiverseEvent
                 builder.Append(", ");
 
             builder.Append($"RequiresSelfDisclosure={oldSettings.RequiresSelfDisclosure}->{New.RequiresSelfDisclosure}");
+            appendedAtLeastOneChange = true;
+        }
+
+        if (oldSettings.RequiredAchievement != New.RequiredAchievement)
+        {
+            if (appendedAtLeastOneChange)
+                builder.Append(", ");
+
+            builder.Append($"RequiredAchievement={oldSettings.RequiredAchievement ?? "<none>"}->{New.RequiredAchievement ?? "<none>"}");
             appendedAtLeastOneChange = true;
         }
 

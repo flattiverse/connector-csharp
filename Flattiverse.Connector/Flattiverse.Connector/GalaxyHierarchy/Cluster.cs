@@ -232,7 +232,7 @@ public class Cluster : INamedUnit
     /// Creates or updates a single editable map unit in this cluster.
     /// Root node must be the unit type itself, for example &lt;Sun ... /&gt;.
     /// For &lt;Buoy ... /&gt; an optional Message attribute is supported (max 384 characters).
-    /// For &lt;MissionTarget ...&gt; Team is required and child nodes &lt;Vector X="..." Y="..." /&gt; are supported.
+    /// For &lt;MissionTarget ...&gt; Team is required, Achievement is optional, and child nodes &lt;Vector X="..." Y="..." /&gt; are supported.
     /// </summary>
     /// <param name="xml">Unit XML payload.</param>
     /// <exception cref="InvalidArgumentGameException">Thrown, if <paramref name="xml" /> is empty or malformed on protocol level.</exception>

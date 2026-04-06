@@ -87,11 +87,16 @@ public class GalaxySettingsSnapshot
     /// </summary>
     public readonly bool RequiresSelfDisclosure;
 
+    /// <summary>
+    /// Optional achievement key required for regular player logins.
+    /// </summary>
+    public readonly string? RequiredAchievement;
+
     internal GalaxySettingsSnapshot(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxModernShips,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxModernShips,
         byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, bool maintenance,
-        bool requiresSelfDisclosure)
+        bool requiresSelfDisclosure, string? requiredAchievement)
     {
         GameMode = gameMode;
         Name = name;
@@ -113,5 +118,6 @@ public class GalaxySettingsSnapshot
         PlayerMaxModernShips = playerMaxModernShips;
         Maintenance = maintenance;
         RequiresSelfDisclosure = requiresSelfDisclosure;
+        RequiredAchievement = requiredAchievement;
     }
 }

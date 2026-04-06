@@ -87,7 +87,8 @@ Example:
   PlayerMaxClassicShips="1"
   PlayerMaxModernShips="1"
   Maintenance="false"
-  RequiresSelfDisclosure="false">
+  RequiresSelfDisclosure="false"
+  RequiredAchievement="MISSION1_DONE">
   <Team Id="0" Name="Pink" ColorR="255" ColorG="0" ColorB="200" />
   <Team Id="1" Name="Green" ColorR="192" ColorG="255" ColorB="0" />
   <Cluster Id="0" Name="Playground" Start="true" Respawn="false" />
@@ -113,6 +114,7 @@ Allowed `Galaxy` attributes:
 - `PlayerMaxModernShips`: per-player cap for new-ship controllable runtimes (`ModernShipPlayerUnit` on the wire).
 - `Maintenance`: if `true`, the galaxy is marked as being under maintenance.
 - `RequiresSelfDisclosure`: if `true`, regular player logins must provide both self-disclosure strings during connect.
+- `RequiredAchievement`: optional achievement key required for regular player logins. Comparison is case-insensitive, the server trims whitespace, and the normalized key must be at most `16` characters long.
 
 Allowed `Team` attributes:
 
@@ -633,6 +635,7 @@ Additional required attributes:
 Optional attributes:
 
 - `SequenceNumber`: order index used by mission logic to sequence targets.
+- `Achievement`: optional achievement key awarded whenever the mission target is hit. Comparison is case-insensitive, the server trims whitespace, and the normalized key must be at most `16` characters long.
 
 Allowed child elements:
 
@@ -650,6 +653,7 @@ Constraints:
 - `Team` must not be spectators
 - `SequenceNumber` defaults to `0` if omitted; `QueryUnitXml(...)` writes it back explicitly
 - `SequenceNumber` must be in `[0; 65535]`
+- `Achievement` is omitted when empty or whitespace-only
 - `Vector` children are optional
 - `Orbit` and `Vector` child elements are allowed
 - `Vector` child elements must not contain nested elements
@@ -658,7 +662,7 @@ Constraints:
 Example:
 
 ```xml
-<MissionTarget Name="Alpha" X="400" Y="-250" Radius="20" Gravity="0" Team="0" SequenceNumber="3">
+<MissionTarget Name="Alpha" X="400" Y="-250" Radius="20" Gravity="0" Team="0" SequenceNumber="3" Achievement="MISSION1_HALF">
   <Vector X="500" Y="-250" />
   <Vector X="650" Y="-100" />
   <Vector X="700" Y="50" />
@@ -785,7 +789,7 @@ await cluster.SetUnit("""<CurrentField Name="EastJet" X="80" Y="-20" Radius="40"
 await cluster.SetUnit("""<Storm Name="BlueStorm" X="-180" Y="60" Radius="48" Gravity="0" SpawnChancePerTick="0.03" MinAnnouncementTicks="12" MaxAnnouncementTicks="18" MinActiveTicks="18" MaxActiveTicks="28" MinWhirlRadius="7" MaxWhirlRadius="11" MinWhirlSpeed="0.14" MaxWhirlSpeed="0.24" MinWhirlGravity="0.003" MaxWhirlGravity="0.008" Damage="3.5" />""");
 
 await cluster.SetUnit("""
-<MissionTarget Name="Alpha" X="400" Y="-250" Radius="20" Gravity="0" Team="0" SequenceNumber="3">
+<MissionTarget Name="Alpha" X="400" Y="-250" Radius="20" Gravity="0" Team="0" SequenceNumber="3" Achievement="MISSION1_HALF">
   <Vector X="500" Y="-250" />
   <Vector X="650" Y="-100" />
 </MissionTarget>
@@ -830,6 +834,8 @@ Examples:
   - `NodePath = "MissionTarget.Team"`
 - invalid `MissionTarget.SequenceNumber`:
   - `NodePath = "MissionTarget.SequenceNumber"`
+- overly long `MissionTarget.Achievement`:
+  - `NodePath = "MissionTarget.Achievement"`
 - invalid team reference in a region:
   - `NodePath = "Region>Team.Id"`
 - invalid numeric value:

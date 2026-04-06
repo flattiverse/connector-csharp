@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "20";
+    private const string Version = "21";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -46,6 +46,7 @@ public partial class Galaxy : IDisposable
 
     private bool _maintenance;
     private bool _requiresSelfDisclosure;
+    private string? _requiredAchievement;
     private bool _active;
     private bool _receivedCompiledWith;
     private bool _receivedGalaxySettings;
@@ -158,6 +159,9 @@ public partial class Galaxy : IDisposable
     /// </exception>
     /// <exception cref="PersistenceUnavailableGameException">
     /// Thrown, if the login requires persistent account/session storage and that storage is currently unavailable.
+    /// </exception>
+    /// <exception cref="MissingAchievementGameException">
+    /// Thrown, if a normal player login is denied because the galaxy requires an achievement the account does not have.
     /// </exception>
     /// <exception cref="GameException">
     /// Thrown, if the galaxy rejects the login with another protocol-level game exception.
@@ -402,6 +406,11 @@ public partial class Galaxy : IDisposable
     /// True if this galaxy requires self-disclosure for regular player logins.
     /// </summary>
     public bool RequiresSelfDisclosure => _requiresSelfDisclosure;
+
+    /// <summary>
+    /// Optional achievement key required for regular player logins.
+    /// </summary>
+    public string? RequiredAchievement => _requiredAchievement;
 
     /// <summary>
     /// The maximum amount of players this server binary has been compiled to support.
@@ -790,7 +799,7 @@ public partial class Galaxy : IDisposable
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxModernShips,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxModernShips,
         byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, byte maintenance,
-        byte requiresSelfDisclosure)
+        byte requiresSelfDisclosure, string requiredAchievement)
     {
         GalaxySettingsSnapshot? oldSettings;
 
@@ -799,7 +808,7 @@ public partial class Galaxy : IDisposable
                 _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxModernShips,
                 _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxModernShips,
                 _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
-                _requiresSelfDisclosure);
+                _requiresSelfDisclosure, _requiredAchievement);
         else
             oldSettings = null;
 
@@ -819,6 +828,7 @@ public partial class Galaxy : IDisposable
         _playerMaxModernShips = playerMaxModernShips;
         _maintenance = maintenance != 0;
         _requiresSelfDisclosure = requiresSelfDisclosure != 0;
+        _requiredAchievement = string.IsNullOrEmpty(requiredAchievement) ? null : requiredAchievement;
 
         _receivedGalaxySettings = true;
 
@@ -826,7 +836,7 @@ public partial class Galaxy : IDisposable
             _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxModernShips,
             _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxModernShips,
             _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
-            _requiresSelfDisclosure);
+            _requiresSelfDisclosure, _requiredAchievement);
 
         PushEvent(new GalaxySettingsUpdatedEvent(oldSettings, newSettings));
     }
