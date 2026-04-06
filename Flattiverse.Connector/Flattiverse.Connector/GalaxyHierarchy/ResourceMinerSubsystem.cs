@@ -42,6 +42,7 @@ public class ResourceMinerSubsystem : Subsystem
 
     /// <summary>
     /// Minimum configurable mining rate.
+    /// <c>0</c> means the miner is off.
     /// </summary>
     public float MinimumRate
     {
@@ -64,7 +65,8 @@ public class ResourceMinerSubsystem : Subsystem
     }
 
     /// <summary>
-    /// Configured mining rate for the tick.
+    /// Mining rate currently mirrored from the server.
+    /// The server may clear this value back to <c>0</c>, for example after movement or a paid zero-yield tick.
     /// </summary>
     public float Rate
     {
@@ -173,6 +175,12 @@ public class ResourceMinerSubsystem : Subsystem
     /// <summary>
     /// Sets the mining rate on the server.
     /// </summary>
+    /// <remarks>
+    /// The current classic ship uses <c>rate in [0; 0.01]</c> with placeholder tick cost
+    /// <c>energy = 160000 * rate^2</c>. The server executes mining authoritatively: it requires low movement, mines
+    /// in-range body resources, and may clear the mirrored rate back to <c>0</c> after movement or a paid zero-yield tick.
+    /// </remarks>
+    /// <param name="rate">Requested mining rate. <c>0</c> turns the miner off.</param>
     /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the controllable or subsystem does not exist.</exception>
     /// <exception cref="YouNeedToContinueFirstGameException">Thrown, if the controllable is dead.</exception>
     /// <exception cref="InvalidArgumentGameException">Thrown, if an argument is invalid.</exception>

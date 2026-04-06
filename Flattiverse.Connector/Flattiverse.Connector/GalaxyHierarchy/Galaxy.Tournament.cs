@@ -38,7 +38,8 @@ public partial class Galaxy
     /// </exception>
     public async Task ConfigureTournament(TournamentConfiguration configuration)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
+        if (configuration is null)
+            throw new ArgumentNullException(nameof(configuration));
 
         XElement root = new XElement("Tournament",
             new XAttribute("Mode", configuration.Mode),
@@ -187,14 +188,17 @@ public partial class Galaxy
 
         TournamentStage stage = (TournamentStage)stageValue;
         TournamentMode mode = (TournamentMode)modeValue;
-        byte[] winningTeamIds;
-        Team[] winningTeams;
-        TournamentTeam[] teams = new TournamentTeam[teamCount];
+        Team[] configuredTeams = new Team[teamCount];
+        TournamentAccount[][] participantsByTeamIndex = new TournamentAccount[teamCount][];
+        Dictionary<byte, int> teamIndexesById = new Dictionary<byte, int>(teamCount);
 
-        for (int teamIndex = 0; teamIndex < teams.Length; teamIndex++)
+        for (int teamIndex = 0; teamIndex < teamCount; teamIndex++)
         {
             if (!reader.Read(out byte teamId) || !reader.Read(out byte participantCount))
                 throw new InvalidDataException("Couldn't read tournament team header.");
+
+            if (teamIndexesById.ContainsKey(teamId))
+                throw new InvalidDataException($"Tournament contains duplicate team #{teamId}.");
 
             if (!Teams.TryGet(teamId, out Team? team) || team is null)
                 throw new InvalidDataException($"Tournament references unknown team #{teamId}.");
@@ -207,63 +211,35 @@ public partial class Galaxy
                 else
                     participants[participantIndex] = account;
 
-            teams[teamIndex] = new TournamentTeam(team, participants, 0);
+            configuredTeams[teamIndex] = team;
+            participantsByTeamIndex[teamIndex] = participants;
+            teamIndexesById.Add(teamId, teamIndex);
         }
 
         if (!reader.Read(out byte historyCount))
             throw new InvalidDataException("Couldn't read tournament history count.");
 
-        winningTeamIds = new byte[historyCount];
-        winningTeams = new Team[historyCount];
+        TournamentMatchResult[] matchHistory = new TournamentMatchResult[historyCount];
+        int[] winsByTeamIndex = new int[teamCount];
 
         for (int historyIndex = 0; historyIndex < historyCount; historyIndex++)
         {
             if (!reader.Read(out byte winningTeamId))
                 throw new InvalidDataException("Couldn't read tournament history entry.");
 
-            if (!TryFindTournamentTeam(teams, winningTeamId, out Team? winningTeam) || winningTeam is null)
+            if (!teamIndexesById.TryGetValue(winningTeamId, out int winningTeamIndex))
                 throw new InvalidDataException($"Tournament history references unknown team #{winningTeamId}.");
 
-            winningTeamIds[historyIndex] = winningTeamId;
-            winningTeams[historyIndex] = winningTeam;
+            winsByTeamIndex[winningTeamIndex]++;
+            matchHistory[historyIndex] = new TournamentMatchResult(historyIndex + 1, configuredTeams[winningTeamIndex]);
         }
 
-        TournamentMatchResult[] matchHistory = new TournamentMatchResult[winningTeamIds.Length];
+        TournamentTeam[] teams = new TournamentTeam[teamCount];
 
-        for (int historyIndex = 0; historyIndex < winningTeamIds.Length; historyIndex++)
-            matchHistory[historyIndex] = new TournamentMatchResult(historyIndex + 1, winningTeams[historyIndex]);
+        for (int teamIndex = 0; teamIndex < teamCount; teamIndex++)
+            teams[teamIndex] = new TournamentTeam(configuredTeams[teamIndex], participantsByTeamIndex[teamIndex],
+                winsByTeamIndex[teamIndex]);
 
-        TournamentTeam[] teamsWithWins = new TournamentTeam[teams.Length];
-
-        for (int teamIndex = 0; teamIndex < teams.Length; teamIndex++)
-        {
-            int wins = 0;
-
-            for (int historyIndex = 0; historyIndex < winningTeamIds.Length; historyIndex++)
-                if (winningTeamIds[historyIndex] == teams[teamIndex].Team.Id)
-                    wins++;
-
-            TournamentAccount[] participants = new TournamentAccount[teams[teamIndex].Participants.Count];
-
-            for (int participantIndex = 0; participantIndex < participants.Length; participantIndex++)
-                participants[participantIndex] = teams[teamIndex].Participants[participantIndex];
-
-            teamsWithWins[teamIndex] = new TournamentTeam(teams[teamIndex].Team, participants, wins);
-        }
-
-        return new Tournament(stage, mode, durationTicks, teamsWithWins, matchHistory);
-    }
-
-    private static bool TryFindTournamentTeam(TournamentTeam[] teams, byte teamId, out Team? team)
-    {
-        for (int teamIndex = 0; teamIndex < teams.Length; teamIndex++)
-            if (teams[teamIndex].Team.Id == teamId)
-            {
-                team = teams[teamIndex].Team;
-                return true;
-            }
-
-        team = null;
-        return false;
+        return new Tournament(stage, mode, durationTicks, teams, matchHistory);
     }
 }

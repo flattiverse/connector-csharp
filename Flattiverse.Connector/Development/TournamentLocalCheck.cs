@@ -18,7 +18,7 @@ partial class Program
 {
     private const ushort TournamentGalaxyId = 666;
     private const string LocalTournamentHomepageListUri = "http://127.0.0.1:8000/galaxies/list";
-    private const string LocalHomepageProjectPath = "D:\\Projects\\fv\\homepage\\homepage\\homepage.csproj";
+    private const string LocalHomepageProjectPath = "D:\\Projects\\fv\\fv-homepage\\homepage\\homepage.csproj";
     private const string LocalHomepageWorkingDirectory = "D:\\Projects\\fv";
 
     private static async Task RunTournamentCheckLocal()

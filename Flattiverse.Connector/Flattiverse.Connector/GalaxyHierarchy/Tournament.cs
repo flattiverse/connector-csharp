@@ -62,7 +62,8 @@ public class Tournament
     }
 
     /// <summary>
-    /// Number of the current or next live match, derived as <c>MatchHistory.Count + 1</c>.
+    /// Number of the currently live match while the tournament is commencing or running.
+    /// During preparation this already points at the next match to start, derived as <c>MatchHistory.Count + 1</c>.
     /// </summary>
     public int CurrentMatchNumber
     {

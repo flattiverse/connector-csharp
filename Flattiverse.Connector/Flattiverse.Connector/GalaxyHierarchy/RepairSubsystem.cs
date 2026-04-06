@@ -36,6 +36,7 @@ public class RepairSubsystem : Subsystem
 
     /// <summary>
     /// The minimum configurable repair rate.
+    /// <c>0</c> means the repair subsystem is off.
     /// </summary>
     public float MinimumRate
     {
@@ -58,7 +59,8 @@ public class RepairSubsystem : Subsystem
     }
 
     /// <summary>
-    /// The configured hull repair rate per tick.
+    /// The repair rate currently mirrored from the server.
+    /// The server may clear this value back to <c>0</c>, for example after movement.
     /// </summary>
     public float Rate
     {
@@ -143,6 +145,12 @@ public class RepairSubsystem : Subsystem
     /// <summary>
     /// Sets the repair rate on the server.
     /// </summary>
+    /// <remarks>
+    /// The current classic ship uses <c>rate in [0; 0.1]</c> with placeholder tick cost
+    /// <c>energy = 1600 * rate^2</c>. The server executes repair authoritatively: it only repairs hull and may clear the
+    /// mirrored rate back to <c>0</c> when the ship movement reaches <c>&gt;= 0.1</c>.
+    /// </remarks>
+    /// <param name="rate">Requested repair rate. <c>0</c> turns the repair subsystem off.</param>
     /// <exception cref="SpecifiedElementNotFoundGameException">Thrown, if the controllable or subsystem does not exist.</exception>
     /// <exception cref="YouNeedToContinueFirstGameException">Thrown, if the controllable is dead.</exception>
     /// <exception cref="InvalidArgumentGameException">Thrown, if an argument is invalid.</exception>
@@ -165,6 +173,14 @@ public class RepairSubsystem : Subsystem
             writer.Write(Controllable.Id);
             writer.Write(rate);
         });
+    }
+
+    /// <summary>
+    /// Convenience wrapper for <see cref="Set" /><c>(0f)</c>.
+    /// </summary>
+    public Task Off()
+    {
+        return Set(0f);
     }
 
     internal void ResetRuntime()
