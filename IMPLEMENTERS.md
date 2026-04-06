@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-18
+19
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=18&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=18&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=18&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=18&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=19&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=19&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=19&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=19&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -53,6 +53,7 @@ Important details:
 * The team-less form is used for spectator and admin logins.
 * Normal players may also omit `team`; in that case the server auto-selects the non-spectator team with the fewest currently connected normal players. Ties are resolved by the smallest team id.
 * If a tournament is in `Commencing` or `Running`, spectator logins may be rejected with `0x37`, non-participants may be rejected with `0x36`, and a player login without `team` is auto-assigned to the configured tournament team of that account instead of using least-populated-team selection.
+* Galaxies may additionally maintain separate ACL whitelists for normal players and admins. If one of those lists is empty, that login kind stays open to all accounts. If it contains at least one account id, only listed accounts may connect with that login kind. ACL changes do not disconnect existing sessions.
 * `runtimeDisclosure` is a fixed 10-nibble hexadecimal string. Each nibble declares one runtime automation aspect in this order: `EngineControl`, `Navigation`, `ScannerControl`, `WeaponAiming`, `WeaponTargetSelection`, `ResourceControl`, `FleetControl`, `MissionControl`, `LoadoutControl`, `Chat`.
 * Runtime disclosure nibble values: `0=Unsupported`, `1=Manual`, `2=Assisted`, `3=Automated`, `4=Autonomous`, `5=AiControlled`.
 * `buildDisclosure` is a fixed 12-nibble hexadecimal string. Each nibble declares one build-assistance aspect in this order: `SoftwareDesign`, `UI`, `UniverseRendering`, `Input`, `EngineControl`, `Navigation`, `ScannerControl`, `WeaponSystems`, `ResourceControl`, `FleetControl`, `MissionControl`, `Chat`.
@@ -210,6 +211,8 @@ Current server-side on-wire codes:
 * `0x37` `TournamentSpectatingForbiddenGameException`
 * `0x38` `TournamentTeamMismatchGameException`
 * `0x39` `TournamentModeNotAllowedGameException`
+* `0x3A` `PlayerAccessRestrictedGameException`
+* `0x3B` `AdminAccessRestrictedGameException`
 
 Current connector-local-only codes:
 
@@ -252,6 +255,10 @@ Payload details for the important structured exceptions:
 `0x38` is used when a player login or controllable registration targets a team that differs from the configured tournament team of that account.
 
 `0x39` is used when an admin tries to configure a tournament for a galaxy whose `GameMode == Mission`.
+
+`0x3A` is used when a normal player login is denied by the galaxy player ACL.
+
+`0x3B` is used when an admin login is denied by the galaxy admin ACL.
 
 Current `InvalidArgumentKind` values:
 
@@ -1466,6 +1473,9 @@ The client must echo the challenge value it most recently received in a `0x00` p
 * `0x62`: start tournament, empty payload
 * `0x63`: cancel tournament, empty payload
 * `0x64`: query accounts for tournament tooling, payload `int offset`, `ushort maximumCount`
+* `0x65`: query one galaxy ACL list, payload `byte kind`, `int offset`, `ushort maximumCount`
+* `0x66`: add one account to one galaxy ACL list, payload `byte kind`, `int accountId`
+* `0x67`: remove one account from one galaxy ACL list, payload `byte kind`, `int accountId`
 
 Reply format of `0x26`:
 
@@ -1520,6 +1530,26 @@ repeat returnedCount times:
         float tournamentElo
 ```
 
+Reply format of `0x65`:
+
+```text
+int    totalCount
+int    offset
+ushort returnedCount
+
+repeat returnedCount times:
+    int    accountId
+    string accountName
+    byte   adminFlag
+    int    rank
+    long   playerKills
+    long   playerDeaths
+    byte   hasAvatarFlag
+    byte   hasTournamentEloFlag
+    if hasTournamentEloFlag != 0:
+        float tournamentElo
+```
+
 Important notes:
 
 * `0x26` is binary on the wire. The reference connector converts the binary reply into `<Regions>...</Regions>` XML only as a convenience API.
@@ -1534,6 +1564,11 @@ Important notes:
 * `0x60` is admin-only and rejects `GameMode == Mission` with `0x39 TournamentModeNotAllowedGameException`.
 * `0x61`, `0x62`, and `0x63` are admin-only tournament lifecycle actions.
 * `0x64` is admin-only, filters server-side to account statuses `user` and `reoptin`, orders by `lower(name), id`, and returns connector-style account snapshots for tournament configuration UIs.
+* `0x65`, `0x66`, and `0x67` are admin-only galaxy ACL actions.
+* `0x65` accepts `kind = 0x01` for the player ACL and `kind = 0x04` for the admin ACL. Other values are rejected as invalid arguments.
+* `0x65` returns connector-style account snapshots for the requested ACL list, ordered by `lower(name), id`.
+* `0x66` rejects nonexistent accounts with `0x13 SpecifiedElementNotFoundGameException`.
+* Empty ACL lists keep the corresponding login kind open to all accounts; non-empty lists turn that login kind into a whitelist.
 * XML semantics, whitelists, validation rules, and examples are intentionally documented in [MAPEDITORS.md](MAPEDITORS.md), not duplicated here.
 
 ### Player Commands

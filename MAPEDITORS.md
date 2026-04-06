@@ -5,6 +5,9 @@ This document is for software that connects as a Flattiverse admin and edits gal
 Relevant API entry points:
 
 - [`Galaxy.Configure(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L475)
+- [`Galaxy.QueryAclAccounts(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.AccessControl.cs)
+- [`Galaxy.AddAclAccount(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.AccessControl.cs)
+- [`Galaxy.RemoveAclAccount(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.AccessControl.cs)
 - [`Cluster.SetRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L120)
 - [`Cluster.RemoveRegion(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L138)
 - [`Cluster.QueryRegions()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Cluster.cs#L157)
@@ -32,6 +35,7 @@ Relevant API entry points:
 - `QueryRegions()` reconstructs XML locally in the connector from the binary region query reply. Prefer querying back after edits instead of maintaining a second serializer in your editor.
 - Region changes are not event-driven. Query them when your editor needs the current region set.
 - `Galaxy.Configure(...)` does not reject target types based on `GameMode`. You may keep targets in the map while changing the galaxy game mode.
+- Galaxy ACLs are persistent galaxy metadata, even though they are managed through dedicated admin commands instead of `Galaxy.Configure(...)` XML.
 - If `Galaxy.Tournament is not null`, all map-editing commands are rejected with `TournamentMapEditingLockedGameException`.
 - Editable unit changes are event-driven. When an admin edits or removes an editable unit, the server sends `RemovedUnit` first and then `UnitAlteredByAdminEvent` to admins, spectators, and players that have seen that unit before during their current connection.
 
@@ -119,6 +123,38 @@ Allowed `Cluster` attributes:
 - `Name`: display name of the cluster.
 - `Start`: if `true`, this cluster is eligible as an initial spawn cluster.
 - `Respawn`: if `true`, this cluster is preferred when dead player-owned controllable runtimes are continued.
+
+## Galaxy ACLs
+
+Galaxy ACLs restrict which persistent account ids may enter one galaxy as a normal player or as an admin.
+
+Important behavior:
+
+- The player ACL and admin ACL are completely separate.
+- If one ACL list is empty, that login kind is open to all accounts.
+- If one ACL list contains at least one account id, that login kind becomes a whitelist.
+- Spectator logins are not affected.
+- ACL changes are persistent and survive galaxy restarts because they are stored in the database.
+- ACL changes do not disconnect already connected sessions. The new rules apply only to later login attempts.
+- `AddAclAccount(...)` is idempotent for already listed accounts.
+- `RemoveAclAccount(...)` is idempotent for missing accounts.
+- `AddAclAccount(...)` fails with `SpecifiedElementNotFoundGameException` if the account id does not exist.
+
+Typical usage:
+
+```csharp
+Flattiverse.Connector.Account.Account[] playerAcl = await galaxy.QueryAclAccounts(GalaxyAclKind.Player);
+await galaxy.AddAclAccount(GalaxyAclKind.Player, 1234);
+await galaxy.AddAclAccount(GalaxyAclKind.Admin, 42);
+await galaxy.RemoveAclAccount(GalaxyAclKind.Player, 1234);
+```
+
+Typical workflow:
+
+- Use `Galaxy.QueryAccounts(...)` if your editor/tool first needs a searchable account catalog.
+- Use `Galaxy.QueryAclAccounts(...)` to display the current whitelist of one login kind.
+- Use `Galaxy.AddAclAccount(...)` and `Galaxy.RemoveAclAccount(...)` to persist changes immediately.
+- Expect denied future logins to fail with `PlayerAccessRestrictedGameException` or `AdminAccessRestrictedGameException`, depending on the attempted login kind.
 
 Limits and constraints:
 

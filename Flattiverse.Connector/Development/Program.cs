@@ -235,6 +235,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--galaxy-acl-check-local")
+        {
+            await RunGalaxyAclCheckLocal(args).ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--hull-neutral-death-check")
         {
             await RunHullNeutralDeathCheck().ConfigureAwait(false);

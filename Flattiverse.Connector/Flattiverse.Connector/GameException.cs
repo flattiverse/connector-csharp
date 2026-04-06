@@ -162,6 +162,12 @@ public class GameException : Exception
                 case 0x39:
                     exception = new TournamentModeNotAllowedGameException();
                     return true;
+                case 0x3A:
+                    exception = new PlayerAccessRestrictedGameException();
+                    return true;
+                case 0x3B:
+                    exception = new AdminAccessRestrictedGameException();
+                    return true;
             }
 
         exception = null;

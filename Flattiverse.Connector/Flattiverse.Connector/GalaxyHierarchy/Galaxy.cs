@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "18";
+    private const string Version = "19";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -146,6 +146,12 @@ public partial class Galaxy : IDisposable
     /// </exception>
     /// <exception cref="ServerFullOfPlayerKindGameException">
     /// Thrown, if the galaxy has no free slot for the requested player kind, for example normal player or spectator.
+    /// </exception>
+    /// <exception cref="PlayerAccessRestrictedGameException">
+    /// Thrown, if a normal player login is denied by the galaxy player ACL.
+    /// </exception>
+    /// <exception cref="AdminAccessRestrictedGameException">
+    /// Thrown, if an admin login is denied by the galaxy admin ACL.
     /// </exception>
     /// <exception cref="AccountAlreadyLoggedInGameException">
     /// Thrown, if the same account already has another active session on this or another galaxy.
@@ -1143,7 +1149,7 @@ public partial class Galaxy : IDisposable
     }    
     
     [Command(0x82)]
-    private void ControllableDeceased(Controllable controllable, Cluster cluster, PacketReader reader)
+    private void ControllableUpdated(Controllable controllable, Cluster cluster, PacketReader reader)
     {
         controllable.Updated(cluster, reader);
     }
