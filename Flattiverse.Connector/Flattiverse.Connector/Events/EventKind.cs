@@ -262,6 +262,11 @@ public enum EventKind : byte
     MissionTargetHitChat = 0xC7,
 
     /// <summary>
+    /// A generic system message sent by the server.
+    /// </summary>
+    SystemMessage = 0xC8,
+
+    /// <summary>
     /// A galaxy-wide system chat announced that a flag became active again.
     /// </summary>
     FlagReactivatedChat = 0xC9,

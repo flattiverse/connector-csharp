@@ -21,6 +21,11 @@ public enum PlayerUnitDestroyedReason
     ByClusterRemoval = 0x01,
 
     /// <summary>
+    /// Destroyed after leaving the activated map area and getting lost in deep space.
+    /// </summary>
+    LostInDeepSpace = 0x02,
+
+    /// <summary>
     /// Destroyed by collision with a non-player unit.
     /// </summary>
     CollidedWithNeutralUnit = 0x20,

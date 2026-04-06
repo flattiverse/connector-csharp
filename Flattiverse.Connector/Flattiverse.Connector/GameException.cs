@@ -168,6 +168,12 @@ public class GameException : Exception
                 case 0x3B:
                     exception = new AdminAccessRestrictedGameException();
                     return true;
+                case 0x3C:
+                    exception = new StaticMapRebuildInProgressGameException();
+                    return true;
+                case 0x3D:
+                    exception = new StaticMapRebuildLockedGameException();
+                    return true;
             }
 
         exception = null;

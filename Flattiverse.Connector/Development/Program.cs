@@ -271,6 +271,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--static-map-check-local")
+        {
+            await RunStaticMapCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         Galaxy? adminGalaxy = null;
         Galaxy? playerGalaxy = null;
         Task? playerEventPump = null;

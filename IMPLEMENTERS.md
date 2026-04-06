@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-19
+20
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=19&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=19&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=19&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=19&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=20&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=20&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=20&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=20&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -213,11 +213,43 @@ Current server-side on-wire codes:
 * `0x39` `TournamentModeNotAllowedGameException`
 * `0x3A` `PlayerAccessRestrictedGameException`
 * `0x3B` `AdminAccessRestrictedGameException`
+* `0x3C` `StaticMapRebuildInProgressGameException`
+* `0x3D` `StaticMapRebuildLockedGameException`
 
 Current connector-local-only codes:
 
 * `0x01` `CantConnectGameException`
 * `0x0C` `SessionsExhaustedException`
+
+## Static Map Rebuild And Tick Profiling
+
+The server now maintains an explicit static-map rebuild step for expensive per-segment still-data.
+
+Important connector-visible behavior:
+
+* On galaxy start an initial static-map rebuild runs automatically. Regular logins are rejected with `0x3C` until that first rebuild has finished.
+* Admins may trigger a manual rebuild through `Galaxy.RebuildStaticMap()`.
+* Starting a rebuild while a tournament exists fails with `0x3D`.
+* Starting or configuring a tournament while a rebuild is running fails with `0x3C`.
+* A later rebuild request aborts the currently running rebuild job and restarts it from scratch.
+* Live simulation keeps using the previous static-map state until the new rebuild finishes and is swapped in atomically.
+
+`0xC0 GalaxyTickEvent` now carries per-tick float timings in milliseconds:
+
+* `ScanMs`
+* `SteadyMs`
+* `GravityMs`
+* `EnginesMs`
+* `LimitMs`
+* `MovementMs`
+* `CollisionsMs`
+* `ActionsMs`
+* `VisibilityMs`
+* `TotalMs`
+
+It also carries `RemainingStaticSegments`, which is `0` while no rebuild is running and otherwise reports the currently remaining segment-cache work.
+
+`0x22` controllable-death replies now also use `PlayerUnitDestroyedReason.LostInDeepSpace (0x02)` when a player-owned runtime leaves the activated map area.
 * `0x0F` `ConnectionTerminatedGameException`
 * `0x11` `CantCallThisConcurrentGameException`
 

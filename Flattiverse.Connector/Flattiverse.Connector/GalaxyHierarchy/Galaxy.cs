@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "19";
+    private const string Version = "20";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -1232,9 +1232,11 @@ public partial class Galaxy : IDisposable
     }
     
     [Command(0xC0)]
-    private void UniverseTick(uint number)
+    private void UniverseTick(uint number, float scanMs, float steadyMs, float gravityMs, float enginesMs, float limitMs,
+        float movementMs, float collisionsMs, float actionsMs, float visibilityMs, float totalMs, int remainingStaticSegments)
     {
-        PushEvent(new GalaxyTickEvent(number));
+        PushEvent(new GalaxyTickEvent(number, scanMs, steadyMs, gravityMs, enginesMs, limitMs, movementMs, collisionsMs,
+            actionsMs, visibilityMs, totalMs, remainingStaticSegments));
     }
 
     [Command(0xC1)]
@@ -1292,6 +1294,12 @@ public partial class Galaxy : IDisposable
             throw new InvalidDataException("Server did send a non existent ControllableInfo in mission-target-hit chat.");
 
         PushEvent(new MissionTargetHitChatEvent(player, controllableInfo, missionTargetSequence));
+    }
+
+    [Command(0xC8)]
+    private void SystemMessage(string message)
+    {
+        PushEvent(new SystemMessageEvent(message));
     }
 
     [Command(0xC9)]

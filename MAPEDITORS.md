@@ -5,6 +5,7 @@ This document is for software that connects as a Flattiverse admin and edits gal
 Relevant API entry points:
 
 - [`Galaxy.Configure(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L475)
+- [`Galaxy.RebuildStaticMap()`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.StaticMap.cs)
 - [`Galaxy.QueryAclAccounts(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.AccessControl.cs)
 - [`Galaxy.AddAclAccount(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.AccessControl.cs)
 - [`Galaxy.RemoveAclAccount(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.AccessControl.cs)
@@ -37,6 +38,10 @@ Relevant API entry points:
 - `Galaxy.Configure(...)` does not reject target types based on `GameMode`. You may keep targets in the map while changing the galaxy game mode.
 - Galaxy ACLs are persistent galaxy metadata, even though they are managed through dedicated admin commands instead of `Galaxy.Configure(...)` XML.
 - If `Galaxy.Tournament is not null`, all map-editing commands are rejected with `TournamentMapEditingLockedGameException`.
+- `Galaxy.RebuildStaticMap()` triggers the expensive rebuild of still-gravity / still-clearance segment data after static edits. Galaxies also run this once automatically on startup.
+- While a static-map rebuild is running, tournament commands are rejected with `StaticMapRebuildInProgressGameException`.
+- Triggering `Galaxy.RebuildStaticMap()` while a tournament exists is rejected with `StaticMapRebuildLockedGameException`.
+- A new rebuild request aborts the currently running rebuild and restarts it from scratch.
 - Editable unit changes are event-driven. When an admin edits or removes an editable unit, the server sends `RemovedUnit` first and then `UnitAlteredByAdminEvent` to admins, spectators, and players that have seen that unit before during their current connection.
 
 ## Connection
@@ -173,6 +178,8 @@ Limits and constraints:
   - no additional character whitelist is applied by the server today
   - leading or trailing spaces are therefore currently accepted
 - cluster names and team names are limited to `32` characters
+- editable units may not use a radius greater than `1000`
+- editable units may not place their center into the outermost segment rows or columns of the fixed `250 x 250` map grid
 
 ## Regions
 
