@@ -28,6 +28,7 @@ partial class Program
     private const string PlayerAdminAuth = "<INSERT PLAYER-ADMIN API KEY HERE>";
     private const string PlayerAuth = "<INSERT PLAYER API KEY HERE>";
     private static readonly TimeSpan AccountSessionTimeout = new TimeSpan(0, 0, 15);
+    private static readonly TimeSpan HeartbeatInterval = new TimeSpan(0, 0, 5);
 
     private readonly struct ClusterSpec
     {
@@ -2870,7 +2871,6 @@ partial class Program
                 $"SPECTATOR-WATCH: connected as {spectatorGalaxy.Player.Name} ({spectatorGalaxy.Player.Kind}), teams={spectatorGalaxy.Teams.Count}, players={spectatorGalaxy.Players.Count}.");
 
             DumpSpectatorState(spectatorGalaxy);
-
             while (spectatorGalaxy.Active)
             {
                 if (durationSeconds > 0 && (DateTime.UtcNow - started).TotalSeconds >= durationSeconds)
@@ -2879,7 +2879,26 @@ partial class Program
                     break;
                 }
 
-                FlattiverseEvent @event = await spectatorGalaxy.NextEvent().ConfigureAwait(false);
+                Task<FlattiverseEvent> nextEventTask = spectatorGalaxy.NextEvent().AsTask();
+
+                while (true)
+                {
+                    DateTime heartbeatReferenceUtc = spectatorGalaxy.LastSendUtc ?? DateTime.UtcNow;
+
+                    if (DateTime.UtcNow >= heartbeatReferenceUtc + HeartbeatInterval)
+                    {
+                        await spectatorGalaxy.SendHeartbeat().ConfigureAwait(false);
+                        continue;
+                    }
+
+                    TimeSpan heartbeatDelay = heartbeatReferenceUtc + HeartbeatInterval - DateTime.UtcNow;
+                    Task completedTask = await Task.WhenAny(nextEventTask, Task.Delay(heartbeatDelay)).ConfigureAwait(false);
+
+                    if (completedTask == nextEventTask)
+                        break;
+                }
+
+                FlattiverseEvent @event = await nextEventTask.ConfigureAwait(false);
                 string line = DescribeSpectatorEvent(@event);
 
                 Console.WriteLine(line);
@@ -4287,7 +4306,26 @@ partial class Program
             {
                 while (true)
                 {
-                    FlattiverseEvent @event = await playerGalaxy.NextEvent().ConfigureAwait(false);
+                    Task<FlattiverseEvent> nextEventTask = playerGalaxy.NextEvent().AsTask();
+
+                    while (true)
+                    {
+                        DateTime heartbeatReferenceUtc = playerGalaxy.LastSendUtc ?? DateTime.UtcNow;
+
+                        if (DateTime.UtcNow >= heartbeatReferenceUtc + HeartbeatInterval)
+                        {
+                            await playerGalaxy.SendHeartbeat().ConfigureAwait(false);
+                            continue;
+                        }
+
+                        TimeSpan heartbeatDelay = heartbeatReferenceUtc + HeartbeatInterval - DateTime.UtcNow;
+                        Task completedTask = await Task.WhenAny(nextEventTask, Task.Delay(heartbeatDelay)).ConfigureAwait(false);
+
+                        if (completedTask == nextEventTask)
+                            break;
+                    }
+
+                    FlattiverseEvent @event = await nextEventTask.ConfigureAwait(false);
                     playerEvents.Enqueue(@event);
                 }
             }

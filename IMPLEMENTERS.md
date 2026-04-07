@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-21
+22
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=21&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=21&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=21&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=21&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=22&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=22&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=22&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=22&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -61,6 +61,8 @@ Important details:
 * If a galaxy has `RequiresSelfDisclosure=true`, regular player logins must provide both disclosure strings. Admin and spectator logins are currently exempt.
 * If a galaxy has `RequiredAchievement="KEY"`, regular player logins must already own that case-insensitive achievement key. Admin and spectator logins are currently exempt.
 * A player account may have only one active galaxy session at a time. The same lock covers both `apiPlayer` and `apiAdmin` of that account, so an admin login also blocks a normal login and vice versa while a fresh session heartbeat exists.
+* The galaxy disconnects a client when it receives no packets for `15s`. Idle clients should therefore keep sending heartbeat packets.
+* The reference connector exposes `Galaxy.LastSendUtc`, which reflects when the last protocol packet batch actually left the connector websocket.
 * A plain HTTP request without WebSocket upgrade currently returns HTTP `426 Upgrade Required`.
 
 ## Initial Success And Failure Semantics
@@ -1497,9 +1499,11 @@ The following packet commands are currently used by clients to call server comma
 
 ### General
 
-* `0x00` for all player kinds: ping reply, payload `ushort challenge`
+* `0x00` for all player kinds: ping reply / heartbeat, payload `ushort challenge`
 
 The client must echo the challenge value it most recently received in a `0x00` ping request.
+Idle clients should keep sending that same challenge as a heartbeat often enough that the server sees at least one client packet every `15s`.
+Clients that use the reference connector can base this decision on `Galaxy.LastSendUtc` instead of maintaining a separate local send timestamp.
 
 ### Admin / Map Editing
 
