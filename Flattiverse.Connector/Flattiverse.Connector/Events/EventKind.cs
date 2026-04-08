@@ -282,6 +282,11 @@ public enum EventKind : byte
     GateRestored = 0xCB,
 
     /// <summary>
+    /// You received a private binary chat message.
+    /// </summary>
+    BinaryChatPlayer = 0xCC,
+
+    /// <summary>
     /// A tournament was created.
     /// </summary>
     TournamentCreated = 0xD0,

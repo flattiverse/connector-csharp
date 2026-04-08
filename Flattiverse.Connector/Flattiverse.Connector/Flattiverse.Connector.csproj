@@ -4,10 +4,10 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>0.0.1.13</Version>
-        <AssemblyVersion>0.0.1.13</AssemblyVersion>
-        <FileVersion>0.0.1.13</FileVersion>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>0.0.1.14</Version>
+        <AssemblyVersion>0.0.1.14</AssemblyVersion>
+        <FileVersion>0.0.1.14</FileVersion>
+        <PackageReadmeFile>NUGET_README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+      <None Include="..\..\NUGET_README.md" Pack="true" PackagePath="\" Link="NUGET_README.md" />
     </ItemGroup>
 
 </Project>

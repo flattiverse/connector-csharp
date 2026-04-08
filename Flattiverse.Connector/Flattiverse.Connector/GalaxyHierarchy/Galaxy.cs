@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "22";
+    private const string Version = "23";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -67,8 +67,6 @@ public partial class Galaxy : IDisposable
     private TaskCompletionSource? _eventsTcs;
     private readonly object _eventsSync;
     private Crystal[] _crystals;
-    private ushort _heartbeatChallenge;
-    private bool _hasHeartbeatChallenge;
 
     /// <summary>
     /// Represents all teams in the galaxy.
@@ -300,8 +298,6 @@ public partial class Galaxy : IDisposable
         _events = new Queue<FlattiverseEvent>();
         _eventsSync = new object();
         _crystals = Array.Empty<Crystal>();
-        _heartbeatChallenge = 0;
-        _hasHeartbeatChallenge = false;
         
         Teams = new UniversalHolder<Team>(_teams);
         Clusters = new UniversalHolder<Cluster>(_clusters);
@@ -397,12 +393,6 @@ public partial class Galaxy : IDisposable
     /// True while the underlying session and connection are still active.
     /// </summary>
     public bool Active => _active;
-
-    /// <summary>
-    /// UTC timestamp of the last packet batch that this connector actually sent to the galaxy.
-    /// Returns <see langword="null" /> until the first outgoing protocol packet has been written to the websocket.
-    /// </summary>
-    public DateTime? LastSendUtc => Connection.LastSendUtc;
 
     /// <summary>
     /// True if a galaxy admin has enabled maintenance mode. When maintenance mode is enabled, new players or spectators
@@ -794,25 +784,10 @@ public partial class Galaxy : IDisposable
     }
     
     [Command(0x00)]
-    private void PingPong(ushort challenge)
+    private void PingReply(ushort challenge)
     {
-        _heartbeatChallenge = challenge;
-        _hasHeartbeatChallenge = true;
-
-        _ = SendHeartbeat();
-    }
-
-    /// <summary>
-    /// Sends the most recently received ping challenge back to the galaxy.
-    /// Call this periodically from long-lived clients so the server continues to see inbound client traffic.
-    /// If no challenge has been received yet or the connection is already inactive, the call does nothing.
-    /// </summary>
-    public Task SendHeartbeat()
-    {
-        if (!_active || !_hasHeartbeatChallenge || Connection.Disposed)
-            return Task.CompletedTask;
-
-        ushort challenge = _heartbeatChallenge;
+        if (!_active || Connection.Disposed)
+            return;
 
         Connection.Send(delegate (ref PacketWriter writer)
         {
@@ -820,8 +795,6 @@ public partial class Galaxy : IDisposable
             writer.Write(challenge);
         });
         Connection.Flush();
-
-        return Task.CompletedTask;
     }
     
     [Command(0x01)]
@@ -1396,6 +1369,23 @@ public partial class Galaxy : IDisposable
     private void GateRestored(Cluster cluster, string gateName, byte closed)
     {
         PushEvent(new GateRestoredEvent(cluster, gateName, closed != 0x00));
+    }
+
+    [Command(0xCC)]
+    private void BinaryChatPlayer(Player player, PacketReader reader)
+    {
+        if (!reader.Read(out ushort messageLength))
+            throw new InvalidDataException("Server did send a binary player chat without a message length.");
+
+        if (messageLength == 0 || messageLength > 1024)
+            throw new InvalidDataException($"Server did send a binary player chat with invalid length {messageLength}.");
+
+        byte[] message = GC.AllocateUninitializedArray<byte>(messageLength, false);
+
+        if (!reader.Read(message))
+            throw new InvalidDataException("Server did send a truncated binary player chat payload.");
+
+        PushEvent(new BinaryChatPlayerEvent(player, message, this.Player));
     }
 
     /// <summary>

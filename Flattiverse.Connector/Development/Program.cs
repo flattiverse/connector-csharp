@@ -19,16 +19,18 @@ partial class Program
     private const byte SpectatorsTeamId = 12;
     private const ushort DatabaseGalaxyId = 0;
     private const string LocalSwitchGateUri = "ws://127.0.0.1:5666";
-    private const string LocalSwitchGateAdminAuth = "a2bf3c8f773d7a460e452a4d8abd7a6ec1d50cf75ca48c2d1523a9f3d5dbcd62";
-    private const string LocalSwitchGatePinkPlayerAuth = "5d5ff7636d95c4d449e828d89b0cb38674fb2c57ddf3c4a039f2309ef84e9ab6";
-    private const string LocalSwitchGatePlayerAuth = "f698708b211b0b98daccec311348cdbf54f0378cd5320328a0f3eaedc26bba38";
     private const string LocalSwitchGateGreenTeamName = "Green";
     private const string DatabaseConnectionString = "Host=10.252.7.136;Port=5432;Database=flattiverse;Username=postgres";
     private const string AdminAuth = "<INSERT ADMIN API KEY HERE>";
     private const string PlayerAdminAuth = "<INSERT PLAYER-ADMIN API KEY HERE>";
     private const string PlayerAuth = "<INSERT PLAYER API KEY HERE>";
+    private static readonly string LocalSwitchGateAdminAuth = Environment.GetEnvironmentVariable("FV_LOCAL_SWITCH_GATE_ADMIN_AUTH")
+        ?? "<INSERT LOCAL SWITCH GATE ADMIN API KEY HERE>";
+    private static readonly string LocalSwitchGatePinkPlayerAuth = Environment.GetEnvironmentVariable("FV_LOCAL_SWITCH_GATE_PINK_PLAYER_AUTH")
+        ?? "<INSERT LOCAL SWITCH GATE PINK PLAYER API KEY HERE>";
+    private static readonly string LocalSwitchGatePlayerAuth = Environment.GetEnvironmentVariable("FV_LOCAL_SWITCH_GATE_PLAYER_AUTH")
+        ?? "<INSERT LOCAL SWITCH GATE PLAYER API KEY HERE>";
     private static readonly TimeSpan AccountSessionTimeout = new TimeSpan(0, 0, 15);
-    private static readonly TimeSpan HeartbeatInterval = new TimeSpan(0, 0, 5);
 
     private readonly struct ClusterSpec
     {
@@ -281,6 +283,12 @@ partial class Program
         if (args.Length > 0 && args[0] == "--static-map-check-local")
         {
             await RunStaticMapCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--binary-chat-check-local")
+        {
+            await RunBinaryChatCheckLocal().ConfigureAwait(false);
             return;
         }
 
@@ -2879,26 +2887,7 @@ partial class Program
                     break;
                 }
 
-                Task<FlattiverseEvent> nextEventTask = spectatorGalaxy.NextEvent().AsTask();
-
-                while (true)
-                {
-                    DateTime heartbeatReferenceUtc = spectatorGalaxy.LastSendUtc ?? DateTime.UtcNow;
-
-                    if (DateTime.UtcNow >= heartbeatReferenceUtc + HeartbeatInterval)
-                    {
-                        await spectatorGalaxy.SendHeartbeat().ConfigureAwait(false);
-                        continue;
-                    }
-
-                    TimeSpan heartbeatDelay = heartbeatReferenceUtc + HeartbeatInterval - DateTime.UtcNow;
-                    Task completedTask = await Task.WhenAny(nextEventTask, Task.Delay(heartbeatDelay)).ConfigureAwait(false);
-
-                    if (completedTask == nextEventTask)
-                        break;
-                }
-
-                FlattiverseEvent @event = await nextEventTask.ConfigureAwait(false);
+                FlattiverseEvent @event = await spectatorGalaxy.NextEvent().ConfigureAwait(false);
                 string line = DescribeSpectatorEvent(@event);
 
                 Console.WriteLine(line);
@@ -3087,6 +3076,11 @@ partial class Program
         if (!reader.Read())
             throw new InvalidOperationException("Could not find account row for the specified API key.");
 
+        short? storedSessionGalaxy = reader["sessionGalaxy"] is DBNull ? null : (short)reader["sessionGalaxy"];
+        short? storedSessionTeam = reader["sessionTeam"] is DBNull ? null : (short)reader["sessionTeam"];
+        short? sessionGalaxy = storedSessionGalaxy is short presentSessionGalaxy && presentSessionGalaxy >= 0 ? presentSessionGalaxy : null;
+        short? sessionTeam = storedSessionTeam is short presentSessionTeam && presentSessionTeam >= 0 ? presentSessionTeam : null;
+
         return new DatabaseAccountRow(
             (int)reader["id"],
             (bool)reader["admin"],
@@ -3100,8 +3094,8 @@ partial class Program
             (long)reader["statsNpcKills"],
             (long)reader["statsNpcDeaths"],
             (long)reader["statsNeutralDeaths"],
-            reader["sessionGalaxy"] is DBNull ? null : (short)reader["sessionGalaxy"],
-            reader["sessionTeam"] is DBNull ? null : (short)reader["sessionTeam"],
+            sessionGalaxy,
+            sessionTeam,
             (long)reader["sessionPlayerKills"],
             (long)reader["sessionPlayerDeaths"],
             (long)reader["sessionFriendlyKills"],
@@ -3267,7 +3261,7 @@ partial class Program
 
     private static bool HasFreshSession(DatabaseAccountRow row)
     {
-        if (row.SessionGalaxy is null)
+        if (row.SessionGalaxy is not short sessionGalaxy || sessionGalaxy < 0)
             return false;
 
         if (row.DatePlayedEnd is not long datePlayedEndTicks || datePlayedEndTicks <= 0)
@@ -3286,14 +3280,14 @@ partial class Program
 
     private static string FormatSessionState(DatabaseAccountRow row)
     {
-        if (row.SessionGalaxy is null)
+        if (row.SessionGalaxy is not short sessionGalaxy || sessionGalaxy < 0)
             return "sessionGalaxy=null";
 
         if (row.DatePlayedEnd is not long datePlayedEndTicks || datePlayedEndTicks <= 0)
-            return $"sessionGalaxy={row.SessionGalaxy.Value}, datePlayedEnd=null";
+            return $"sessionGalaxy={sessionGalaxy}, datePlayedEnd=null";
 
         TimeSpan age = DateTime.UtcNow - new DateTime(datePlayedEndTicks, DateTimeKind.Utc);
-        return $"sessionGalaxy={row.SessionGalaxy.Value}, datePlayedEndAge={age.TotalSeconds:0.0}s";
+        return $"sessionGalaxy={sessionGalaxy}, datePlayedEndAge={age.TotalSeconds:0.0}s";
     }
 
     private static string FormatBool(bool value)
@@ -4306,26 +4300,7 @@ partial class Program
             {
                 while (true)
                 {
-                    Task<FlattiverseEvent> nextEventTask = playerGalaxy.NextEvent().AsTask();
-
-                    while (true)
-                    {
-                        DateTime heartbeatReferenceUtc = playerGalaxy.LastSendUtc ?? DateTime.UtcNow;
-
-                        if (DateTime.UtcNow >= heartbeatReferenceUtc + HeartbeatInterval)
-                        {
-                            await playerGalaxy.SendHeartbeat().ConfigureAwait(false);
-                            continue;
-                        }
-
-                        TimeSpan heartbeatDelay = heartbeatReferenceUtc + HeartbeatInterval - DateTime.UtcNow;
-                        Task completedTask = await Task.WhenAny(nextEventTask, Task.Delay(heartbeatDelay)).ConfigureAwait(false);
-
-                        if (completedTask == nextEventTask)
-                            break;
-                    }
-
-                    FlattiverseEvent @event = await nextEventTask.ConfigureAwait(false);
+                    FlattiverseEvent @event = await playerGalaxy.NextEvent().ConfigureAwait(false);
                     playerEvents.Enqueue(@event);
                 }
             }

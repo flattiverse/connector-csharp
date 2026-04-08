@@ -40,10 +40,10 @@ Current protocol version:
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=22&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=22&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=22&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=22&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=23&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=23&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=23&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=23&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -60,9 +60,9 @@ Important details:
 * Build disclosure nibble values: `0=None`, `1=SearchOnly`, `2=FreeLlm`, `3=PaidLlm`, `4=IntegratedLlm`, `5=AgenticTool`.
 * If a galaxy has `RequiresSelfDisclosure=true`, regular player logins must provide both disclosure strings. Admin and spectator logins are currently exempt.
 * If a galaxy has `RequiredAchievement="KEY"`, regular player logins must already own that case-insensitive achievement key. Admin and spectator logins are currently exempt.
-* A player account may have only one active galaxy session at a time. The same lock covers both `apiPlayer` and `apiAdmin` of that account, so an admin login also blocks a normal login and vice versa while a fresh session heartbeat exists.
-* The galaxy disconnects a client when it receives no packets for `15s`. Idle clients should therefore keep sending heartbeat packets.
-* The reference connector exposes `Galaxy.LastSendUtc`, which reflects when the last protocol packet batch actually left the connector websocket.
+* A player account may have only one active galaxy session at a time. The same lock covers both `apiPlayer` and `apiAdmin` of that account, so an admin login also blocks a normal login and vice versa while the session is still active.
+* The galaxy sends a new `0x00` ping request roughly once per second after the previous one was answered.
+* The galaxy disconnects a client when a ping reply stays outstanding for more than `5s`.
 * A plain HTTP request without WebSocket upgrade currently returns HTTP `426 Upgrade Required`.
 
 ## Initial Success And Failure Semantics
@@ -219,6 +219,7 @@ Current server-side on-wire codes:
 * `0x3B` `AdminAccessRestrictedGameException`
 * `0x3C` `StaticMapRebuildInProgressGameException`
 * `0x3D` `StaticMapRebuildLockedGameException`
+* `0x3E` `BinaryChatAckRequiredGameException`
 
 Current connector-local-only codes:
 
@@ -364,6 +365,7 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0xC9`: flag-reactivated system chat message
 * `0xCA`: gate-switched event
 * `0xCB`: gate-restored event
+* `0xCC`: private binary chat message
 * `0xD0`: create or update tournament snapshot
 * `0xD1`: remove tournament snapshot
 * `0xD2`: tournament system chat message
@@ -1499,11 +1501,11 @@ The following packet commands are currently used by clients to call server comma
 
 ### General
 
-* `0x00` for all player kinds: ping reply / heartbeat, payload `ushort challenge`
+* `0x00` for all player kinds: ping reply, payload `ushort challenge`
 
 The client must echo the challenge value it most recently received in a `0x00` ping request.
-Idle clients should keep sending that same challenge as a heartbeat often enough that the server sees at least one client packet every `15s`.
-Clients that use the reference connector can base this decision on `Galaxy.LastSendUtc` instead of maintaining a separate local send timestamp.
+The server sends a new challenge after roughly `1s` once the previous challenge was answered, and disconnects the session if a reply stays outstanding for more than `5s`.
+The reference connector answers these ping requests automatically.
 
 ### Admin / Map Editing
 
@@ -1666,6 +1668,8 @@ Important notes:
 * `0xC4`: send galaxy chat, payload `string message`
 * `0xC5`: send team chat, payload `byte teamId`, `string message`
 * `0xC6`: send private chat, payload `byte playerId`, `string message`
+* `0xCC`: send private binary chat, payload `byte playerId`, `ushort messageLength`, `byte[] message`
+* `0xCD`: send private binary chat bulk, payload `byte playerId`, `byte messageCount`, repeated `ushort messageLength`, `byte[] message`
 * `0xF1`: download small avatar chunk, payload `byte playerId`, `int offset`, `ushort maximumLength`
 * `0xF2`: download big avatar chunk, payload `byte playerId`, `int offset`, `ushort maximumLength`
 * `0xF3`: download small account avatar chunk, payload `int accountId`, `int offset`, `ushort maximumLength`
@@ -1684,6 +1688,16 @@ Notes:
 
 * `0xC5` resolves the target team by id on the server side.
 * `0xC6` resolves the target player by id on the server side.
+* `0xCC` is both the client-side single binary-chat command and the server-originated private binary-chat event.
+* `0xCD` is client-only. The server fans the bulk payload out into individual `0xCC` events for the receiver in the original order.
+* Binary chat is player-to-player only.
+* Each binary message must contain `1..1024` bytes.
+* `0xCD` accepts `1..32` binary messages per request.
+* Binary chat bypasses the normal text-chat flood control.
+* Binary chat uses a session-local opt-in handshake:
+  first `A -> B` single binary message is allowed,
+  any further `A -> B` binary message before a binary reply from `B` fails with `0x3E`,
+  and bulk `0xCD` is therefore only accepted after that binary acknowledgement from the target player.
 * `0xF1` / `0xF2` resolve the target player by id on the server side and stream the avatar bytes cached on that server-side player at login time.
 * `0xF3` / `0xF4` resolve the target account by id on the server side and stream the persisted account avatar bytes.
 * `0xC1`, `0xC2`, and `0xC7` are server-originated objective system chat packets. They are not sent by clients.

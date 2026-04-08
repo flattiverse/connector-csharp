@@ -50,7 +50,7 @@ partial class Program
         {
             Console.WriteLine("ACH-LOCAL: starting local galaxy 666...");
             galaxyProcess = StartLocalGalaxyProcess();
-            (adminGalaxy, _) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess).ConfigureAwait(false);
+            (adminGalaxy, _) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, LocalSwitchGateAdminAuth).ConfigureAwait(false);
 
             restoreConfigurationXml = BuildConfigurationXml(adminGalaxy, null, null, adminGalaxy.RequiresSelfDisclosure,
                 adminGalaxy.RequiredAchievement, true);

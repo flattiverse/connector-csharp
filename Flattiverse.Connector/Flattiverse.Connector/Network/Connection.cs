@@ -27,7 +27,6 @@ class Connection
     private CancellationToken _cancellation;
 
     private string? _closeReason;
-    private DateTime? _lastSendUtc;
 
     private readonly Session?[] _sessions;
     private byte _sessionPosition;
@@ -63,7 +62,6 @@ class Connection
         
         _sendBufferA = new SendBuffer(sendBufferSize);
         _sendBufferB = new SendBuffer(sendBufferSize);
-        _lastSendUtc = null;
 
         ThreadPool.QueueUserWorkItem(async delegate { await SendWorker(); });
     }
@@ -99,11 +97,6 @@ class Connection
     /// Best locally known textual close reason, if the connection has already been terminated.
     /// </summary>
     public string? CloseReason => _closeReason;
-
-    /// <summary>
-    /// UTC timestamp of the last protocol packet batch that was actually sent to the galaxy websocket.
-    /// </summary>
-    public DateTime? LastSendUtc => _lastSendUtc;
 
     private Session StartSessionRequest(PacketWriterAction action, bool largeReply)
     {
@@ -492,7 +485,6 @@ class Connection
             try
             {
                 await _socket.SendAsync(_sendBufferB.Buffer, WebSocketMessageType.Binary, true, _cancellation).ConfigureAwait(false);
-                _lastSendUtc = DateTime.UtcNow;
             }
             catch (Exception exception)
             {

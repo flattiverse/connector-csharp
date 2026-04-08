@@ -112,6 +112,51 @@ public class Player : INamedUnit
     }
 
     /// <summary>
+    /// Sends one private binary chat message to the player.
+    /// The first binary message opens the channel; further binary messages require a binary reply from the target player.
+    /// </summary>
+    /// <param name="message">Raw binary message payload.</param>
+    public async Task Chat(byte[] message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xCC;
+            writer.Write(Id);
+            writer.Write((ushort)message.Length);
+            writer.Write(message);
+        });
+    }
+
+    /// <summary>
+    /// Sends up to 32 private binary chat messages in one protocol packet.
+    /// Bulk sending is only allowed after the target player has acknowledged the binary channel with a binary reply.
+    /// </summary>
+    /// <param name="messages">Raw binary message payloads to send in order.</param>
+    public async Task Chat(List<byte[]> messages)
+    {
+        ArgumentNullException.ThrowIfNull(messages);
+
+        for (int index = 0; index < messages.Count; index++)
+            ArgumentNullException.ThrowIfNull(messages[index]);
+
+        await Galaxy.Connection.SendSessionRequestAndGetReply(delegate (ref PacketWriter writer)
+        {
+            writer.Command = 0xCD;
+            writer.Write(Id);
+            writer.Write((byte)messages.Count);
+
+            for (int index = 0; index < messages.Count; index++)
+            {
+                byte[] message = messages[index];
+                writer.Write((ushort)message.Length);
+                writer.Write(message);
+            }
+        });
+    }
+
+    /// <summary>
     /// Downloads the player's cached small avatar image bytes.
     /// </summary>
     /// <exception cref="AvatarNotAvailableGameException">

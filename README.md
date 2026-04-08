@@ -18,7 +18,7 @@ If you want to build a map editor against the connector, see [MAPEDITORS.md](MAP
 2. Create an API key.
 3. Add the [`Flattiverse.Connector`](https://www.nuget.org/packages/Flattiverse.Connector) NuGet package to your project.
 4. Connect to a galaxy endpoint with `Galaxy.Connect(...)`.
-5. Process events with `await galaxy.NextEvent()` and keep long-lived sessions alive with `await galaxy.SendHeartbeat()`.
+5. Process events with `await galaxy.NextEvent()`.
 
 Minimal example:
 
@@ -40,7 +40,7 @@ while (galaxy.Active)
 }
 ```
 
-`auth == null` connects as spectator. `team == null` lets the server auto-select the least populated non-spectator team for normal players unless an active tournament assigns the account to a configured team. `runtimeDisclosure` and `buildDisclosure` are optional extra arguments on `Galaxy.Connect(...)`; galaxies may require them. Long-lived clients should call `await galaxy.SendHeartbeat()` often enough that the server receives at least one client packet every `15s`. `Galaxy.LastSendUtc` exposes when the last packet batch actually left the connector, so clients can base that decision on real outgoing traffic.
+`auth == null` connects as spectator. `team == null` lets the server auto-select the least populated non-spectator team for normal players unless an active tournament assigns the account to a configured team. `runtimeDisclosure` and `buildDisclosure` are optional extra arguments on `Galaxy.Connect(...)`; galaxies may require them. The server sends periodic ping challenges and disconnects sessions whose replies stay stale for too long. The reference connector replies to those ping challenges automatically, so long-lived clients do not need a separate heartbeat loop.
 
 ## Current Capabilities
 
@@ -140,7 +140,7 @@ Player-facing commands:
 - [`Galaxy.RenameCrystal(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L613)
 - [`Galaxy.DestroyCrystal(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L627)
 - [`Team.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Team.cs#L48)
-- [`Player.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Player.cs#L68)
+- [`Player.Chat(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Player.cs#L68) for private text chat and private binary chat
 - [`Player.DownloadSmallAvatar(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Player.cs#L117)
 - [`Player.DownloadBigAvatar(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Player.cs#L134)
 - [`Galaxy.CreateClassicShip(...)`](Flattiverse.Connector/Flattiverse.Connector/GalaxyHierarchy/Galaxy.cs#L501)
@@ -180,7 +180,7 @@ Admin-facing commands:
 - The `Development` project is a regression and experimentation client, not a minimal beginner sample.
 - The private scripted tooling (`CliShip`, `AdminRunner`) now lives in the sibling repository `../fv-cliship` and is intentionally no longer part of the public connector solution.
 - Map-edit XML rules, examples, and server-side validation behavior are documented in [MAPEDITORS.md](MAPEDITORS.md).
-- Long-lived clients are responsible for calling `Galaxy.SendHeartbeat()` themselves. The method re-sends the most recently received server ping challenge and is a no-op until the first challenge has arrived. `Galaxy.LastSendUtc` reports the last actual outgoing packet timestamp and can be used to suppress unnecessary heartbeats while other commands are already being sent.
+- The server keeps sessions alive with periodic ping challenges. The reference connector answers them automatically, so client code only needs to keep consuming events and issuing its normal commands.
 - `Galaxy.Tournament` is `null` if no tournament is configured. Tournament state changes are mirrored through tournament events and can additionally surface as `TournamentMessageEvent` system-chat packets.
 - `ControllableInfo` lifecycle is event-driven. Owner-side `Controllable` objects are mirrored locally on `0x80` / `0x81` / `0x8F`, but the connector currently does not raise separate lifecycle events for them. `0x8F` is the final close, not the initial close request.
 - `Player.HasAvatar` tells you whether `DownloadSmallAvatar(...)` / `DownloadBigAvatar(...)` are valid for that player. The reference connector throws immediately if no avatar is available.

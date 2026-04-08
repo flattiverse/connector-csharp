@@ -44,7 +44,8 @@ partial class Program
         {
             Console.WriteLine("STATIC-MAP-LOCAL: starting local galaxy 666...");
             galaxyProcess = StartLocalGalaxyProcess();
-            (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess).ConfigureAwait(false);
+            (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, LocalSwitchGateAdminAuth)
+                .ConfigureAwait(false);
             adminEventPump = StartEventPump("STATIC-MAP-LOCAL:ADMIN", adminGalaxy, adminEvents);
             DrainEvents(adminEvents);
 
@@ -68,7 +69,8 @@ partial class Program
                 await WaitForSessionGalaxy(LocalSwitchGateAdminAuth, null, 7000).ConfigureAwait(false);
                 StopProcess(galaxyProcess);
                 galaxyProcess = StartLocalGalaxyProcess();
-                (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess).ConfigureAwait(false);
+                (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, LocalSwitchGateAdminAuth)
+                    .ConfigureAwait(false);
                 adminEventPump = StartEventPump("STATIC-MAP-LOCAL:ADMIN", adminGalaxy, adminEvents);
                 DrainEvents(adminEvents);
 
@@ -365,7 +367,7 @@ partial class Program
         return process;
     }
 
-    private static async Task<(Galaxy Galaxy, bool SawRebuildDenial)> ConnectLocalAdminAfterInitialRebuild(Process galaxyProcess)
+    private static async Task<(Galaxy Galaxy, bool SawRebuildDenial)> ConnectLocalAdminAfterInitialRebuild(Process galaxyProcess, string auth)
     {
         DateTime deadline = DateTime.UtcNow.AddMilliseconds(InitialStaticMapTimeoutMs);
         bool sawInitialRebuildDenial = false;
@@ -377,7 +379,7 @@ partial class Program
 
             try
             {
-                Galaxy galaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGateAdminAuth, null).ConfigureAwait(false);
+                Galaxy galaxy = await Galaxy.Connect(LocalSwitchGateUri, auth, null).ConfigureAwait(false);
                 Console.WriteLine(sawInitialRebuildDenial
                     ? "STATIC-MAP-LOCAL: initial rebuild denial observed and galaxy is now ready."
                     : "STATIC-MAP-LOCAL: galaxy became ready before the initial rebuild login block could be observed.");

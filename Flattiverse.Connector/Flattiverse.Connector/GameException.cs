@@ -183,6 +183,9 @@ public class GameException : Exception
                 case 0x3D:
                     exception = new StaticMapRebuildLockedGameException();
                     return true;
+                case 0x3E:
+                    exception = new BinaryChatAckRequiredGameException();
+                    return true;
             }
 
         exception = null;
