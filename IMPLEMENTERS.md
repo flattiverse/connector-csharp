@@ -40,10 +40,10 @@ Current protocol version:
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=23&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=23&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=23&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=23&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=24&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=24&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=24&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=24&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -1060,9 +1060,16 @@ Current reduced `0x30` payloads and promotion thresholds:
 * `EnergyChargePowerUp (0x70)` / `IonChargePowerUp (0x71)` / `NeutrinoChargePowerUp (0x72)` / `MetalCargoPowerUp (0x73)` / `CarbonCargoPowerUp (0x74)` / `HydrogenCargoPowerUp (0x75)` / `SiliconCargoPowerUp (0x76)` / `ShieldChargePowerUp (0x77)` / `HullRepairPowerUp (0x78)` / `ShotChargePowerUp (0x79)`: `steady unit payload`; `ReducedVisibilityTicks = 0`
 * `Switch (0x60)`: `steady unit payload`, `byte teamId`, `ushort linkId`, `float range`, `int cooldownTicks`, `byte mode`; `ReducedVisibilityTicks = 20`
 * `Gate (0x61)`: `steady unit payload`, `ushort linkId`, `byte defaultClosedFlag`, `int restoreTicks`; `ReducedVisibilityTicks = 20`
-* `Shot (0xE0)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
-* `Interceptor (0xE1)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
-* `Rail (0xE2)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`; `ReducedVisibilityTicks = 20`
+* `SpaceJellyFish (0x90)`: `mobile npc payload`; `ReducedVisibilityTicks = 20`
+* `SpaceJellyFishSlime (0x91)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 20`
+* `AiBase (0x92)`: `byte teamId`, `Vector position`, `float radius`; `ReducedVisibilityTicks = 20`
+* `AiTurret (0x93)`: `byte teamId`, `Vector position`, `float radius`; `ReducedVisibilityTicks = 20`
+* `AiFreighter (0x94)`: `mobile npc payload`; `ReducedVisibilityTicks = 20`
+* `AiShip (0x95)`: `mobile npc payload`; `ReducedVisibilityTicks = 20`
+* `AiProbe (0x96)`: `mobile npc payload`; `ReducedVisibilityTicks = 20`
+* `Shot (0xE0)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 20`
+* `Interceptor (0xE1)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 20`
+* `Rail (0xE2)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 20`
 * `ClassicShipPlayerUnit (0xF0)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 100`
 * `ModernShipPlayerUnit (0xF1)`: `byte playerId`, `byte controllableId`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 100`
 * `InterceptorExplosion (0xFE)`: `byte ownerPlayerId`, `byte ownerControllableId`, `float load`, `float damage`, `Vector position`; `ReducedVisibilityTicks = 0`
@@ -1071,11 +1078,12 @@ Current reduced `0x30` payloads and promotion thresholds:
 Notes:
 
 * `steady unit payload` means `Vector position`, `float radius`, `float gravity`
+* `mobile npc payload` means `byte teamId`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`, `float radius`
 * for orbiting steady units, `position` in `0x30` is the current runtime position, not the configured map-editor center
 * `planetType` / `moonType` / `meteoroidType` are intentionally already part of reduced visibility
 * `Switch.mode` currently uses `0x00 Toggle`, `0x01 Open`, `0x02 Close`
 * `Gate.restoreTicks == -1` on the wire means "no automatic restore configured"
-* For projectile and explosion kinds, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no owner". The reference connector treats `ownerPlayerId >= 192` as ownerless.
+* For projectile and explosion kinds, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no player owner". NPC-owned projectiles currently use the same ownerless marker on the wire.
 * `Explosion`, `InterceptorExplosion`, and `Flag` are effectively full immediately, but still participate in the same `0x30` + optional `0x32` visibility protocol
 
 ### `0x31` Visible Unit Movement State Update
@@ -1105,24 +1113,47 @@ Current `0x31` payloads:
   ushort ticks
   Vector position
   Vector movement
+  float  angle
+  float  angularVelocity
   ```
 * `Interceptor (0xE1)`:
   ```text
   ushort ticks
   Vector position
   Vector movement
+  float  angle
+  float  angularVelocity
   ```
 * `Rail (0xE2)`:
   ```text
   ushort ticks
   Vector position
   Vector movement
+  float  angle
+  float  angularVelocity
   ```
 * `StormCommencingWhirl (0x21)` / `StormActiveWhirl (0x22)`:
   ```text
   Vector position
   Vector movement
   ```
+* `SpaceJellyFish (0x90)` / `AiFreighter (0x94)` / `AiShip (0x95)` / `AiProbe (0x96)`:
+  ```text
+  Vector position
+  Vector movement
+  float  angle
+  float  angularVelocity
+  ```
+  `angularVelocity` is currently always `0`.
+* `SpaceJellyFishSlime (0x91)`:
+  ```text
+  ushort ticks
+  Vector position
+  Vector movement
+  float  angle
+  float  angularVelocity
+  ```
+  `angularVelocity` is currently always `0`.
 * `ClassicShipPlayerUnit (0xF0)`:
   ```text
   Vector position
@@ -1269,6 +1300,29 @@ Current `0x32` payloads:
   int  restoreRemainingTicks
   ```
   `restoreRemainingTicks == -1` means that no auto-restore timer is currently armed.
+* `SpaceJellyFish (0x90)` / `AiBase (0x92)` / `AiTurret (0x93)` / `AiShip (0x95)` / `AiProbe (0x96)`:
+  ```text
+  float hullCurrent
+  float hullMaximum
+  ```
+* `SpaceJellyFishSlime (0x91)`:
+  ```text
+  float load
+  float damage
+  byte  targetClusterIdOrFF
+  string targetUnitName
+  byte  targetUnitKindOrFF
+  ```
+  `targetClusterIdOrFF == 0xFF` and `targetUnitKindOrFF == 0xFF` mean that the slime currently has no target. If the target vanished, the last known target reference may stay on the wire while the slime continues straight.
+* `AiFreighter (0x94)`:
+  ```text
+  float hullCurrent
+  float hullMaximum
+  float lootMetal
+  float lootCarbon
+  float lootHydrogen
+  float lootSilicon
+  ```
 * `Shot (0xE0)`:
   ```text
   float load
@@ -1607,7 +1661,7 @@ Important notes:
 * `0x28`, `0x29`, and `0x2A` only work for unit types with `CanBeEdited = true`.
 * Empty or unreadable XML on protocol level is rejected as `0x12 InvalidArgumentGameException` with `InvalidArgumentKind.AmbiguousXmlData` and parameter name `xml`.
 * `0x2A` rejects non-editable units with `0x16 InvalidXmlNodeValueGameException`.
-* Editable target kinds currently include `CurrentField`, `Nebula`, `Storm`, `MissionTarget`, `Flag`, `DominationPoint`, `Switch`, and `Gate`.
+* Editable target kinds currently include `CurrentField`, `Nebula`, `Storm`, `MissionTarget`, `Flag`, `DominationPoint`, `Switch`, `Gate`, `SpaceJellyFish`, `AiBase`, `AiTurret`, `AiFreighter`, `AiShip`, and `AiProbe`.
 * `0x04` also rejects cluster removal while any remaining unit still references that cluster. The current example is a `WormHole` whose `TargetCluster` points to the cluster you are trying to remove.
 * `0x60` accepts `<Tournament ...>` XML with `Mode`, `DurationTicks`, exactly two `<Team Id="...">` elements containing `<Account Id="..."/>` children, and optional `<Match WinnerTeamId="..."/>` elements that describe already finished games in order.
 * `0x60` is admin-only and rejects `GameMode == Mission` with `0x39 TournamentModeNotAllowedGameException`.

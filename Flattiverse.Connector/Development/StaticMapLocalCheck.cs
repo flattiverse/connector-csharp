@@ -389,6 +389,10 @@ partial class Program
             {
                 sawInitialRebuildDenial = true;
             }
+            catch (AccountAlreadyLoggedInGameException)
+            {
+                ClearLocalAccountSession(auth, "STATIC-MAP-LOCAL:ADMIN");
+            }
             catch (CantConnectGameException)
             {
             }

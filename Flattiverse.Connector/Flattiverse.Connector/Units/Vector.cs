@@ -200,7 +200,13 @@ public class Vector
     /// <param name="l">Left vector.</param>
     /// <param name="r">Right vector.</param>
     /// <returns><see langword="true" /> if both vectors are approximately equal.</returns>
-    public static bool operator ==(Vector l, Vector r) => l - r < 0.00015f;
+    public static bool operator ==(Vector? l, Vector? r)
+    {
+        if (l is null || r is null)
+            return l is null && r is null;
+
+        return l - r < 0.00015f;
+    }
 
     /// <summary>
     /// Compares the vector length against a scalar using the connector's tolerance threshold.
@@ -208,8 +214,11 @@ public class Vector
     /// <param name="l">Vector to compare.</param>
     /// <param name="r">Length to compare against.</param>
     /// <returns><see langword="true" /> if the vector length is approximately equal to the scalar.</returns>
-    public static bool operator ==(Vector l, float r)
+    public static bool operator ==(Vector? l, float r)
     {
+        if (l is null)
+            return false;
+
         float length = MathF.Sqrt(l.X * l.X + l.Y * l.Y);
 
         return length - 0.00015 < r && length + 0.00015 > r;
@@ -229,7 +238,7 @@ public class Vector
     /// <param name="l">Left vector.</param>
     /// <param name="r">Right vector.</param>
     /// <returns><see langword="true" /> if the vectors are not approximately equal.</returns>
-    public static bool operator !=(Vector l, Vector r) => !(l == r);
+    public static bool operator !=(Vector? l, Vector? r) => !(l == r);
 
     /// <summary>
     /// Compares the vector length against a scalar for approximate inequality.
@@ -237,7 +246,7 @@ public class Vector
     /// <param name="l">Vector to compare.</param>
     /// <param name="r">Length to compare against.</param>
     /// <returns><see langword="true" /> if the vector length is not approximately equal to the scalar.</returns>
-    public static bool operator !=(Vector l, float r) => !(l == r);
+    public static bool operator !=(Vector? l, float r) => !(l == r);
 
     /// <summary>
     /// Compares whether the left vector is shorter than the right vector.
@@ -253,7 +262,13 @@ public class Vector
     /// <param name="l">Vector to compare.</param>
     /// <param name="r">Scalar length.</param>
     /// <returns><see langword="true" /> if the vector length is greater than the scalar.</returns>
-    public static bool operator >(Vector l, float r) => l.X * l.X + l.Y * l.Y > r * r;
+    public static bool operator >(Vector? l, float r)
+    {
+        if (l is null)
+            return false;
+
+        return l.X * l.X + l.Y * l.Y > r * r;
+    }
 
     /// <summary>
     /// Compares whether the vector is shorter than the given scalar length.
@@ -261,7 +276,13 @@ public class Vector
     /// <param name="l">Vector to compare.</param>
     /// <param name="r">Scalar length.</param>
     /// <returns><see langword="true" /> if the vector length is smaller than the scalar.</returns>
-    public static bool operator <(Vector l, float r) => l.X * l.X + l.Y * l.Y < r * r;
+    public static bool operator <(Vector? l, float r)
+    {
+        if (l is null)
+            return false;
+
+        return l.X * l.X + l.Y * l.Y < r * r;
+    }
 
     /// <summary>
     /// True if either component contains <c>NaN</c> or an infinity value.
@@ -337,5 +358,5 @@ public class Vector
     /// </summary>
     /// <param name="other">Other vector.</param>
     /// <returns><see langword="true" /> if the vectors are approximately equal.</returns>
-    public bool Equals(Vector other) => this == other;
+    public bool Equals(Vector? other) => this == other;
 }

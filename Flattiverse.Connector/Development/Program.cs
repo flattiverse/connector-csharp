@@ -214,6 +214,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--npc-units-check-local")
+        {
+            await RunNpcUnitsCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--balance-upgrade-check-local")
         {
             await RunBalanceUpgradeCheckLocal().ConfigureAwait(false);
@@ -4354,7 +4360,8 @@ partial class Program
             string playerName = projectile.Player is null ? "-" : $"{projectile.Player.Id}:{projectile.Player.Name}";
             string controllableName = projectile.ControllableInfo is null ? "-" : $"{projectile.ControllableInfo.Id}:{projectile.ControllableInfo.Name}";
 
-            return $"{stamp:HH:mm:ss.fff} {prefix} kind={unit.Kind} cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} ticks={projectile.Ticks}";
+            return
+                $"{stamp:HH:mm:ss.fff} {prefix} kind={unit.Kind} cluster={unit.Cluster.Id}:{unit.Cluster.Name} name={unit.Name} player={playerName} controllable={controllableName} pos={unit.Position} move={unit.Movement} ticks={projectile.Ticks}";
         }
 
         if (unit is Explosion explosion)

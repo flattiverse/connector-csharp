@@ -114,6 +114,34 @@ public enum UnitKind : byte
     /// </summary>
     Gate = 0x61,
     /// <summary>
+    /// Represents a space jellyfish NPC.
+    /// </summary>
+    SpaceJellyFish = 0x90,
+    /// <summary>
+    /// Represents a space jellyfish slime projectile.
+    /// </summary>
+    SpaceJellyFishSlime = 0x91,
+    /// <summary>
+    /// Represents an AI-controlled base.
+    /// </summary>
+    AiBase = 0x92,
+    /// <summary>
+    /// Represents an AI-controlled turret.
+    /// </summary>
+    AiTurret = 0x93,
+    /// <summary>
+    /// Represents an AI-controlled freighter.
+    /// </summary>
+    AiFreighter = 0x94,
+    /// <summary>
+    /// Represents an AI-controlled ship.
+    /// </summary>
+    AiShip = 0x95,
+    /// <summary>
+    /// Represents an AI-controlled probe.
+    /// </summary>
+    AiProbe = 0x96,
+    /// <summary>
     /// Represents a shot.
     /// </summary>
     Shot = 0xE0,

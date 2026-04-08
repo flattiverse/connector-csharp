@@ -279,6 +279,12 @@ Editable unit kinds are:
 - `ShotChargePowerUp`
 - `Switch`
 - `Gate`
+- `SpaceJellyFish`
+- `AiBase`
+- `AiTurret`
+- `AiFreighter`
+- `AiShip`
+- `AiProbe`
 
 Not editable:
 
@@ -286,6 +292,7 @@ Not editable:
 - `Shot`
 - `Interceptor`
 - `Rail`
+- `SpaceJellyFishSlime`
 - `StormCommencingWhirl`
 - `StormActiveWhirl`
 - `ClassicShipPlayerUnit`
@@ -302,6 +309,8 @@ General behavior:
   - no additional character whitelist is applied by the server today
   - leading or trailing spaces are currently accepted
 - `Name`, `X`, `Y`, `Radius`, `Gravity` are common required attributes
+- mobile NPC kinds `SpaceJellyFish`, `AiFreighter`, `AiShip`, and `AiProbe` currently require `Gravity="0.0012"`
+- stationary NPC kinds `AiBase` and `AiTurret` currently require `Gravity="0"`
 - all power-up unit kinds additionally require `Amount > 0` and `RespawnTicks > 0`
 - `Type` values use the enum member names from the connector, for example `OceanWorld`, `RockyMoon` or `MetallicSlug`
 - `Radius > 0`
@@ -779,6 +788,273 @@ Examples:
 <Gate Name="BlueGateB" X="320" Y="-40" Radius="14" Gravity="0" LinkId="17" DefaultClosed="true" RestoreTicks="80" />
 ```
 
+### SpaceJellyFish
+
+Additional required attributes:
+
+- `Team`: owning team id.
+- `Hull`: maximum hull. Current hull starts at this value after placement and after every respawn.
+- `RepairPerTick`: passive self-repair amount while alive.
+- `RespawnTicks`: dead-time before the jellyfish may respawn again.
+- `RespawnPlayerDistance`: clear radius around the spawn point that must be free of active `PlayerUnit`s before respawn is allowed.
+- `ActionRadius`: roam radius around the configured `X` / `Y`.
+- `Speed`: maximum travel speed.
+- `Damage`: base slime-hit damage of the initial spawned slime.
+
+Constraints and behavior:
+
+- `Gravity` must currently be exactly `0.0012`
+- `Hull > 0`
+- `RepairPerTick >= 0`
+- `RespawnTicks >= 0`
+- `RespawnPlayerDistance >= 0`
+- `ActionRadius >= 0`
+- `Speed > 0`
+- `Damage > 0`
+- `SpaceJellyFish` is team-owned and only targets visible enemy `PlayerUnit`, `SpaceJellyFish`, `AiBase`, `AiShip`, `AiFreighter`, `AiTurret`, and `AiProbe`
+- movement currently follows the same local roam / arrive logic as the AI simulator
+- `AggroRange` is not editable; it is derived from the shared `30`-tick prediction horizon
+- spawned slime is runtime-only and is not editable through map XML
+
+Recommended starting values:
+
+- `Radius`: `12..18`
+- `Hull`: `40..70`
+- `RepairPerTick`: `0.01..0.05`
+- `RespawnTicks`: `240..720`
+- `RespawnPlayerDistance`: `800..1200`
+- `ActionRadius`: `150..450`
+- `Speed`: `2.8..4.0`
+- `Damage`: `4..8`
+
+Example:
+
+```xml
+<SpaceJellyFish Name="RedJellyA" Team="1" X="140" Y="-40" Radius="14" Gravity="0.0012" Hull="52" RepairPerTick="0.02" RespawnTicks="420" RespawnPlayerDistance="900" ActionRadius="220" Speed="3.4" Damage="6" />
+```
+
+### AiBase
+
+Additional required attributes:
+
+- `Team`
+- `Hull`
+- `RepairPerTick`
+- `RespawnTicks`
+- `RespawnPlayerDistance`
+- `RailSpeed`
+- `RailDamage`
+- `RailReloadTicks`
+- `InterceptorSpeed`
+- `InterceptorReloadTicks`
+
+Constraints and behavior:
+
+- `Gravity` must currently be exactly `0`
+- all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
+- `RailSpeed > 0`
+- `RailDamage > 0`
+- `RailReloadTicks >= 0`
+- `InterceptorSpeed > 0`
+- `InterceptorReloadTicks >= 0`
+- effective combat ranges are derived automatically from the shared `30`-tick prediction horizon
+- `AiBase` survives collisions with most units and destroys the other side without self-damage; only `AiBase` <-> `AiFreighter` collisions destroy both
+
+Recommended starting values:
+
+- `Radius`: `18..28`
+- `Hull`: `80..180`
+- `RepairPerTick`: `0.02..0.08`
+- `RespawnTicks`: `300..900`
+- `RespawnPlayerDistance`: `800..1200`
+- `RailSpeed`: `8..12`
+- `RailDamage`: `8..18`
+- `RailReloadTicks`: `8..20`
+- `InterceptorSpeed`: `7..10`
+- `InterceptorReloadTicks`: `6..12`
+
+Example:
+
+```xml
+<AiBase Name="BlueBaseA" Team="0" X="-220" Y="100" Radius="22" Gravity="0" Hull="120" RepairPerTick="0.03" RespawnTicks="480" RespawnPlayerDistance="900" RailSpeed="10.2" RailDamage="14" RailReloadTicks="12" InterceptorSpeed="8.4" InterceptorReloadTicks="8" />
+```
+
+### AiTurret
+
+Additional required attributes:
+
+- `Team`
+- `Hull`
+- `RepairPerTick`
+- `RespawnTicks`
+- `RespawnPlayerDistance`
+- `ShotSpeed`
+- `ShotDamage`
+
+Constraints and behavior:
+
+- `Gravity` must currently be exactly `0`
+- all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
+- `ShotSpeed > 0`
+- `ShotDamage > 0`
+- effective target range is derived automatically from the shared `30`-tick prediction horizon
+- `AiTurret` only fires `Shot`; it does not use `Rail` or `Interceptor`
+
+Recommended starting values:
+
+- `Radius`: `12..18`
+- `Hull`: `30..70`
+- `RepairPerTick`: `0.01..0.05`
+- `RespawnTicks`: `240..720`
+- `RespawnPlayerDistance`: `800..1200`
+- `ShotSpeed`: `5.5..7.5`
+- `ShotDamage`: `3..6`
+
+Example:
+
+```xml
+<AiTurret Name="RedTurretA" Team="1" X="180" Y="-110" Radius="14" Gravity="0" Hull="40" RepairPerTick="0.02" RespawnTicks="360" RespawnPlayerDistance="900" ShotSpeed="6.4" ShotDamage="4.5" />
+```
+
+### AiFreighter
+
+Additional required attributes:
+
+- `Team`
+- `Hull`
+- `RepairPerTick`
+- `RespawnTicks`
+- `RespawnPlayerDistance`
+- `InterceptorSpeed`
+- `InterceptorReloadTicks`
+- `LootMetal`
+- `LootCarbon`
+- `LootHydrogen`
+- `LootSilicon`
+
+Allowed child elements:
+
+- `Waypoint`
+
+Allowed `Waypoint` attributes:
+
+- `X`: world-space target X coordinate.
+- `Y`: world-space target Y coordinate.
+- `Speed`: segment speed limit while travelling toward that waypoint.
+
+Constraints and behavior:
+
+- `Gravity` must currently be exactly `0.0012`
+- all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
+- `InterceptorSpeed > 0`
+- `InterceptorReloadTicks >= 0`
+- all loot values must be `>= 0`
+- at least one `Waypoint` child is required
+- each `Waypoint.Speed` must be `> 0`
+- the freighter loops its route; if you want a stable back-and-forth route, include the spawn point itself as the first waypoint
+- `AiFreighter` carries the configured loot values in its detail scan
+- `AiFreighter` survives collisions with most units and destroys the other side without self-damage; only `AiFreighter` <-> `AiBase` collisions destroy both
+
+Recommended starting values:
+
+- `Radius`: `12..20`
+- `Hull`: `60..140`
+- `RepairPerTick`: `0.01..0.04`
+- `RespawnTicks`: `300..900`
+- `RespawnPlayerDistance`: `800..1200`
+- `InterceptorSpeed`: `7..10`
+- `InterceptorReloadTicks`: `12..20`
+- `Waypoint.Speed`: `1.8..3.2`
+
+Example:
+
+```xml
+<AiFreighter Name="BlueFreighterA" Team="0" X="-260" Y="-30" Radius="14" Gravity="0.0012" Hull="90" RepairPerTick="0.015" RespawnTicks="540" RespawnPlayerDistance="900" InterceptorSpeed="7.8" InterceptorReloadTicks="16" LootMetal="120" LootCarbon="60" LootHydrogen="20" LootSilicon="40">
+  <Waypoint X="-260" Y="-30" Speed="2.2" />
+  <Waypoint X="260" Y="-30" Speed="2.2" />
+</AiFreighter>
+```
+
+### AiShip
+
+Additional required attributes:
+
+- `Team`
+- `Hull`
+- `RepairPerTick`
+- `RespawnTicks`
+- `RespawnPlayerDistance`
+- `ActionRadius`
+- `Speed`
+- `ShotSpeed`
+- `ShotDamage`
+
+Constraints and behavior:
+
+- `Gravity` must currently be exactly `0.0012`
+- all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
+- `ActionRadius >= 0`
+- `Speed > 0`
+- `ShotSpeed > 0`
+- `ShotDamage > 0`
+- `AiShip` roams around its configured `X` / `Y`; there is no separate XML action-center attribute
+- effective target range is derived automatically from the shared `30`-tick prediction horizon
+
+Recommended starting values:
+
+- `Radius`: `10..16`
+- `Hull`: `24..40`
+- `RepairPerTick`: `0.01..0.04`
+- `RespawnTicks`: `240..720`
+- `RespawnPlayerDistance`: `800..1200`
+- `ActionRadius`: `180..600`
+- `Speed`: `3.0..4.0`
+- `ShotSpeed`: `5.5..7.0`
+- `ShotDamage`: `3..6`
+
+Example:
+
+```xml
+<AiShip Name="RedShipA" Team="1" X="220" Y="80" Radius="12" Gravity="0.0012" Hull="30" RepairPerTick="0.02" RespawnTicks="360" RespawnPlayerDistance="900" ActionRadius="260" Speed="3.2" ShotSpeed="6.4" ShotDamage="4.5" />
+```
+
+### AiProbe
+
+Additional required attributes:
+
+- `Team`
+- `Hull`
+- `RepairPerTick`
+- `RespawnTicks`
+- `RespawnPlayerDistance`
+- `ActionRadius`
+- `Speed`
+
+Constraints and behavior:
+
+- `Gravity` must currently be exactly `0.0012`
+- all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
+- `ActionRadius >= 0`
+- `Speed > 0`
+- `AiProbe` uses the same roam / arrive movement style as `AiShip`, but never fires any weapon
+- `AiProbe` also uses its configured `X` / `Y` as its action-center
+
+Recommended starting values:
+
+- `Radius`: `10..16`
+- `Hull`: `18..32`
+- `RepairPerTick`: `0.01..0.04`
+- `RespawnTicks`: `240..720`
+- `RespawnPlayerDistance`: `800..1200`
+- `ActionRadius`: `180..600`
+- `Speed`: `3.0..4.0`
+
+Example:
+
+```xml
+<AiProbe Name="BlueProbeA" Team="0" X="-180" Y="70" Radius="11" Gravity="0.0012" Hull="24" RepairPerTick="0.02" RespawnTicks="300" RespawnPlayerDistance="900" ActionRadius="240" Speed="3.4" />
+```
+
 Typical usage:
 
 ```csharp
@@ -798,6 +1074,17 @@ await cluster.SetUnit("""
 await cluster.SetUnit("""<Flag Name="BlueFlag" X="1200" Y="0" Radius="20" Gravity="0" Team="1" GraceTicks="120" />""");
 
 await cluster.SetUnit("""<DominationPoint Name="Center" X="0" Y="0" Radius="24" Gravity="0" Team="0" DominationRadius="250" />""");
+
+await cluster.SetUnit("""<AiTurret Name="RedTurretA" Team="1" X="180" Y="-110" Radius="14" Gravity="0" Hull="40" RepairPerTick="0.02" RespawnTicks="360" RespawnPlayerDistance="900" ShotSpeed="6.4" ShotDamage="4.5" />""");
+
+await cluster.SetUnit("""<AiShip Name="RedShipA" Team="1" X="220" Y="80" Radius="12" Gravity="0.0012" Hull="30" RepairPerTick="0.02" RespawnTicks="360" RespawnPlayerDistance="900" ActionRadius="260" Speed="3.2" ShotSpeed="6.4" ShotDamage="4.5" />""");
+
+await cluster.SetUnit("""
+<AiFreighter Name="BlueFreighterA" Team="0" X="-260" Y="-30" Radius="14" Gravity="0.0012" Hull="90" RepairPerTick="0.015" RespawnTicks="540" RespawnPlayerDistance="900" InterceptorSpeed="7.8" InterceptorReloadTicks="16" LootMetal="120" LootCarbon="60" LootHydrogen="20" LootSilicon="40">
+  <Waypoint X="-260" Y="-30" Speed="2.2" />
+  <Waypoint X="260" Y="-30" Speed="2.2" />
+</AiFreighter>
+""");
 
 string xml = await cluster.QueryUnitXml("Alpha");
 await cluster.RemoveUnit("Alpha");

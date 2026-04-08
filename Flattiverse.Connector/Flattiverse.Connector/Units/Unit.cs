@@ -193,6 +193,27 @@ public class Unit
             case UnitKind.Gate:
                 unit = new Gate(cluster, name, reader);
                 return true;
+            case UnitKind.SpaceJellyFish:
+                unit = new SpaceJellyFish(cluster, name, reader);
+                return true;
+            case UnitKind.SpaceJellyFishSlime:
+                unit = new SpaceJellyFishSlime(cluster, name, reader);
+                return true;
+            case UnitKind.AiBase:
+                unit = new AiBase(cluster, name, reader);
+                return true;
+            case UnitKind.AiTurret:
+                unit = new AiTurret(cluster, name, reader);
+                return true;
+            case UnitKind.AiFreighter:
+                unit = new AiFreighter(cluster, name, reader);
+                return true;
+            case UnitKind.AiShip:
+                unit = new AiShip(cluster, name, reader);
+                return true;
+            case UnitKind.AiProbe:
+                unit = new AiProbe(cluster, name, reader);
+                return true;
             case UnitKind.Planet:
                 unit = new Planet(cluster, name, reader);
                 return true;

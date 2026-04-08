@@ -4,17 +4,17 @@ using Flattiverse.Connector.Units;
 namespace Flattiverse.Connector.Events;
 
 /// <summary>
-/// Raised when one controllable runtime is destroyed by colliding with a neutral world unit.
+/// Raised when one controllable runtime is destroyed by a non-player world unit.
 /// </summary>
 public class NeutralDestroyedControllableInfoPlayerEvent : DestroyedControllableInfoPlayerEvent
 {
     /// <summary>
-    /// Unit kind of the neutral collider.
+    /// Unit kind of the non-player destroyer.
     /// </summary>
     public readonly UnitKind CollidersKind;
     
     /// <summary>
-    /// Name of the neutral collider.
+    /// Name of the non-player destroyer.
     /// </summary>
     public readonly string CollidersName;
     
@@ -27,5 +27,5 @@ public class NeutralDestroyedControllableInfoPlayerEvent : DestroyedControllable
     }
 
     /// <inheritdoc/>
-    public override string ToString() => $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} collided with a {CollidersKind} named {CollidersName}.";
+    public override string ToString() => $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} was destroyed by {CollidersKind} named {CollidersName}.";
 }
