@@ -5,7 +5,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public class StaticMapRebuildLockedGameException : GameException
 {
-    internal StaticMapRebuildLockedGameException() : base(0x3D, "Static map rebuilding is currently blocked by the tournament state.")
+    internal StaticMapRebuildLockedGameException() : base(0x3D, "[0x3D] Static map rebuilding is currently blocked by the tournament state.")
     {
     }
 }
