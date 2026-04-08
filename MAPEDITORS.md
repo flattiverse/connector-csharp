@@ -803,6 +803,7 @@ Additional required attributes:
 
 Constraints and behavior:
 
+- `Team` must exist and may be spectators
 - `Gravity` must currently be exactly `0.0012`
 - `Hull > 0`
 - `RepairPerTick >= 0`
@@ -811,6 +812,7 @@ Constraints and behavior:
 - `ActionRadius >= 0`
 - `Speed > 0`
 - `Damage > 0`
+- `Team="12"` means the jellyfish treats every non-spectator valid target as hostile
 - `SpaceJellyFish` is team-owned and only targets visible enemy `PlayerUnit`, `SpaceJellyFish`, `AiBase`, `AiShip`, `AiFreighter`, `AiTurret`, and `AiProbe`
 - movement currently follows the same local roam / arrive logic as the AI simulator
 - `AggroRange` is not editable; it is derived from the shared `30`-tick prediction horizon
@@ -850,6 +852,7 @@ Additional required attributes:
 
 Constraints and behavior:
 
+- `Team` must exist and may be spectators
 - `Gravity` must currently be exactly `0`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `RailSpeed > 0`
@@ -857,6 +860,7 @@ Constraints and behavior:
 - `RailReloadTicks >= 0`
 - `InterceptorSpeed > 0`
 - `InterceptorReloadTicks >= 0`
+- `Team="12"` means the AI base treats every non-spectator valid target as hostile
 - effective combat ranges are derived automatically from the shared `30`-tick prediction horizon
 - `AiBase` survives collisions with most units and destroys the other side without self-damage; only `AiBase` <-> `AiFreighter` collisions destroy both
 
@@ -893,10 +897,12 @@ Additional required attributes:
 
 Constraints and behavior:
 
+- `Team` must exist and may be spectators
 - `Gravity` must currently be exactly `0`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `ShotSpeed > 0`
 - `ShotDamage > 0`
+- `Team="12"` means the AI turret treats every non-spectator valid target as hostile
 - effective target range is derived automatically from the shared `30`-tick prediction horizon
 - `AiTurret` only fires `Shot`; it does not use `Rail` or `Interceptor`
 
@@ -944,6 +950,7 @@ Allowed `Waypoint` attributes:
 
 Constraints and behavior:
 
+- `Team` must exist and may be spectators
 - `Gravity` must currently be exactly `0.0012`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `InterceptorSpeed > 0`
@@ -951,6 +958,7 @@ Constraints and behavior:
 - all loot values must be `>= 0`
 - at least one `Waypoint` child is required
 - each `Waypoint.Speed` must be `> 0`
+- `Team="12"` means the AI freighter treats every non-spectator valid target as hostile
 - the freighter loops its route; if you want a stable back-and-forth route, include the spawn point itself as the first waypoint
 - `AiFreighter` carries the configured loot values in its detail scan
 - `AiFreighter` survives collisions with most units and destroys the other side without self-damage; only `AiFreighter` <-> `AiBase` collisions destroy both
@@ -991,12 +999,14 @@ Additional required attributes:
 
 Constraints and behavior:
 
+- `Team` must exist and may be spectators
 - `Gravity` must currently be exactly `0.0012`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `ActionRadius >= 0`
 - `Speed > 0`
 - `ShotSpeed > 0`
 - `ShotDamage > 0`
+- `Team="12"` means the AI ship treats every non-spectator valid target as hostile
 - `AiShip` roams around its configured `X` / `Y`; there is no separate XML action-center attribute
 - effective target range is derived automatically from the shared `30`-tick prediction horizon
 
@@ -1032,10 +1042,12 @@ Additional required attributes:
 
 Constraints and behavior:
 
+- `Team` must exist and may be spectators
 - `Gravity` must currently be exactly `0.0012`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `ActionRadius >= 0`
 - `Speed > 0`
+- `Team="12"` means the AI probe treats every non-spectator valid target as hostile
 - `AiProbe` uses the same roam / arrive movement style as `AiShip`, but never fires any weapon
 - `AiProbe` also uses its configured `X` / `Y` as its action-center
 

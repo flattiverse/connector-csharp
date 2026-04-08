@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-22
+25
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=24&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=24&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=24&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=24&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=25&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=25&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=25&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=25&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
