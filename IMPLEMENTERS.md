@@ -40,10 +40,10 @@ Current protocol version:
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=25&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=25&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=25&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=25&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=26&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=26&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=26&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=26&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -205,6 +205,7 @@ Current server-side on-wire codes:
 * `0x21` `YouNeedToDieFirstGameException`
 * `0x22` `AllStartLocationsAreOvercrowded`
 * `0x23` `MissingAchievementGameException`
+* `0x24` `TeamNotPlayableGameException`
 * `0x30` `CanOnlyShootOncePerTickGameException`
 * `0x31` `TournamentNotConfiguredGameException`
 * `0x32` `TournamentAlreadyConfiguredGameException`
@@ -231,6 +232,7 @@ Structured exception payloads currently used by the server:
 * `0x12`: `byte reason`, `string parameter`
 * `0x16`: `byte reason`, `string nodePath`, `string hint`
 * `0x23`: `string achievementName`
+* `0x24`: `string teamName`
 
 ## Static Map Rebuild And Tick Profiling
 
@@ -408,8 +410,11 @@ byte   teamId
 byte   red
 byte   green
 byte   blue
+byte   playableFlag
 string name
 ```
+
+`playableFlag` is `0x00` or `0x01`.
 
 ### `0x04` Team Score Update
 
@@ -1663,7 +1668,7 @@ Important notes:
 * `0x2A` rejects non-editable units with `0x16 InvalidXmlNodeValueGameException`.
 * Editable target kinds currently include `CurrentField`, `Nebula`, `Storm`, `MissionTarget`, `Flag`, `DominationPoint`, `Switch`, `Gate`, `SpaceJellyFish`, `AiBase`, `AiTurret`, `AiFreighter`, `AiShip`, and `AiProbe`.
 * `0x04` also rejects cluster removal while any remaining unit still references that cluster. The current example is a `WormHole` whose `TargetCluster` points to the cluster you are trying to remove.
-* `0x60` accepts `<Tournament ...>` XML with `Mode`, `DurationTicks`, exactly two `<Team Id="...">` elements containing `<Account Id="..."/>` children, and optional `<Match WinnerTeamId="..."/>` elements that describe already finished games in order.
+* `0x60` accepts `<Tournament ...>` XML with `Mode`, `DurationTicks`, exactly two playable `<Team Id="...">` elements containing `<Account Id="..."/>` children, and optional `<Match WinnerTeamId="..."/>` elements that describe already finished games in order.
 * `0x60` is admin-only and rejects `GameMode == Mission` with `0x39 TournamentModeNotAllowedGameException`.
 * `0x61`, `0x62`, and `0x63` are admin-only tournament lifecycle actions.
 * `0x64` is admin-only, filters server-side to account statuses `user` and `reoptin`, orders by `lower(name), id`, and returns connector-style account snapshots for tournament configuration UIs.

@@ -13,6 +13,7 @@ partial class Program
     private const ushort StaticMapLocalGalaxyId = 666;
     private const string LocalGalaxyProjectPath = "D:\\Projects\\fv\\fv-server\\Galaxy\\Galaxy\\Galaxy.csproj";
     private const string LocalGalaxyWorkingDirectory = "D:\\Projects\\fv";
+    private const string LocalGalaxyExecutablePath = "D:\\Projects\\fv\\fv-server\\Galaxy\\Galaxy\\bin\\Debug\\net10.0\\Galaxy.exe";
     private const int InitialStaticMapTimeoutMs = 240000;
     private const int StaticMapRebuildTimeoutMs = 240000;
     private const int StaticMapDeathTimeoutMs = 30000;
@@ -353,7 +354,12 @@ partial class Program
 
     private static Process StartLocalGalaxyProcess()
     {
-        ProcessStartInfo startInfo = new ProcessStartInfo("dotnet", $"run --project \"{LocalGalaxyProjectPath}\" -- {StaticMapLocalGalaxyId}");
+        ProcessStartInfo startInfo;
+
+        if (File.Exists(LocalGalaxyExecutablePath))
+            startInfo = new ProcessStartInfo(LocalGalaxyExecutablePath, $"{StaticMapLocalGalaxyId}");
+        else
+            startInfo = new ProcessStartInfo("dotnet", $"run --project \"{LocalGalaxyProjectPath}\" -- {StaticMapLocalGalaxyId}");
 
         startInfo.WorkingDirectory = LocalGalaxyWorkingDirectory;
         startInfo.UseShellExecute = false;

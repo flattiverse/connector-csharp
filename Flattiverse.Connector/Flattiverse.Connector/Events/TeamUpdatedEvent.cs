@@ -65,6 +65,15 @@ public class TeamUpdatedEvent : FlattiverseEvent
             appendedAtLeastOneChange = true;
         }
 
+        if (Old.Playable != New.Playable)
+        {
+            if (appendedAtLeastOneChange)
+                builder.Append(", ");
+
+            builder.Append($"Playable={Old.Playable}->{New.Playable}");
+            appendedAtLeastOneChange = true;
+        }
+
         if (!appendedAtLeastOneChange)
             return $"{Stamp:HH:mm:ss.fff} Team updated without effective field changes: Id={New.Id}.";
         

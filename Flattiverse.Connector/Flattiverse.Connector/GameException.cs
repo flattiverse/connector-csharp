@@ -141,6 +141,15 @@ public class GameException : Exception
 
                     exception = null;
                     return false;
+                case 0x24:
+                    if (packetReader.Read(out str))
+                    {
+                        exception = new TeamNotPlayableGameException(str);
+                        return true;
+                    }
+
+                    exception = null;
+                    return false;
                 case 0x30:
                     exception = new CanOnlyShootOncePerTickGameException();
                     return true;

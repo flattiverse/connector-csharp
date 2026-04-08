@@ -16,6 +16,8 @@ partial class Program
 
     private static async Task RunNpcUnitsCheckLocal()
     {
+        CultureInfo originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo originalUiCulture = CultureInfo.CurrentUICulture;
         string adminAuth = ResolveNpcUnitsLocalAdminAuth();
         DatabaseAccountRow originalAdminAccount = QueryAccountRow(adminAuth);
         string playerAuth = ResolveNpcUnitsLocalPlayerAuth(originalAdminAccount.AccountId);
@@ -39,6 +41,9 @@ partial class Program
         string shipName = $"NpcUnitsLocalShip{Environment.ProcessId}";
         float anchorX = 0f;
         float anchorY = 0f;
+
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 
         ClearLocalAccountSession(adminAuth, "NPC-LOCAL:ADMIN");
         ClearLocalAccountSession(playerAuth, "NPC-LOCAL:PLAYER");
@@ -145,27 +150,37 @@ partial class Program
             string initialShipName = $"NpcLocalAiShip{Environment.ProcessId}";
             string initialSpectatorProbeName = $"NpcLocalSpectatorProbe{Environment.ProcessId}";
             string initialEnemyProbeName = $"NpcLocalEnemyProbe{Environment.ProcessId}";
+            float initialShipPatrolX = anchorX + 165f;
+            float initialShipPatrolY = anchorY + 10f;
+            float initialShipActionRadius = 60f;
+            float initialJellyGravity = 0.0015f;
+            float initialBaseGravity = 0.0006f;
+            float initialTurretGravity = 0.0004f;
+            float initialFreighterGravity = 0.0011f;
+            float initialShipGravity = 0.0013f;
+            float initialSpectatorProbeGravity = 0.0014f;
+            float initialEnemyProbeGravity = 0.0009f;
 
             Console.WriteLine("NPC-LOCAL: creating spectator-owned editable NPC units...");
             await adminCluster.SetUnit(
-                $"<SpaceJellyFish Name=\"{initialJellyName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 120f:0.###}\" Y=\"{anchorY:0.###}\" Radius=\"14\" Gravity=\"0.0012\" Hull=\"26\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ActionRadius=\"60\" Speed=\"3.2\" Damage=\"0.1\" />")
+                $"<SpaceJellyFish Name=\"{initialJellyName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 120f:0.###}\" Y=\"{anchorY:0.###}\" Radius=\"14\" Gravity=\"{initialJellyGravity:R}\" Hull=\"26\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ActionRadius=\"60\" Speed=\"3.2\" Damage=\"0.1\" />")
                 .ConfigureAwait(false);
             await adminCluster.SetUnit(
-                $"<AiBase Name=\"{initialBaseName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 145f:0.###}\" Y=\"{anchorY + 35f:0.###}\" Radius=\"22\" Gravity=\"0\" Hull=\"60\" RepairPerTick=\"0.02\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" RailSpeed=\"7.5\" RailDamage=\"0.1\" RailReloadTicks=\"8\" InterceptorSpeed=\"6.2\" InterceptorReloadTicks=\"8\" />")
+                $"<AiBase Name=\"{initialBaseName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 145f:0.###}\" Y=\"{anchorY + 35f:0.###}\" Radius=\"22\" Gravity=\"{initialBaseGravity:R}\" Hull=\"60\" RepairPerTick=\"0.02\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" RailSpeed=\"7.5\" RailReloadTicks=\"8\" InterceptorSpeed=\"6.2\" InterceptorReloadTicks=\"8\" />")
                 .ConfigureAwait(false);
             await adminCluster.SetUnit(
-                $"<AiTurret Name=\"{initialTurretName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 145f:0.###}\" Y=\"{anchorY - 35f:0.###}\" Radius=\"16\" Gravity=\"0\" Hull=\"28\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ShotSpeed=\"5.0\" ShotDamage=\"0.1\" />")
+                $"<AiTurret Name=\"{initialTurretName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 145f:0.###}\" Y=\"{anchorY - 35f:0.###}\" Radius=\"16\" Gravity=\"{initialTurretGravity:R}\" Hull=\"28\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ShotSpeed=\"5.0\" ShotDamage=\"0.1\" />")
                 .ConfigureAwait(false);
             await adminCluster.SetUnit(BuildInitialFreighterXml(initialFreighterName, spectatorsTeam.Id, anchorX + 185f, anchorY,
-                600, 180f, 7f, 16f, 6f, 3f, 40f)).ConfigureAwait(false);
+                600, 180f, initialFreighterGravity, 7f, 16f, 6f, 3f, 40f)).ConfigureAwait(false);
             await adminCluster.SetUnit(
-                $"<AiShip Name=\"{initialShipName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 165f:0.###}\" Y=\"{anchorY + 10f:0.###}\" Radius=\"12\" Gravity=\"0.0012\" Hull=\"24\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ActionRadius=\"60\" Speed=\"3.2\" ShotSpeed=\"5.2\" ShotDamage=\"0.1\" />")
+                $"<AiShip Name=\"{initialShipName}\" Team=\"{spectatorsTeam.Id}\" X=\"{initialShipPatrolX:0.###}\" Y=\"{initialShipPatrolY:0.###}\" Radius=\"12\" Gravity=\"{initialShipGravity:R}\" Hull=\"24\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ActionRadius=\"{initialShipActionRadius:0.###}\" Speed=\"3.2\" ShotSpeed=\"5.2\" ShotDamage=\"0.1\" />")
                 .ConfigureAwait(false);
             await adminCluster.SetUnit(
-                $"<AiProbe Name=\"{initialSpectatorProbeName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 195f:0.###}\" Y=\"{anchorY - 15f:0.###}\" Radius=\"11\" Gravity=\"0.0012\" Hull=\"18\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ActionRadius=\"50\" Speed=\"3.0\" />")
+                $"<AiProbe Name=\"{initialSpectatorProbeName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 195f:0.###}\" Y=\"{anchorY - 15f:0.###}\" Radius=\"11\" Gravity=\"{initialSpectatorProbeGravity:R}\" Hull=\"18\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"0\" ActionRadius=\"50\" Speed=\"3.0\" />")
                 .ConfigureAwait(false);
             await adminCluster.SetUnit(
-                $"<AiProbe Name=\"{initialEnemyProbeName}\" Team=\"{greenTeam.Id}\" X=\"{anchorX + 195f:0.###}\" Y=\"{anchorY + 15f:0.###}\" Radius=\"11\" Gravity=\"0.0012\" Hull=\"18\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"180\" ActionRadius=\"50\" Speed=\"3.0\" />")
+                $"<AiProbe Name=\"{initialEnemyProbeName}\" Team=\"{greenTeam.Id}\" X=\"{anchorX + 195f:0.###}\" Y=\"{anchorY + 15f:0.###}\" Radius=\"11\" Gravity=\"{initialEnemyProbeGravity:R}\" Hull=\"18\" RepairPerTick=\"0.01\" RespawnTicks=\"600\" RespawnPlayerDistance=\"0\" ActionRadius=\"50\" Speed=\"3.0\" />")
                 .ConfigureAwait(false);
 
             UnitSpec[] expectedEditableUnits = new UnitSpec[]
@@ -196,36 +211,60 @@ partial class Program
                     throw new InvalidOperationException($"NPC-LOCAL: editable unit {unitSpec.Name} ({unitSpec.Kind}) was not returned by QueryEditableUnits().");
             }
 
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialJellyName).ConfigureAwait(false), "SpaceJellyFish", SpectatorsTeamId, 0);
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialBaseName).ConfigureAwait(false), "AiBase", SpectatorsTeamId, 0);
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialTurretName).ConfigureAwait(false), "AiTurret", SpectatorsTeamId, 0);
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialFreighterName).ConfigureAwait(false), "AiFreighter", SpectatorsTeamId, 2);
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialShipName).ConfigureAwait(false), "AiShip", SpectatorsTeamId, 0);
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialSpectatorProbeName).ConfigureAwait(false), "AiProbe", SpectatorsTeamId, 0);
-            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialEnemyProbeName).ConfigureAwait(false), "AiProbe", greenTeam.Id, 0);
+            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialJellyName).ConfigureAwait(false), "SpaceJellyFish", SpectatorsTeamId,
+                initialJellyGravity, 0);
+            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialBaseName).ConfigureAwait(false), "AiBase", SpectatorsTeamId,
+                initialBaseGravity, 0);
+            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialTurretName).ConfigureAwait(false), "AiTurret", SpectatorsTeamId,
+                initialTurretGravity, 0);
+            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialFreighterName).ConfigureAwait(false), "AiFreighter", SpectatorsTeamId,
+                initialFreighterGravity, 2);
+            string initialShipXml = await adminCluster.QueryUnitXml(initialShipName).ConfigureAwait(false);
+            VerifyNpcUnitXml(initialShipXml, "AiShip", SpectatorsTeamId, initialShipGravity, 0);
+            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialSpectatorProbeName).ConfigureAwait(false), "AiProbe", SpectatorsTeamId,
+                initialSpectatorProbeGravity, 0);
+            VerifyNpcUnitXml(await adminCluster.QueryUnitXml(initialEnemyProbeName).ConfigureAwait(false), "AiProbe", greenTeam.Id,
+                initialEnemyProbeGravity, 0);
+
+            XDocument initialShipDocument = XDocument.Parse(initialShipXml, LoadOptions.None);
+            XElement? initialShipRoot = initialShipDocument.Root;
+
+            if (initialShipRoot is null ||
+                !float.TryParse(initialShipRoot.Attribute("X")?.Value, NumberStyles.Float, CultureInfo.InvariantCulture,
+                    out float queriedInitialShipPatrolX) ||
+                !float.TryParse(initialShipRoot.Attribute("Y")?.Value, NumberStyles.Float, CultureInfo.InvariantCulture,
+                    out float queriedInitialShipPatrolY) ||
+                MathF.Abs(queriedInitialShipPatrolX - initialShipPatrolX) > 0.0001f ||
+                MathF.Abs(queriedInitialShipPatrolY - initialShipPatrolY) > 0.0001f)
+            {
+                string queriedInitialShipPatrolXText = initialShipRoot?.Attribute("X")?.Value ?? "<missing>";
+                string queriedInitialShipPatrolYText = initialShipRoot?.Attribute("Y")?.Value ?? "<missing>";
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: ai ship XML did not preserve the patrol center. x={queriedInitialShipPatrolXText}, y={queriedInitialShipPatrolYText}.");
+            }
 
             if (!await WaitForCondition(delegate
                 {
-                    return TryFindUnit<SpaceJellyFish>(adminGalaxy, testClusterId, initialJellyName, out SpaceJellyFish? _) &&
-                           TryFindUnit<AiBase>(adminGalaxy, testClusterId, initialBaseName, out AiBase? _) &&
-                           TryFindUnit<AiTurret>(adminGalaxy, testClusterId, initialTurretName, out AiTurret? _) &&
-                           TryFindUnit<AiFreighter>(adminGalaxy, testClusterId, initialFreighterName, out AiFreighter? _) &&
-                           TryFindUnit<AiShip>(adminGalaxy, testClusterId, initialShipName, out AiShip? _) &&
-                           TryFindUnit<AiProbe>(adminGalaxy, testClusterId, initialSpectatorProbeName, out AiProbe? _) &&
-                           TryFindUnit<AiProbe>(adminGalaxy, testClusterId, initialEnemyProbeName, out AiProbe? _);
+                    return spectatorGalaxy is not null &&
+                           TryFindUnit<SpaceJellyFish>(spectatorGalaxy, testClusterId, initialJellyName, out SpaceJellyFish? _) &&
+                           TryFindUnit<AiBase>(spectatorGalaxy, testClusterId, initialBaseName, out AiBase? _) &&
+                           TryFindUnit<AiTurret>(spectatorGalaxy, testClusterId, initialTurretName, out AiTurret? _) &&
+                           TryFindUnit<AiFreighter>(spectatorGalaxy, testClusterId, initialFreighterName, out AiFreighter? _) &&
+                           TryFindUnit<AiShip>(spectatorGalaxy, testClusterId, initialShipName, out AiShip? _);
                 }, NpcUnitsLocalTimeoutMs).ConfigureAwait(false))
             {
                 List<string> visibleUnits = new List<string>();
 
-                if (adminGalaxy.Clusters.TryGet(testClusterId, out Cluster? visibleCluster) && visibleCluster is not null)
+                if (spectatorGalaxy is not null && spectatorGalaxy.Clusters.TryGet(testClusterId, out Cluster? visibleCluster) &&
+                    visibleCluster is not null)
                     foreach (Unit visibleUnit in visibleCluster.Units)
                         visibleUnits.Add($"{visibleUnit.Kind}:{visibleUnit.Name}");
 
                 throw new InvalidOperationException(
-                    $"NPC-LOCAL: admin did not see all new NPC unit classes. scannerActive={ship.MainScanner.Active}, current=({ship.MainScanner.CurrentWidth:0.###},{ship.MainScanner.CurrentLength:0.###},{ship.MainScanner.CurrentAngle:0.###}), visible=[{string.Join(", ", visibleUnits)}]");
+                    $"NPC-LOCAL: spectator did not see all new NPC unit classes. visible=[{string.Join(", ", visibleUnits)}]");
             }
 
-            if (!TryFindUnit<AiTurret>(adminGalaxy, testClusterId, initialTurretName, out AiTurret? initialVisibleTurret) ||
+            if (!TryFindUnit<AiTurret>(spectatorGalaxy, testClusterId, initialTurretName, out AiTurret? initialVisibleTurret) ||
                 initialVisibleTurret is null ||
                 initialVisibleTurret.Team is null ||
                 initialVisibleTurret.Team.Id != SpectatorsTeamId)
@@ -234,7 +273,7 @@ partial class Program
                 throw new InvalidOperationException($"NPC-LOCAL: spectator ai turret team was not transmitted correctly. team={transmittedTeamId}.");
             }
 
-            if (!TryFindUnit<AiShip>(adminGalaxy, testClusterId, initialShipName, out AiShip? initialVisibleAiShip) ||
+            if (!TryFindUnit<AiShip>(spectatorGalaxy, testClusterId, initialShipName, out AiShip? initialVisibleAiShip) ||
                 initialVisibleAiShip is null ||
                 initialVisibleAiShip.Team is null ||
                 initialVisibleAiShip.Team.Id != SpectatorsTeamId)
@@ -243,7 +282,7 @@ partial class Program
                 throw new InvalidOperationException($"NPC-LOCAL: spectator ai ship team was not transmitted correctly. team={transmittedTeamId}.");
             }
 
-            if (!TryFindUnit<AiFreighter>(adminGalaxy, testClusterId, initialFreighterName, out AiFreighter? initialVisibleFreighter) ||
+            if (!TryFindUnit<AiFreighter>(spectatorGalaxy, testClusterId, initialFreighterName, out AiFreighter? initialVisibleFreighter) ||
                 initialVisibleFreighter is null ||
                 initialVisibleFreighter.Metal != 7f ||
                 initialVisibleFreighter.Carbon != 16f ||
@@ -361,10 +400,10 @@ partial class Program
 
             Console.WriteLine("NPC-LOCAL: observing ai ship shots...");
             string aiShipPhaseName = $"NpcLocalAiShipPhase{Environment.ProcessId}";
-            await adminCluster.SetUnit(
-                $"<AiShip Name=\"{aiShipPhaseName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 80f:0.###}\" Y=\"{anchorY:0.###}\" Radius=\"12\" Gravity=\"0.0012\" Hull=\"24\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"180\" ActionRadius=\"30\" Speed=\"3.2\" ShotSpeed=\"5.2\" ShotDamage=\"0.2\" />")
-                .ConfigureAwait(false);
             DrainEvents(spectatorEvents);
+            await adminCluster.SetUnit(
+                $"<AiShip Name=\"{aiShipPhaseName}\" Team=\"{spectatorsTeam.Id}\" X=\"{anchorX + 80f:0.###}\" Y=\"{anchorY:0.###}\" Radius=\"12\" Gravity=\"0.0017\" Hull=\"24\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"0\" ActionRadius=\"30\" Speed=\"3.2\" ShotSpeed=\"5.2\" ShotDamage=\"0.2\" />")
+                .ConfigureAwait(false);
 
             List<FlattiverseEvent> aiShipPhaseEvents = new List<FlattiverseEvent>();
             NewUnitFlattiverseEvent? aiShipShotEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, aiShipPhaseEvents,
@@ -377,6 +416,102 @@ partial class Program
                 throw new InvalidOperationException("NPC-LOCAL: ai ship never produced a visible shot.");
 
             await RemoveUnitIfPresent(adminCluster, aiShipPhaseName).ConfigureAwait(false);
+
+            if (spectatorGalaxy is not null)
+                await WaitForNpcUnitsLocalTransientUnitsClear(spectatorGalaxy, testClusterId).ConfigureAwait(false);
+
+            await EnsureNpcUnitsLocalShipAlive(ship, testClusterId).ConfigureAwait(false);
+
+            Console.WriteLine("NPC-LOCAL: observing ai ship removal and respawn...");
+            string aiShipRespawnName = $"NpcLocalAiShipRespawn{Environment.ProcessId}";
+            string aiShipRespawnAttackerName = $"NpcLocalAiShipRespawnAttacker{Environment.ProcessId}";
+            float aiShipRespawnPatrolX = anchorX + 108f;
+            float aiShipRespawnPatrolY = anchorY + 24f;
+            float aiShipRespawnActionRadius = 0f;
+            DrainEvents(spectatorEvents);
+            await adminCluster.SetUnit(
+                $"<AiShip Name=\"{aiShipRespawnName}\" Team=\"{spectatorsTeam.Id}\" X=\"{aiShipRespawnPatrolX:0.###}\" Y=\"{aiShipRespawnPatrolY:0.###}\" Radius=\"12\" Gravity=\"0.0016\" Hull=\"2\" RepairPerTick=\"0\" RespawnTicks=\"12\" RespawnPlayerDistance=\"35\" ActionRadius=\"{aiShipRespawnActionRadius:0.###}\" Speed=\"3.2\" ShotSpeed=\"5.2\" ShotDamage=\"0.2\" />")
+                .ConfigureAwait(false);
+
+            List<FlattiverseEvent> aiShipRespawnEvents = new List<FlattiverseEvent>();
+            NewUnitFlattiverseEvent? aiShipInitialSpawnEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
+                aiShipRespawnEvents, delegate(NewUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit.Kind == UnitKind.AiShip && @event.Unit.Name == aiShipRespawnName;
+                }).ConfigureAwait(false);
+
+            if (aiShipInitialSpawnEvent is null)
+                throw new InvalidOperationException("NPC-LOCAL: ai ship respawn phase unit never became visible.");
+
+            if (spectatorGalaxy is null)
+                throw new InvalidOperationException("NPC-LOCAL: spectator galaxy vanished before the ai ship respawn phase query.");
+
+            if (!await WaitForCondition(delegate
+                {
+                    return TryFindUnit<AiShip>(spectatorGalaxy, testClusterId, aiShipRespawnName, out AiShip? visibleRespawnShip) &&
+                           visibleRespawnShip is not null;
+                }, NpcUnitsLocalTimeoutMs).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("NPC-LOCAL: ai ship respawn phase unit did not reach the spectator galaxy mirror.");
+            }
+
+            if (!TryFindUnit<AiShip>(spectatorGalaxy, testClusterId, aiShipRespawnName, out AiShip? aiShipBeforeDeath) || aiShipBeforeDeath is null)
+                throw new InvalidOperationException("NPC-LOCAL: ai ship respawn phase unit could not be queried after it became visible.");
+
+            Vector aiShipBeforeDeathOffset = aiShipInitialSpawnEvent.Unit.Position - new Vector(aiShipRespawnPatrolX, aiShipRespawnPatrolY);
+
+            if (aiShipBeforeDeathOffset.Length > aiShipRespawnActionRadius + 0.1f)
+            {
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: ai ship respawn phase initial spawn outside patrol radius. offset={aiShipBeforeDeathOffset.Length:0.###}, radius={aiShipRespawnActionRadius:0.###}, position={aiShipInitialSpawnEvent.Unit.Position}.");
+            }
+
+            DrainEvents(spectatorEvents);
+            await adminCluster.SetUnit(
+                $"<AiTurret Name=\"{aiShipRespawnAttackerName}\" Team=\"{pinkTeam.Id}\" X=\"{aiShipRespawnPatrolX:0.###}\" Y=\"{aiShipRespawnPatrolY - 60f:0.###}\" Radius=\"16\" Gravity=\"0\" Hull=\"30\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"180\" ShotSpeed=\"5.4\" ShotDamage=\"60\" />")
+                .ConfigureAwait(false);
+
+            RemovedUnitFlattiverseEvent? aiShipRemovedEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
+                aiShipRespawnEvents, delegate(RemovedUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit.Kind == UnitKind.AiShip && @event.Unit.Name == aiShipRespawnName;
+                }).ConfigureAwait(false);
+
+            if (aiShipRemovedEvent is null)
+                throw new InvalidOperationException("NPC-LOCAL: ai ship death did not produce a spectator remove event.");
+
+            if (!await WaitForCondition(delegate
+                {
+                    return spectatorGalaxy is not null &&
+                           (!TryFindUnit<AiShip>(spectatorGalaxy, testClusterId, aiShipRespawnName, out AiShip? remainingAiShip) ||
+                            remainingAiShip is null);
+                }, NpcUnitsLocalTimeoutMs).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException("NPC-LOCAL: dead ai ship remained visible after the remove event.");
+            }
+
+            NewUnitFlattiverseEvent? aiShipRespawnEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, aiShipRespawnEvents,
+                delegate(NewUnitFlattiverseEvent @event)
+                {
+                    return @event.Unit.Kind == UnitKind.AiShip && @event.Unit.Name == aiShipRespawnName;
+                }).ConfigureAwait(false);
+
+            if (aiShipRespawnEvent is null)
+                throw new InvalidOperationException("NPC-LOCAL: ai ship never became visible again after respawn.");
+
+            if (!TryFindUnit<AiShip>(spectatorGalaxy, testClusterId, aiShipRespawnName, out AiShip? aiShipAfterRespawn) || aiShipAfterRespawn is null)
+                throw new InvalidOperationException("NPC-LOCAL: respawned ai ship was not present in the spectator galaxy mirror.");
+
+            Vector aiShipAfterRespawnOffset = aiShipRespawnEvent.Unit.Position - new Vector(aiShipRespawnPatrolX, aiShipRespawnPatrolY);
+
+            if (aiShipAfterRespawnOffset.Length > aiShipRespawnActionRadius + 0.1f)
+            {
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: respawned ai ship appeared outside patrol radius. offset={aiShipAfterRespawnOffset.Length:0.###}, radius={aiShipRespawnActionRadius:0.###}, position={aiShipRespawnEvent.Unit.Position}.");
+            }
+
+            await RemoveUnitIfPresent(adminCluster, aiShipRespawnAttackerName).ConfigureAwait(false);
+            await RemoveUnitIfPresent(adminCluster, aiShipRespawnName).ConfigureAwait(false);
 
             if (spectatorGalaxy is not null)
                 await WaitForNpcUnitsLocalTransientUnitsClear(spectatorGalaxy, testClusterId).ConfigureAwait(false);
@@ -397,7 +532,7 @@ partial class Program
                 $"<AiTurret Name=\"{baseVictimName}\" Team=\"{pinkTeam.Id}\" X=\"{basePhaseX + 42f:0.###}\" Y=\"{basePhaseY:0.###}\" Radius=\"16\" Gravity=\"0\" Hull=\"30\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"180\" ShotSpeed=\"5.0\" ShotDamage=\"0.1\" />")
                 .ConfigureAwait(false);
             await adminCluster.SetUnit(
-                $"<AiBase Name=\"{basePhaseName}\" Team=\"{spectatorsTeam.Id}\" X=\"{basePhaseX:0.###}\" Y=\"{basePhaseY:0.###}\" Radius=\"22\" Gravity=\"0\" Hull=\"60\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"180\" RailSpeed=\"7.8\" RailDamage=\"0.2\" RailReloadTicks=\"8\" InterceptorSpeed=\"6.2\" InterceptorReloadTicks=\"8\" />")
+                $"<AiBase Name=\"{basePhaseName}\" Team=\"{spectatorsTeam.Id}\" X=\"{basePhaseX:0.###}\" Y=\"{basePhaseY:0.###}\" Radius=\"22\" Gravity=\"0.0008\" Hull=\"60\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"180\" RailSpeed=\"7.8\" RailReloadTicks=\"8\" InterceptorSpeed=\"6.2\" InterceptorReloadTicks=\"8\" />")
                 .ConfigureAwait(false);
             DrainEvents(spectatorEvents);
 
@@ -455,8 +590,8 @@ partial class Program
             string freighterPhaseName = $"NpcLocalFreighterPhase{Environment.ProcessId}";
             float freighterPhaseX = anchorX + 52f;
             float freighterPhaseY = anchorY - 18f;
-            await adminCluster.SetUnit(BuildInitialFreighterXml(freighterPhaseName, spectatorsTeam.Id, freighterPhaseX, freighterPhaseY, 0, 180f, 11f, 8f,
-                4f, 2f, 30f)).ConfigureAwait(false);
+            await adminCluster.SetUnit(BuildInitialFreighterXml(freighterPhaseName, spectatorsTeam.Id, freighterPhaseX, freighterPhaseY, 0, 180f,
+                0.0011f, 11f, 8f, 4f, 2f, 30f)).ConfigureAwait(false);
 
             if (!await WaitForCondition(delegate
                 {
@@ -722,6 +857,9 @@ partial class Program
 
             if (galaxyProcess is not null)
                 StopProcess(galaxyProcess);
+
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
         }
     }
 
@@ -763,13 +901,14 @@ partial class Program
     }
 
     private static string BuildInitialFreighterXml(string name, byte teamId, float x, float y, int respawnTicks, float respawnPlayerDistance,
-        float metal, float carbon, float hydrogen, float silicon, float routeOffset)
+        float gravity, float metal, float carbon, float hydrogen, float silicon, float routeOffset)
     {
         return
-            $"<AiFreighter Name=\"{name}\" Team=\"{teamId}\" X=\"{x:0.###}\" Y=\"{y:0.###}\" Radius=\"14\" Gravity=\"0.0012\" Hull=\"48\" RepairPerTick=\"0.01\" RespawnTicks=\"{respawnTicks}\" RespawnPlayerDistance=\"{respawnPlayerDistance:0.###}\" InterceptorSpeed=\"6.2\" InterceptorReloadTicks=\"16\" LootMetal=\"{metal:0.###}\" LootCarbon=\"{carbon:0.###}\" LootHydrogen=\"{hydrogen:0.###}\" LootSilicon=\"{silicon:0.###}\"><Waypoint X=\"{x:0.###}\" Y=\"{y:0.###}\" Speed=\"2.2\" /><Waypoint X=\"{x + routeOffset:0.###}\" Y=\"{y:0.###}\" Speed=\"2.2\" /></AiFreighter>";
+            $"<AiFreighter Name=\"{name}\" Team=\"{teamId}\" X=\"{x:0.###}\" Y=\"{y:0.###}\" Radius=\"14\" Gravity=\"{gravity:R}\" Hull=\"48\" RepairPerTick=\"0.01\" RespawnTicks=\"{respawnTicks}\" RespawnPlayerDistance=\"{respawnPlayerDistance:0.###}\" InterceptorSpeed=\"6.2\" InterceptorReloadTicks=\"16\" LootMetal=\"{metal:0.###}\" LootCarbon=\"{carbon:0.###}\" LootHydrogen=\"{hydrogen:0.###}\" LootSilicon=\"{silicon:0.###}\"><Waypoint X=\"{x:0.###}\" Y=\"{y:0.###}\" Speed=\"2.2\" /><Waypoint X=\"{x + routeOffset:0.###}\" Y=\"{y:0.###}\" Speed=\"2.2\" /></AiFreighter>";
     }
 
-    private static void VerifyNpcUnitXml(string xml, string expectedRootName, byte expectedTeamId, int expectedWaypointCount)
+    private static void VerifyNpcUnitXml(string xml, string expectedRootName, byte expectedTeamId, float expectedGravity,
+        int expectedWaypointCount)
     {
         XDocument document = XDocument.Parse(xml, LoadOptions.None);
         XElement? root = document.Root;
@@ -798,6 +937,16 @@ partial class Program
         if (!byte.TryParse(teamAttribute.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out byte teamId) || teamId != expectedTeamId)
             throw new InvalidOperationException($"NPC-LOCAL: queried XML for {expectedRootName} has unexpected Team={teamAttribute.Value}.");
 
+        XAttribute? gravityAttribute = root.Attribute("Gravity");
+
+        if (gravityAttribute is null ||
+            !float.TryParse(gravityAttribute.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float queriedGravity) ||
+            MathF.Abs(queriedGravity - expectedGravity) > 0.0001f)
+        {
+            throw new InvalidOperationException(
+                $"NPC-LOCAL: queried XML for {expectedRootName} has unexpected Gravity={gravityAttribute?.Value ?? "<missing>"}.");
+        }
+
         if (expectedRootName == "AiFreighter")
         {
             if (root.Attribute("LootMetal") is null ||
@@ -808,6 +957,9 @@ partial class Program
                 root.Attribute("InterceptorReloadTicks") is null)
                 throw new InvalidOperationException("NPC-LOCAL: queried AiFreighter XML is missing freighter-specific attributes.");
         }
+
+        if (expectedRootName == "AiBase" && root.Attribute("RailDamage") is not null)
+            throw new InvalidOperationException("NPC-LOCAL: queried AiBase XML must not contain RailDamage anymore.");
 
         if (expectedWaypointCount != root.Elements("Waypoint").Count())
             throw new InvalidOperationException($"NPC-LOCAL: expected {expectedWaypointCount} waypoints in {expectedRootName} XML.");

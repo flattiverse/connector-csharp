@@ -21,6 +21,6 @@ public class TeamCreatedEvent : FlattiverseEvent
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Stamp:HH:mm:ss.fff} Team created: Id={Team.Id}, Name=\"{Team.Name}\", Red={Team.Red}, Green={Team.Green}, Blue={Team.Blue}.";
+        return $"{Stamp:HH:mm:ss.fff} Team created: Id={Team.Id}, Name=\"{Team.Name}\", Red={Team.Red}, Green={Team.Green}, Blue={Team.Blue}, Playable={Team.Playable}.";
     }
 }

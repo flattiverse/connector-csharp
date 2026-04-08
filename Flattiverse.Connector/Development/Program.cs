@@ -55,14 +55,16 @@ partial class Program
         public readonly byte Red;
         public readonly byte Green;
         public readonly byte Blue;
+        public readonly bool Playable;
 
-        public TeamSpec(byte id, string name, byte red, byte green, byte blue)
+        public TeamSpec(byte id, string name, byte red, byte green, byte blue, bool playable = true)
         {
             Id = id;
             Name = name;
             Red = red;
             Green = green;
             Blue = blue;
+            Playable = playable;
         }
     }
 
@@ -2017,6 +2019,58 @@ partial class Program
             autoTeamPlayer2 = null;
 
             await Task.Delay(500).ConfigureAwait(false);
+
+            teams = new TeamSpec[]
+            {
+                new TeamSpec(0, "Pink", 255, 0, 200),
+                new TeamSpec(1, "Green", 192, 255, 0, false)
+            };
+
+            await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, teams, clusters)).ConfigureAwait(false);
+            await Task.Delay(250).ConfigureAwait(false);
+
+            try
+            {
+                Galaxy nonPlayableTeamPlayer = await Galaxy.Connect(Uri, PlayerAuth, "Green").ConfigureAwait(false);
+                nonPlayableTeamPlayer.Dispose();
+                Console.WriteLine("LOGIN-TEAM-CHECK: explicit non-playable Green -> FAILED (unexpected success)");
+            }
+            catch (TeamNotPlayableGameException exception)
+            {
+                Console.WriteLine($"LOGIN-TEAM-CHECK: explicit non-playable Green -> OK ({exception.Message})");
+            }
+
+            autoTeamPlayer1 = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            Console.WriteLine($"LOGIN-TEAM-CHECK: auto with Green non-playable -> {autoTeamPlayer1.Player.Team.Name}");
+
+            bool autoSkipsNonPlayableTeam = autoTeamPlayer1.Player.Team.Name == "Pink";
+
+            Console.WriteLine($"LOGIN-TEAM-CHECK: auto skips non-playable team = {autoSkipsNonPlayableTeam}");
+
+            autoTeamPlayer1.Dispose();
+            autoTeamPlayer1 = null;
+
+            await Task.Delay(500).ConfigureAwait(false);
+
+            teams = new TeamSpec[]
+            {
+                new TeamSpec(0, "Pink", 255, 0, 200, false),
+                new TeamSpec(1, "Green", 192, 255, 0, false)
+            };
+
+            await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, teams, clusters)).ConfigureAwait(false);
+            await Task.Delay(250).ConfigureAwait(false);
+
+            try
+            {
+                Galaxy noPlayableTeamPlayer = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+                noPlayableTeamPlayer.Dispose();
+                Console.WriteLine("LOGIN-TEAM-CHECK: auto team with only non-playable teams -> FAILED (unexpected success)");
+            }
+            catch (TeamSelectionFailedGameException exception)
+            {
+                Console.WriteLine($"LOGIN-TEAM-CHECK: auto team with only non-playable teams -> OK ({exception.Message})");
+            }
 
             await RemoveAllRegions(adminGalaxy).ConfigureAwait(false);
             await adminGalaxy.Configure(BuildConfigurationXml(adminGalaxy, Array.Empty<TeamSpec>(), clusters)).ConfigureAwait(false);
@@ -4480,7 +4534,8 @@ partial class Program
                     new XAttribute("Name", team.Name),
                     new XAttribute("ColorR", team.Red),
                     new XAttribute("ColorG", team.Green),
-                    new XAttribute("ColorB", team.Blue)));
+                    new XAttribute("ColorB", team.Blue),
+                    new XAttribute("Playable", team.Playable)));
             }
         else
             foreach (TeamSpec team in teams)
@@ -4489,7 +4544,8 @@ partial class Program
                     new XAttribute("Name", team.Name),
                     new XAttribute("ColorR", team.Red),
                     new XAttribute("ColorG", team.Green),
-                    new XAttribute("ColorB", team.Blue)));
+                    new XAttribute("ColorB", team.Blue),
+                    new XAttribute("Playable", team.Playable)));
 
         if (clusters is null)
             foreach (Cluster cluster in galaxy.Clusters)

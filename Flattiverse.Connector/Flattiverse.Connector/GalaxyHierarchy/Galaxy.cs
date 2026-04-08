@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "25";
+    private const string Version = "26";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -140,6 +140,9 @@ public partial class Galaxy : IDisposable
     /// <exception cref="AuthFailedGameException">Thrown, if the supplied API key is missing, invalid, or unusable.</exception>
     /// <exception cref="TeamSelectionFailedGameException">
     /// Thrown, if the requested team does not exist or the server cannot choose a valid team automatically.
+    /// </exception>
+    /// <exception cref="TeamNotPlayableGameException">
+    /// Thrown, if the requested team exists but is not playable for regular player logins.
     /// </exception>
     /// <exception cref="SelfDisclosureRequiredGameException">
     /// Thrown, if the galaxy requires self-disclosure for the chosen login kind and one or both disclosure values are
@@ -289,7 +292,7 @@ public partial class Galaxy : IDisposable
         _clusters = new Cluster?[ClusterCapacity];
         _controllables = new Controllable?[192];
 
-        Team spectators = new Team(this, SpectatorsTeamId, "Spectators", 128, 128, 128);
+        Team spectators = new Team(this, SpectatorsTeamId, "Spectators", 128, 128, 128, false);
         _teams[SpectatorsTeamId] = spectators;
         
         _players = new Player?[193];
@@ -561,7 +564,7 @@ public partial class Galaxy : IDisposable
     /// <code>
     /// &lt;Galaxy Name="New Name"&gt;
     ///   &lt;Team Id="0" /&gt;
-    ///   &lt;Team Id="1" Name="Green" ColorR="64" ColorG="255" ColorB="64" /&gt;
+    ///   &lt;Team Id="1" Name="Green" ColorR="64" ColorG="255" ColorB="64" Playable="true" /&gt;
     ///   &lt;Cluster Id="0" Name="Playground" Start="true" Respawn="false" /&gt;
     /// &lt;/Galaxy&gt;
     /// </code>
@@ -845,7 +848,7 @@ public partial class Galaxy : IDisposable
     }
 
     [Command(0x02)]
-    private void UpdateTeam(byte id, byte red, byte green, byte blue, string name)
+    private void UpdateTeam(byte id, byte red, byte green, byte blue, byte playable, string name)
     {
         Debug.Assert(id < SpectatorsTeamId, "Invalid team ID.");
         
@@ -853,14 +856,14 @@ public partial class Galaxy : IDisposable
         
         if (team is null)
         {
-            Team newTeam = new Team(this, id, name, red, green, blue);
+            Team newTeam = new Team(this, id, name, red, green, blue, playable != 0x00);
             _teams[id] = newTeam;
             PushEvent(new TeamCreatedEvent(CreateTeamSnapshot(newTeam)));
         }
         else
         {
             TeamSnapshot oldTeam = CreateTeamSnapshot(team);
-            team.Update(name, red, green, blue);
+            team.Update(name, red, green, blue, playable != 0x00);
             TeamSnapshot newTeam = CreateTeamSnapshot(team);
             PushEvent(new TeamUpdatedEvent(oldTeam, newTeam));
         }
@@ -929,7 +932,7 @@ public partial class Galaxy : IDisposable
 
     private static TeamSnapshot CreateTeamSnapshot(Team team)
     {
-        return new TeamSnapshot(team.Id, team.Name, team.Red, team.Green, team.Blue);
+        return new TeamSnapshot(team.Id, team.Name, team.Red, team.Green, team.Blue, team.Playable);
     }
     
     [Command(0x07)]

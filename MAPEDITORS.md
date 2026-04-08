@@ -89,8 +89,8 @@ Example:
   Maintenance="false"
   RequiresSelfDisclosure="false"
   RequiredAchievement="MISSION1_DONE">
-  <Team Id="0" Name="Pink" ColorR="255" ColorG="0" ColorB="200" />
-  <Team Id="1" Name="Green" ColorR="192" ColorG="255" ColorB="0" />
+  <Team Id="0" Name="Pink" ColorR="255" ColorG="0" ColorB="200" Playable="true" />
+  <Team Id="1" Name="Green" ColorR="192" ColorG="255" ColorB="0" Playable="true" />
   <Cluster Id="0" Name="Playground" Start="true" Respawn="false" />
   <Cluster Id="1" Name="Arena" Start="false" Respawn="true" />
 </Galaxy>
@@ -123,6 +123,7 @@ Allowed `Team` attributes:
 - `ColorR`: red channel of the team color in the range `0..255`.
 - `ColorG`: green channel of the team color in the range `0..255`.
 - `ColorB`: blue channel of the team color in the range `0..255`.
+- `Playable`: if `false`, regular player logins cannot explicitly select or auto-join this team. Omitted values default to `true` for new teams and preserve the existing value for updates.
 
 Allowed `Cluster` attributes:
 
@@ -309,8 +310,6 @@ General behavior:
   - no additional character whitelist is applied by the server today
   - leading or trailing spaces are currently accepted
 - `Name`, `X`, `Y`, `Radius`, `Gravity` are common required attributes
-- mobile NPC kinds `SpaceJellyFish`, `AiFreighter`, `AiShip`, and `AiProbe` currently require `Gravity="0.0012"`
-- stationary NPC kinds `AiBase` and `AiTurret` currently require `Gravity="0"`
 - all power-up unit kinds additionally require `Amount > 0` and `RespawnTicks > 0`
 - `Type` values use the enum member names from the connector, for example `OceanWorld`, `RockyMoon` or `MetallicSlug`
 - `Radius > 0`
@@ -804,7 +803,6 @@ Additional required attributes:
 Constraints and behavior:
 
 - `Team` must exist and may be spectators
-- `Gravity` must currently be exactly `0.0012`
 - `Hull > 0`
 - `RepairPerTick >= 0`
 - `RespawnTicks >= 0`
@@ -845,7 +843,6 @@ Additional required attributes:
 - `RespawnTicks`
 - `RespawnPlayerDistance`
 - `RailSpeed`
-- `RailDamage`
 - `RailReloadTicks`
 - `InterceptorSpeed`
 - `InterceptorReloadTicks`
@@ -853,10 +850,8 @@ Additional required attributes:
 Constraints and behavior:
 
 - `Team` must exist and may be spectators
-- `Gravity` must currently be exactly `0`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `RailSpeed > 0`
-- `RailDamage > 0`
 - `RailReloadTicks >= 0`
 - `InterceptorSpeed > 0`
 - `InterceptorReloadTicks >= 0`
@@ -872,7 +867,6 @@ Recommended starting values:
 - `RespawnTicks`: `300..900`
 - `RespawnPlayerDistance`: `800..1200`
 - `RailSpeed`: `8..12`
-- `RailDamage`: `8..18`
 - `RailReloadTicks`: `8..20`
 - `InterceptorSpeed`: `7..10`
 - `InterceptorReloadTicks`: `6..12`
@@ -880,7 +874,7 @@ Recommended starting values:
 Example:
 
 ```xml
-<AiBase Name="BlueBaseA" Team="0" X="-220" Y="100" Radius="22" Gravity="0" Hull="120" RepairPerTick="0.03" RespawnTicks="480" RespawnPlayerDistance="900" RailSpeed="10.2" RailDamage="14" RailReloadTicks="12" InterceptorSpeed="8.4" InterceptorReloadTicks="8" />
+<AiBase Name="BlueBaseA" Team="0" X="-220" Y="100" Radius="22" Gravity="0" Hull="120" RepairPerTick="0.03" RespawnTicks="480" RespawnPlayerDistance="900" RailSpeed="10.2" RailReloadTicks="12" InterceptorSpeed="8.4" InterceptorReloadTicks="8" />
 ```
 
 ### AiTurret
@@ -898,7 +892,6 @@ Additional required attributes:
 Constraints and behavior:
 
 - `Team` must exist and may be spectators
-- `Gravity` must currently be exactly `0`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `ShotSpeed > 0`
 - `ShotDamage > 0`
@@ -951,7 +944,6 @@ Allowed `Waypoint` attributes:
 Constraints and behavior:
 
 - `Team` must exist and may be spectators
-- `Gravity` must currently be exactly `0.0012`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `InterceptorSpeed > 0`
 - `InterceptorReloadTicks >= 0`
@@ -1000,14 +992,14 @@ Additional required attributes:
 Constraints and behavior:
 
 - `Team` must exist and may be spectators
-- `Gravity` must currently be exactly `0.0012`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `ActionRadius >= 0`
 - `Speed > 0`
 - `ShotSpeed > 0`
 - `ShotDamage > 0`
 - `Team="12"` means the AI ship treats every non-spectator valid target as hostile
-- `AiShip` roams around its configured `X` / `Y`; there is no separate XML action-center attribute
+- `AiShip` uses its configured `X` / `Y` as patrol center; there is no separate XML action-center attribute
+- initial spawn and respawn choose a passable random point inside `ActionRadius`
 - effective target range is derived automatically from the shared `30`-tick prediction horizon
 
 Recommended starting values:
@@ -1043,7 +1035,6 @@ Additional required attributes:
 Constraints and behavior:
 
 - `Team` must exist and may be spectators
-- `Gravity` must currently be exactly `0.0012`
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `ActionRadius >= 0`
 - `Speed > 0`

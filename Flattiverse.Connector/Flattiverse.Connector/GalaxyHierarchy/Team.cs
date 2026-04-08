@@ -17,6 +17,7 @@ public class Team : INamedUnit
     private byte _red;
     private byte _green;
     private byte _blue;
+    private bool _playable;
     private readonly Score _score;
     
     private bool _active;
@@ -26,7 +27,7 @@ public class Team : INamedUnit
     /// </summary>
     public readonly Galaxy Galaxy;
 
-    internal Team(Galaxy galaxy, byte id, string name, byte red, byte green, byte blue)
+    internal Team(Galaxy galaxy, byte id, string name, byte red, byte green, byte blue, bool playable)
     {
         Galaxy = galaxy;
         Id = id;
@@ -37,6 +38,7 @@ public class Team : INamedUnit
         _red = red;
         _green = green;
         _blue = blue;
+        _playable = playable;
 
         _active = true;
     }
@@ -55,13 +57,14 @@ public class Team : INamedUnit
         });
     }
     
-    internal void Update(string name, byte red, byte green, byte blue)
+    internal void Update(string name, byte red, byte green, byte blue, bool playable)
     {
         _name = name;
 
         _red = red;
         _green = green;
         _blue = blue;
+        _playable = playable;
     }
     
     internal void Deactivate()
@@ -93,6 +96,11 @@ public class Team : INamedUnit
     /// Current live team score.
     /// </summary>
     public Score Score => _score;
+
+    /// <summary>
+    /// True if regular players may join this team.
+    /// </summary>
+    public bool Playable => _playable;
     
     /// <summary>
     /// True as long as the team is active.

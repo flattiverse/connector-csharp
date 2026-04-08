@@ -30,12 +30,18 @@ public readonly struct TeamSnapshot
     /// </summary>
     public readonly byte Blue;
 
-    internal TeamSnapshot(byte id, string name, byte red, byte green, byte blue)
+    /// <summary>
+    /// True if regular players may join this team.
+    /// </summary>
+    public readonly bool Playable;
+
+    internal TeamSnapshot(byte id, string name, byte red, byte green, byte blue, bool playable)
     {
         Id = id;
         Name = name;
         Red = red;
         Green = green;
         Blue = blue;
+        Playable = playable;
     }
 }
