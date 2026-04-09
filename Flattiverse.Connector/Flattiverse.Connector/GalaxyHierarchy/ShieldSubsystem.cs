@@ -33,6 +33,47 @@ public class ShieldSubsystem : Subsystem
         _consumedNeutrinosThisTick = 0f;
     }
 
+    internal ShieldSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _maximum = 0f;
+        _minimumRate = 0f;
+        _maximumRate = 0f;
+        _current = 0f;
+        _active = false;
+        _rate = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable shield state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximum) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float current) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            throw new InvalidDataException("Couldn't read controllable shield state.");
+
+        SetMaximum(maximum);
+        SetRateCapabilities(minimumRate, maximumRate);
+        UpdateRuntime(current, active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        SetReportedTier(tier);
+    }
+
     internal static ShieldSubsystem CreateClassicShipShield(Controllable controllable)
     {
         return new ShieldSubsystem(controllable, "Shield", true, SubsystemSlot.Shield);
@@ -277,6 +318,25 @@ public class ShieldSubsystem : Subsystem
         _consumedIonsThisTick = consumedIonsThisTick;
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float current) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime(current, active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

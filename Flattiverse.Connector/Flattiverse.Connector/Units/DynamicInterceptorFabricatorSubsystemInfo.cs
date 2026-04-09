@@ -10,4 +10,8 @@ public class DynamicInterceptorFabricatorSubsystemInfo : DynamicShotFabricatorSu
     internal DynamicInterceptorFabricatorSubsystemInfo()
     {
     }
+
+    internal DynamicInterceptorFabricatorSubsystemInfo(DynamicInterceptorFabricatorSubsystemInfo other) : base(other)
+    {
+    }
 }

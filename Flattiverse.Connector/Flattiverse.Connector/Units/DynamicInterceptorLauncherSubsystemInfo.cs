@@ -10,4 +10,8 @@ public class DynamicInterceptorLauncherSubsystemInfo : DynamicShotLauncherSubsys
     internal DynamicInterceptorLauncherSubsystemInfo()
     {
     }
+
+    internal DynamicInterceptorLauncherSubsystemInfo(DynamicInterceptorLauncherSubsystemInfo other) : base(other)
+    {
+    }
 }

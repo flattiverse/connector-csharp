@@ -15,6 +15,11 @@ public class StaticScannerSubsystem : DynamicScannerSubsystem
     {
     }
 
+    internal StaticScannerSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, 0, reader, slot)
+    {
+    }
+
     public float MaximumAngleOffset
     {
         get { return Exists ? ModernShipGeometry.ScannerMaximumAngleOffset : 0f; }

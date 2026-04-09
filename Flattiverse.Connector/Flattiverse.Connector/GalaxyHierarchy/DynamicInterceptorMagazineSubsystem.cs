@@ -1,4 +1,5 @@
 using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
@@ -9,6 +10,11 @@ public class DynamicInterceptorMagazineSubsystem : DynamicShotMagazineSubsystem
 {
     internal DynamicInterceptorMagazineSubsystem(Controllable controllable, string name, bool exists, SubsystemSlot slot) :
         base(controllable, name, exists, slot)
+    {
+    }
+
+    internal DynamicInterceptorMagazineSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
     {
     }
 

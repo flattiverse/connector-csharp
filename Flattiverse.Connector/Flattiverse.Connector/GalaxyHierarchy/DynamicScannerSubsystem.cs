@@ -46,6 +46,59 @@ public class DynamicScannerSubsystem : Subsystem
         ResetRuntime();
     }
 
+    internal DynamicScannerSubsystem(Controllable controllable, string name, byte id, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _id = id;
+        _maximumWidth = 0f;
+        _maximumLength = 0f;
+        _widthSpeed = 0f;
+        _lengthSpeed = 0f;
+        _angleSpeed = 0f;
+        _currentWidth = 0f;
+        _currentLength = 0f;
+        _currentAngle = 0f;
+        _targetWidth = 0f;
+        _targetLength = 0f;
+        _targetAngle = 0f;
+        _active = false;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximumWidth) ||
+            !reader.Read(out float maximumLength) ||
+            !reader.Read(out float widthSpeed) ||
+            !reader.Read(out float lengthSpeed) ||
+            !reader.Read(out float angleSpeed) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out float currentWidth) ||
+            !reader.Read(out float currentLength) ||
+            !reader.Read(out float currentAngle) ||
+            !reader.Read(out float targetWidth) ||
+            !reader.Read(out float targetLength) ||
+            !reader.Read(out float targetAngle) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetCapabilities(maximumWidth, maximumLength, widthSpeed, lengthSpeed, angleSpeed);
+        UpdateRuntime(active != 0, currentWidth, currentLength, currentAngle, targetWidth, targetLength, targetAngle,
+            (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
+        SetReportedTier(tier);
+    }
+
     internal static DynamicScannerSubsystem CreateClassicShipPrimaryScanner(Controllable controllable)
     {
         return new DynamicScannerSubsystem(controllable, "MainScanner", 0, true, 90f, 300f, 2.5f, 10f, 5f, SubsystemSlot.PrimaryScanner);
@@ -338,6 +391,29 @@ public class DynamicScannerSubsystem : Subsystem
         _consumedIonsThisTick = 0f;
         _consumedNeutrinosThisTick = 0f;
         ResetRuntimeStatus();
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out byte active) ||
+            !reader.Read(out float currentWidth) ||
+            !reader.Read(out float currentLength) ||
+            !reader.Read(out float currentAngle) ||
+            !reader.Read(out float targetWidth) ||
+            !reader.Read(out float targetLength) ||
+            !reader.Read(out float targetAngle) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime(active != 0, currentWidth, currentLength, currentAngle, targetWidth, targetLength, targetAngle,
+            (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
+        return true;
     }
 
     internal void UpdateRuntime(bool active, float currentWidth, float currentLength, float currentAngle, float targetWidth,

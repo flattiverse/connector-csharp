@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -26,6 +28,19 @@ public class ShieldSubsystemInfo
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
         _consumedNeutrinosThisTick = 0f;
+    }
+
+    internal ShieldSubsystemInfo(ShieldSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _maximum = other._maximum;
+        _current = other._current;
+        _active = other._active;
+        _rate = other._rate;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
     }
 
     /// <summary>
@@ -103,17 +118,38 @@ public class ShieldSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float maximum, float current, bool active, float rate, SubsystemStatus status, float consumedEnergyThisTick,
-        float consumedIonsThisTick, float consumedNeutrinosThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _maximum = exists ? maximum : 0f;
-        _current = exists ? current : 0f;
-        _active = exists && active;
-        _rate = exists ? rate : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _maximum = 0f;
+            _current = 0f;
+            _active = false;
+            _rate = 0f;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _maximum) ||
+            !reader.Read(out _current) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out _rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick))
+            return false;
+
+        _active = active != 0;
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

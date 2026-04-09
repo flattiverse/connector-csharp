@@ -14,6 +14,11 @@ public class ModernRailgunSubsystem : ClassicRailgunSubsystem
     {
     }
 
+    internal ModernRailgunSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
+    {
+    }
+
     public async Task Fire()
     {
         if (!Controllable.Active || !Exists)

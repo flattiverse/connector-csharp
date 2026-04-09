@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -28,6 +30,20 @@ public class NebulaCollectorSubsystemInfo
         _consumedNeutrinosThisTick = 0f;
         _collectedThisTick = 0f;
         _collectedHueThisTick = 0f;
+    }
+
+    internal NebulaCollectorSubsystemInfo(NebulaCollectorSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _minimumRate = other._minimumRate;
+        _maximumRate = other._maximumRate;
+        _rate = other._rate;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+        _collectedThisTick = other._collectedThisTick;
+        _collectedHueThisTick = other._collectedHueThisTick;
     }
 
     /// <summary>
@@ -114,19 +130,39 @@ public class NebulaCollectorSubsystemInfo
         get { return _collectedHueThisTick; }
     }
 
-    internal void Update(bool exists, float minimumRate, float maximumRate, float rate, SubsystemStatus status,
-        float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick, float collectedThisTick,
-        float collectedHueThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _minimumRate = exists ? minimumRate : 0f;
-        _maximumRate = exists ? maximumRate : 0f;
-        _rate = exists ? rate : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
-        _collectedThisTick = exists ? collectedThisTick : 0f;
-        _collectedHueThisTick = exists ? collectedHueThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _minimumRate = 0f;
+            _maximumRate = 0f;
+            _rate = 0f;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            _collectedThisTick = 0f;
+            _collectedHueThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _minimumRate) ||
+            !reader.Read(out _maximumRate) ||
+            !reader.Read(out _rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick) ||
+            !reader.Read(out _collectedThisTick) ||
+            !reader.Read(out _collectedHueThisTick))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

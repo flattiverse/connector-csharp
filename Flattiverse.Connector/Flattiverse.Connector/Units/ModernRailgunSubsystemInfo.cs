@@ -8,4 +8,8 @@ public class ModernRailgunSubsystemInfo : ClassicRailgunSubsystemInfo
     internal ModernRailgunSubsystemInfo()
     {
     }
+
+    internal ModernRailgunSubsystemInfo(ModernRailgunSubsystemInfo other) : base(other)
+    {
+    }
 }

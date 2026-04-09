@@ -35,6 +35,48 @@ public class ResourceMinerSubsystem : Subsystem
         _minedSiliconThisTick = 0f;
     }
 
+    internal ResourceMinerSubsystem(Controllable controllable, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, "ResourceMiner", false, slot)
+    {
+        _minimumRate = 0f;
+        _maximumRate = 0f;
+        _rate = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+        _minedMetalThisTick = 0f;
+        _minedCarbonThisTick = 0f;
+        _minedHydrogenThisTick = 0f;
+        _minedSiliconThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable resource miner state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float minedMetalThisTick) ||
+            !reader.Read(out float minedCarbonThisTick) ||
+            !reader.Read(out float minedHydrogenThisTick) ||
+            !reader.Read(out float minedSiliconThisTick))
+            throw new InvalidDataException("Couldn't read controllable resource miner state.");
+
+        SetCapabilities(minimumRate, maximumRate);
+        UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            minedMetalThisTick, minedCarbonThisTick, minedHydrogenThisTick, minedSiliconThisTick);
+        SetReportedTier(tier);
+    }
+
     internal static ResourceMinerSubsystem CreateClassicShipResourceMiner(Controllable controllable)
     {
         return new ResourceMinerSubsystem(controllable, true, SubsystemSlot.ResourceMiner);
@@ -239,6 +281,27 @@ public class ResourceMinerSubsystem : Subsystem
         _minedHydrogenThisTick = minedHydrogenThisTick;
         _minedSiliconThisTick = minedSiliconThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float minedMetalThisTick) ||
+            !reader.Read(out float minedCarbonThisTick) ||
+            !reader.Read(out float minedHydrogenThisTick) ||
+            !reader.Read(out float minedSiliconThisTick))
+            return false;
+
+        UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            minedMetalThisTick, minedCarbonThisTick, minedHydrogenThisTick, minedSiliconThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

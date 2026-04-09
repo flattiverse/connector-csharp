@@ -14,6 +14,11 @@ public class DynamicInterceptorFabricatorSubsystem : DynamicShotFabricatorSubsys
     {
     }
 
+    internal DynamicInterceptorFabricatorSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
+    {
+    }
+
     /// <summary>
     /// Sets the interceptor fabrication rate on the server.
     /// </summary>

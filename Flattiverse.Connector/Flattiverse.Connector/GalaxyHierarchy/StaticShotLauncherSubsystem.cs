@@ -14,6 +14,11 @@ public class StaticShotLauncherSubsystem : DynamicShotLauncherSubsystem
     {
     }
 
+    internal StaticShotLauncherSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
+    {
+    }
+
     public float RelativeSpeed
     {
         get { return RelativeMovement.Length; }

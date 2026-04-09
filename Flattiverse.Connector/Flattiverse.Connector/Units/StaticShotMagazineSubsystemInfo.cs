@@ -8,4 +8,8 @@ public class StaticShotMagazineSubsystemInfo : DynamicShotMagazineSubsystemInfo
     internal StaticShotMagazineSubsystemInfo()
     {
     }
+
+    internal StaticShotMagazineSubsystemInfo(StaticShotMagazineSubsystemInfo other) : base(other)
+    {
+    }
 }

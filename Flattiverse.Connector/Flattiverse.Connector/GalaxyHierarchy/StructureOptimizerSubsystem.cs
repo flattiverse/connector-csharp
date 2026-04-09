@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
 /// <summary>
@@ -12,6 +14,26 @@ public class StructureOptimizerSubsystem : Subsystem
     {
         _reductionPercent = 0f;
         SetReductionPercent(reductionPercent);
+    }
+
+    internal StructureOptimizerSubsystem(Controllable controllable, PacketReader reader) :
+        base(controllable, "StructureOptimizer", false, SubsystemSlot.StructureOptimizer)
+    {
+        _reductionPercent = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable structure optimizer state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) || !reader.Read(out float reductionPercent))
+            throw new InvalidDataException("Couldn't read controllable structure optimizer state.");
+
+        SetReductionPercent(reductionPercent);
+        SetReportedTier(tier);
     }
 
     /// <summary>

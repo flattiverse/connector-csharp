@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -43,6 +45,27 @@ public class DynamicShotLauncherSubsystemInfo
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
         _consumedNeutrinosThisTick = 0f;
+    }
+
+    internal DynamicShotLauncherSubsystemInfo(DynamicShotLauncherSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _minimumRelativeMovement = other._minimumRelativeMovement;
+        _maximumRelativeMovement = other._maximumRelativeMovement;
+        _minimumTicks = other._minimumTicks;
+        _maximumTicks = other._maximumTicks;
+        _minimumLoad = other._minimumLoad;
+        _maximumLoad = other._maximumLoad;
+        _minimumDamage = other._minimumDamage;
+        _maximumDamage = other._maximumDamage;
+        _relativeMovement = new Vector(other._relativeMovement);
+        _ticks = other._ticks;
+        _load = other._load;
+        _damage = other._damage;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
     }
 
     /// <summary>
@@ -181,26 +204,53 @@ public class DynamicShotLauncherSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float minimumRelativeMovement, float maximumRelativeMovement, ushort minimumTicks, ushort maximumTicks,
-        float minimumLoad, float maximumLoad, float minimumDamage, float maximumDamage, Vector relativeMovement, ushort ticks, float load,
-        float damage, SubsystemStatus status, float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _minimumRelativeMovement = exists ? minimumRelativeMovement : 0f;
-        _maximumRelativeMovement = exists ? maximumRelativeMovement : 0f;
-        _minimumTicks = exists ? minimumTicks : (ushort)0;
-        _maximumTicks = exists ? maximumTicks : (ushort)0;
-        _minimumLoad = exists ? minimumLoad : 0f;
-        _maximumLoad = exists ? maximumLoad : 0f;
-        _minimumDamage = exists ? minimumDamage : 0f;
-        _maximumDamage = exists ? maximumDamage : 0f;
-        _relativeMovement = exists ? new Vector(relativeMovement) : new Vector();
-        _ticks = exists ? ticks : (ushort)0;
-        _load = exists ? load : 0f;
-        _damage = exists ? damage : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _minimumRelativeMovement = 0f;
+            _maximumRelativeMovement = 0f;
+            _minimumTicks = 0;
+            _maximumTicks = 0;
+            _minimumLoad = 0f;
+            _maximumLoad = 0f;
+            _minimumDamage = 0f;
+            _maximumDamage = 0f;
+            _relativeMovement = new Vector();
+            _ticks = 0;
+            _load = 0f;
+            _damage = 0f;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _minimumRelativeMovement) ||
+            !reader.Read(out _maximumRelativeMovement) ||
+            !reader.Read(out _minimumTicks) ||
+            !reader.Read(out _maximumTicks) ||
+            !reader.Read(out _minimumLoad) ||
+            !reader.Read(out _maximumLoad) ||
+            !reader.Read(out _minimumDamage) ||
+            !reader.Read(out _maximumDamage) ||
+            !Vector.FromReader(reader, out _relativeMovement) ||
+            !reader.Read(out _ticks) ||
+            !reader.Read(out _load) ||
+            !reader.Read(out _damage) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

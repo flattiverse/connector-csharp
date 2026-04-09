@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -32,6 +34,22 @@ public class ResourceMinerSubsystemInfo
         _minedCarbonThisTick = 0f;
         _minedHydrogenThisTick = 0f;
         _minedSiliconThisTick = 0f;
+    }
+
+    internal ResourceMinerSubsystemInfo(ResourceMinerSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _minimumRate = other._minimumRate;
+        _maximumRate = other._maximumRate;
+        _rate = other._rate;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+        _minedMetalThisTick = other._minedMetalThisTick;
+        _minedCarbonThisTick = other._minedCarbonThisTick;
+        _minedHydrogenThisTick = other._minedHydrogenThisTick;
+        _minedSiliconThisTick = other._minedSiliconThisTick;
     }
 
     /// <summary>
@@ -131,21 +149,43 @@ public class ResourceMinerSubsystemInfo
         get { return _minedSiliconThisTick; }
     }
 
-    internal void Update(bool exists, float minimumRate, float maximumRate, float rate, SubsystemStatus status, float consumedEnergyThisTick,
-        float consumedIonsThisTick, float consumedNeutrinosThisTick, float minedMetalThisTick, float minedCarbonThisTick,
-        float minedHydrogenThisTick, float minedSiliconThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _minimumRate = exists ? minimumRate : 0f;
-        _maximumRate = exists ? maximumRate : 0f;
-        _rate = exists ? rate : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
-        _minedMetalThisTick = exists ? minedMetalThisTick : 0f;
-        _minedCarbonThisTick = exists ? minedCarbonThisTick : 0f;
-        _minedHydrogenThisTick = exists ? minedHydrogenThisTick : 0f;
-        _minedSiliconThisTick = exists ? minedSiliconThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _minimumRate = 0f;
+            _maximumRate = 0f;
+            _rate = 0f;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            _minedMetalThisTick = 0f;
+            _minedCarbonThisTick = 0f;
+            _minedHydrogenThisTick = 0f;
+            _minedSiliconThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _minimumRate) ||
+            !reader.Read(out _maximumRate) ||
+            !reader.Read(out _rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick) ||
+            !reader.Read(out _minedMetalThisTick) ||
+            !reader.Read(out _minedCarbonThisTick) ||
+            !reader.Read(out _minedHydrogenThisTick) ||
+            !reader.Read(out _minedSiliconThisTick))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

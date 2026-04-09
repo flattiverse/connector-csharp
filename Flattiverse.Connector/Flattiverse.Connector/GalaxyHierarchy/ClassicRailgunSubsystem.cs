@@ -31,6 +31,44 @@ public class ClassicRailgunSubsystem : Subsystem
         _consumedNeutrinosThisTick = 0f;
     }
 
+    internal ClassicRailgunSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _projectileSpeed = 0f;
+        _projectileLifetime = 0;
+        _energyCost = 0f;
+        _metalCost = 0f;
+        _direction = RailgunDirection.None;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float projectileSpeed) ||
+            !reader.Read(out ushort projectileLifetime) ||
+            !reader.Read(out float energyCost) ||
+            !reader.Read(out float metalCost) ||
+            !reader.Read(out byte direction) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetCapabilities(projectileSpeed, projectileLifetime, energyCost, metalCost);
+        UpdateRuntime((RailgunDirection)direction, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        SetReportedTier(tier);
+    }
+
     /// <summary>
     /// Rail projectile relative speed.
     /// </summary>
@@ -169,6 +207,23 @@ public class ClassicRailgunSubsystem : Subsystem
         _consumedIonsThisTick = consumedIonsThisTick;
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out byte direction) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime((RailgunDirection)direction, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

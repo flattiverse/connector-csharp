@@ -24,72 +24,20 @@ public class ModernShipControllable : Controllable
 
     internal ModernShipControllable(Cluster cluster, byte id, string name, PacketReader reader) : base(id, name, cluster, reader)
     {
-        _hull = HullSubsystem.CreateClassicShipHull(this);
-        _shield = ShieldSubsystem.CreateClassicShipShield(this);
-        _armor = ArmorSubsystem.CreateClassicShipArmor(this);
-        _repair = RepairSubsystem.CreateClassicShipRepair(this);
-        _cargo = CargoSubsystem.CreateClassicShipCargo(this);
-        _resourceMiner = ResourceMinerSubsystem.CreateClassicShipResourceMiner(this);
-        _structureOptimizer = new StructureOptimizerSubsystem(this, false, 0f);
-        _nebulaCollector = NebulaCollectorSubsystem.CreateClassicShipNebulaCollector(this);
-        _energyBattery = BatterySubsystem.CreateClassicShipEnergyBattery(this);
-        _ionBattery = BatterySubsystem.CreateMissingBattery(this, "IonBattery", SubsystemSlot.IonBattery);
-        _neutrinoBattery = BatterySubsystem.CreateMissingBattery(this, "NeutrinoBattery", SubsystemSlot.NeutrinoBattery);
-        _energyCell = EnergyCellSubsystem.CreateClassicShipEnergyCell(this);
-        _ionCell = EnergyCellSubsystem.CreateMissingCell(this, "IonCell", SubsystemSlot.IonCell);
-        _neutrinoCell = EnergyCellSubsystem.CreateMissingCell(this, "NeutrinoCell", SubsystemSlot.NeutrinoCell);
-        _jumpDrive = new JumpDriveSubsystem(this, true);
-        _equippedCrystals = new string[3];
-
-        ReadInitialState(reader);
-
-        if (!ReadNebulaCollectorInitialState(reader, out NebulaCollectorState nebulaCollectorState))
-            throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
-
-        EngineState[] engineStates = new EngineState[ModernShipGeometry.EngineSlots.Length];
-        ScannerState[] scannerStates = new ScannerState[ModernShipGeometry.ScannerSlots.Length];
-        LauncherState[] shotLauncherStates = new LauncherState[ModernShipGeometry.ShotLauncherSlots.Length];
-        MagazineState[] shotMagazineStates = new MagazineState[ModernShipGeometry.ShotMagazineSlots.Length];
-        FabricatorState[] shotFabricatorStates = new FabricatorState[ModernShipGeometry.ShotFabricatorSlots.Length];
-        LauncherState[] interceptorLauncherStates = new LauncherState[2];
-        MagazineState[] interceptorMagazineStates = new MagazineState[2];
-        FabricatorState[] interceptorFabricatorStates = new FabricatorState[2];
-        RailgunState[] railgunStates = new RailgunState[ModernShipGeometry.RailgunSlots.Length];
-
-        for (int index = 0; index < scannerStates.Length; index++)
-            if (!ReadScannerState(reader, out scannerStates[index]))
-                throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
-
-        for (int index = 0; index < engineStates.Length; index++)
-            if (!ReadEngineState(reader, out engineStates[index]))
-                throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
-
-        for (int index = 0; index < shotLauncherStates.Length; index++)
-            if (!ReadLauncherState(reader, out shotLauncherStates[index]) ||
-                !ReadMagazineState(reader, out shotMagazineStates[index]) ||
-                !ReadFabricatorState(reader, out shotFabricatorStates[index]))
-                throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
-
-        for (int index = 0; index < interceptorLauncherStates.Length; index++)
-            if (!ReadLauncherState(reader, out interceptorLauncherStates[index]) ||
-                !ReadMagazineState(reader, out interceptorMagazineStates[index]) ||
-                !ReadFabricatorState(reader, out interceptorFabricatorStates[index]))
-                throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
-
-        for (int index = 0; index < railgunStates.Length; index++)
-            if (!ReadRailgunState(reader, out railgunStates[index]))
-                throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
-
-        byte jumpDriveTier = 0;
-        float jumpDriveEnergyCost = 0f;
-
-        if (!reader.Read(out byte jumpDriveExists) ||
-            (jumpDriveExists != 0 && !reader.Read(out jumpDriveTier)) ||
-            (jumpDriveExists != 0 && !reader.Read(out jumpDriveEnergyCost)) ||
-            !reader.Read(out _equippedCrystals[0]) ||
-            !reader.Read(out _equippedCrystals[1]) ||
-            !reader.Read(out _equippedCrystals[2]))
-            throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
+        _energyBattery = new BatterySubsystem(this, "EnergyBattery", reader, SubsystemSlot.EnergyBattery);
+        _ionBattery = new BatterySubsystem(this, "IonBattery", reader, SubsystemSlot.IonBattery);
+        _neutrinoBattery = new BatterySubsystem(this, "NeutrinoBattery", reader, SubsystemSlot.NeutrinoBattery);
+        _energyCell = new EnergyCellSubsystem(this, "EnergyCell", reader, SubsystemSlot.EnergyCell);
+        _ionCell = new EnergyCellSubsystem(this, "IonCell", reader, SubsystemSlot.IonCell);
+        _neutrinoCell = new EnergyCellSubsystem(this, "NeutrinoCell", reader, SubsystemSlot.NeutrinoCell);
+        _hull = new HullSubsystem(this, "Hull", reader, SubsystemSlot.Hull);
+        _shield = new ShieldSubsystem(this, "Shield", reader, SubsystemSlot.Shield);
+        _armor = new ArmorSubsystem(this, "Armor", reader, SubsystemSlot.Armor);
+        _repair = new RepairSubsystem(this, "Repair", reader, SubsystemSlot.Repair);
+        _cargo = new CargoSubsystem(this, reader, SubsystemSlot.Cargo);
+        _resourceMiner = new ResourceMinerSubsystem(this, reader, SubsystemSlot.ResourceMiner);
+        _structureOptimizer = new StructureOptimizerSubsystem(this, reader);
+        _nebulaCollector = new NebulaCollectorSubsystem(this, reader, SubsystemSlot.NebulaCollector);
 
         _engines = new ModernShipEngineSubsystem[ModernShipGeometry.EngineSlots.Length];
         _scanners = new StaticScannerSubsystem[ModernShipGeometry.ScannerSlots.Length];
@@ -100,26 +48,58 @@ public class ModernShipControllable : Controllable
         _interceptorMagazines = new StaticInterceptorMagazineSubsystem[2];
         _interceptorFabricators = new StaticInterceptorFabricatorSubsystem[2];
         _railguns = new ModernRailgunSubsystem[ModernShipGeometry.RailgunSlots.Length];
+        _equippedCrystals = new string[3];
 
-        InitializeEngines(engineStates);
-        InitializeScanners(scannerStates);
-        InitializeShots(shotLauncherStates, shotMagazineStates, shotFabricatorStates);
-        InitializeInterceptors(interceptorLauncherStates, interceptorMagazineStates, interceptorFabricatorStates);
-        InitializeRailguns(railgunStates);
-
-        _nebulaCollector.SetExists(nebulaCollectorState.Exists);
-        _nebulaCollector.SetCapabilities(nebulaCollectorState.MinimumRate, nebulaCollectorState.MaximumRate);
-        _nebulaCollector.UpdateRuntime(nebulaCollectorState.Rate, nebulaCollectorState.Status, nebulaCollectorState.ConsumedEnergyThisTick,
-            nebulaCollectorState.ConsumedIonsThisTick, nebulaCollectorState.ConsumedNeutrinosThisTick, nebulaCollectorState.CollectedThisTick,
-            nebulaCollectorState.CollectedHueThisTick);
-        _nebulaCollector.SetReportedTier(nebulaCollectorState.Tier);
-        _jumpDrive.SetExists(jumpDriveExists != 0);
-
-        if (jumpDriveExists != 0)
+        for (int index = 0; index < _scanners.Length; index++)
         {
-            _jumpDrive.SetEnergyCost(jumpDriveEnergyCost);
-            _jumpDrive.SetReportedTier(jumpDriveTier);
+            string suffix = GetSlotSuffix(ModernShipGeometry.ScannerSlots[index]);
+            _scanners[index] = new StaticScannerSubsystem(this, $"Scanner{suffix}", reader, ModernShipGeometry.ScannerSlots[index]);
         }
+
+        for (int index = 0; index < _engines.Length; index++)
+        {
+            string suffix = GetSlotSuffix(ModernShipGeometry.EngineSlots[index]);
+            _engines[index] = new ModernShipEngineSubsystem(this, $"Engine{suffix}", reader, ModernShipGeometry.EngineSlots[index]);
+        }
+
+        for (int index = 0; index < _shotLaunchers.Length; index++)
+        {
+            string suffix = GetSlotSuffix(ModernShipGeometry.ShotLauncherSlots[index]);
+            _shotLaunchers[index] = new StaticShotLauncherSubsystem(this, $"ShotLauncher{suffix}", reader,
+                ModernShipGeometry.ShotLauncherSlots[index]);
+            _shotMagazines[index] = new StaticShotMagazineSubsystem(this, $"ShotMagazine{suffix}", reader,
+                ModernShipGeometry.ShotMagazineSlots[index]);
+            _shotFabricators[index] = new StaticShotFabricatorSubsystem(this, $"ShotFabricator{suffix}", reader,
+                ModernShipGeometry.ShotFabricatorSlots[index]);
+        }
+
+        SubsystemSlot[] interceptorLauncherSlots = { SubsystemSlot.StaticInterceptorLauncherE, SubsystemSlot.StaticInterceptorLauncherW };
+        SubsystemSlot[] interceptorMagazineSlots = { SubsystemSlot.StaticInterceptorMagazineE, SubsystemSlot.StaticInterceptorMagazineW };
+        SubsystemSlot[] interceptorFabricatorSlots = { SubsystemSlot.StaticInterceptorFabricatorE, SubsystemSlot.StaticInterceptorFabricatorW };
+
+        for (int index = 0; index < _interceptorLaunchers.Length; index++)
+        {
+            string suffix = GetSlotSuffix(interceptorLauncherSlots[index]);
+            _interceptorLaunchers[index] = new StaticInterceptorLauncherSubsystem(this, $"InterceptorLauncher{suffix}", reader,
+                interceptorLauncherSlots[index]);
+            _interceptorMagazines[index] = new StaticInterceptorMagazineSubsystem(this, $"InterceptorMagazine{suffix}", reader,
+                interceptorMagazineSlots[index]);
+            _interceptorFabricators[index] = new StaticInterceptorFabricatorSubsystem(this, $"InterceptorFabricator{suffix}", reader,
+                interceptorFabricatorSlots[index]);
+        }
+
+        for (int index = 0; index < _railguns.Length; index++)
+        {
+            string suffix = GetSlotSuffix(ModernShipGeometry.RailgunSlots[index]);
+            _railguns[index] = new ModernRailgunSubsystem(this, $"Railgun{suffix}", reader, ModernShipGeometry.RailgunSlots[index]);
+        }
+
+        _jumpDrive = new JumpDriveSubsystem(this, reader);
+
+        if (!reader.Read(out _equippedCrystals[0]) ||
+            !reader.Read(out _equippedCrystals[1]) ||
+            !reader.Read(out _equippedCrystals[2]))
+            throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
     }
 
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
@@ -261,127 +241,35 @@ public class ModernShipControllable : Controllable
 
     private protected override void ReadRuntime(PacketReader reader)
     {
-        NebulaCollectorState nebulaCollectorState = default;
-
-        if (_nebulaCollector.Exists && !ReadNebulaCollectorRuntime(reader, out nebulaCollectorState))
+        if (!_nebulaCollector.Update(reader))
             throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
-        if (_nebulaCollector.Exists)
-            _nebulaCollector.UpdateRuntime(nebulaCollectorState.Rate, nebulaCollectorState.Status, nebulaCollectorState.ConsumedEnergyThisTick,
-                nebulaCollectorState.ConsumedIonsThisTick, nebulaCollectorState.ConsumedNeutrinosThisTick, nebulaCollectorState.CollectedThisTick,
-                nebulaCollectorState.CollectedHueThisTick);
-
         for (int index = 0; index < _scanners.Length; index++)
-        {
-            if (!_scanners[index].Exists)
-                continue;
-
-            if (!ReadScannerRuntime(reader, out ScannerRuntime scannerRuntime))
+            if (!_scanners[index].Update(reader))
                 throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-            _scanners[index].UpdateRuntime(scannerRuntime.Active, scannerRuntime.CurrentWidth, scannerRuntime.CurrentLength,
-                scannerRuntime.CurrentAngle, scannerRuntime.TargetWidth, scannerRuntime.TargetLength, scannerRuntime.TargetAngle,
-                scannerRuntime.Status, scannerRuntime.ConsumedEnergyThisTick, scannerRuntime.ConsumedIonsThisTick,
-                scannerRuntime.ConsumedNeutrinosThisTick);
-        }
 
         for (int index = 0; index < _engines.Length; index++)
-        {
-            if (!_engines[index].Exists)
-                continue;
-
-            if (!ReadEngineRuntime(reader, out EngineRuntime engineRuntime))
+            if (!_engines[index].Update(reader))
                 throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-            _engines[index].UpdateRuntime(engineRuntime.CurrentThrust, engineRuntime.TargetThrust, engineRuntime.Status,
-                engineRuntime.ConsumedEnergyThisTick, engineRuntime.ConsumedIonsThisTick, engineRuntime.ConsumedNeutrinosThisTick);
-        }
 
         for (int index = 0; index < _shotLaunchers.Length; index++)
-        {
-            if (_shotLaunchers[index].Exists)
-            {
-                if (!ReadLauncherRuntime(reader, out LauncherRuntime launcherRuntime))
-                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-                _shotLaunchers[index].UpdateRuntime(launcherRuntime.RelativeMovement, launcherRuntime.Ticks, launcherRuntime.Load,
-                    launcherRuntime.Damage, launcherRuntime.Status, launcherRuntime.ConsumedEnergyThisTick,
-                    launcherRuntime.ConsumedIonsThisTick, launcherRuntime.ConsumedNeutrinosThisTick);
-            }
-
-            if (_shotMagazines[index].Exists)
-            {
-                if (!ReadMagazineRuntime(reader, out MagazineRuntime magazineRuntime))
-                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-                _shotMagazines[index].UpdateRuntime(magazineRuntime.CurrentShots, magazineRuntime.Status);
-            }
-
-            if (_shotFabricators[index].Exists)
-            {
-                if (!ReadFabricatorRuntime(reader, out FabricatorRuntime fabricatorRuntime))
-                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-                _shotFabricators[index].UpdateRuntime(fabricatorRuntime.Active, fabricatorRuntime.Rate, fabricatorRuntime.Status,
-                    fabricatorRuntime.ConsumedEnergyThisTick, fabricatorRuntime.ConsumedIonsThisTick,
-                    fabricatorRuntime.ConsumedNeutrinosThisTick);
-            }
-        }
+            if (!_shotLaunchers[index].Update(reader) ||
+                !_shotMagazines[index].Update(reader) ||
+                !_shotFabricators[index].Update(reader))
+                throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
         for (int index = 0; index < _interceptorLaunchers.Length; index++)
-        {
-            if (_interceptorLaunchers[index].Exists)
-            {
-                if (!ReadLauncherRuntime(reader, out LauncherRuntime launcherRuntime))
-                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-                _interceptorLaunchers[index].UpdateRuntime(launcherRuntime.RelativeMovement, launcherRuntime.Ticks, launcherRuntime.Load,
-                    launcherRuntime.Damage, launcherRuntime.Status, launcherRuntime.ConsumedEnergyThisTick,
-                    launcherRuntime.ConsumedIonsThisTick, launcherRuntime.ConsumedNeutrinosThisTick);
-            }
-
-            if (_interceptorMagazines[index].Exists)
-            {
-                if (!ReadMagazineRuntime(reader, out MagazineRuntime magazineRuntime))
-                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-                _interceptorMagazines[index].UpdateRuntime(magazineRuntime.CurrentShots, magazineRuntime.Status);
-            }
-
-            if (_interceptorFabricators[index].Exists)
-            {
-                if (!ReadFabricatorRuntime(reader, out FabricatorRuntime fabricatorRuntime))
-                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-                _interceptorFabricators[index].UpdateRuntime(fabricatorRuntime.Active, fabricatorRuntime.Rate, fabricatorRuntime.Status,
-                    fabricatorRuntime.ConsumedEnergyThisTick, fabricatorRuntime.ConsumedIonsThisTick,
-                    fabricatorRuntime.ConsumedNeutrinosThisTick);
-            }
-        }
+            if (!_interceptorLaunchers[index].Update(reader) ||
+                !_interceptorMagazines[index].Update(reader) ||
+                !_interceptorFabricators[index].Update(reader))
+                throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
         for (int index = 0; index < _railguns.Length; index++)
-        {
-            if (!_railguns[index].Exists)
-                continue;
-
-            if (!ReadRailgunRuntime(reader, out RailgunRuntime railgunRuntime))
+            if (!_railguns[index].Update(reader))
                 throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
-            _railguns[index].UpdateRuntime(railgunRuntime.Direction, railgunRuntime.Status, railgunRuntime.ConsumedEnergyThisTick,
-                railgunRuntime.ConsumedIonsThisTick, railgunRuntime.ConsumedNeutrinosThisTick);
-        }
-
-        if (_jumpDrive.Exists)
-        {
-            if (!reader.Read(out byte jumpDriveStatus) ||
-                !reader.Read(out float jumpDriveConsumedEnergyThisTick) ||
-                !reader.Read(out float jumpDriveConsumedIonsThisTick) ||
-                !reader.Read(out float jumpDriveConsumedNeutrinosThisTick))
-                throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
-
-            _jumpDrive.UpdateRuntime((SubsystemStatus)jumpDriveStatus, jumpDriveConsumedEnergyThisTick, jumpDriveConsumedIonsThisTick,
-                jumpDriveConsumedNeutrinosThisTick);
-        }
+        if (!_jumpDrive.Update(reader))
+            throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
     }
 
     private protected override void EmitRuntimeEvents()
@@ -413,490 +301,10 @@ public class ModernShipControllable : Controllable
             PushRuntimeEvent(_railguns[index].CreateRuntimeEvent());
     }
 
-    private void InitializeEngines(EngineState[] engineStates)
-    {
-        for (int index = 0; index < _engines.Length; index++)
-        {
-            string suffix = GetSlotSuffix(ModernShipGeometry.EngineSlots[index]);
-            ModernShipEngineSubsystem engine = new ModernShipEngineSubsystem(this, $"Engine{suffix}", engineStates[index].Exists,
-                ModernShipGeometry.EngineSlots[index]);
-            engine.SetCapabilities(engineStates[index].MaximumForwardThrust, engineStates[index].MaximumReverseThrust,
-                engineStates[index].MaximumThrustChangePerTick);
-            engine.UpdateRuntime(engineStates[index].CurrentThrust, engineStates[index].TargetThrust, engineStates[index].Status,
-                engineStates[index].ConsumedEnergyThisTick, engineStates[index].ConsumedIonsThisTick, engineStates[index].ConsumedNeutrinosThisTick);
-            engine.SetReportedTier(engineStates[index].Tier);
-            _engines[index] = engine;
-        }
-    }
-
-    private void InitializeScanners(ScannerState[] scannerStates)
-    {
-        for (int index = 0; index < _scanners.Length; index++)
-        {
-            string suffix = GetSlotSuffix(ModernShipGeometry.ScannerSlots[index]);
-            StaticScannerSubsystem scanner = new StaticScannerSubsystem(this, $"Scanner{suffix}", scannerStates[index].Exists,
-                scannerStates[index].MaximumWidth, scannerStates[index].MaximumLength, scannerStates[index].WidthSpeed,
-                scannerStates[index].LengthSpeed, scannerStates[index].AngleSpeed, ModernShipGeometry.ScannerSlots[index]);
-            scanner.UpdateRuntime(scannerStates[index].Active, scannerStates[index].CurrentWidth, scannerStates[index].CurrentLength,
-                scannerStates[index].CurrentAngle, scannerStates[index].TargetWidth, scannerStates[index].TargetLength,
-                scannerStates[index].TargetAngle, scannerStates[index].Status, scannerStates[index].ConsumedEnergyThisTick,
-                scannerStates[index].ConsumedIonsThisTick, scannerStates[index].ConsumedNeutrinosThisTick);
-            scanner.SetReportedTier(scannerStates[index].Tier);
-            _scanners[index] = scanner;
-        }
-    }
-
-    private void InitializeShots(LauncherState[] launcherStates, MagazineState[] magazineStates, FabricatorState[] fabricatorStates)
-    {
-        for (int index = 0; index < _shotLaunchers.Length; index++)
-        {
-            string suffix = GetSlotSuffix(ModernShipGeometry.ShotLauncherSlots[index]);
-            StaticShotMagazineSubsystem magazine = new StaticShotMagazineSubsystem(this, $"ShotMagazine{suffix}",
-                magazineStates[index].Exists, ModernShipGeometry.ShotMagazineSlots[index]);
-            StaticShotFabricatorSubsystem fabricator = new StaticShotFabricatorSubsystem(this, $"ShotFabricator{suffix}",
-                fabricatorStates[index].Exists, ModernShipGeometry.ShotFabricatorSlots[index]);
-            StaticShotLauncherSubsystem launcher = new StaticShotLauncherSubsystem(this, $"ShotLauncher{suffix}",
-                launcherStates[index].Exists, ModernShipGeometry.ShotLauncherSlots[index]);
-
-            magazine.SetMaximumShots(magazineStates[index].MaximumShots);
-            magazine.UpdateRuntime(magazineStates[index].CurrentShots, magazineStates[index].Status);
-            fabricator.SetMaximumRate(fabricatorStates[index].MaximumRate);
-            fabricator.UpdateRuntime(fabricatorStates[index].Active, fabricatorStates[index].Rate, fabricatorStates[index].Status,
-                fabricatorStates[index].ConsumedEnergyThisTick, fabricatorStates[index].ConsumedIonsThisTick,
-                fabricatorStates[index].ConsumedNeutrinosThisTick);
-            launcher.SetCapabilities(launcherStates[index].MinimumRelativeMovement, launcherStates[index].MaximumRelativeMovement,
-                launcherStates[index].MinimumTicks, launcherStates[index].MaximumTicks, launcherStates[index].MinimumLoad,
-                launcherStates[index].MaximumLoad, launcherStates[index].MinimumDamage, launcherStates[index].MaximumDamage);
-            launcher.UpdateRuntime(launcherStates[index].RelativeMovement, launcherStates[index].Ticks, launcherStates[index].Load,
-                launcherStates[index].Damage, launcherStates[index].Status, launcherStates[index].ConsumedEnergyThisTick,
-                launcherStates[index].ConsumedIonsThisTick, launcherStates[index].ConsumedNeutrinosThisTick);
-            magazine.SetReportedTier(magazineStates[index].Tier);
-            fabricator.SetReportedTier(fabricatorStates[index].Tier);
-            launcher.SetReportedTier(launcherStates[index].Tier);
-
-            _shotMagazines[index] = magazine;
-            _shotFabricators[index] = fabricator;
-            _shotLaunchers[index] = launcher;
-        }
-    }
-
-    private void InitializeInterceptors(LauncherState[] launcherStates, MagazineState[] magazineStates, FabricatorState[] fabricatorStates)
-    {
-        SubsystemSlot[] launcherSlots = { SubsystemSlot.StaticInterceptorLauncherE, SubsystemSlot.StaticInterceptorLauncherW };
-        SubsystemSlot[] magazineSlots = { SubsystemSlot.StaticInterceptorMagazineE, SubsystemSlot.StaticInterceptorMagazineW };
-        SubsystemSlot[] fabricatorSlots = { SubsystemSlot.StaticInterceptorFabricatorE, SubsystemSlot.StaticInterceptorFabricatorW };
-
-        for (int index = 0; index < _interceptorLaunchers.Length; index++)
-        {
-            string suffix = GetSlotSuffix(launcherSlots[index]);
-            StaticInterceptorMagazineSubsystem magazine = new StaticInterceptorMagazineSubsystem(this, $"InterceptorMagazine{suffix}",
-                magazineStates[index].Exists, magazineSlots[index]);
-            StaticInterceptorFabricatorSubsystem fabricator = new StaticInterceptorFabricatorSubsystem(this,
-                $"InterceptorFabricator{suffix}", fabricatorStates[index].Exists, fabricatorSlots[index]);
-            StaticInterceptorLauncherSubsystem launcher = new StaticInterceptorLauncherSubsystem(this, $"InterceptorLauncher{suffix}",
-                launcherStates[index].Exists, launcherSlots[index]);
-
-            magazine.SetMaximumShots(magazineStates[index].MaximumShots);
-            magazine.UpdateRuntime(magazineStates[index].CurrentShots, magazineStates[index].Status);
-            fabricator.SetMaximumRate(fabricatorStates[index].MaximumRate);
-            fabricator.UpdateRuntime(fabricatorStates[index].Active, fabricatorStates[index].Rate, fabricatorStates[index].Status,
-                fabricatorStates[index].ConsumedEnergyThisTick, fabricatorStates[index].ConsumedIonsThisTick,
-                fabricatorStates[index].ConsumedNeutrinosThisTick);
-            launcher.SetCapabilities(launcherStates[index].MinimumRelativeMovement, launcherStates[index].MaximumRelativeMovement,
-                launcherStates[index].MinimumTicks, launcherStates[index].MaximumTicks, launcherStates[index].MinimumLoad,
-                launcherStates[index].MaximumLoad, launcherStates[index].MinimumDamage, launcherStates[index].MaximumDamage);
-            launcher.UpdateRuntime(launcherStates[index].RelativeMovement, launcherStates[index].Ticks, launcherStates[index].Load,
-                launcherStates[index].Damage, launcherStates[index].Status, launcherStates[index].ConsumedEnergyThisTick,
-                launcherStates[index].ConsumedIonsThisTick, launcherStates[index].ConsumedNeutrinosThisTick);
-            magazine.SetReportedTier(magazineStates[index].Tier);
-            fabricator.SetReportedTier(fabricatorStates[index].Tier);
-            launcher.SetReportedTier(launcherStates[index].Tier);
-
-            _interceptorMagazines[index] = magazine;
-            _interceptorFabricators[index] = fabricator;
-            _interceptorLaunchers[index] = launcher;
-        }
-    }
-
-    private void InitializeRailguns(RailgunState[] railgunStates)
-    {
-        for (int index = 0; index < _railguns.Length; index++)
-        {
-            string suffix = GetSlotSuffix(ModernShipGeometry.RailgunSlots[index]);
-            ModernRailgunSubsystem railgun = new ModernRailgunSubsystem(this, $"Railgun{suffix}", railgunStates[index].Exists,
-                ModernShipGeometry.RailgunSlots[index]);
-            railgun.SetCapabilities(railgunStates[index].ProjectileSpeed, railgunStates[index].ProjectileLifetime, railgunStates[index].EnergyCost,
-                railgunStates[index].MetalCost);
-            railgun.UpdateRuntime(railgunStates[index].Direction, railgunStates[index].Status, railgunStates[index].ConsumedEnergyThisTick,
-                railgunStates[index].ConsumedIonsThisTick, railgunStates[index].ConsumedNeutrinosThisTick);
-            railgun.SetReportedTier(railgunStates[index].Tier);
-            _railguns[index] = railgun;
-        }
-    }
-
     private void PushRuntimeEvent(FlattiverseEvent? @event)
     {
         if (@event is not null)
             Cluster.Galaxy.PushEvent(@event);
-    }
-
-    private static bool ReadNebulaCollectorInitialState(PacketReader reader, out NebulaCollectorState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.MinimumRate) ||
-            !reader.Read(out state.MaximumRate) ||
-            !reader.Read(out state.Rate) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out state.ConsumedEnergyThisTick) ||
-            !reader.Read(out state.ConsumedIonsThisTick) ||
-            !reader.Read(out state.ConsumedNeutrinosThisTick) ||
-            !reader.Read(out state.CollectedThisTick) ||
-            !reader.Read(out state.CollectedHueThisTick))
-            return false;
-
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadNebulaCollectorRuntime(PacketReader reader, out NebulaCollectorState state)
-    {
-        state = default;
-
-        if (!reader.Read(out float rate) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick) ||
-            !reader.Read(out float collectedThisTick) ||
-            !reader.Read(out float collectedHueThisTick))
-            return false;
-
-        state.Exists = true;
-        state.Rate = rate;
-        state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        state.CollectedThisTick = collectedThisTick;
-        state.CollectedHueThisTick = collectedHueThisTick;
-        return true;
-    }
-
-    private static bool ReadScannerState(PacketReader reader, out ScannerState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.MaximumWidth) ||
-            !reader.Read(out state.MaximumLength) ||
-            !reader.Read(out state.WidthSpeed) ||
-            !reader.Read(out state.LengthSpeed) ||
-            !reader.Read(out state.AngleSpeed) ||
-            !reader.Read(out byte active) ||
-            !reader.Read(out state.CurrentWidth) ||
-            !reader.Read(out state.CurrentLength) ||
-            !reader.Read(out state.CurrentAngle) ||
-            !reader.Read(out state.TargetWidth) ||
-            !reader.Read(out state.TargetLength) ||
-            !reader.Read(out state.TargetAngle) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out state.ConsumedEnergyThisTick) ||
-            !reader.Read(out state.ConsumedIonsThisTick) ||
-            !reader.Read(out state.ConsumedNeutrinosThisTick))
-            return false;
-
-        state.Active = active != 0;
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadScannerRuntime(PacketReader reader, out ScannerRuntime runtime)
-    {
-        runtime = default;
-
-        if (!reader.Read(out byte active) ||
-            !reader.Read(out float currentWidth) ||
-            !reader.Read(out float currentLength) ||
-            !reader.Read(out float currentAngle) ||
-            !reader.Read(out float targetWidth) ||
-            !reader.Read(out float targetLength) ||
-            !reader.Read(out float targetAngle) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
-            return false;
-
-        runtime.Active = active != 0;
-        runtime.CurrentWidth = currentWidth;
-        runtime.CurrentLength = currentLength;
-        runtime.CurrentAngle = currentAngle;
-        runtime.TargetWidth = targetWidth;
-        runtime.TargetLength = targetLength;
-        runtime.TargetAngle = targetAngle;
-        runtime.Status = (SubsystemStatus)status;
-        runtime.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        runtime.ConsumedIonsThisTick = consumedIonsThisTick;
-        runtime.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        return true;
-    }
-
-    private static bool ReadEngineState(PacketReader reader, out EngineState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.MaximumForwardThrust) ||
-            !reader.Read(out state.MaximumReverseThrust) ||
-            !reader.Read(out state.MaximumThrustChangePerTick) ||
-            !reader.Read(out state.CurrentThrust) ||
-            !reader.Read(out state.TargetThrust) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out state.ConsumedEnergyThisTick) ||
-            !reader.Read(out state.ConsumedIonsThisTick) ||
-            !reader.Read(out state.ConsumedNeutrinosThisTick))
-            return false;
-
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadEngineRuntime(PacketReader reader, out EngineRuntime runtime)
-    {
-        runtime = default;
-
-        if (!reader.Read(out float currentThrust) ||
-            !reader.Read(out float targetThrust) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
-            return false;
-
-        runtime.CurrentThrust = currentThrust;
-        runtime.TargetThrust = targetThrust;
-        runtime.Status = (SubsystemStatus)status;
-        runtime.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        runtime.ConsumedIonsThisTick = consumedIonsThisTick;
-        runtime.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        return true;
-    }
-
-    private static bool ReadLauncherState(PacketReader reader, out LauncherState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.MinimumRelativeMovement) ||
-            !reader.Read(out state.MaximumRelativeMovement) ||
-            !reader.Read(out state.MinimumTicks) ||
-            !reader.Read(out state.MaximumTicks) ||
-            !reader.Read(out state.MinimumLoad) ||
-            !reader.Read(out state.MaximumLoad) ||
-            !reader.Read(out state.MinimumDamage) ||
-            !reader.Read(out state.MaximumDamage) ||
-            !Vector.FromReader(reader, out state.RelativeMovement) ||
-            !reader.Read(out state.Ticks) ||
-            !reader.Read(out state.Load) ||
-            !reader.Read(out state.Damage) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out state.ConsumedEnergyThisTick) ||
-            !reader.Read(out state.ConsumedIonsThisTick) ||
-            !reader.Read(out state.ConsumedNeutrinosThisTick))
-            return false;
-
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadLauncherRuntime(PacketReader reader, out LauncherRuntime runtime)
-    {
-        runtime = default;
-
-        if (!Vector.FromReader(reader, out Vector relativeMovement) ||
-            !reader.Read(out ushort ticks) ||
-            !reader.Read(out float load) ||
-            !reader.Read(out float damage) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
-            return false;
-
-        runtime.RelativeMovement = relativeMovement;
-        runtime.Ticks = ticks;
-        runtime.Load = load;
-        runtime.Damage = damage;
-        runtime.Status = (SubsystemStatus)status;
-        runtime.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        runtime.ConsumedIonsThisTick = consumedIonsThisTick;
-        runtime.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        return true;
-    }
-
-    private static bool ReadMagazineState(PacketReader reader, out MagazineState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.MaximumShots) ||
-            !reader.Read(out state.CurrentShots) ||
-            !reader.Read(out byte status))
-            return false;
-
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadMagazineRuntime(PacketReader reader, out MagazineRuntime runtime)
-    {
-        runtime = default;
-
-        if (!reader.Read(out float currentShots) ||
-            !reader.Read(out byte status))
-            return false;
-
-        runtime.CurrentShots = currentShots;
-        runtime.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadFabricatorState(PacketReader reader, out FabricatorState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.MaximumRate) ||
-            !reader.Read(out byte active) ||
-            !reader.Read(out state.Rate) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out state.ConsumedEnergyThisTick) ||
-            !reader.Read(out state.ConsumedIonsThisTick) ||
-            !reader.Read(out state.ConsumedNeutrinosThisTick))
-            return false;
-
-        state.Active = active != 0;
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadFabricatorRuntime(PacketReader reader, out FabricatorRuntime runtime)
-    {
-        runtime = default;
-
-        if (!reader.Read(out byte active) ||
-            !reader.Read(out float rate) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
-            return false;
-
-        runtime.Active = active != 0;
-        runtime.Rate = rate;
-        runtime.Status = (SubsystemStatus)status;
-        runtime.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        runtime.ConsumedIonsThisTick = consumedIonsThisTick;
-        runtime.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        return true;
-    }
-
-    private static bool ReadRailgunState(PacketReader reader, out RailgunState state)
-    {
-        state = default;
-
-        if (!reader.Read(out byte exists))
-            return false;
-
-        state.Exists = exists != 0;
-
-        if (!state.Exists)
-            return true;
-
-        if (!reader.Read(out state.Tier) ||
-            !reader.Read(out state.ProjectileSpeed) ||
-            !reader.Read(out state.ProjectileLifetime) ||
-            !reader.Read(out state.EnergyCost) ||
-            !reader.Read(out state.MetalCost) ||
-            !reader.Read(out byte direction) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out state.ConsumedEnergyThisTick) ||
-            !reader.Read(out state.ConsumedIonsThisTick) ||
-            !reader.Read(out state.ConsumedNeutrinosThisTick))
-            return false;
-
-        state.Direction = (RailgunDirection)direction;
-        state.Status = (SubsystemStatus)status;
-        return true;
-    }
-
-    private static bool ReadRailgunRuntime(PacketReader reader, out RailgunRuntime runtime)
-    {
-        runtime = default;
-
-        if (!reader.Read(out byte direction) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
-            return false;
-
-        runtime.Direction = (RailgunDirection)direction;
-        runtime.Status = (SubsystemStatus)status;
-        runtime.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        runtime.ConsumedIonsThisTick = consumedIonsThisTick;
-        runtime.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        return true;
     }
 
     private static string GetSlotSuffix(SubsystemSlot slot)
@@ -968,178 +376,5 @@ public class ModernShipControllable : Controllable
             default:
                 throw new InvalidDataException($"Unsupported modern ship slot {slot}.");
         }
-    }
-
-    private struct NebulaCollectorState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float MinimumRate;
-        public float MaximumRate;
-        public float Rate;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-        public float CollectedThisTick;
-        public float CollectedHueThisTick;
-    }
-
-    private struct ScannerState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float MaximumWidth;
-        public float MaximumLength;
-        public float WidthSpeed;
-        public float LengthSpeed;
-        public float AngleSpeed;
-        public bool Active;
-        public float CurrentWidth;
-        public float CurrentLength;
-        public float CurrentAngle;
-        public float TargetWidth;
-        public float TargetLength;
-        public float TargetAngle;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct ScannerRuntime
-    {
-        public bool Active;
-        public float CurrentWidth;
-        public float CurrentLength;
-        public float CurrentAngle;
-        public float TargetWidth;
-        public float TargetLength;
-        public float TargetAngle;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct EngineState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float MaximumForwardThrust;
-        public float MaximumReverseThrust;
-        public float MaximumThrustChangePerTick;
-        public float CurrentThrust;
-        public float TargetThrust;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct EngineRuntime
-    {
-        public float CurrentThrust;
-        public float TargetThrust;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct LauncherState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float MinimumRelativeMovement;
-        public float MaximumRelativeMovement;
-        public ushort MinimumTicks;
-        public ushort MaximumTicks;
-        public float MinimumLoad;
-        public float MaximumLoad;
-        public float MinimumDamage;
-        public float MaximumDamage;
-        public Vector RelativeMovement;
-        public ushort Ticks;
-        public float Load;
-        public float Damage;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct LauncherRuntime
-    {
-        public Vector RelativeMovement;
-        public ushort Ticks;
-        public float Load;
-        public float Damage;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct MagazineState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float MaximumShots;
-        public float CurrentShots;
-        public SubsystemStatus Status;
-    }
-
-    private struct MagazineRuntime
-    {
-        public float CurrentShots;
-        public SubsystemStatus Status;
-    }
-
-    private struct FabricatorState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float MaximumRate;
-        public bool Active;
-        public float Rate;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct FabricatorRuntime
-    {
-        public bool Active;
-        public float Rate;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct RailgunState
-    {
-        public bool Exists;
-        public byte Tier;
-        public float ProjectileSpeed;
-        public ushort ProjectileLifetime;
-        public float EnergyCost;
-        public float MetalCost;
-        public RailgunDirection Direction;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
-    }
-
-    private struct RailgunRuntime
-    {
-        public RailgunDirection Direction;
-        public SubsystemStatus Status;
-        public float ConsumedEnergyThisTick;
-        public float ConsumedIonsThisTick;
-        public float ConsumedNeutrinosThisTick;
     }
 }

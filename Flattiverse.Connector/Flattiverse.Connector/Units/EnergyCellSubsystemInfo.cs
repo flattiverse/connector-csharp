@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -16,6 +18,14 @@ public class EnergyCellSubsystemInfo
         _efficiency = 0f;
         _collectedThisTick = 0f;
         _status = SubsystemStatus.Off;
+    }
+
+    internal EnergyCellSubsystemInfo(EnergyCellSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _efficiency = other._efficiency;
+        _collectedThisTick = other._collectedThisTick;
+        _status = other._status;
     }
 
     /// <summary>
@@ -50,11 +60,27 @@ public class EnergyCellSubsystemInfo
         get { return _status; }
     }
 
-    internal void Update(bool exists, float efficiency, float collectedThisTick, SubsystemStatus status)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _efficiency = exists ? efficiency : 0f;
-        _collectedThisTick = exists ? collectedThisTick : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _efficiency = 0f;
+            _collectedThisTick = 0f;
+            _status = SubsystemStatus.Off;
+            return true;
+        }
+
+        if (!reader.Read(out _efficiency) ||
+            !reader.Read(out _collectedThisTick) ||
+            !reader.Read(out byte status))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

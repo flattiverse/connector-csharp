@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -34,6 +36,23 @@ public class CargoSubsystemInfo
         _currentNebula = 0f;
         _nebulaHue = 0f;
         _status = SubsystemStatus.Off;
+    }
+
+    internal CargoSubsystemInfo(CargoSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _maximumMetal = other._maximumMetal;
+        _maximumCarbon = other._maximumCarbon;
+        _maximumHydrogen = other._maximumHydrogen;
+        _maximumSilicon = other._maximumSilicon;
+        _maximumNebula = other._maximumNebula;
+        _currentMetal = other._currentMetal;
+        _currentCarbon = other._currentCarbon;
+        _currentHydrogen = other._currentHydrogen;
+        _currentSilicon = other._currentSilicon;
+        _currentNebula = other._currentNebula;
+        _nebulaHue = other._nebulaHue;
+        _status = other._status;
     }
 
     /// <summary>
@@ -141,22 +160,45 @@ public class CargoSubsystemInfo
         get { return _status; }
     }
 
-    internal void Update(bool exists, float maximumMetal, float maximumCarbon, float maximumHydrogen, float maximumSilicon,
-        float maximumNebula, float currentMetal, float currentCarbon, float currentHydrogen, float currentSilicon, float currentNebula,
-        float nebulaHue, SubsystemStatus status)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _maximumMetal = exists ? maximumMetal : 0f;
-        _maximumCarbon = exists ? maximumCarbon : 0f;
-        _maximumHydrogen = exists ? maximumHydrogen : 0f;
-        _maximumSilicon = exists ? maximumSilicon : 0f;
-        _maximumNebula = exists ? maximumNebula : 0f;
-        _currentMetal = exists ? currentMetal : 0f;
-        _currentCarbon = exists ? currentCarbon : 0f;
-        _currentHydrogen = exists ? currentHydrogen : 0f;
-        _currentSilicon = exists ? currentSilicon : 0f;
-        _currentNebula = exists ? currentNebula : 0f;
-        _nebulaHue = exists ? nebulaHue : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _maximumMetal = 0f;
+            _maximumCarbon = 0f;
+            _maximumHydrogen = 0f;
+            _maximumSilicon = 0f;
+            _maximumNebula = 0f;
+            _currentMetal = 0f;
+            _currentCarbon = 0f;
+            _currentHydrogen = 0f;
+            _currentSilicon = 0f;
+            _currentNebula = 0f;
+            _nebulaHue = 0f;
+            _status = SubsystemStatus.Off;
+            return true;
+        }
+
+        if (!reader.Read(out _maximumMetal) ||
+            !reader.Read(out _maximumCarbon) ||
+            !reader.Read(out _maximumHydrogen) ||
+            !reader.Read(out _maximumSilicon) ||
+            !reader.Read(out _maximumNebula) ||
+            !reader.Read(out _currentMetal) ||
+            !reader.Read(out _currentCarbon) ||
+            !reader.Read(out _currentHydrogen) ||
+            !reader.Read(out _currentSilicon) ||
+            !reader.Read(out _currentNebula) ||
+            !reader.Read(out _nebulaHue) ||
+            !reader.Read(out byte status))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

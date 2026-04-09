@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -26,6 +28,19 @@ public class ModernShipEngineSubsystemInfo
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
         _consumedNeutrinosThisTick = 0f;
+    }
+
+    internal ModernShipEngineSubsystemInfo(ModernShipEngineSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _maximumThrust = other._maximumThrust;
+        _maximumThrustChangePerTick = other._maximumThrustChangePerTick;
+        _currentThrust = other._currentThrust;
+        _targetThrust = other._targetThrust;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
     }
 
     public bool Exists
@@ -83,18 +98,39 @@ public class ModernShipEngineSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float maximumThrust, float maximumThrustChangePerTick,
-        float currentThrust, float targetThrust, SubsystemStatus status, float consumedEnergyThisTick, float consumedIonsThisTick,
-        float consumedNeutrinosThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _maximumThrust = exists ? maximumThrust : 0f;
-        _maximumThrustChangePerTick = exists ? maximumThrustChangePerTick : 0f;
-        _currentThrust = exists ? currentThrust : 0f;
-        _targetThrust = exists ? targetThrust : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _maximumThrust = 0f;
+            _maximumThrustChangePerTick = 0f;
+            _currentThrust = 0f;
+            _targetThrust = 0f;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out float maximumForwardThrust) ||
+            !reader.Read(out float maximumReverseThrust) ||
+            !reader.Read(out _maximumThrustChangePerTick) ||
+            !reader.Read(out _currentThrust) ||
+            !reader.Read(out _targetThrust) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick))
+            return false;
+
+        _maximumThrust = MathF.Max(maximumForwardThrust, maximumReverseThrust);
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

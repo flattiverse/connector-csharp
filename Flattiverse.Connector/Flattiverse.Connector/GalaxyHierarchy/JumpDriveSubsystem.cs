@@ -21,6 +21,29 @@ public class JumpDriveSubsystem : Subsystem
         _consumedNeutrinosThisTick = 0f;
     }
 
+    internal JumpDriveSubsystem(Controllable controllable, PacketReader reader) : base(controllable, "JumpDrive", false, SubsystemSlot.JumpDrive)
+    {
+        _energyCost = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable jump drive state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float energyCost))
+            throw new InvalidDataException("Couldn't read controllable jump drive state.");
+
+        SetEnergyCost(energyCost);
+        SetReportedTier(tier);
+    }
+
     /// <summary>
     /// Energy required for one jump.
     /// </summary>
@@ -104,6 +127,21 @@ public class JumpDriveSubsystem : Subsystem
         _consumedIonsThisTick = consumedIonsThisTick;
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime((SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
+        return true;
     }
 
     internal void SetEnergyCost(float energyCost)

@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -12,6 +14,12 @@ public class JumpDriveSubsystemInfo
     {
         _exists = false;
         _energyCost = 0f;
+    }
+
+    internal JumpDriveSubsystemInfo(JumpDriveSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _energyCost = other._energyCost;
     }
 
     /// <summary>
@@ -31,9 +39,19 @@ public class JumpDriveSubsystemInfo
         get { return _energyCost; }
     }
 
-    internal void Update(bool exists, float energyCost)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _energyCost = exists ? energyCost : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _energyCost = 0f;
+            return true;
+        }
+
+        return reader.Read(out _energyCost);
     }
 }

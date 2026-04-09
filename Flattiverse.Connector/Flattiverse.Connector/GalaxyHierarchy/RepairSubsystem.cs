@@ -29,6 +29,42 @@ public class RepairSubsystem : Subsystem
         _repairedHullThisTick = 0f;
     }
 
+    internal RepairSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _minimumRate = 0f;
+        _maximumRate = 0f;
+        _rate = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+        _repairedHullThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable repair state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float repairedHullThisTick))
+            throw new InvalidDataException("Couldn't read controllable repair state.");
+
+        SetCapabilities(minimumRate, maximumRate);
+        UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            repairedHullThisTick);
+        SetReportedTier(tier);
+    }
+
     internal static RepairSubsystem CreateClassicShipRepair(Controllable controllable)
     {
         return new RepairSubsystem(controllable, "Repair", true, SubsystemSlot.Repair);
@@ -202,6 +238,24 @@ public class RepairSubsystem : Subsystem
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         _repairedHullThisTick = repairedHullThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float repairedHullThisTick))
+            return false;
+
+        UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            repairedHullThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

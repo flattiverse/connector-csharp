@@ -1,4 +1,5 @@
 using Flattiverse.Connector.Events;
+using Flattiverse.Connector.Network;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
 
@@ -15,6 +16,31 @@ public class DynamicShotMagazineSubsystem : Subsystem
     {
         _maximumShots = 0f;
         _currentShots = 0f;
+    }
+
+    internal DynamicShotMagazineSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _maximumShots = 0f;
+        _currentShots = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximumShots) ||
+            !reader.Read(out float currentShots) ||
+            !reader.Read(out byte status))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetMaximumShots(maximumShots);
+        UpdateRuntime(currentShots, (SubsystemStatus)status);
+        SetReportedTier(tier);
     }
 
     /// <summary>
@@ -50,6 +76,19 @@ public class DynamicShotMagazineSubsystem : Subsystem
     {
         _currentShots = currentShots;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float currentShots) ||
+            !reader.Read(out byte status))
+            return false;
+
+        UpdateRuntime(currentShots, (SubsystemStatus)status);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

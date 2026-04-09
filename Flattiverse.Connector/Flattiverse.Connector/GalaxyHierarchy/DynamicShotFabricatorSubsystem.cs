@@ -29,6 +29,40 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         _consumedNeutrinosThisTick = 0f;
     }
 
+    internal DynamicShotFabricatorSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _maximumRate = 0f;
+        _active = false;
+        _rate = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetMaximumRate(maximumRate);
+        UpdateRuntime(active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        SetReportedTier(tier);
+    }
+
     /// <summary>
     /// The minimum configurable shot fabrication rate.
     /// </summary>
@@ -240,6 +274,24 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         _consumedIonsThisTick = consumedIonsThisTick;
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out byte active) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime(active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

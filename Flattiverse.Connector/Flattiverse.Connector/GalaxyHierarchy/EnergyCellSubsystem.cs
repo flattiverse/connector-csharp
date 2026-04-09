@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 using Flattiverse.Connector.Events;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -17,6 +19,31 @@ public class EnergyCellSubsystem : Subsystem
         _collectedThisTick = 0f;
 
         SetEfficiency(efficiency);
+    }
+
+    internal EnergyCellSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _efficiency = 0f;
+        _collectedThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable energy cell state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float efficiency) ||
+            !reader.Read(out float collectedThisTick) ||
+            !reader.Read(out byte status))
+            throw new InvalidDataException("Couldn't read controllable energy cell state.");
+
+        SetEfficiency(efficiency);
+        UpdateRuntime(collectedThisTick, (SubsystemStatus)status);
+        SetReportedTier(tier);
     }
 
     internal static EnergyCellSubsystem CreateClassicShipEnergyCell(Controllable controllable)
@@ -61,6 +88,18 @@ public class EnergyCellSubsystem : Subsystem
     {
         _collectedThisTick = collectedThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float collectedThisTick) || !reader.Read(out byte status))
+            return false;
+
+        UpdateRuntime(collectedThisTick, (SubsystemStatus)status);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

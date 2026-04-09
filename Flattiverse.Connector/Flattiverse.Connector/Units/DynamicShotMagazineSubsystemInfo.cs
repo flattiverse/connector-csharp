@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -16,6 +18,14 @@ public class DynamicShotMagazineSubsystemInfo
         _maximumShots = 0f;
         _currentShots = 0f;
         _status = SubsystemStatus.Off;
+    }
+
+    internal DynamicShotMagazineSubsystemInfo(DynamicShotMagazineSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _maximumShots = other._maximumShots;
+        _currentShots = other._currentShots;
+        _status = other._status;
     }
 
     /// <summary>
@@ -50,11 +60,27 @@ public class DynamicShotMagazineSubsystemInfo
         get { return _status; }
     }
 
-    internal void Update(bool exists, float maximumShots, float currentShots, SubsystemStatus status)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _maximumShots = exists ? maximumShots : 0f;
-        _currentShots = exists ? currentShots : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _maximumShots = 0f;
+            _currentShots = 0f;
+            _status = SubsystemStatus.Off;
+            return true;
+        }
+
+        if (!reader.Read(out _maximumShots) ||
+            !reader.Read(out _currentShots) ||
+            !reader.Read(out byte status))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

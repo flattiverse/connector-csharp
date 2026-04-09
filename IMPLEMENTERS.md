@@ -40,10 +40,10 @@ Current protocol version:
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=27&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=27&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=27&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=27&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=29&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=29&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=29&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=29&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -434,6 +434,10 @@ uint neutralDeaths
 int mission
 ```
 
+Mission-mode note:
+
+* when `GameMode == Mission`, `Team.Score` stays static; mission-mode kills, deaths and objectives do not mutate team score values
+
 ### `0x06` Cluster Snapshot
 
 Payload order:
@@ -624,6 +628,7 @@ Mission-mode combat note:
 
 * when `GameMode == Mission`, combat between two different players always counts as enemy combat for score updates and death reasons, even if both players currently belong to the same team
 * combat between two controllables of the same player is reported as `PlayerUnitDestroyedReason.Suicided`
+* collisions never award kills, regardless of `GameMode`
 
 ### `0xC1` Flag Scored System Chat
 

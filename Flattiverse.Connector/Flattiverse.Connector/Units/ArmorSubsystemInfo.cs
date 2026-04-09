@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -18,6 +20,15 @@ public class ArmorSubsystemInfo
         _status = SubsystemStatus.Off;
         _blockedDirectDamageThisTick = 0f;
         _blockedRadiationDamageThisTick = 0f;
+    }
+
+    internal ArmorSubsystemInfo(ArmorSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _reduction = other._reduction;
+        _status = other._status;
+        _blockedDirectDamageThisTick = other._blockedDirectDamageThisTick;
+        _blockedRadiationDamageThisTick = other._blockedRadiationDamageThisTick;
     }
 
     /// <summary>
@@ -61,13 +72,29 @@ public class ArmorSubsystemInfo
         get { return _blockedRadiationDamageThisTick; }
     }
 
-    internal void Update(bool exists, float reduction, SubsystemStatus status, float blockedDirectDamageThisTick,
-        float blockedRadiationDamageThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _reduction = exists ? reduction : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _blockedDirectDamageThisTick = exists ? blockedDirectDamageThisTick : 0f;
-        _blockedRadiationDamageThisTick = exists ? blockedRadiationDamageThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _reduction = 0f;
+            _status = SubsystemStatus.Off;
+            _blockedDirectDamageThisTick = 0f;
+            _blockedRadiationDamageThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _reduction) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _blockedDirectDamageThisTick) ||
+            !reader.Read(out _blockedRadiationDamageThisTick))
+            return false;
+
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -24,6 +26,18 @@ public class ClassicRailgunSubsystemInfo
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
         _consumedNeutrinosThisTick = 0f;
+    }
+
+    internal ClassicRailgunSubsystemInfo(ClassicRailgunSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _energyCost = other._energyCost;
+        _metalCost = other._metalCost;
+        _direction = other._direction;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
     }
 
     /// <summary>
@@ -91,16 +105,36 @@ public class ClassicRailgunSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float energyCost, float metalCost, Flattiverse.Connector.GalaxyHierarchy.RailgunDirection direction,
-        SubsystemStatus status, float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _energyCost = exists ? energyCost : 0f;
-        _metalCost = exists ? metalCost : 0f;
-        _direction = exists ? direction : Flattiverse.Connector.GalaxyHierarchy.RailgunDirection.None;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _energyCost = 0f;
+            _metalCost = 0f;
+            _direction = Flattiverse.Connector.GalaxyHierarchy.RailgunDirection.None;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _energyCost) ||
+            !reader.Read(out _metalCost) ||
+            !reader.Read(out byte direction) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick))
+            return false;
+
+        _direction = (Flattiverse.Connector.GalaxyHierarchy.RailgunDirection)direction;
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

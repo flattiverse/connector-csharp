@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 namespace Flattiverse.Connector.Units;
 
 /// <summary>
@@ -42,6 +44,27 @@ public class DynamicScannerSubsystemInfo
         _consumedEnergyThisTick = 0f;
         _consumedIonsThisTick = 0f;
         _consumedNeutrinosThisTick = 0f;
+    }
+
+    internal DynamicScannerSubsystemInfo(DynamicScannerSubsystemInfo other)
+    {
+        _exists = other._exists;
+        _maximumWidth = other._maximumWidth;
+        _maximumLength = other._maximumLength;
+        _widthSpeed = other._widthSpeed;
+        _lengthSpeed = other._lengthSpeed;
+        _angleSpeed = other._angleSpeed;
+        _active = other._active;
+        _currentWidth = other._currentWidth;
+        _currentLength = other._currentLength;
+        _currentAngle = other._currentAngle;
+        _targetWidth = other._targetWidth;
+        _targetLength = other._targetLength;
+        _targetAngle = other._targetAngle;
+        _status = other._status;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
     }
 
     /// <summary>
@@ -182,26 +205,54 @@ public class DynamicScannerSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float maximumWidth, float maximumLength, float widthSpeed, float lengthSpeed, float angleSpeed,
-        bool active, float currentWidth, float currentLength, float currentAngle, float targetWidth, float targetLength, float targetAngle,
-        SubsystemStatus status, float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick)
+    internal bool Update(PacketReader reader)
     {
-        _exists = exists;
-        _maximumWidth = exists ? maximumWidth : 0f;
-        _maximumLength = exists ? maximumLength : 0f;
-        _widthSpeed = exists ? widthSpeed : 0f;
-        _lengthSpeed = exists ? lengthSpeed : 0f;
-        _angleSpeed = exists ? angleSpeed : 0f;
-        _active = exists && active;
-        _currentWidth = exists ? currentWidth : 0f;
-        _currentLength = exists ? currentLength : 0f;
-        _currentAngle = exists ? currentAngle : 0f;
-        _targetWidth = exists ? targetWidth : 0f;
-        _targetLength = exists ? targetLength : 0f;
-        _targetAngle = exists ? targetAngle : 0f;
-        _status = exists ? status : SubsystemStatus.Off;
-        _consumedEnergyThisTick = exists ? consumedEnergyThisTick : 0f;
-        _consumedIonsThisTick = exists ? consumedIonsThisTick : 0f;
-        _consumedNeutrinosThisTick = exists ? consumedNeutrinosThisTick : 0f;
+        if (!reader.Read(out byte exists))
+            return false;
+
+        _exists = exists != 0;
+
+        if (!_exists)
+        {
+            _maximumWidth = 0f;
+            _maximumLength = 0f;
+            _widthSpeed = 0f;
+            _lengthSpeed = 0f;
+            _angleSpeed = 0f;
+            _active = false;
+            _currentWidth = 0f;
+            _currentLength = 0f;
+            _currentAngle = 0f;
+            _targetWidth = 0f;
+            _targetLength = 0f;
+            _targetAngle = 0f;
+            _status = SubsystemStatus.Off;
+            _consumedEnergyThisTick = 0f;
+            _consumedIonsThisTick = 0f;
+            _consumedNeutrinosThisTick = 0f;
+            return true;
+        }
+
+        if (!reader.Read(out _maximumWidth) ||
+            !reader.Read(out _maximumLength) ||
+            !reader.Read(out _widthSpeed) ||
+            !reader.Read(out _lengthSpeed) ||
+            !reader.Read(out _angleSpeed) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out _currentWidth) ||
+            !reader.Read(out _currentLength) ||
+            !reader.Read(out _currentAngle) ||
+            !reader.Read(out _targetWidth) ||
+            !reader.Read(out _targetLength) ||
+            !reader.Read(out _targetAngle) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out _consumedEnergyThisTick) ||
+            !reader.Read(out _consumedIonsThisTick) ||
+            !reader.Read(out _consumedNeutrinosThisTick))
+            return false;
+
+        _active = active != 0;
+        _status = (SubsystemStatus)status;
+        return true;
     }
 }

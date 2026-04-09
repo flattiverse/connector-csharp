@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 using Flattiverse.Connector.Events;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -17,6 +19,31 @@ public class HullSubsystem : Subsystem
         _current = 0f;
 
         SetMaximum(maximum);
+    }
+
+    internal HullSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _maximum = 0f;
+        _current = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable hull state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximum) ||
+            !reader.Read(out float current) ||
+            !reader.Read(out byte status))
+            throw new InvalidDataException("Couldn't read controllable hull state.");
+
+        SetMaximum(maximum);
+        UpdateRuntime(current, (SubsystemStatus)status);
+        SetReportedTier(tier);
     }
 
     internal static HullSubsystem CreateClassicShipHull(Controllable controllable)
@@ -59,6 +86,18 @@ public class HullSubsystem : Subsystem
     {
         _current = current;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float current) || !reader.Read(out byte status))
+            return false;
+
+        UpdateRuntime(current, (SubsystemStatus)status);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

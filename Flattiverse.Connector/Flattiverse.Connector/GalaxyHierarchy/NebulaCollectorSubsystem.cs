@@ -31,6 +31,44 @@ public class NebulaCollectorSubsystem : Subsystem
         _collectedHueThisTick = 0f;
     }
 
+    internal NebulaCollectorSubsystem(Controllable controllable, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, "NebulaCollector", false, slot)
+    {
+        _minimumRate = 0f;
+        _maximumRate = 0f;
+        _rate = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+        _collectedThisTick = 0f;
+        _collectedHueThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable nebula collector state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float collectedThisTick) ||
+            !reader.Read(out float collectedHueThisTick))
+            throw new InvalidDataException("Couldn't read controllable nebula collector state.");
+
+        SetCapabilities(minimumRate, maximumRate);
+        UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            collectedThisTick, collectedHueThisTick);
+        SetReportedTier(tier);
+    }
+
     internal static NebulaCollectorSubsystem CreateClassicShipNebulaCollector(Controllable controllable)
     {
         return new NebulaCollectorSubsystem(controllable, true, SubsystemSlot.NebulaCollector);
@@ -224,6 +262,25 @@ public class NebulaCollectorSubsystem : Subsystem
         _collectedThisTick = collectedThisTick;
         _collectedHueThisTick = collectedHueThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float collectedThisTick) ||
+            !reader.Read(out float collectedHueThisTick))
+            return false;
+
+        UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            collectedThisTick, collectedHueThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

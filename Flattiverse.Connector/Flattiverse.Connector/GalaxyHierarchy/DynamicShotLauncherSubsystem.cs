@@ -46,6 +46,59 @@ public class DynamicShotLauncherSubsystem : Subsystem
         _consumedNeutrinosThisTick = 0f;
     }
 
+    internal DynamicShotLauncherSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _minimumRelativeMovement = 0f;
+        _maximumRelativeMovement = 0f;
+        _minimumTicks = 0;
+        _maximumTicks = 0;
+        _minimumLoad = 0f;
+        _maximumLoad = 0f;
+        _minimumDamage = 0f;
+        _maximumDamage = 0f;
+        _relativeMovement = new Vector();
+        _ticks = 0;
+        _load = 0f;
+        _damage = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float minimumRelativeMovement) ||
+            !reader.Read(out float maximumRelativeMovement) ||
+            !reader.Read(out ushort minimumTicks) ||
+            !reader.Read(out ushort maximumTicks) ||
+            !reader.Read(out float minimumLoad) ||
+            !reader.Read(out float maximumLoad) ||
+            !reader.Read(out float minimumDamage) ||
+            !reader.Read(out float maximumDamage) ||
+            !Vector.FromReader(reader, out Vector? relativeMovement) ||
+            !reader.Read(out ushort ticks) ||
+            !reader.Read(out float load) ||
+            !reader.Read(out float damage) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetCapabilities(minimumRelativeMovement, maximumRelativeMovement, minimumTicks, maximumTicks, minimumLoad, maximumLoad,
+            minimumDamage, maximumDamage);
+        UpdateRuntime(relativeMovement, ticks, load, damage, (SubsystemStatus)status, consumedEnergyThisTick,
+            consumedIonsThisTick, consumedNeutrinosThisTick);
+        SetReportedTier(tier);
+    }
+
     /// <summary>
     /// The minimum allowed relative shot speed.
     /// </summary>
@@ -302,6 +355,26 @@ public class DynamicShotLauncherSubsystem : Subsystem
         _consumedIonsThisTick = consumedIonsThisTick;
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!Vector.FromReader(reader, out Vector? relativeMovement) ||
+            !reader.Read(out ushort ticks) ||
+            !reader.Read(out float load) ||
+            !reader.Read(out float damage) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime(relativeMovement, ticks, load, damage, (SubsystemStatus)status, consumedEnergyThisTick,
+            consumedIonsThisTick, consumedNeutrinosThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 using Flattiverse.Connector.Events;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -19,6 +21,33 @@ public class BatterySubsystem : Subsystem
         _consumedThisTick = 0f;
 
         SetMaximum(maximum);
+    }
+
+    internal BatterySubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _maximum = 0f;
+        _current = 0f;
+        _consumedThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable battery state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximum) ||
+            !reader.Read(out float current) ||
+            !reader.Read(out float consumedThisTick) ||
+            !reader.Read(out byte status))
+            throw new InvalidDataException("Couldn't read controllable battery state.");
+
+        SetMaximum(maximum);
+        UpdateRuntime(current, consumedThisTick, (SubsystemStatus)status);
+        SetReportedTier(tier);
     }
 
     internal static BatterySubsystem CreateClassicShipEnergyBattery(Controllable controllable)
@@ -84,6 +113,20 @@ public class BatterySubsystem : Subsystem
         _current = current;
         _consumedThisTick = consumedThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float current) ||
+            !reader.Read(out float consumedThisTick) ||
+            !reader.Read(out byte status))
+            return false;
+
+        UpdateRuntime(current, consumedThisTick, (SubsystemStatus)status);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

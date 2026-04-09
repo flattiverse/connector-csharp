@@ -31,6 +31,43 @@ public class ModernShipEngineSubsystem : Subsystem
         _consumedNeutrinosThisTick = 0f;
     }
 
+    internal ModernShipEngineSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, false, slot)
+    {
+        _maximumThrust = 0f;
+        _maximumThrustChangePerTick = 0f;
+        _currentThrust = 0f;
+        _targetThrust = 0f;
+        _consumedEnergyThisTick = 0f;
+        _consumedIonsThisTick = 0f;
+        _consumedNeutrinosThisTick = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximumForwardThrust) ||
+            !reader.Read(out float maximumReverseThrust) ||
+            !reader.Read(out float maximumThrustChangePerTick) ||
+            !reader.Read(out float currentThrust) ||
+            !reader.Read(out float targetThrust) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            throw new InvalidDataException($"Couldn't read controllable {name} state.");
+
+        SetCapabilities(maximumForwardThrust, maximumReverseThrust, maximumThrustChangePerTick);
+        UpdateRuntime(currentThrust, targetThrust, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        SetReportedTier(tier);
+    }
+
     public float MaximumThrust
     {
         get { return _maximumThrust; }
@@ -198,6 +235,24 @@ public class ModernShipEngineSubsystem : Subsystem
         _consumedIonsThisTick = consumedIonsThisTick;
         _consumedNeutrinosThisTick = consumedNeutrinosThisTick;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float currentThrust) ||
+            !reader.Read(out float targetThrust) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        UpdateRuntime(currentThrust, targetThrust, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

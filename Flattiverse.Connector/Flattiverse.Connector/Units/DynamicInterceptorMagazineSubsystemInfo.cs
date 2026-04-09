@@ -10,4 +10,8 @@ public class DynamicInterceptorMagazineSubsystemInfo : DynamicShotMagazineSubsys
     internal DynamicInterceptorMagazineSubsystemInfo()
     {
     }
+
+    internal DynamicInterceptorMagazineSubsystemInfo(DynamicInterceptorMagazineSubsystemInfo other) : base(other)
+    {
+    }
 }

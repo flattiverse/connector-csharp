@@ -223,6 +223,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--scanner-visibility-check-local")
+        {
+            await RunScannerVisibilityCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--balance-upgrade-check-local")
         {
             await RunBalanceUpgradeCheckLocal().ConfigureAwait(false);

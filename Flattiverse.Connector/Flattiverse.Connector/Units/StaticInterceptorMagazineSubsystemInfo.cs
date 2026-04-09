@@ -8,4 +8,8 @@ public class StaticInterceptorMagazineSubsystemInfo : DynamicInterceptorMagazine
     internal StaticInterceptorMagazineSubsystemInfo()
     {
     }
+
+    internal StaticInterceptorMagazineSubsystemInfo(StaticInterceptorMagazineSubsystemInfo other) : base(other)
+    {
+    }
 }

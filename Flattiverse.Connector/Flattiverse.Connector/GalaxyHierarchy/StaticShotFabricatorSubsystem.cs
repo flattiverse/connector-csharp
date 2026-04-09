@@ -14,6 +14,11 @@ public class StaticShotFabricatorSubsystem : DynamicShotFabricatorSubsystem
     {
     }
 
+    internal StaticShotFabricatorSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
+    {
+    }
+
     public new async Task Set(float rate)
     {
         if (!Controllable.Active || !Exists)

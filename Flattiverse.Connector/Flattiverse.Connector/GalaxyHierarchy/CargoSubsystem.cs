@@ -1,3 +1,5 @@
+using Flattiverse.Connector.Network;
+
 using Flattiverse.Connector.Events;
 
 namespace Flattiverse.Connector.GalaxyHierarchy;
@@ -40,6 +42,49 @@ public class CargoSubsystem : Subsystem
         _currentSilicon = 0f;
         _currentNebula = 0f;
         _nebulaHue = 0f;
+    }
+
+    internal CargoSubsystem(Controllable controllable, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, "Cargo", false, slot)
+    {
+        _maximumMetal = 0f;
+        _maximumCarbon = 0f;
+        _maximumHydrogen = 0f;
+        _maximumSilicon = 0f;
+        _maximumNebula = 0f;
+        _currentMetal = 0f;
+        _currentCarbon = 0f;
+        _currentHydrogen = 0f;
+        _currentSilicon = 0f;
+        _currentNebula = 0f;
+        _nebulaHue = 0f;
+
+        if (!reader.Read(out byte exists))
+            throw new InvalidDataException("Couldn't read controllable cargo state.");
+
+        SetExists(exists != 0);
+
+        if (!Exists)
+            return;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximumMetal) ||
+            !reader.Read(out float maximumCarbon) ||
+            !reader.Read(out float maximumHydrogen) ||
+            !reader.Read(out float maximumSilicon) ||
+            !reader.Read(out float maximumNebula) ||
+            !reader.Read(out float currentMetal) ||
+            !reader.Read(out float currentCarbon) ||
+            !reader.Read(out float currentHydrogen) ||
+            !reader.Read(out float currentSilicon) ||
+            !reader.Read(out float currentNebula) ||
+            !reader.Read(out float nebulaHue) ||
+            !reader.Read(out byte status))
+            throw new InvalidDataException("Couldn't read controllable cargo state.");
+
+        SetMaximums(maximumMetal, maximumCarbon, maximumHydrogen, maximumSilicon, maximumNebula);
+        UpdateRuntime(currentMetal, currentCarbon, currentHydrogen, currentSilicon, currentNebula, nebulaHue, (SubsystemStatus)status);
+        SetReportedTier(tier);
     }
 
     internal static CargoSubsystem CreateClassicShipCargo(Controllable controllable)
@@ -182,6 +227,24 @@ public class CargoSubsystem : Subsystem
         _currentNebula = currentNebula;
         _nebulaHue = nebulaHue;
         UpdateRuntimeStatus(status);
+    }
+
+    internal bool Update(PacketReader reader)
+    {
+        if (!Exists)
+            return true;
+
+        if (!reader.Read(out float currentMetal) ||
+            !reader.Read(out float currentCarbon) ||
+            !reader.Read(out float currentHydrogen) ||
+            !reader.Read(out float currentSilicon) ||
+            !reader.Read(out float currentNebula) ||
+            !reader.Read(out float nebulaHue) ||
+            !reader.Read(out byte status))
+            return false;
+
+        UpdateRuntime(currentMetal, currentCarbon, currentHydrogen, currentSilicon, currentNebula, nebulaHue, (SubsystemStatus)status);
+        return true;
     }
 
     internal FlattiverseEvent? CreateRuntimeEvent()

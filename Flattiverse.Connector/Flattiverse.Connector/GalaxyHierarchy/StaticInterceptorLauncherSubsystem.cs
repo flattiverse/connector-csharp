@@ -14,6 +14,11 @@ public class StaticInterceptorLauncherSubsystem : DynamicInterceptorLauncherSubs
     {
     }
 
+    internal StaticInterceptorLauncherSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
+    {
+    }
+
     public float RelativeSpeed
     {
         get { return RelativeMovement.Length; }

@@ -14,6 +14,11 @@ public class DynamicInterceptorLauncherSubsystem : DynamicShotLauncherSubsystem
     {
     }
 
+    internal DynamicInterceptorLauncherSubsystem(Controllable controllable, string name, PacketReader reader, SubsystemSlot slot) :
+        base(controllable, name, reader, slot)
+    {
+    }
+
     /// <summary>
     /// Requests one interceptor for the next server tick.
     /// </summary>
