@@ -183,13 +183,13 @@ partial class Program
             }
 
             List<FlattiverseEvent> hiddenPowerUpEvents = new List<FlattiverseEvent>();
-            PowerUpCollectedEvent? hiddenPowerUpCollectedEvent = await WaitForQueuedEvent(playerEvents, 4000, hiddenPowerUpEvents,
-                delegate (PowerUpCollectedEvent @event)
+            CollectedPowerUpEvent? hiddenCollectedPowerUpEvent = await WaitForQueuedEvent(playerEvents, 4000, hiddenPowerUpEvents,
+                delegate (CollectedPowerUpEvent @event)
                 {
                     return @event.PowerUpName == hiddenPowerUpName;
                 }).ConfigureAwait(false);
 
-            if (hiddenPowerUpCollectedEvent is null)
+            if (hiddenCollectedPowerUpEvent is null)
                 throw new InvalidOperationException("CHUNKED-LOCAL: the hidden power-up was not collected.");
 
             await Task.Delay(250).ConfigureAwait(false);

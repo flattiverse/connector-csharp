@@ -42,7 +42,7 @@ Relevant API entry points:
 - While a static-map rebuild is running, tournament commands are rejected with `StaticMapRebuildInProgressGameException`.
 - Triggering `Galaxy.RebuildStaticMap()` while a tournament exists is rejected with `StaticMapRebuildLockedGameException`.
 - A new rebuild request aborts the currently running rebuild and restarts it from scratch.
-- Editable unit changes are event-driven. When an admin edits or removes an editable unit, the server sends `RemovedUnit` first and then `UnitAlteredByAdminEvent` to admins, spectators, and players that have seen that unit before during their current connection.
+- Editable unit changes are event-driven. When an admin edits or removes an editable unit, the server sends `UnitRemoved` first and then `AlteredUnitByAdminEvent` to admins, spectators, and players that have seen that unit before during their current connection.
 
 ## Connection
 

@@ -11,8 +11,8 @@ public partial class Galaxy
 
     /// <summary>
     /// Current tournament snapshot mirrored from the server, or <see langword="null" /> if no tournament is configured.
-    /// The reference changes through <see cref="TournamentCreatedEvent" />, <see cref="TournamentUpdatedEvent" />, and
-    /// <see cref="TournamentRemovedEvent" />.
+    /// The reference changes through <see cref="CreatedTournamentEvent" />, <see cref="UpdatedTournamentEvent" />, and
+    /// <see cref="RemovedTournamentEvent" />.
     /// </summary>
     public Tournament? Tournament
     {
@@ -152,13 +152,13 @@ public partial class Galaxy
         if (_tournament is null)
         {
             _tournament = tournament;
-            PushEvent(new TournamentCreatedEvent(tournament));
+            PushEvent(new CreatedTournamentEvent(tournament));
             return;
         }
 
         Tournament previousTournament = _tournament;
         _tournament = tournament;
-        PushEvent(new TournamentUpdatedEvent(previousTournament, tournament));
+        PushEvent(new UpdatedTournamentEvent(previousTournament, tournament));
     }
 
     [Command(0xD1)]
@@ -169,7 +169,7 @@ public partial class Galaxy
 
         Tournament removedTournament = _tournament;
         _tournament = null;
-        PushEvent(new TournamentRemovedEvent(removedTournament));
+        PushEvent(new RemovedTournamentEvent(removedTournament));
     }
 
     [Command(0xD2)]

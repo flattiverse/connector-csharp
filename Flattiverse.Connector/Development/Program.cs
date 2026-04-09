@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Xml.Linq;
 using Flattiverse.Connector;
 using Flattiverse.Connector.Events;
@@ -24,6 +24,7 @@ partial class Program
     private const string AdminAuth = "<INSERT ADMIN API KEY HERE>";
     private const string PlayerAdminAuth = "<INSERT PLAYER-ADMIN API KEY HERE>";
     private const string PlayerAuth = "<INSERT PLAYER API KEY HERE>";
+    private static readonly bool TraceSelectedEvents = Environment.GetEnvironmentVariable("FV_DEVELOPMENT_TRACE_EVENTS") == "1";
     private static readonly string LocalSwitchGateAdminAuth = Environment.GetEnvironmentVariable("FV_LOCAL_SWITCH_GATE_ADMIN_AUTH")
         ?? "<INSERT LOCAL SWITCH GATE ADMIN API KEY HERE>";
     private static readonly string LocalSwitchGatePinkPlayerAuth = Environment.GetEnvironmentVariable("FV_LOCAL_SWITCH_GATE_PINK_PLAYER_AUTH")
@@ -734,8 +735,8 @@ partial class Program
             await ship.ShotLauncher.Shoot(new Vector(3f, 0f), 20, 2.5f, 1f).ConfigureAwait(false);
 
             List<FlattiverseEvent> switchPhaseEvents = new List<FlattiverseEvent>();
-            GateSwitchedEvent? gateSwitchedEvent = await WaitForQueuedEvent(playerEvents, 5000, switchPhaseEvents,
-                delegate (GateSwitchedEvent @event)
+            SwitchedGateEvent? gateSwitchedEvent = await WaitForQueuedEvent(playerEvents, 5000, switchPhaseEvents,
+                delegate (SwitchedGateEvent @event)
                 {
                     return @event.SwitchName == switchName;
                 }).ConfigureAwait(false);
@@ -746,8 +747,8 @@ partial class Program
                                          gateSwitchedEvent.Gates[0].GateName == gateName &&
                                          !gateSwitchedEvent.Gates[0].Closed;
 
-            UpdatedUnitFlattiverseEvent? switchedUnitUpdateEvent = await WaitForQueuedEvent(playerEvents, 2000, switchPhaseEvents,
-                delegate (UpdatedUnitFlattiverseEvent @event)
+            UpdatedUnitEvent? switchedUnitUpdateEvent = await WaitForQueuedEvent(playerEvents, 2000, switchPhaseEvents,
+                delegate (UpdatedUnitEvent @event)
                 {
                     return @event.Unit.Name == switchName || @event.Unit.Name == gateName;
                 }).ConfigureAwait(false);
@@ -768,8 +769,8 @@ partial class Program
             Console.WriteLine($"SWITCH-GATE-LOCAL: switched state applied = {switchedStateApplied}");
 
             List<FlattiverseEvent> restorePhaseEvents = new List<FlattiverseEvent>();
-            GateRestoredEvent? gateRestoredEvent = await WaitForQueuedEvent(playerEvents, 4000, restorePhaseEvents,
-                delegate (GateRestoredEvent @event)
+            RestoredGateEvent? gateRestoredEvent = await WaitForQueuedEvent(playerEvents, 4000, restorePhaseEvents,
+                delegate (RestoredGateEvent @event)
                 {
                     return @event.GateName == gateName;
                 }).ConfigureAwait(false);
@@ -781,8 +782,8 @@ partial class Program
             bool restoredUnitUpdateObserved = false;
 
             for (int index = 0; index < restorePhaseEvents.Count; index++)
-                if (restorePhaseEvents[index] is UpdatedUnitFlattiverseEvent updatedUnitFlattiverseEvent &&
-                    updatedUnitFlattiverseEvent.Unit.Name == gateName)
+                if (restorePhaseEvents[index] is UpdatedUnitEvent updatedUnitEvent &&
+                    updatedUnitEvent.Unit.Name == gateName)
                     restoredUnitUpdateObserved = true;
 
             bool restoredStateApplied =
@@ -1107,15 +1108,15 @@ partial class Program
             bool shipDead = await WaitForAliveState(ship, false, 5000).ConfigureAwait(false);
             List<FlattiverseEvent> collisionEvents = DrainEvents(playerEvents);
             Gate? collisionUpdatedGate = FindLastUpdatedUnit<Gate>(collisionEvents, collisionGateName);
-            NeutralDestroyedControllableInfoPlayerEvent? neutralDestroyedEvent = null;
+            DestroyedControllableInfoByNeutralUnitEvent? neutralDestroyedEvent = null;
 
             for (int index = 0; index < collisionEvents.Count; index++)
-                if (collisionEvents[index] is NeutralDestroyedControllableInfoPlayerEvent neutralDestroyedControllableInfoPlayerEvent &&
-                    neutralDestroyedControllableInfoPlayerEvent.ControllableInfo.Name == ship.Name &&
-                    neutralDestroyedControllableInfoPlayerEvent.CollidersKind == UnitKind.Gate &&
-                    neutralDestroyedControllableInfoPlayerEvent.CollidersName == collisionGateName)
+                if (collisionEvents[index] is DestroyedControllableInfoByNeutralUnitEvent neutralDestroyedControllableInfoEvent &&
+                    neutralDestroyedControllableInfoEvent.ControllableInfo.Name == ship.Name &&
+                    neutralDestroyedControllableInfoEvent.CollidersKind == UnitKind.Gate &&
+                    neutralDestroyedControllableInfoEvent.CollidersName == collisionGateName)
                 {
-                    neutralDestroyedEvent = neutralDestroyedControllableInfoPlayerEvent;
+                    neutralDestroyedEvent = neutralDestroyedControllableInfoEvent;
                     break;
                 }
 
@@ -1413,25 +1414,25 @@ partial class Program
                 }
 
                 List<FlattiverseEvent> phaseEvents = new List<FlattiverseEvent>();
-                PowerUpCollectedEvent? collectedEvent = await WaitForQueuedEvent(playerEvents, 4000, phaseEvents,
-                    delegate (PowerUpCollectedEvent @event)
+                CollectedPowerUpEvent? collectedEvent = await WaitForQueuedEvent(playerEvents, 4000, phaseEvents,
+                    delegate (CollectedPowerUpEvent @event)
                     {
                         return @event.PowerUpName == powerUpName;
                     }).ConfigureAwait(false);
 
-                RemovedUnitFlattiverseEvent? removedEvent = null;
+                RemovedUnitEvent? removedEvent = null;
 
                 for (int eventIndex = 0; eventIndex < phaseEvents.Count; eventIndex++)
-                    if (phaseEvents[eventIndex] is RemovedUnitFlattiverseEvent removedUnitFlattiverseEvent &&
-                        removedUnitFlattiverseEvent.Unit.Name == powerUpName)
+                    if (phaseEvents[eventIndex] is RemovedUnitEvent removedUnitEvent &&
+                        removedUnitEvent.Unit.Name == powerUpName)
                     {
-                        removedEvent = removedUnitFlattiverseEvent;
+                        removedEvent = removedUnitEvent;
                         break;
                     }
 
                 if (removedEvent is null)
                     removedEvent = await WaitForQueuedEvent(playerEvents, 2000, phaseEvents,
-                        delegate (RemovedUnitFlattiverseEvent @event)
+                        delegate (RemovedUnitEvent @event)
                         {
                             return @event.Unit.Name == powerUpName;
                         }).ConfigureAwait(false);
@@ -1535,25 +1536,25 @@ partial class Program
             }
 
             List<FlattiverseEvent> respawnPhaseEvents = new List<FlattiverseEvent>();
-            PowerUpCollectedEvent? respawnCollectedEvent = await WaitForQueuedEvent(playerEvents, 4000, respawnPhaseEvents,
-                delegate (PowerUpCollectedEvent @event)
+            CollectedPowerUpEvent? respawnCollectedEvent = await WaitForQueuedEvent(playerEvents, 4000, respawnPhaseEvents,
+                delegate (CollectedPowerUpEvent @event)
                 {
                     return @event.PowerUpName == respawnPowerUpName;
                 }).ConfigureAwait(false);
 
-            RemovedUnitFlattiverseEvent? respawnRemovedEvent = null;
+            RemovedUnitEvent? respawnRemovedEvent = null;
 
             for (int eventIndex = 0; eventIndex < respawnPhaseEvents.Count; eventIndex++)
-                if (respawnPhaseEvents[eventIndex] is RemovedUnitFlattiverseEvent removedUnitFlattiverseEvent &&
-                    removedUnitFlattiverseEvent.Unit.Name == respawnPowerUpName)
+                if (respawnPhaseEvents[eventIndex] is RemovedUnitEvent removedUnitEvent &&
+                    removedUnitEvent.Unit.Name == respawnPowerUpName)
                 {
-                    respawnRemovedEvent = removedUnitFlattiverseEvent;
+                    respawnRemovedEvent = removedUnitEvent;
                     break;
                 }
 
             if (respawnRemovedEvent is null)
                 respawnRemovedEvent = await WaitForQueuedEvent(playerEvents, 2000, respawnPhaseEvents,
-                    delegate (RemovedUnitFlattiverseEvent @event)
+                    delegate (RemovedUnitEvent @event)
                     {
                         return @event.Unit.Name == respawnPowerUpName;
                     }).ConfigureAwait(false);
@@ -1584,8 +1585,8 @@ partial class Program
 
             if (movedAwayEnough)
             {
-                NewUnitFlattiverseEvent? respawnNewEvent = await WaitForQueuedEvent(playerEvents, 4000, respawnPhaseEvents,
-                    delegate (NewUnitFlattiverseEvent @event)
+                AppearedUnitEvent? respawnNewEvent = await WaitForQueuedEvent(playerEvents, 4000, respawnPhaseEvents,
+                    delegate (AppearedUnitEvent @event)
                     {
                         return @event.Unit.Name == respawnPowerUpName;
                     }).ConfigureAwait(false);
@@ -1784,8 +1785,8 @@ partial class Program
 
             await greenShip.ShotLauncher.Shoot(greenShotRelativeMovement, GreenShotTicks, GreenShotLoad, GreenShotDamage).ConfigureAwait(false);
 
-            NewUnitFlattiverseEvent? shotNewEvent = await WaitForQueuedEvent(spectatorEvents, ShotObservationTimeoutMs, spectatorTrace,
-                delegate (NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? shotNewEvent = await WaitForQueuedEvent(spectatorEvents, ShotObservationTimeoutMs, spectatorTrace,
+                delegate (AppearedUnitEvent @event)
                 {
                     return @event.Unit is Shot shot &&
                            shot.ControllableInfo is not null &&
@@ -1825,8 +1826,8 @@ partial class Program
 
             await pinkShip.InterceptorLauncher.Shoot(interceptorRelativeMovement, InterceptorTicks, InterceptorLoad, InterceptorDamage).ConfigureAwait(false);
 
-            NewUnitFlattiverseEvent? interceptorNewEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
-                delegate (NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? interceptorNewEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                delegate (AppearedUnitEvent @event)
                 {
                     return @event.Unit is Interceptor interceptor &&
                            interceptor.ControllableInfo is not null &&
@@ -1842,16 +1843,16 @@ partial class Program
 
             if (interceptorUnit is not null)
             {
-                RemovedUnitFlattiverseEvent? interceptorRemovedEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
-                    delegate (RemovedUnitFlattiverseEvent @event)
+                RemovedUnitEvent? interceptorRemovedEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                    delegate (RemovedUnitEvent @event)
                     {
                         return @event.Unit.Name == interceptorUnit.Name;
                     }).ConfigureAwait(false);
 
                 interceptorRemoved = interceptorRemovedEvent is not null;
 
-                NewUnitFlattiverseEvent? interceptorExplosionEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
-                    delegate (NewUnitFlattiverseEvent @event)
+                AppearedUnitEvent? interceptorExplosionEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                    delegate (AppearedUnitEvent @event)
                     {
                         return @event.Unit is InterceptorExplosion &&
                                @event.Unit.Name == interceptorUnit.Name;
@@ -1860,8 +1861,8 @@ partial class Program
                 interceptorExplosionObserved = interceptorExplosionEvent is not null;
             }
 
-            RemovedUnitFlattiverseEvent? shotRemovedEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
-                delegate (RemovedUnitFlattiverseEvent @event)
+            RemovedUnitEvent? shotRemovedEvent = await WaitForQueuedEvent(spectatorEvents, InterceptorTimeoutMs, spectatorTrace,
+                delegate (RemovedUnitEvent @event)
                 {
                     return @event.Unit.Name == greenShot.Name;
                 }).ConfigureAwait(false);
@@ -1876,9 +1877,9 @@ partial class Program
                 {
                     spectatorTrace.Add(@event);
 
-                    if (@event is NewUnitFlattiverseEvent newUnitFlattiverseEvent &&
-                        newUnitFlattiverseEvent.Unit.Kind == UnitKind.Explosion &&
-                        newUnitFlattiverseEvent.Unit.Name == greenShot.Name)
+                    if (@event is AppearedUnitEvent newUnitEvent &&
+                        newUnitEvent.Unit.Kind == UnitKind.Explosion &&
+                        newUnitEvent.Unit.Name == greenShot.Name)
                         shotNormalExplosionObserved = true;
                 }
 
@@ -2497,17 +2498,17 @@ partial class Program
             bool controllableScoreUpdated = false;
 
             foreach (FlattiverseEvent @event in eventsAfterSuicide)
-                if (@event is PlayerScoreUpdatedEvent playerScoreUpdatedEvent &&
+                if (@event is UpdatedPlayerScoreEvent playerScoreUpdatedEvent &&
                     playerScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
                     playerScoreUpdatedEvent.NewPlayerDeaths == initialPlayerDeaths &&
                     playerScoreUpdatedEvent.NewFriendlyDeaths == initialPlayerFriendlyDeaths + 1U)
                     playerScoreUpdated = true;
-                else if (@event is TeamScoreUpdatedEvent teamScoreUpdatedEvent &&
+                else if (@event is UpdatedTeamScoreEvent teamScoreUpdatedEvent &&
                          teamScoreUpdatedEvent.Team.Id == playerGalaxy.Player.Team.Id &&
                          teamScoreUpdatedEvent.NewPlayerDeaths == initialTeamDeaths &&
                          teamScoreUpdatedEvent.NewFriendlyDeaths == initialTeamFriendlyDeaths + 1U)
                     teamScoreUpdated = true;
-                else if (@event is ControllableInfoScoreUpdatedEvent controllableInfoScoreUpdatedEvent &&
+                else if (@event is UpdatedControllableInfoScoreEvent controllableInfoScoreUpdatedEvent &&
                          controllableInfoScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
                          controllableInfoScoreUpdatedEvent.ControllableInfo.Id == ship.Id &&
                          controllableInfoScoreUpdatedEvent.NewFriendlyDeaths == initialControllableFriendlyDeaths + 1U)
@@ -2984,13 +2985,13 @@ partial class Program
     private static void ApplyUnitEvents(List<FlattiverseEvent> events, Dictionary<string, UnitSpec> unitsByKey)
     {
         foreach (FlattiverseEvent @event in events)
-            if (@event is NewUnitFlattiverseEvent newUnitEvent)
+            if (@event is AppearedUnitEvent newUnitEvent)
             {
                 Unit unit = newUnitEvent.Unit;
                 string key = BuildUnitKey(unit.Cluster.Id, unit.Name);
                 unitsByKey[key] = new UnitSpec(unit.Cluster.Id, unit.Name, unit.Kind);
             }
-            else if (@event is RemovedUnitFlattiverseEvent removedUnitEvent)
+            else if (@event is RemovedUnitEvent removedUnitEvent)
             {
                 Unit unit = removedUnitEvent.Unit;
                 string key = BuildUnitKey(unit.Cluster.Id, unit.Name);
@@ -4196,16 +4197,16 @@ partial class Program
         bool ownUnitRemoved = false;
 
         foreach (FlattiverseEvent @event in eventsAfterDelete)
-            if (@event is ClusterRemovedEvent clusterRemovedEvent && clusterRemovedEvent.Cluster.Id == activeClusterValue.Id)
+            if (@event is RemovedClusterEvent clusterRemovedEvent && clusterRemovedEvent.Cluster.Id == activeClusterValue.Id)
                 clusterRemoved = true;
-            else if (@event is DestroyedControllableInfoPlayerEvent destroyedEvent &&
+            else if (@event is DestroyedControllableInfoEvent destroyedEvent &&
                      destroyedEvent.Player.Id == playerGalaxy.Player.Id &&
                      destroyedEvent.ControllableInfo.Name == ship.Name)
             {
                 ownShipDestroyed = true;
                 destroyReason = destroyedEvent.Reason;
             }
-            else if (@event is RemovedUnitFlattiverseEvent removedUnitEvent && removedUnitEvent.Unit.Name == ship.Name)
+            else if (@event is RemovedUnitEvent removedUnitEvent && removedUnitEvent.Unit.Name == ship.Name)
                 ownUnitRemoved = true;
 
         Console.WriteLine($"  CLUSTER REMOVED EVENT: {clusterRemoved}");
@@ -4270,13 +4271,13 @@ partial class Program
         bool teamScoreUpdated = false;
 
         foreach (FlattiverseEvent @event in eventsAfterSuicide)
-            if (@event is PlayerScoreUpdatedEvent playerScoreUpdatedEvent &&
+            if (@event is UpdatedPlayerScoreEvent playerScoreUpdatedEvent &&
                 playerScoreUpdatedEvent.Player.Id == playerGalaxy.Player.Id &&
                 playerScoreUpdatedEvent.NewPlayerDeaths == initialPlayerDeaths &&
                 playerScoreUpdatedEvent.NewPlayerKills == initialPlayerKills &&
                 playerScoreUpdatedEvent.NewFriendlyDeaths == initialPlayerFriendlyDeaths + 1U)
                 playerScoreUpdated = true;
-            else if (@event is TeamScoreUpdatedEvent teamScoreUpdatedEvent &&
+            else if (@event is UpdatedTeamScoreEvent teamScoreUpdatedEvent &&
                      teamScoreUpdatedEvent.Team.Id == playerGalaxy.Player.Team.Id &&
                      teamScoreUpdatedEvent.NewPlayerDeaths == initialTeamDeaths &&
                      teamScoreUpdatedEvent.NewPlayerKills == initialTeamKills &&
@@ -4362,6 +4363,9 @@ partial class Program
                 {
                     FlattiverseEvent @event = await playerGalaxy.NextEvent().ConfigureAwait(false);
                     playerEvents.Enqueue(@event);
+
+                    if (TraceSelectedEvents && ShouldTraceSelectedEvent(@event))
+                        Console.WriteLine($"{name}: [{@event.GetType().Name}] {DescribeObservedEvent(@event)}");
                 }
             }
             catch (ConnectionTerminatedGameException exception)
@@ -4369,6 +4373,44 @@ partial class Program
                 Console.WriteLine($"{name}: event pump terminated ({exception.Message})");
             }
         });
+    }
+
+    private static bool ShouldTraceSelectedEvent(FlattiverseEvent @event)
+    {
+        return @event is RegisteredControllableInfoEvent
+            || @event is ClosedControllableInfoEvent
+            || @event is ContinuedControllableInfoEvent
+            || @event is DestroyedControllableInfoEvent
+            || @event is AppearedUnitEvent
+            || @event is RemovedUnitEvent
+            || @event is UpdatedUnitEvent
+            || @event is CollectedPowerUpEvent
+            || @event is SwitchedGateEvent
+            || @event is RestoredGateEvent
+            || @event is UpdatedPlayerScoreEvent
+            || @event is UpdatedControllableInfoScoreEvent
+            || @event is PlayerBinaryChatEvent
+            || @event is GalaxyChatEvent
+            || @event is TeamChatEvent
+            || @event is PlayerChatEvent
+            || @event is UpdatedGalaxySettingsEvent
+            || @event is CreatedTeamEvent
+            || @event is UpdatedTeamEvent
+            || @event is RemovedTeamEvent
+            || @event is CreatedClusterEvent
+            || @event is UpdatedClusterEvent
+            || @event is RemovedClusterEvent
+            || @event is CreatedTournamentEvent
+            || @event is UpdatedTournamentEvent
+            || @event is RemovedTournamentEvent;
+    }
+
+    private static string DescribeObservedEvent(FlattiverseEvent @event)
+    {
+        if (@event is PlayerBinaryChatEvent playerBinaryChatEvent)
+            return $"{playerBinaryChatEvent.Player.Name} -> {playerBinaryChatEvent.Destination.Name} bytes={playerBinaryChatEvent.Message.Length}";
+
+        return DescribeSpectatorEvent(@event);
     }
 
     private static string DescribeSpectatorEvent(FlattiverseEvent @event)
@@ -4382,27 +4424,27 @@ partial class Program
         if (@event is DisconnectedPlayerEvent disconnectedPlayerEvent)
             return $"{disconnectedPlayerEvent.Stamp:HH:mm:ss.fff} PLAYER-DISCONNECTED id={disconnectedPlayerEvent.Player.Id} name={disconnectedPlayerEvent.Player.Name}";
 
-        if (@event is RegisteredControllableInfoPlayerEvent registeredControllableInfoPlayerEvent)
-            return $"{registeredControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL+ player={registeredControllableInfoPlayerEvent.Player.Id}:{registeredControllableInfoPlayerEvent.Player.Name} controllable={registeredControllableInfoPlayerEvent.ControllableInfo.Id}:{registeredControllableInfoPlayerEvent.ControllableInfo.Name} kind={registeredControllableInfoPlayerEvent.ControllableInfo.Kind} alive={registeredControllableInfoPlayerEvent.ControllableInfo.Alive}";
+        if (@event is RegisteredControllableInfoEvent registeredControllableInfoEvent)
+            return $"{registeredControllableInfoEvent.Stamp:HH:mm:ss.fff} CTRL+ player={registeredControllableInfoEvent.Player.Id}:{registeredControllableInfoEvent.Player.Name} controllable={registeredControllableInfoEvent.ControllableInfo.Id}:{registeredControllableInfoEvent.ControllableInfo.Name} kind={registeredControllableInfoEvent.ControllableInfo.Kind} alive={registeredControllableInfoEvent.ControllableInfo.Alive}";
 
-        if (@event is ClosedControllableInfoPlayerEvent closedControllableInfoPlayerEvent)
-            return $"{closedControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL- player={closedControllableInfoPlayerEvent.Player.Id}:{closedControllableInfoPlayerEvent.Player.Name} controllable={closedControllableInfoPlayerEvent.ControllableInfo.Id}:{closedControllableInfoPlayerEvent.ControllableInfo.Name}";
+        if (@event is ClosedControllableInfoEvent closedControllableInfoEvent)
+            return $"{closedControllableInfoEvent.Stamp:HH:mm:ss.fff} CTRL- player={closedControllableInfoEvent.Player.Id}:{closedControllableInfoEvent.Player.Name} controllable={closedControllableInfoEvent.ControllableInfo.Id}:{closedControllableInfoEvent.ControllableInfo.Name}";
 
-        if (@event is ContinuedControllableInfoPlayerEvent continuedControllableInfoPlayerEvent)
-            return $"{continuedControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL-ALIVE player={continuedControllableInfoPlayerEvent.Player.Id}:{continuedControllableInfoPlayerEvent.Player.Name} controllable={continuedControllableInfoPlayerEvent.ControllableInfo.Id}:{continuedControllableInfoPlayerEvent.ControllableInfo.Name}";
+        if (@event is ContinuedControllableInfoEvent continuedControllableInfoEvent)
+            return $"{continuedControllableInfoEvent.Stamp:HH:mm:ss.fff} CTRL-ALIVE player={continuedControllableInfoEvent.Player.Id}:{continuedControllableInfoEvent.Player.Name} controllable={continuedControllableInfoEvent.ControllableInfo.Id}:{continuedControllableInfoEvent.ControllableInfo.Name}";
 
-        if (@event is DestroyedControllableInfoPlayerEvent destroyedControllableInfoPlayerEvent)
-            return $"{destroyedControllableInfoPlayerEvent.Stamp:HH:mm:ss.fff} CTRL-DEAD player={destroyedControllableInfoPlayerEvent.Player.Id}:{destroyedControllableInfoPlayerEvent.Player.Name} controllable={destroyedControllableInfoPlayerEvent.ControllableInfo.Id}:{destroyedControllableInfoPlayerEvent.ControllableInfo.Name} event={destroyedControllableInfoPlayerEvent.Kind}";
+        if (@event is DestroyedControllableInfoEvent destroyedControllableInfoEvent)
+            return $"{destroyedControllableInfoEvent.Stamp:HH:mm:ss.fff} CTRL-DEAD player={destroyedControllableInfoEvent.Player.Id}:{destroyedControllableInfoEvent.Player.Name} controllable={destroyedControllableInfoEvent.ControllableInfo.Id}:{destroyedControllableInfoEvent.ControllableInfo.Name} event={destroyedControllableInfoEvent.Kind}";
 
-        if (@event is NewUnitFlattiverseEvent newUnitFlattiverseEvent)
-            return DescribeUnitEvent("UNIT+", newUnitFlattiverseEvent.Stamp, newUnitFlattiverseEvent.Unit);
+        if (@event is AppearedUnitEvent newUnitEvent)
+            return DescribeUnitEvent("UNIT+", newUnitEvent.Stamp, newUnitEvent.Unit);
 
-        if (@event is RemovedUnitFlattiverseEvent removedUnitFlattiverseEvent)
-            return DescribeUnitEvent("UNIT-", removedUnitFlattiverseEvent.Stamp, removedUnitFlattiverseEvent.Unit);
+        if (@event is RemovedUnitEvent removedUnitEvent)
+            return DescribeUnitEvent("UNIT-", removedUnitEvent.Stamp, removedUnitEvent.Unit);
 
-        if (@event is UpdatedUnitFlattiverseEvent updatedUnitFlattiverseEvent)
-            if (updatedUnitFlattiverseEvent.Unit.Kind == UnitKind.Shot || updatedUnitFlattiverseEvent.Unit.Kind == UnitKind.Explosion)
-                return DescribeUnitEvent("UNIT*", updatedUnitFlattiverseEvent.Stamp, updatedUnitFlattiverseEvent.Unit);
+        if (@event is UpdatedUnitEvent updatedUnitEvent)
+            if (updatedUnitEvent.Unit.Kind == UnitKind.Shot || updatedUnitEvent.Unit.Kind == UnitKind.Explosion)
+                return DescribeUnitEvent("UNIT*", updatedUnitEvent.Stamp, updatedUnitEvent.Unit);
 
         return @event.ToString();
     }
@@ -4647,9 +4689,9 @@ partial class Program
     private static T? FindLastUpdatedUnit<T>(List<FlattiverseEvent> events, string unitName) where T : Unit
     {
         for (int index = events.Count - 1; index >= 0; index--)
-            if (events[index] is UpdatedUnitFlattiverseEvent updatedUnitFlattiverseEvent &&
-                updatedUnitFlattiverseEvent.Unit.Name == unitName &&
-                updatedUnitFlattiverseEvent.Unit is T typedUnit)
+            if (events[index] is UpdatedUnitEvent updatedUnitEvent &&
+                updatedUnitEvent.Unit.Name == unitName &&
+                updatedUnitEvent.Unit is T typedUnit)
                 return typedUnit;
 
         return null;

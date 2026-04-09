@@ -315,8 +315,8 @@ partial class Program
                 .ConfigureAwait(false);
 
             List<FlattiverseEvent> jellyPhaseEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? jellySlimeEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, jellyPhaseEvents,
-                delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? jellySlimeEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, jellyPhaseEvents,
+                delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit is SpaceJellyFishSlime;
                 }).ConfigureAwait(false);
@@ -373,8 +373,8 @@ partial class Program
             DrainEvents(spectatorEvents);
 
             List<FlattiverseEvent> turretPhaseEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? turretShotEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, turretPhaseEvents,
-                delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? turretShotEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, turretPhaseEvents,
+                delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit is Shot;
                 }).ConfigureAwait(false);
@@ -406,8 +406,8 @@ partial class Program
                 .ConfigureAwait(false);
 
             List<FlattiverseEvent> aiShipPhaseEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? aiShipShotEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, aiShipPhaseEvents,
-                delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? aiShipShotEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, aiShipPhaseEvents,
+                delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit is Shot;
                 }).ConfigureAwait(false);
@@ -434,8 +434,8 @@ partial class Program
                 .ConfigureAwait(false);
 
             List<FlattiverseEvent> aiShipRespawnEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? aiShipInitialSpawnEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
-                aiShipRespawnEvents, delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? aiShipInitialSpawnEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
+                aiShipRespawnEvents, delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit.Kind == UnitKind.AiShip && @event.Unit.Name == aiShipRespawnName;
                 }).ConfigureAwait(false);
@@ -471,8 +471,8 @@ partial class Program
                 $"<AiTurret Name=\"{aiShipRespawnAttackerName}\" Team=\"{pinkTeam.Id}\" X=\"{aiShipRespawnPatrolX:0.###}\" Y=\"{aiShipRespawnPatrolY - 60f:0.###}\" Radius=\"16\" Gravity=\"0\" Hull=\"30\" RepairPerTick=\"0\" RespawnTicks=\"0\" RespawnPlayerDistance=\"180\" ShotSpeed=\"5.4\" ShotDamage=\"60\" />")
                 .ConfigureAwait(false);
 
-            RemovedUnitFlattiverseEvent? aiShipRemovedEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
-                aiShipRespawnEvents, delegate(RemovedUnitFlattiverseEvent @event)
+            RemovedUnitEvent? aiShipRemovedEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
+                aiShipRespawnEvents, delegate(RemovedUnitEvent @event)
                 {
                     return @event.Unit.Kind == UnitKind.AiShip && @event.Unit.Name == aiShipRespawnName;
                 }).ConfigureAwait(false);
@@ -490,8 +490,8 @@ partial class Program
                 throw new InvalidOperationException("NPC-LOCAL: dead ai ship remained visible after the remove event.");
             }
 
-            NewUnitFlattiverseEvent? aiShipRespawnEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, aiShipRespawnEvents,
-                delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? aiShipRespawnEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, aiShipRespawnEvents,
+                delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit.Kind == UnitKind.AiShip && @event.Unit.Name == aiShipRespawnName;
                 }).ConfigureAwait(false);
@@ -537,8 +537,8 @@ partial class Program
             DrainEvents(spectatorEvents);
 
             List<FlattiverseEvent> baseRailEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? baseRailEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, baseRailEvents,
-                delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? baseRailEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, baseRailEvents,
+                delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit is Rail;
                 }).ConfigureAwait(false);
@@ -560,8 +560,8 @@ partial class Program
                 baseInterceptorShotDamage).ConfigureAwait(false);
 
             List<FlattiverseEvent> baseInterceptorEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? baseInterceptorEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, baseInterceptorEvents,
-                delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? baseInterceptorEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs, baseInterceptorEvents,
+                delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit is Interceptor;
                 }).ConfigureAwait(false);
@@ -614,8 +614,8 @@ partial class Program
                 .ConfigureAwait(false);
 
             List<FlattiverseEvent> freighterInterceptorEvents = new List<FlattiverseEvent>();
-            NewUnitFlattiverseEvent? freighterInterceptorEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
-                freighterInterceptorEvents, delegate(NewUnitFlattiverseEvent @event)
+            AppearedUnitEvent? freighterInterceptorEvent = await WaitForQueuedEvent(spectatorEvents, NpcUnitsLocalTimeoutMs,
+                freighterInterceptorEvents, delegate(AppearedUnitEvent @event)
                 {
                     return @event.Unit is Interceptor;
                 }).ConfigureAwait(false);

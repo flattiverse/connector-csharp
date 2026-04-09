@@ -4,6 +4,15 @@ namespace Flattiverse.Connector.Events;
 /// Connector-side classification of <see cref="FlattiverseEvent" /> types.
 /// These values are meant for application-side dispatch and do not directly mirror wire-protocol packet opcodes.
 /// </summary>
+/// <remarks>
+/// Naming rule:
+/// lifecycle and change categories use <c>&lt;Object&gt;&lt;PastParticiple&gt;</c>, for example <see cref="PlayerJoined" />
+/// or <see cref="UnitUpdated" />;
+/// category, signal, and runtime-status categories use a plain domain name, for example <see cref="SystemMessage" />,
+/// <see cref="GalaxyTick" />, or <see cref="BatterySubsystem" />.
+/// Concrete <see cref="FlattiverseEvent" /> types follow the same domain meaning, but their CLR names may invert verb
+/// and object or add payload-specific specialization.
+/// </remarks>
 public enum EventKind : byte
 {
     /// <summary>
@@ -207,14 +216,14 @@ public enum EventKind : byte
     ModernRailgunSubsystem = 0x95,
     
     /// <summary>
-    /// You see a new unit.
+    /// A visible unit became known to the local visibility mirror.
     /// </summary>
-    NewUnit = 0x30,
+    UnitAppeared = 0x30,
     
     /// <summary>
-    /// An existing unit has been updated.
+    /// An already known visible unit has been updated.
     /// </summary>
-    UpdatedUnit = 0x31,
+    UnitUpdated = 0x31,
 
     /// <summary>
     /// A previously known unit has been altered by an admin through map editing.
@@ -224,7 +233,7 @@ public enum EventKind : byte
     /// <summary>
     /// A previously known visible unit has left the local visibility mirror.
     /// </summary>
-    RemovedUnit = 0x3F,
+    UnitRemoved = 0x3F,
     
     /// <summary>
     /// A galaxy-wide system chat announced that a flag has been scored.
@@ -244,17 +253,17 @@ public enum EventKind : byte
     /// <summary>
     /// You received a galaxy chat message.
     /// </summary>
-    ChatGalaxy = 0xC4,
+    GalaxyChat = 0xC4,
     
     /// <summary>
     /// You received a team chat message.
     /// </summary>
-    ChatTeam = 0xC5,
+    TeamChat = 0xC5,
     
     /// <summary>
-    /// You received a private message of a team member.
+    /// You received a private text chat message from another player.
     /// </summary>
-    ChatPlayer = 0xC6,
+    PlayerChat = 0xC6,
 
     /// <summary>
     /// A galaxy-wide system chat announced that a mission target was hit in sequence.
@@ -282,9 +291,9 @@ public enum EventKind : byte
     GateRestored = 0xCB,
 
     /// <summary>
-    /// You received a private binary chat message.
+    /// You received a private binary chat message from another player.
     /// </summary>
-    BinaryChatPlayer = 0xCC,
+    PlayerBinaryChat = 0xCC,
 
     /// <summary>
     /// A tournament was created.

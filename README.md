@@ -46,10 +46,10 @@ while (galaxy.Active)
 
 - connect to a galaxy and keep a local mirror of galaxy settings, teams, clusters, players, controllables and visible units
 - receive strongly typed events for settings changes, compile profile announcement, score changes, team and cluster lifecycle, player lifecycle, visible unit lifecycle, `ControllableInfo` lifecycle, owner-side subsystem runtime, player chat, objective system chat including mission-target hits, and connection termination
-- receive owner-only `PowerUpCollectedEvent` packets with `PowerUpName`, `PowerUpKind`, configured `Amount`, and actual `AppliedAmount`
-- inspect `Galaxy.Tournament` and receive `TournamentCreatedEvent`, `TournamentUpdatedEvent`, `TournamentRemovedEvent`, and `TournamentMessageEvent`
+- receive owner-only `CollectedPowerUpEvent` packets with `PowerUpName`, `PowerUpKind`, configured `Amount`, and actual `AppliedAmount`
+- inspect `Galaxy.Tournament` and receive `CreatedTournamentEvent`, `UpdatedTournamentEvent`, `RemovedTournamentEvent`, and `TournamentMessageEvent`
 - observe respawning power-ups through the normal visible-unit create/delete lifecycle; the connector does not use a dedicated respawn packet
-- inspect `Player.Score` and `Team.Score`, and react to `PlayerScoreUpdatedEvent` and `TeamScoreUpdatedEvent`
+- inspect `Player.Score` and `Team.Score`, and react to `UpdatedPlayerScoreEvent` and `UpdatedTeamScoreEvent`
 - create and control classic ships
 - create and control modern ships
 - create classic ships with up to three equipped crystal names
@@ -200,5 +200,5 @@ Admin-facing commands:
 - Passive sun effects now also surface as owner-only `EnvironmentDamageEvent`: heat drains `15` energy per point, unpaid heat overflows into radiation, and radiation damage is reduced by armor before reaching hull.
 - `ShotLauncher.Shoot(...)` and `InterceptorLauncher.Shoot(...)` use the same configurable projectile launch profile. `ShotFabricator.Set(...)` / `On()` / `Off()` and `InterceptorFabricator.Set(...)` / `On()` / `Off()` manage the two magazines separately.
 - `Railgun.FireFront()` / `FireBack()` request a fixed rail shot with `EnergyCost=300`, `MetalCost=1`, projectile speed `4`, and lifetime `250`. At zero ship movement the rail direction falls back to world angle `0`.
-- `ShotMagazine.CurrentShots` and `InterceptorMagazine.CurrentShots` are owner-visible through `0x82` and visible on foreign ships through their richer `UpdatedUnit` snapshots.
+- `ShotMagazine.CurrentShots` and `InterceptorMagazine.CurrentShots` are owner-visible through `0x82` and visible on foreign ships through their richer `UnitUpdated` snapshots.
 - The owner's own ship must be read from `Controllable` / `0x80` / `0x82`, not from visible-unit events. Those owner packets now also carry the authoritative `clusterId`, so cluster jumps must be tracked there instead of inferred from visible scans.

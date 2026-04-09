@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-25
+27
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=26&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=26&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=26&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=26&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=27&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=27&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=27&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=27&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -1014,8 +1014,8 @@ Notes:
   * `ModernRailgunSubsystemEvent`
   * `ModernShipEngineSubsystemEvent`
 * `EnvironmentDamageEvent`
-* `PowerUpCollectedEvent`
-* Those connector-local events currently use `EventKind` values `0x80..0x94`. These enum values are connector-local API identifiers, not an additional wire packet range. `PowerUpCollectedEvent` is backed by the dedicated owner-only wire packet `0x8E`; the subsystem events remain connector-local projections of `0x82`.
+* `CollectedPowerUpEvent`
+* Those connector-local events currently use `EventKind` values `0x80..0x94`. These enum values are connector-local API identifiers, not an additional wire packet range. `CollectedPowerUpEvent` is backed by the dedicated owner-only wire packet `0x8E`; the subsystem events remain connector-local projections of `0x82`.
 * Power-up respawn does not have a dedicated wire event. After pickup or explosion the server uses the normal `0x3F` visible-unit delete and later reintroduces the same unit name through `0x30` plus `0x32` once the respawn conditions are met.
 
 ### `0x30` Visible Unit Create

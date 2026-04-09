@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "26";
+    private const string Version = "27";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -844,7 +844,7 @@ public partial class Galaxy : IDisposable
             _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
             _requiresSelfDisclosure, _requiredAchievement);
 
-        PushEvent(new GalaxySettingsUpdatedEvent(oldSettings, newSettings));
+        PushEvent(new UpdatedGalaxySettingsEvent(oldSettings, newSettings));
     }
 
     [Command(0x02)]
@@ -858,14 +858,14 @@ public partial class Galaxy : IDisposable
         {
             Team newTeam = new Team(this, id, name, red, green, blue, playable != 0x00);
             _teams[id] = newTeam;
-            PushEvent(new TeamCreatedEvent(CreateTeamSnapshot(newTeam)));
+            PushEvent(new CreatedTeamEvent(CreateTeamSnapshot(newTeam)));
         }
         else
         {
             TeamSnapshot oldTeam = CreateTeamSnapshot(team);
             team.Update(name, red, green, blue, playable != 0x00);
             TeamSnapshot newTeam = CreateTeamSnapshot(team);
-            PushEvent(new TeamUpdatedEvent(oldTeam, newTeam));
+            PushEvent(new UpdatedTeamEvent(oldTeam, newTeam));
         }
     }
 
@@ -884,7 +884,7 @@ public partial class Galaxy : IDisposable
 
         team.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
-        PushEvent(new TeamScoreUpdatedEvent(team, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills, oldFriendlyDeaths, oldNpcKills,
+        PushEvent(new UpdatedTeamScoreEvent(team, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills, oldFriendlyDeaths, oldNpcKills,
             oldNpcDeaths, oldNeutralDeaths, oldMission, team.Score.PlayerKills, team.Score.PlayerDeaths, team.Score.FriendlyKills,
             team.Score.FriendlyDeaths, team.Score.NpcKills, team.Score.NpcDeaths, team.Score.NeutralDeaths, team.Score.Mission));
     }
@@ -902,7 +902,7 @@ public partial class Galaxy : IDisposable
         team.Deactivate();
         _teams[id] = null;
 
-        PushEvent(new TeamRemovedEvent(removedTeam));
+        PushEvent(new RemovedTeamEvent(removedTeam));
     }
     
     [Command(0x06)]
@@ -919,14 +919,14 @@ public partial class Galaxy : IDisposable
         {
             Cluster newCluster = new Cluster(this, id, name, start, respawn);
             _clusters[id] = newCluster;
-            PushEvent(new ClusterCreatedEvent(CreateClusterSnapshot(newCluster)));
+            PushEvent(new CreatedClusterEvent(CreateClusterSnapshot(newCluster)));
         }
         else
         {
             ClusterSnapshot oldCluster = CreateClusterSnapshot(cluster);
             cluster.Update(name, start, respawn);
             ClusterSnapshot newCluster = CreateClusterSnapshot(cluster);
-            PushEvent(new ClusterUpdatedEvent(oldCluster, newCluster));
+            PushEvent(new UpdatedClusterEvent(oldCluster, newCluster));
         }
     }
 
@@ -948,7 +948,7 @@ public partial class Galaxy : IDisposable
 
         _clusters[id] = null;
 
-        PushEvent(new ClusterRemovedEvent(removedCluster));
+        PushEvent(new RemovedClusterEvent(removedCluster));
     }
 
     private static ClusterSnapshot CreateClusterSnapshot(Cluster cluster)
@@ -1023,7 +1023,7 @@ public partial class Galaxy : IDisposable
 
         player.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
-        PushEvent(new PlayerScoreUpdatedEvent(player, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills, oldFriendlyDeaths, oldNpcKills,
+        PushEvent(new UpdatedPlayerScoreEvent(player, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills, oldFriendlyDeaths, oldNpcKills,
             oldNpcDeaths, oldNeutralDeaths, oldMission, player.Score.PlayerKills, player.Score.PlayerDeaths, player.Score.FriendlyKills,
             player.Score.FriendlyDeaths, player.Score.NpcKills, player.Score.NpcDeaths, player.Score.NeutralDeaths, player.Score.Mission));
     }
@@ -1048,7 +1048,7 @@ public partial class Galaxy : IDisposable
         {
             player._controllableInfos[id] = info;
             
-            PushEvent(new RegisteredControllableInfoPlayerEvent(player, info));
+            PushEvent(new RegisteredControllableInfoEvent(player, info));
             
             return;
         }
@@ -1121,7 +1121,7 @@ public partial class Galaxy : IDisposable
 
         controllable.Score.Update(playerKills, playerDeaths, friendlyKills, friendlyDeaths, npcKills, npcDeaths, neutralDeaths, mission);
 
-        PushEvent(new ControllableInfoScoreUpdatedEvent(player, controllable, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills,
+        PushEvent(new UpdatedControllableInfoScoreEvent(player, controllable, oldPlayerKills, oldPlayerDeaths, oldFriendlyKills,
             oldFriendlyDeaths, oldNpcKills, oldNpcDeaths, oldNeutralDeaths, oldMission, controllable.Score.PlayerKills,
             controllable.Score.PlayerDeaths, controllable.Score.FriendlyKills, controllable.Score.FriendlyDeaths,
             controllable.Score.NpcKills, controllable.Score.NpcDeaths, controllable.Score.NeutralDeaths, controllable.Score.Mission));
@@ -1136,7 +1136,7 @@ public partial class Galaxy : IDisposable
         {
             controllableInfo.Deactivate();
             
-            PushEvent(new ClosedControllableInfoPlayerEvent(player, controllableInfo));
+            PushEvent(new ClosedControllableInfoEvent(player, controllableInfo));
             player._controllableInfos[id] = null;
         }
         else
@@ -1180,7 +1180,7 @@ public partial class Galaxy : IDisposable
     [Command(0x8E)]
     private void PowerUpCollected(Controllable controllable, UnitKind powerUpKind, string powerUpName, float amount, float appliedAmount)
     {
-        PushEvent(new PowerUpCollectedEvent(controllable, powerUpKind, powerUpName, amount, appliedAmount));
+        PushEvent(new CollectedPowerUpEvent(controllable, powerUpKind, powerUpName, amount, appliedAmount));
     }
     
     [Command(0x30)]
@@ -1195,7 +1195,7 @@ public partial class Galaxy : IDisposable
         
             cluster.AddUnit(unit);
         
-            PushEvent(new NewUnitFlattiverseEvent(unit));
+            PushEvent(new AppearedUnitEvent(unit));
         }
         catch (Exception exception)
         {
@@ -1208,27 +1208,27 @@ public partial class Galaxy : IDisposable
     private void UnitUpdatedMovement(Cluster cluster, string name, PacketReader reader)
     {
         if (cluster.UpdateUnit(name, reader, out Unit? unit))
-            PushEvent(new UpdatedUnitFlattiverseEvent(unit));
+            PushEvent(new UpdatedUnitEvent(unit));
     }
 
     [Command(0x32)]
     private void UnitUpdatedState(Cluster cluster, string name, PacketReader reader)
     {
         if (cluster.UpdateUnitState(name, reader, out Unit? unit))
-            PushEvent(new UpdatedUnitFlattiverseEvent(unit));
+            PushEvent(new UpdatedUnitEvent(unit));
     }
 
     [Command(0x3E)]
     private void UnitAlteredByAdmin(byte clusterId, string name)
     {
-        PushEvent(new UnitAlteredByAdminEvent(clusterId, name));
+        PushEvent(new AlteredUnitByAdminEvent(clusterId, name));
     }
     
     [Command(0x3F)]
     private void UnitRemoved(Cluster cluster, string name)
     {
         if (cluster.RemoveUnit(name, out Unit? unit))
-            PushEvent(new RemovedUnitFlattiverseEvent(unit));
+            PushEvent(new RemovedUnitEvent(unit));
     }
 
     [Command(0x0B)]
@@ -1284,21 +1284,21 @@ public partial class Galaxy : IDisposable
     }
     
     [Command(0xC4)]
-    private void ChatGalaxy(Player player, string message)
+    private void GalaxyChat(Player player, string message)
     {
-        PushEvent(new GalaxyChatPlayerEvent(player, message, this));
+        PushEvent(new GalaxyChatEvent(player, message, this));
     }
     
     [Command(0xC5)]
-    private void ChatTeam(Player player, string message)
+    private void TeamChat(Player player, string message)
     {
-        PushEvent(new TeamChatPlayerEvent(player, message, this.Player.Team));
+        PushEvent(new TeamChatEvent(player, message, this.Player.Team));
     }
     
     [Command(0xC6)]
-    private void ChatPlayer(Player player, string message)
+    private void PlayerChat(Player player, string message)
     {
-        PushEvent(new PlayerChatPlayerEvent(player, message, this.Player));
+        PushEvent(new PlayerChatEvent(player, message, this.Player));
     }
 
     [Command(0xC7)]
@@ -1365,17 +1365,17 @@ public partial class Galaxy : IDisposable
             gates[index] = new GateStateChange(gateName, closed != 0x00);
         }
 
-        PushEvent(new GateSwitchedEvent(cluster, switchName, invokerPlayer, invokerControllableInfo, gates));
+        PushEvent(new SwitchedGateEvent(cluster, switchName, invokerPlayer, invokerControllableInfo, gates));
     }
 
     [Command(0xCB)]
     private void GateRestored(Cluster cluster, string gateName, byte closed)
     {
-        PushEvent(new GateRestoredEvent(cluster, gateName, closed != 0x00));
+        PushEvent(new RestoredGateEvent(cluster, gateName, closed != 0x00));
     }
 
     [Command(0xCC)]
-    private void BinaryChatPlayer(Player player, PacketReader reader)
+    private void PlayerBinaryChat(Player player, PacketReader reader)
     {
         if (!reader.Read(out ushort messageLength))
             throw new InvalidDataException("Server did send a binary player chat without a message length.");
@@ -1388,7 +1388,7 @@ public partial class Galaxy : IDisposable
         if (!reader.Read(message))
             throw new InvalidDataException("Server did send a truncated binary player chat payload.");
 
-        PushEvent(new BinaryChatPlayerEvent(player, message, this.Player));
+        PushEvent(new PlayerBinaryChatEvent(player, message, this.Player));
     }
 
     /// <summary>

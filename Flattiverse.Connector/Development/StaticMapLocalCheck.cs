@@ -175,12 +175,19 @@ partial class Program
             }
 
             DatabaseAccountRow pinkAccountRow = QueryAccountRow(LocalSwitchGatePlayerAuth);
-            string[] candidateAuths = QueryCandidatePlayerAuths(new int[] { pinkAccountRow.AccountId }, 8);
+            string secondPlayerAuth = LocalSwitchGatePinkPlayerAuth;
 
-            if (candidateAuths.Length == 0)
-                throw new InvalidOperationException("STATIC-MAP-LOCAL: no second player account found for the tournament lock check.");
+            if (secondPlayerAuth.StartsWith("<INSERT", StringComparison.Ordinal))
+            {
+                string[] candidateAuths = QueryCandidatePlayerAuths(new int[] { pinkAccountRow.AccountId }, 8);
 
-            DatabaseAccountRow greenAccountRow = QueryAccountRow(candidateAuths[0]);
+                if (candidateAuths.Length == 0)
+                    throw new InvalidOperationException("STATIC-MAP-LOCAL: no second player account found for the tournament lock check.");
+
+                secondPlayerAuth = candidateAuths[0];
+            }
+
+            DatabaseAccountRow greenAccountRow = QueryAccountRow(secondPlayerAuth);
             TournamentConfiguration tournamentConfiguration =
                 BuildTournamentConfiguration(pinkTeam, greenTeam, pinkAccountRow.AccountId, greenAccountRow.AccountId, 1400);
 
@@ -246,10 +253,10 @@ partial class Program
                 throw new InvalidOperationException("STATIC-MAP-LOCAL: ship did not die after leaving the activated segment ring.");
 
             List<FlattiverseEvent> destroyedEvents = new List<FlattiverseEvent>();
-            DestroyedControllableInfoPlayerEvent? destroyedEvent = null;
+            DestroyedControllableInfoEvent? destroyedEvent = null;
 
             for (int index = destroyedEvents.Count - 1; index >= 0; index--)
-                if (destroyedEvents[index] is DestroyedControllableInfoPlayerEvent queuedDestroyedEvent &&
+                if (destroyedEvents[index] is DestroyedControllableInfoEvent queuedDestroyedEvent &&
                     queuedDestroyedEvent.ControllableInfo.Name == ship.Name &&
                     queuedDestroyedEvent.Reason == PlayerUnitDestroyedReason.LostInDeepSpace)
                 {
@@ -259,7 +266,7 @@ partial class Program
 
             if (destroyedEvent is null)
                 destroyedEvent = await WaitForQueuedEvent(playerEvents, 4000, destroyedEvents,
-                    delegate(DestroyedControllableInfoPlayerEvent @event)
+                    delegate(DestroyedControllableInfoEvent @event)
                     {
                         return @event.ControllableInfo.Name == ship.Name && @event.Reason == PlayerUnitDestroyedReason.LostInDeepSpace;
                     }).ConfigureAwait(false);

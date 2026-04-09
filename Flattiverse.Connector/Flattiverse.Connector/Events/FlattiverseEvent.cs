@@ -18,6 +18,7 @@ public class FlattiverseEvent
 
     /// <summary>
     /// Connector-side event classification used for event dispatch and switch statements.
+    /// See <see cref="EventKind" /> for the naming convention.
     /// </summary>
     public virtual EventKind Kind => throw new NotImplementedException("Kind must be overwritten.");
 

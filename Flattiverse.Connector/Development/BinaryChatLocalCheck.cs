@@ -181,11 +181,11 @@ partial class Program
         }
     }
 
-    private static async Task<BinaryChatPlayerEvent> WaitForBinaryChat(ConcurrentQueue<FlattiverseEvent> events, List<FlattiverseEvent> trace,
+    private static async Task<PlayerBinaryChatEvent> WaitForBinaryChat(ConcurrentQueue<FlattiverseEvent> events, List<FlattiverseEvent> trace,
         Player expectedSender, byte[] expectedMessage, Player expectedDestination, int timeoutMs, string label)
     {
-        BinaryChatPlayerEvent? binaryEvent = await WaitForQueuedEvent<BinaryChatPlayerEvent>(events, timeoutMs, trace,
-            delegate (BinaryChatPlayerEvent @event)
+        PlayerBinaryChatEvent? binaryEvent = await WaitForQueuedEvent<PlayerBinaryChatEvent>(events, timeoutMs, trace,
+            delegate (PlayerBinaryChatEvent @event)
             {
                 return @event.Player.Id == expectedSender.Id;
             }).ConfigureAwait(false);

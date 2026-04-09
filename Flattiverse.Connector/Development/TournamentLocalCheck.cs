@@ -156,8 +156,8 @@ partial class Program
             await adminGalaxy.ConfigureTournament(tournamentConfiguration).ConfigureAwait(false);
 
             List<FlattiverseEvent> configureEvents = new List<FlattiverseEvent>();
-            TournamentCreatedEvent? createdEvent = await WaitForQueuedEvent(adminEvents, 4000, configureEvents,
-                delegate (TournamentCreatedEvent @event)
+            CreatedTournamentEvent? createdEvent = await WaitForQueuedEvent(adminEvents, 4000, configureEvents,
+                delegate (CreatedTournamentEvent @event)
                 {
                     return @event.Tournament.Stage == TournamentStage.Preparation;
                 }).ConfigureAwait(false);
@@ -269,8 +269,8 @@ partial class Program
             await adminGalaxy.CommenceTournament().ConfigureAwait(false);
 
             List<FlattiverseEvent> commenceEvents = new List<FlattiverseEvent>();
-            TournamentUpdatedEvent? commenceEvent = await WaitForQueuedEvent(adminEvents, 4000, commenceEvents,
-                delegate (TournamentUpdatedEvent @event)
+            UpdatedTournamentEvent? commenceEvent = await WaitForQueuedEvent(adminEvents, 4000, commenceEvents,
+                delegate (UpdatedTournamentEvent @event)
                 {
                     return @event.NewTournament.Stage == TournamentStage.Commencing;
                 }).ConfigureAwait(false);
@@ -338,8 +338,8 @@ partial class Program
             participantEventPump = StartEventPump("TOURNAMENT-LOCAL:PLAYER", participantGalaxy, participantEvents);
 
             List<FlattiverseEvent> participantInitialEvents = new List<FlattiverseEvent>();
-            TournamentCreatedEvent? participantCreatedEvent = await WaitForQueuedEvent(participantEvents, 4000, participantInitialEvents,
-                delegate (TournamentCreatedEvent @event)
+            CreatedTournamentEvent? participantCreatedEvent = await WaitForQueuedEvent(participantEvents, 4000, participantInitialEvents,
+                delegate (CreatedTournamentEvent @event)
                 {
                     return @event.Tournament.Stage == TournamentStage.Commencing;
                 }).ConfigureAwait(false);
@@ -373,8 +373,8 @@ partial class Program
             await adminGalaxy.StartTournament().ConfigureAwait(false);
 
             List<FlattiverseEvent> startEvents = new List<FlattiverseEvent>();
-            TournamentUpdatedEvent? startEvent = await WaitForQueuedEvent(adminEvents, 4000, startEvents,
-                delegate (TournamentUpdatedEvent @event)
+            UpdatedTournamentEvent? startEvent = await WaitForQueuedEvent(adminEvents, 4000, startEvents,
+                delegate (UpdatedTournamentEvent @event)
                 {
                     return @event.NewTournament.Stage == TournamentStage.Running;
                 }).ConfigureAwait(false);
@@ -386,8 +386,8 @@ partial class Program
             await participantGalaxy.CreateClassicShip("TournamentLocalRunner").ConfigureAwait(false);
 
             List<FlattiverseEvent> ratedFinishEvents = new List<FlattiverseEvent>();
-            TournamentRemovedEvent? ratedFinishEvent = await WaitForQueuedEvent(adminEvents, TournamentWaitTimeoutMs, ratedFinishEvents,
-                delegate (TournamentRemovedEvent _)
+            RemovedTournamentEvent? ratedFinishEvent = await WaitForQueuedEvent(adminEvents, TournamentWaitTimeoutMs, ratedFinishEvents,
+                delegate (RemovedTournamentEvent _)
                 {
                     return true;
                 }).ConfigureAwait(false);
@@ -425,8 +425,8 @@ partial class Program
             await adminGalaxy.CancelTournament().ConfigureAwait(false);
 
             List<FlattiverseEvent> cancelEvents = new List<FlattiverseEvent>();
-            TournamentRemovedEvent? cancelEvent = await WaitForQueuedEvent(adminEvents, 4000, cancelEvents,
-                delegate (TournamentRemovedEvent _)
+            RemovedTournamentEvent? cancelEvent = await WaitForQueuedEvent(adminEvents, 4000, cancelEvents,
+                delegate (RemovedTournamentEvent _)
                 {
                     return true;
                 }).ConfigureAwait(false);
