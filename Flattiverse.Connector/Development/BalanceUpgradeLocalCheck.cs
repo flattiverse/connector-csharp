@@ -50,11 +50,14 @@ partial class Program
         Galaxy? playerGalaxy = null;
         Task? playerEventPump = null;
         ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
+        string adminAuth = ResolveNpcUnitsLocalAdminAuth();
+        DatabaseAccountRow adminAccountRow = QueryAccountRow(adminAuth);
+        string playerAuth = ResolveNpcUnitsLocalPlayerAuth(adminAccountRow.AccountId);
 
         try
         {
-            adminGalaxy = await ConnectLocalPlayer(LocalSwitchGateAdminAuth, TeamName, "BALANCE-LOCAL:ADMIN").ConfigureAwait(false);
-            playerGalaxy = await ConnectLocalPlayer(LocalSwitchGatePlayerAuth, TeamName, "BALANCE-LOCAL:PLAYER").ConfigureAwait(false);
+            adminGalaxy = await ConnectLocalPlayer(adminAuth, TeamName, "BALANCE-LOCAL:ADMIN").ConfigureAwait(false);
+            playerGalaxy = await ConnectLocalPlayer(playerAuth, TeamName, "BALANCE-LOCAL:PLAYER").ConfigureAwait(false);
             playerEventPump = StartEventPump("BALANCE-LOCAL:PLAYER", playerGalaxy, playerEvents);
 
             await Task.Delay(500).ConfigureAwait(false);
@@ -92,7 +95,7 @@ partial class Program
             if (!await WaitForAliveState(ship, true, 5000).ConfigureAwait(false))
                 throw new InvalidOperationException("BALANCE-LOCAL: classic ship did not become alive.");
 
-            await WaitForSpawnSupplies(ship, 15000f, 40f, 8f, 8f, 8f).ConfigureAwait(false);
+            await PrepareUpgradeResources(adminGalaxy, ship, "Classic Spawn").ConfigureAwait(false);
 
             ship = await UpgradeAndVerify(adminGalaxy, ship, ship.Cargo, "Classic Cargo T2").ConfigureAwait(false);
             ship = await UpgradeAndVerify(adminGalaxy, ship, ship.Cargo, "Classic Cargo T3").ConfigureAwait(false);
@@ -218,7 +221,7 @@ partial class Program
             if (!await WaitForAliveState(ship, true, 5000).ConfigureAwait(false))
                 throw new InvalidOperationException("BALANCE-LOCAL: modern ship did not become alive.");
 
-            await WaitForSpawnSupplies(ship, 15000f, 40f, 8f, 8f, 8f).ConfigureAwait(false);
+            await PrepareUpgradeResources(adminGalaxy, ship, "Modern Spawn").ConfigureAwait(false);
 
             ship = await UpgradeAndVerify(adminGalaxy, ship, ship.Cargo, "Modern Cargo T2").ConfigureAwait(false);
             ship = await UpgradeAndVerify(adminGalaxy, ship, ship.Cargo, "Modern Cargo T3").ConfigureAwait(false);
@@ -1453,6 +1456,9 @@ partial class Program
 
         if (subsystem.TargetTierInfo.Tier != subsystem.TargetTier)
             throw new InvalidOperationException($"BALANCE-LOCAL: {label} target tier info mismatch.");
+
+        if (!subsystem.Exists)
+            return;
 
         switch (subsystem)
         {

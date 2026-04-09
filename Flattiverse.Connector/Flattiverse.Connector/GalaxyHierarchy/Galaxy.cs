@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "27";
+    private const string Version = "28";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -346,6 +346,11 @@ public partial class Galaxy : IDisposable
     /// The maximum amount of spectators allowed to connect to the galaxy. If this value is 0 no spectators are allowed.
     /// </summary>
     public int MaxSpectators => _maxSpectators;
+
+    /// <summary>
+    /// The expected amount of simulation ticks the galaxy advances per second.
+    /// </summary>
+    public int ExpectedTicksPerSecond => 10;
     
     /// <summary>
     /// The maximum amount of total ships allowed in the galaxy.
@@ -1372,6 +1377,12 @@ public partial class Galaxy : IDisposable
     private void GateRestored(Cluster cluster, string gateName, byte closed)
     {
         PushEvent(new RestoredGateEvent(cluster, gateName, closed != 0x00));
+    }
+
+    [Command(0xCE)]
+    private void MotdMessage(string message)
+    {
+        PushEvent(new MotdMessageEvent(message));
     }
 
     [Command(0xCC)]

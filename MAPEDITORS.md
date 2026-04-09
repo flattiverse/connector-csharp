@@ -691,7 +691,7 @@ Constraints:
 
 - `Team` must exist
 - `Team` must not be spectators
-- `GraceTicks >= 0`
+- `GraceTicks` must be in `0..65535`
 - only `Orbit` child elements are allowed; plain text content is currently ignored
 - `Active` is runtime-only state, becomes `false` during grace time, can be scanned, and is therefore not an editable XML attribute
 
@@ -738,7 +738,7 @@ Constraints:
 - `Team` must reference an existing team and may be `12`
 - `LinkId` must be in `0..65535`
 - `Range >= 0`
-- `CooldownTicks >= 0`
+- `CooldownTicks` must be in `0..65535`
 - `Mode` must be one of the listed enum values
 
 Runtime behavior:
@@ -769,7 +769,7 @@ Optional attributes:
 Constraints:
 
 - `LinkId` must be in `0..65535`
-- `RestoreTicks`, when present, must be `> 0`
+- `RestoreTicks`, when present, must be in `1..65535`
 
 Runtime behavior:
 

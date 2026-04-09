@@ -364,10 +364,12 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0xC5`: team chat message
 * `0xC6`: private chat message
 * `0xC7`: mission-target-hit system chat message
+* `0xC8`: system message
 * `0xC9`: flag-reactivated system chat message
 * `0xCA`: gate-switched event
 * `0xCB`: gate-restored event
 * `0xCC`: private binary chat message
+* `0xCE`: MOTD message
 * `0xD0`: create or update tournament snapshot
 * `0xD1`: remove tournament snapshot
 * `0xD2`: tournament system chat message
@@ -618,6 +620,11 @@ int mission
 This score belongs to the registered controllable identified by `(controllablePlayerId, controllableId)`.
 It is session-local, just like `0x12 Player Score Update`.
 
+Mission-mode combat note:
+
+* when `GameMode == Mission`, combat between two different players always counts as enemy combat for score updates and death reasons, even if both players currently belong to the same team
+* combat between two controllables of the same player is reported as `PlayerUnitDestroyedReason.Suicided`
+
 ### `0xC1` Flag Scored System Chat
 
 Payload order:
@@ -659,6 +666,14 @@ byte   controllableId
 ushort missionTargetSequence
 ```
 
+### `0xC8` System Message
+
+Payload order:
+
+```text
+string message
+```
+
 ### `0xC9` Flag Reactivated System Chat
 
 Payload order:
@@ -666,6 +681,14 @@ Payload order:
 ```text
 byte   flagTeamId
 string flagName
+```
+
+### `0xCE` MOTD Message
+
+Payload order:
+
+```text
+string message
 ```
 
 ### `0xCA` Gate Switched
@@ -721,6 +744,14 @@ This packet is the owner's authoritative identity channel for a controllable. A 
 After the base fields, the packet continues with the owner-visible static subsystem capability block and the initial owner runtime snapshot for that controllable kind.
 This data is intentionally richer than the visible-unit stream because it initializes the local `Controllable` mirror immediately.
 
+Owner-side subsystem block rules:
+
+* every subsystem block starts with `byte existsFlag`
+* if `existsFlag == 0`, no more bytes for that subsystem follow in `0x80`
+* if `existsFlag != 0`, owner-side `0x80` sends `byte tier` immediately after the flag and then that subsystem's static/runtime create data
+* visible `0x32` player-unit packets never send subsystem tiers
+* fabricator subsystem blocks no longer send `MinimumRate`; the connector treats the minimum as implicit `0`
+
 ### `0x81` Controllable Deceased
 
 Payload order:
@@ -734,6 +765,12 @@ byte controllableId
 This packet is owner-only. It is the runtime state channel for the player's own controllables.
 It remains available even while scanners are off and is the correct source for the owner's own position, movement, and subsystem runtime.
 Death is signaled separately via `0x81`; `0x82` is only sent for living controllables.
+
+Runtime block rules:
+
+* runtime blocks are only present for subsystems whose `Exists` flag was `true` in the last owner create packet
+* shared and specific subsystem runtime blocks both follow that rule
+* `StructureOptimizer` has owner create data in `0x80`, but no dedicated runtime block in `0x82`
 
 Current subsystem runtime enums:
 
@@ -1063,8 +1100,8 @@ Current reduced `0x30` payloads and promotion thresholds:
 * `Flag (0x15)`: `steady unit payload`, `byte teamId`; `ReducedVisibilityTicks = 0`
 * `DominationPoint (0x16)`: `steady unit payload`, `byte teamId`, `float dominationRadius`; `ReducedVisibilityTicks = 50`
 * `EnergyChargePowerUp (0x70)` / `IonChargePowerUp (0x71)` / `NeutrinoChargePowerUp (0x72)` / `MetalCargoPowerUp (0x73)` / `CarbonCargoPowerUp (0x74)` / `HydrogenCargoPowerUp (0x75)` / `SiliconCargoPowerUp (0x76)` / `ShieldChargePowerUp (0x77)` / `HullRepairPowerUp (0x78)` / `ShotChargePowerUp (0x79)`: `steady unit payload`; `ReducedVisibilityTicks = 0`
-* `Switch (0x60)`: `steady unit payload`, `byte teamId`, `ushort linkId`, `float range`, `int cooldownTicks`, `byte mode`; `ReducedVisibilityTicks = 20`
-* `Gate (0x61)`: `steady unit payload`, `ushort linkId`, `byte defaultClosedFlag`, `int restoreTicks`; `ReducedVisibilityTicks = 20`
+* `Switch (0x60)`: `steady unit payload`, `byte teamId`, `ushort linkId`, `float range`, `ushort cooldownTicks`, `byte mode`; `ReducedVisibilityTicks = 20`
+* `Gate (0x61)`: `steady unit payload`, `ushort linkId`, `byte defaultClosedFlag`, `byte hasRestoreTicksFlag`, `[ushort restoreTicks if hasRestoreTicksFlag != 0]`; `ReducedVisibilityTicks = 20`
 * `SpaceJellyFish (0x90)`: `mobile npc payload`; `ReducedVisibilityTicks = 20`
 * `SpaceJellyFishSlime (0x91)`: `byte ownerPlayerId`, `byte ownerControllableId`, `ushort ticks`, `Vector position`, `Vector movement`, `float angle`, `float angularVelocity`; `ReducedVisibilityTicks = 20`
 * `AiBase (0x92)`: `byte teamId`, `Vector position`, `float radius`; `ReducedVisibilityTicks = 20`
@@ -1087,7 +1124,7 @@ Notes:
 * for orbiting steady units, `position` in `0x30` is the current runtime position, not the configured map-editor center
 * `planetType` / `moonType` / `meteoroidType` are intentionally already part of reduced visibility
 * `Switch.mode` currently uses `0x00 Toggle`, `0x01 Open`, `0x02 Close`
-* `Gate.restoreTicks == -1` on the wire means "no automatic restore configured"
+* `Gate.hasRestoreTicksFlag == 0` means that no automatic restore is configured
 * For projectile and explosion kinds, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no player owner". NPC-owned projectiles currently use the same ownerless marker on the wire.
 * `Explosion`, `InterceptorExplosion`, and `Flag` are effectively full immediately, but still participate in the same `0x30` + optional `0x32` visibility protocol
 
@@ -1187,6 +1224,13 @@ string unitName
 
 The remaining payload depends on the unit type.
 
+Player-unit subsystem block rules:
+
+* every visible player-unit subsystem block starts with `byte existsFlag`
+* if `existsFlag == 0`, no more bytes for that subsystem follow in `0x32`
+* visible player-unit packets do not send subsystem tiers
+* visible fabricator blocks no longer send `MinimumRate`; treat it as implicit `0`
+
 Current `0x32` payloads:
 
 * all steady units (`Sun`, `BlackHole`, `CurrentField`, `Nebula`, `Planet`, `Moon`, `Meteoroid`, `Buoy`, `WormHole`, `MissionTarget`, `Flag`, `DominationPoint`, all power-up kinds, `Switch`, `Gate`) start with:
@@ -1281,7 +1325,7 @@ Current `0x32` payloads:
   `Achievement` is configuration-only metadata and is not mirrored on the wire.
 * `Flag (0x15)`:
   ```text
-  int  graceTicks
+  ushort graceTicks
   byte activeFlag
   ```
 * `DominationPoint (0x16)`:
@@ -1296,15 +1340,16 @@ Current `0x32` payloads:
   ```
 * `Switch (0x60)`:
   ```text
-  int  cooldownRemainingTicks
+  ushort cooldownRemainingTicks
   byte switchedFlag
   ```
 * `Gate (0x61)`:
   ```text
   byte closedFlag
-  int  restoreRemainingTicks
+  byte hasRestoreRemainingTicksFlag
+  [ushort restoreRemainingTicks if hasRestoreRemainingTicksFlag != 0]
   ```
-  `restoreRemainingTicks == -1` means that no auto-restore timer is currently armed.
+  `hasRestoreRemainingTicksFlag == 0` means that no auto-restore timer is currently armed.
 * `SpaceJellyFish (0x90)` / `AiBase (0x92)` / `AiTurret (0x93)` / `AiShip (0x95)` / `AiProbe (0x96)`:
   ```text
   float hullCurrent
@@ -1485,7 +1530,6 @@ Current `0x32` payloads:
   float shotMagazineCurrentShots
   byte  shotMagazineStatus
   byte  shotFabricatorExists
-  float shotFabricatorMinimumRate
   float shotFabricatorMaximumRate
   byte  shotFabricatorActive
   float shotFabricatorRate
@@ -1515,7 +1559,6 @@ Current `0x32` payloads:
   float interceptorMagazineCurrentShots
   byte  interceptorMagazineStatus
   byte  interceptorFabricatorExists
-  float interceptorFabricatorMinimumRate
   float interceptorFabricatorMaximumRate
   byte  interceptorFabricatorActive
   float interceptorFabricatorRate

@@ -161,15 +161,6 @@ public class CargoSubsystem : Subsystem
         get { return _nebulaHue; }
     }
 
-    internal void SetMaximumNebula(float maximumNebula)
-    {
-        _maximumNebula = Exists ? maximumNebula : 0f;
-        RefreshTier();
-
-        if (_currentNebula > _maximumNebula)
-            _currentNebula = _maximumNebula;
-    }
-
     internal void ResetRuntime()
     {
         _currentMetal = 0f;

@@ -5,8 +5,9 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class DynamicShotFabricatorSubsystemInfo
 {
+    private const float MinimumRateValue = 0f;
+
     private bool _exists;
-    private float _minimumRate;
     private float _maximumRate;
     private bool _active;
     private float _rate;
@@ -18,7 +19,6 @@ public class DynamicShotFabricatorSubsystemInfo
     internal DynamicShotFabricatorSubsystemInfo()
     {
         _exists = false;
-        _minimumRate = 0f;
         _maximumRate = 0f;
         _active = false;
         _rate = 0f;
@@ -41,7 +41,7 @@ public class DynamicShotFabricatorSubsystemInfo
     /// </summary>
     public float MinimumRate
     {
-        get { return _minimumRate; }
+        get { return MinimumRateValue; }
     }
 
     /// <summary>
@@ -101,11 +101,10 @@ public class DynamicShotFabricatorSubsystemInfo
         get { return _consumedNeutrinosThisTick; }
     }
 
-    internal void Update(bool exists, float minimumRate, float maximumRate, bool active, float rate, SubsystemStatus status,
+    internal void Update(bool exists, float maximumRate, bool active, float rate, SubsystemStatus status,
         float consumedEnergyThisTick, float consumedIonsThisTick, float consumedNeutrinosThisTick)
     {
         _exists = exists;
-        _minimumRate = exists ? minimumRate : 0f;
         _maximumRate = exists ? maximumRate : 0f;
         _active = exists && active;
         _rate = exists ? rate : 0f;

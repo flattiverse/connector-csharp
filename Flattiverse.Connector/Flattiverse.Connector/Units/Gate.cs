@@ -10,19 +10,27 @@ public class Gate : SteadyUnit
 {
     private ushort _linkId;
     private bool _defaultClosed;
-    private int? _restoreTicks;
+    private ushort? _restoreTicks;
     private bool _closed;
-    private int? _restoreRemainingTicks;
+    private ushort? _restoreRemainingTicks;
 
     internal Gate(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
         if (!reader.Read(out _linkId) ||
             !reader.Read(out byte defaultClosed) ||
-            !reader.Read(out int restoreTicks))
+            !reader.Read(out byte hasRestoreTicks))
             throw new InvalidDataException("Couldn't read Gate.");
 
         _defaultClosed = defaultClosed != 0x00;
-        _restoreTicks = restoreTicks < 0 ? null : restoreTicks;
+        _restoreTicks = null;
+        ushort restoreTicks = 0;
+
+        if (hasRestoreTicks != 0x00 && !reader.Read(out restoreTicks))
+            throw new InvalidDataException("Couldn't read Gate.");
+
+        if (hasRestoreTicks != 0x00)
+            _restoreTicks = restoreTicks;
+
         _closed = _defaultClosed;
         _restoreRemainingTicks = null;
     }
@@ -61,7 +69,7 @@ public class Gate : SteadyUnit
     /// <summary>
     /// Optional configured restore delay in ticks.
     /// </summary>
-    public int? RestoreTicks => _restoreTicks;
+    public ushort? RestoreTicks => _restoreTicks;
 
     /// <summary>
     /// Current gate state.
@@ -71,17 +79,24 @@ public class Gate : SteadyUnit
     /// <summary>
     /// Remaining restore delay in ticks while a restore is armed.
     /// </summary>
-    public int? RestoreRemainingTicks => _restoreRemainingTicks;
+    public ushort? RestoreRemainingTicks => _restoreRemainingTicks;
 
     internal override void UpdateState(PacketReader reader)
     {
         base.UpdateState(reader);
 
-        if (!reader.Read(out byte closed) || !reader.Read(out int restoreRemainingTicks))
+        if (!reader.Read(out byte closed) || !reader.Read(out byte hasRestoreRemainingTicks))
             throw new InvalidDataException("Couldn't read Gate state.");
 
         _closed = closed != 0x00;
-        _restoreRemainingTicks = restoreRemainingTicks < 0 ? null : restoreRemainingTicks;
+        _restoreRemainingTicks = null;
+        ushort restoreRemainingTicks = 0;
+
+        if (hasRestoreRemainingTicks != 0x00 && !reader.Read(out restoreRemainingTicks))
+            throw new InvalidDataException("Couldn't read Gate state.");
+
+        if (hasRestoreRemainingTicks != 0x00)
+            _restoreRemainingTicks = restoreRemainingTicks;
     }
 
     /// <inheritdoc/>

@@ -11,8 +11,8 @@ public class Switch : SteadyUnit
     private Team _team;
     private ushort _linkId;
     private float _range;
-    private int _cooldownTicks;
-    private int _cooldownRemainingTicks;
+    private ushort _cooldownTicks;
+    private ushort _cooldownRemainingTicks;
     private SwitchMode _mode;
     private bool _switched;
 
@@ -65,12 +65,12 @@ public class Switch : SteadyUnit
     /// <summary>
     /// Configured switch cooldown in ticks.
     /// </summary>
-    public int CooldownTicks => _cooldownTicks;
+    public ushort CooldownTicks => _cooldownTicks;
 
     /// <summary>
     /// Remaining runtime cooldown in ticks.
     /// </summary>
-    public int CooldownRemainingTicks => _cooldownRemainingTicks;
+    public ushort CooldownRemainingTicks => _cooldownRemainingTicks;
 
     /// <summary>
     /// Switch output mode.

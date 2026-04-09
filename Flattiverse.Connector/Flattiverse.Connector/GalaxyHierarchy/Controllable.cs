@@ -29,7 +29,7 @@ public class Controllable : INamedUnit
     private bool _tierChangePending;
     private SubsystemSlot _tierChangeSlot;
     private byte _tierChangeTargetTier;
-    private int _remainingTierChangeTicks;
+    private ushort _remainingTierChangeTicks;
 
     private Vector _position;
     private Vector _movement;
@@ -325,9 +325,9 @@ public class Controllable : INamedUnit
         return _tierChangePending && _tierChangeSlot == slot ? _tierChangeTargetTier : currentTier;
     }
 
-    internal virtual int GetRemainingTierChangeTicks(SubsystemSlot slot)
+    internal virtual ushort GetRemainingTierChangeTicks(SubsystemSlot slot)
     {
-        return _tierChangePending && _tierChangeSlot == slot ? _remainingTierChangeTicks : 0;
+        return _tierChangePending && _tierChangeSlot == slot ? _remainingTierChangeTicks : (ushort)0;
     }
 
     internal float CalculateProjectedEffectiveStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
@@ -500,244 +500,24 @@ public class Controllable : INamedUnit
 
     private protected void ReadInitialState(PacketReader reader)
     {
-        byte cargoExists;
-        float cargoMaximumMetal;
-        float cargoMaximumCarbon;
-        float cargoMaximumHydrogen;
-        float cargoMaximumSilicon;
-        float cargoMaximumNebula;
-        float cargoCurrentMetal;
-        float cargoCurrentCarbon;
-        float cargoCurrentHydrogen;
-        float cargoCurrentSilicon;
-        float cargoCurrentNebula;
-        float cargoNebulaHue;
-        byte cargoStatus;
-        byte resourceMinerExists;
-        float resourceMinerMinimumRate;
-        float resourceMinerMaximumRate;
-        float resourceMinerRate;
-        byte resourceMinerStatus;
-        float resourceMinerConsumedEnergyThisTick;
-        float resourceMinerConsumedIonsThisTick;
-        float resourceMinerConsumedNeutrinosThisTick;
-        float resourceMinerMinedMetalThisTick;
-        float resourceMinerMinedCarbonThisTick;
-        float resourceMinerMinedHydrogenThisTick;
-        float resourceMinerMinedSiliconThisTick;
-        byte structureOptimizerExists;
-        float structureOptimizerReductionPercent;
-
-        if (!reader.Read(out byte energyBatteryExists) ||
-            !reader.Read(out byte energyBatteryTier) ||
-            !reader.Read(out float energyBatteryMaximum) ||
-            !reader.Read(out float energyBatteryCurrent) ||
-            !reader.Read(out float energyBatteryConsumedThisTick) ||
-            !reader.Read(out byte energyBatteryStatus) ||
-            !reader.Read(out byte ionBatteryExists) ||
-            !reader.Read(out byte ionBatteryTier) ||
-            !reader.Read(out float ionBatteryMaximum) ||
-            !reader.Read(out float ionBatteryCurrent) ||
-            !reader.Read(out float ionBatteryConsumedThisTick) ||
-            !reader.Read(out byte ionBatteryStatus) ||
-            !reader.Read(out byte neutrinoBatteryExists) ||
-            !reader.Read(out byte neutrinoBatteryTier) ||
-            !reader.Read(out float neutrinoBatteryMaximum) ||
-            !reader.Read(out float neutrinoBatteryCurrent) ||
-            !reader.Read(out float neutrinoBatteryConsumedThisTick) ||
-            !reader.Read(out byte neutrinoBatteryStatus) ||
-            !reader.Read(out byte energyCellExists) ||
-            !reader.Read(out byte energyCellTier) ||
-            !reader.Read(out float energyCellEfficiency) ||
-            !reader.Read(out float energyCellCollectedThisTick) ||
-            !reader.Read(out byte energyCellStatus) ||
-            !reader.Read(out byte ionCellExists) ||
-            !reader.Read(out byte ionCellTier) ||
-            !reader.Read(out float ionCellEfficiency) ||
-            !reader.Read(out float ionCellCollectedThisTick) ||
-            !reader.Read(out byte ionCellStatus) ||
-            !reader.Read(out byte neutrinoCellExists) ||
-            !reader.Read(out byte neutrinoCellTier) ||
-            !reader.Read(out float neutrinoCellEfficiency) ||
-            !reader.Read(out float neutrinoCellCollectedThisTick) ||
-            !reader.Read(out byte neutrinoCellStatus) ||
-            !reader.Read(out byte hullExists) ||
-            !reader.Read(out byte hullTier) ||
-            !reader.Read(out float hullMaximum) ||
-            !reader.Read(out float hullCurrent) ||
-            !reader.Read(out byte hullStatus) ||
-            !reader.Read(out byte shieldExists) ||
-            !reader.Read(out byte shieldTier) ||
-            !reader.Read(out float shieldMaximum) ||
-            !reader.Read(out float shieldMinimumRate) ||
-            !reader.Read(out float shieldMaximumRate) ||
-            !reader.Read(out float shieldCurrent) ||
-            !reader.Read(out byte shieldActive) ||
-            !reader.Read(out float shieldRate) ||
-            !reader.Read(out byte shieldStatus) ||
-            !reader.Read(out float shieldConsumedEnergyThisTick) ||
-            !reader.Read(out float shieldConsumedIonsThisTick) ||
-            !reader.Read(out float shieldConsumedNeutrinosThisTick) ||
-            !reader.Read(out byte armorExists) ||
-            !reader.Read(out byte armorTier) ||
-            !reader.Read(out float armorReduction) ||
-            !reader.Read(out byte armorStatus) ||
-            !reader.Read(out float armorBlockedDirectDamageThisTick) ||
-            !reader.Read(out float armorBlockedRadiationDamageThisTick) ||
-            !reader.Read(out byte repairExists) ||
-            !reader.Read(out byte repairTier) ||
-            !reader.Read(out float repairMinimumRate) ||
-            !reader.Read(out float repairMaximumRate) ||
-            !reader.Read(out float repairRate) ||
-            !reader.Read(out byte repairStatus) ||
-            !reader.Read(out float repairConsumedEnergyThisTick) ||
-            !reader.Read(out float repairConsumedIonsThisTick) ||
-            !reader.Read(out float repairConsumedNeutrinosThisTick) ||
-            !reader.Read(out float repairRepairedHullThisTick) ||
-            !reader.Read(out cargoExists) ||
-            !reader.Read(out byte cargoTier) ||
-            !reader.Read(out cargoMaximumMetal) ||
-            !reader.Read(out cargoMaximumCarbon) ||
-            !reader.Read(out cargoMaximumHydrogen) ||
-            !reader.Read(out cargoMaximumSilicon) ||
-            !reader.Read(out cargoMaximumNebula) ||
-            !reader.Read(out cargoCurrentMetal) ||
-            !reader.Read(out cargoCurrentCarbon) ||
-            !reader.Read(out cargoCurrentHydrogen) ||
-            !reader.Read(out cargoCurrentSilicon) ||
-            !reader.Read(out cargoCurrentNebula) ||
-            !reader.Read(out cargoNebulaHue) ||
-            !reader.Read(out cargoStatus) ||
-            !reader.Read(out resourceMinerExists) ||
-            !reader.Read(out byte resourceMinerTier) ||
-            !reader.Read(out resourceMinerMinimumRate) ||
-            !reader.Read(out resourceMinerMaximumRate) ||
-            !reader.Read(out resourceMinerRate) ||
-            !reader.Read(out resourceMinerStatus) ||
-            !reader.Read(out resourceMinerConsumedEnergyThisTick) ||
-            !reader.Read(out resourceMinerConsumedIonsThisTick) ||
-            !reader.Read(out resourceMinerConsumedNeutrinosThisTick) ||
-            !reader.Read(out resourceMinerMinedMetalThisTick) ||
-            !reader.Read(out resourceMinerMinedCarbonThisTick) ||
-            !reader.Read(out resourceMinerMinedHydrogenThisTick) ||
-            !reader.Read(out resourceMinerMinedSiliconThisTick) ||
-            !reader.Read(out structureOptimizerExists) ||
-            !reader.Read(out byte structureOptimizerTier) ||
-            !reader.Read(out structureOptimizerReductionPercent))
+        if (!ReadControllableBatteryState(reader, _energyBattery) ||
+            !ReadControllableBatteryState(reader, _ionBattery) ||
+            !ReadControllableBatteryState(reader, _neutrinoBattery) ||
+            !ReadControllableEnergyCellState(reader, _energyCell) ||
+            !ReadControllableEnergyCellState(reader, _ionCell) ||
+            !ReadControllableEnergyCellState(reader, _neutrinoCell) ||
+            !ReadControllableHullState(reader, _hull) ||
+            !ReadControllableShieldState(reader, _shield) ||
+            !ReadControllableArmorState(reader, _armor) ||
+            !ReadControllableRepairState(reader, _repair) ||
+            !ReadControllableCargoState(reader, _cargo) ||
+            !ReadControllableResourceMinerState(reader, _resourceMiner) ||
+            !ReadControllableStructureOptimizerState(reader, _structureOptimizer))
             throw new InvalidDataException("Couldn't read controllable create state.");
-
-        _energyBattery.SetExists(energyBatteryExists != 0);
-        _energyBattery.SetMaximum(energyBatteryMaximum);
-        _energyBattery.UpdateRuntime(energyBatteryCurrent, energyBatteryConsumedThisTick, (SubsystemStatus)energyBatteryStatus);
-        _energyBattery.SetReportedTier(energyBatteryTier);
-        _ionBattery.SetExists(ionBatteryExists != 0);
-        _ionBattery.SetMaximum(ionBatteryMaximum);
-        _ionBattery.UpdateRuntime(ionBatteryCurrent, ionBatteryConsumedThisTick, (SubsystemStatus)ionBatteryStatus);
-        _ionBattery.SetReportedTier(ionBatteryTier);
-        _neutrinoBattery.SetExists(neutrinoBatteryExists != 0);
-        _neutrinoBattery.SetMaximum(neutrinoBatteryMaximum);
-        _neutrinoBattery.UpdateRuntime(neutrinoBatteryCurrent, neutrinoBatteryConsumedThisTick, (SubsystemStatus)neutrinoBatteryStatus);
-        _neutrinoBattery.SetReportedTier(neutrinoBatteryTier);
-        _energyCell.SetExists(energyCellExists != 0);
-        _energyCell.SetEfficiency(energyCellEfficiency);
-        _energyCell.UpdateRuntime(energyCellCollectedThisTick, (SubsystemStatus)energyCellStatus);
-        _energyCell.SetReportedTier(energyCellTier);
-        _ionCell.SetExists(ionCellExists != 0);
-        _ionCell.SetEfficiency(ionCellEfficiency);
-        _ionCell.UpdateRuntime(ionCellCollectedThisTick, (SubsystemStatus)ionCellStatus);
-        _ionCell.SetReportedTier(ionCellTier);
-        _neutrinoCell.SetExists(neutrinoCellExists != 0);
-        _neutrinoCell.SetEfficiency(neutrinoCellEfficiency);
-        _neutrinoCell.UpdateRuntime(neutrinoCellCollectedThisTick, (SubsystemStatus)neutrinoCellStatus);
-        _neutrinoCell.SetReportedTier(neutrinoCellTier);
-        _hull.SetExists(hullExists != 0);
-        _hull.SetMaximum(hullMaximum);
-        _hull.UpdateRuntime(hullCurrent, (SubsystemStatus)hullStatus);
-        _hull.SetReportedTier(hullTier);
-        _shield.SetExists(shieldExists != 0);
-        _shield.SetMaximum(shieldMaximum);
-        _shield.SetRateCapabilities(shieldMinimumRate, shieldMaximumRate);
-        _shield.UpdateRuntime(shieldCurrent, shieldActive != 0, shieldRate, (SubsystemStatus)shieldStatus, shieldConsumedEnergyThisTick,
-            shieldConsumedIonsThisTick, shieldConsumedNeutrinosThisTick);
-        _shield.SetReportedTier(shieldTier);
-        _armor.SetExists(armorExists != 0);
-        _armor.SetReduction(armorReduction);
-        _armor.UpdateRuntime(armorBlockedDirectDamageThisTick, armorBlockedRadiationDamageThisTick, (SubsystemStatus)armorStatus);
-        _armor.SetReportedTier(armorTier);
-        _repair.SetExists(repairExists != 0);
-        _repair.SetCapabilities(repairMinimumRate, repairMaximumRate);
-        _repair.UpdateRuntime(repairRate, (SubsystemStatus)repairStatus, repairConsumedEnergyThisTick, repairConsumedIonsThisTick,
-            repairConsumedNeutrinosThisTick, repairRepairedHullThisTick);
-        _repair.SetReportedTier(repairTier);
-        _cargo.SetExists(cargoExists != 0);
-        _cargo.SetMaximums(cargoMaximumMetal, cargoMaximumCarbon, cargoMaximumHydrogen, cargoMaximumSilicon, cargoMaximumNebula);
-        _cargo.UpdateRuntime(cargoCurrentMetal, cargoCurrentCarbon, cargoCurrentHydrogen, cargoCurrentSilicon, cargoCurrentNebula,
-            cargoNebulaHue, (SubsystemStatus)cargoStatus);
-        _cargo.SetReportedTier(cargoTier);
-        _resourceMiner.SetExists(resourceMinerExists != 0);
-        _resourceMiner.SetCapabilities(resourceMinerMinimumRate, resourceMinerMaximumRate);
-        _resourceMiner.UpdateRuntime(resourceMinerRate, (SubsystemStatus)resourceMinerStatus, resourceMinerConsumedEnergyThisTick,
-            resourceMinerConsumedIonsThisTick, resourceMinerConsumedNeutrinosThisTick, resourceMinerMinedMetalThisTick,
-            resourceMinerMinedCarbonThisTick, resourceMinerMinedHydrogenThisTick, resourceMinerMinedSiliconThisTick);
-        _resourceMiner.SetReportedTier(resourceMinerTier);
-        _structureOptimizer.SetExists(structureOptimizerExists != 0);
-        _structureOptimizer.SetReductionPercent(structureOptimizerReductionPercent);
-        _structureOptimizer.SetReportedTier(structureOptimizerTier);
     }
 
     internal void Updated(Cluster cluster, PacketReader reader)
     {
-        float energyBatteryCurrent;
-        float energyBatteryConsumedThisTick;
-        byte energyBatteryStatus;
-        float ionBatteryCurrent;
-        float ionBatteryConsumedThisTick;
-        byte ionBatteryStatus;
-        float neutrinoBatteryCurrent;
-        float neutrinoBatteryConsumedThisTick;
-        byte neutrinoBatteryStatus;
-        float energyCellCollectedThisTick;
-        byte energyCellStatus;
-        float ionCellCollectedThisTick;
-        byte ionCellStatus;
-        float neutrinoCellCollectedThisTick;
-        byte neutrinoCellStatus;
-        float hullCurrent;
-        byte hullStatus;
-        float shieldCurrent;
-        byte shieldActive;
-        float shieldRate;
-        byte shieldStatus;
-        float shieldConsumedEnergyThisTick;
-        float shieldConsumedIonsThisTick;
-        float shieldConsumedNeutrinosThisTick;
-        float armorBlockedDirectDamageThisTick;
-        float armorBlockedRadiationDamageThisTick;
-        byte armorStatus;
-        float repairRate;
-        byte repairStatus;
-        float repairConsumedEnergyThisTick;
-        float repairConsumedIonsThisTick;
-        float repairConsumedNeutrinosThisTick;
-        float repairRepairedHullThisTick;
-        float cargoCurrentMetal;
-        float cargoCurrentCarbon;
-        float cargoCurrentHydrogen;
-        float cargoCurrentSilicon;
-        float cargoCurrentNebula;
-        float cargoNebulaHue;
-        byte cargoStatus;
-        float resourceMinerRate;
-        byte resourceMinerStatus;
-        float resourceMinerConsumedEnergyThisTick;
-        float resourceMinerConsumedIonsThisTick;
-        float resourceMinerConsumedNeutrinosThisTick;
-        float resourceMinerMinedMetalThisTick;
-        float resourceMinerMinedCarbonThisTick;
-        float resourceMinerMinedHydrogenThisTick;
-        float resourceMinerMinedSiliconThisTick;
-        byte structureOptimizerExists;
-        float structureOptimizerReductionPercent;
         float environmentHeatThisTick;
         float environmentHeatEnergyCostThisTick;
         float environmentHeatEnergyOverflowThisTick;
@@ -750,30 +530,18 @@ public class Controllable : INamedUnit
             !reader.Read(out _angle) || !reader.Read(out _angularVelocity) ||
             !reader.Read(out byte alive) || !reader.Read(out byte tierChangePending) || !reader.Read(out byte tierChangeSlot) ||
             !reader.Read(out _tierChangeTargetTier) || !reader.Read(out _remainingTierChangeTicks) ||
-            !reader.Read(out energyBatteryCurrent) || !reader.Read(out energyBatteryConsumedThisTick) || !reader.Read(out energyBatteryStatus) ||
-            !reader.Read(out ionBatteryCurrent) || !reader.Read(out ionBatteryConsumedThisTick) || !reader.Read(out ionBatteryStatus) ||
-            !reader.Read(out neutrinoBatteryCurrent) || !reader.Read(out neutrinoBatteryConsumedThisTick) || !reader.Read(out neutrinoBatteryStatus) ||
-            !reader.Read(out energyCellCollectedThisTick) || !reader.Read(out energyCellStatus) ||
-            !reader.Read(out ionCellCollectedThisTick) || !reader.Read(out ionCellStatus) ||
-            !reader.Read(out neutrinoCellCollectedThisTick) || !reader.Read(out neutrinoCellStatus) ||
-            !reader.Read(out hullCurrent) || !reader.Read(out hullStatus) ||
-            !reader.Read(out shieldCurrent) || !reader.Read(out shieldActive) || !reader.Read(out shieldRate) ||
-            !reader.Read(out shieldStatus) || !reader.Read(out shieldConsumedEnergyThisTick) ||
-            !reader.Read(out shieldConsumedIonsThisTick) || !reader.Read(out shieldConsumedNeutrinosThisTick) ||
-            !reader.Read(out armorBlockedDirectDamageThisTick) || !reader.Read(out armorBlockedRadiationDamageThisTick) ||
-            !reader.Read(out armorStatus) ||
-            !reader.Read(out repairRate) || !reader.Read(out repairStatus) || !reader.Read(out repairConsumedEnergyThisTick) ||
-            !reader.Read(out repairConsumedIonsThisTick) || !reader.Read(out repairConsumedNeutrinosThisTick) ||
-            !reader.Read(out repairRepairedHullThisTick) ||
-            !reader.Read(out cargoCurrentMetal) || !reader.Read(out cargoCurrentCarbon) || !reader.Read(out cargoCurrentHydrogen) ||
-            !reader.Read(out cargoCurrentSilicon) || !reader.Read(out cargoCurrentNebula) || !reader.Read(out cargoNebulaHue) ||
-            !reader.Read(out cargoStatus) ||
-            !reader.Read(out resourceMinerRate) || !reader.Read(out resourceMinerStatus) ||
-            !reader.Read(out resourceMinerConsumedEnergyThisTick) || !reader.Read(out resourceMinerConsumedIonsThisTick) ||
-            !reader.Read(out resourceMinerConsumedNeutrinosThisTick) || !reader.Read(out resourceMinerMinedMetalThisTick) ||
-            !reader.Read(out resourceMinerMinedCarbonThisTick) || !reader.Read(out resourceMinerMinedHydrogenThisTick) ||
-            !reader.Read(out resourceMinerMinedSiliconThisTick) ||
-            !reader.Read(out structureOptimizerExists) || !reader.Read(out structureOptimizerReductionPercent) ||
+            !ReadBatteryRuntime(reader, _energyBattery) ||
+            !ReadBatteryRuntime(reader, _ionBattery) ||
+            !ReadBatteryRuntime(reader, _neutrinoBattery) ||
+            !ReadEnergyCellRuntime(reader, _energyCell) ||
+            !ReadEnergyCellRuntime(reader, _ionCell) ||
+            !ReadEnergyCellRuntime(reader, _neutrinoCell) ||
+            !ReadHullRuntime(reader, _hull) ||
+            !ReadShieldRuntime(reader, _shield) ||
+            !ReadArmorRuntime(reader, _armor) ||
+            !ReadRepairRuntime(reader, _repair) ||
+            !ReadCargoRuntime(reader, _cargo) ||
+            !ReadResourceMinerRuntime(reader, _resourceMiner) ||
             !reader.Read(out environmentHeatThisTick) || !reader.Read(out environmentHeatEnergyCostThisTick) ||
             !reader.Read(out environmentHeatEnergyOverflowThisTick) || !reader.Read(out environmentRadiationThisTick) ||
             !reader.Read(out environmentRadiationDamageBeforeArmorThisTick) || !reader.Read(out environmentArmorBlockedDamageThisTick) ||
@@ -784,25 +552,6 @@ public class Controllable : INamedUnit
         _alive = alive != 0;
         _tierChangePending = tierChangePending != 0;
         _tierChangeSlot = (SubsystemSlot)tierChangeSlot;
-        _energyBattery.UpdateRuntime(energyBatteryCurrent, energyBatteryConsumedThisTick, (SubsystemStatus)energyBatteryStatus);
-        _ionBattery.UpdateRuntime(ionBatteryCurrent, ionBatteryConsumedThisTick, (SubsystemStatus)ionBatteryStatus);
-        _neutrinoBattery.UpdateRuntime(neutrinoBatteryCurrent, neutrinoBatteryConsumedThisTick, (SubsystemStatus)neutrinoBatteryStatus);
-        _energyCell.UpdateRuntime(energyCellCollectedThisTick, (SubsystemStatus)energyCellStatus);
-        _ionCell.UpdateRuntime(ionCellCollectedThisTick, (SubsystemStatus)ionCellStatus);
-        _neutrinoCell.UpdateRuntime(neutrinoCellCollectedThisTick, (SubsystemStatus)neutrinoCellStatus);
-        _hull.UpdateRuntime(hullCurrent, (SubsystemStatus)hullStatus);
-        _shield.UpdateRuntime(shieldCurrent, shieldActive != 0, shieldRate, (SubsystemStatus)shieldStatus, shieldConsumedEnergyThisTick,
-            shieldConsumedIonsThisTick, shieldConsumedNeutrinosThisTick);
-        _armor.UpdateRuntime(armorBlockedDirectDamageThisTick, armorBlockedRadiationDamageThisTick, (SubsystemStatus)armorStatus);
-        _repair.UpdateRuntime(repairRate, (SubsystemStatus)repairStatus, repairConsumedEnergyThisTick, repairConsumedIonsThisTick,
-            repairConsumedNeutrinosThisTick, repairRepairedHullThisTick);
-        _cargo.UpdateRuntime(cargoCurrentMetal, cargoCurrentCarbon, cargoCurrentHydrogen, cargoCurrentSilicon, cargoCurrentNebula, cargoNebulaHue,
-            (SubsystemStatus)cargoStatus);
-        _resourceMiner.UpdateRuntime(resourceMinerRate, (SubsystemStatus)resourceMinerStatus, resourceMinerConsumedEnergyThisTick,
-            resourceMinerConsumedIonsThisTick, resourceMinerConsumedNeutrinosThisTick, resourceMinerMinedMetalThisTick,
-            resourceMinerMinedCarbonThisTick, resourceMinerMinedHydrogenThisTick, resourceMinerMinedSiliconThisTick);
-        _structureOptimizer.SetExists(structureOptimizerExists != 0);
-        _structureOptimizer.SetReductionPercent(structureOptimizerReductionPercent);
         _environmentHeatThisTick = environmentHeatThisTick;
         _environmentHeatEnergyCostThisTick = environmentHeatEnergyCostThisTick;
         _environmentHeatEnergyOverflowThisTick = environmentHeatEnergyOverflowThisTick;
@@ -812,6 +561,363 @@ public class Controllable : INamedUnit
         _environmentHullDamageThisTick = environmentHullDamageThisTick;
         ReadRuntime(reader);
         EmitRuntimeEvents();
+    }
+
+    private static bool ReadControllableBatteryState(PacketReader reader, BatterySubsystem battery)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        battery.SetExists(exists != 0);
+
+        if (!battery.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximum) ||
+            !reader.Read(out float current) ||
+            !reader.Read(out float consumedThisTick) ||
+            !reader.Read(out byte status))
+            return false;
+
+        battery.SetMaximum(maximum);
+        battery.UpdateRuntime(current, consumedThisTick, (SubsystemStatus)status);
+        battery.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableEnergyCellState(PacketReader reader, EnergyCellSubsystem energyCell)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        energyCell.SetExists(exists != 0);
+
+        if (!energyCell.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float efficiency) ||
+            !reader.Read(out float collectedThisTick) ||
+            !reader.Read(out byte status))
+            return false;
+
+        energyCell.SetEfficiency(efficiency);
+        energyCell.UpdateRuntime(collectedThisTick, (SubsystemStatus)status);
+        energyCell.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableHullState(PacketReader reader, HullSubsystem hull)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        hull.SetExists(exists != 0);
+
+        if (!hull.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximum) ||
+            !reader.Read(out float current) ||
+            !reader.Read(out byte status))
+            return false;
+
+        hull.SetMaximum(maximum);
+        hull.UpdateRuntime(current, (SubsystemStatus)status);
+        hull.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableShieldState(PacketReader reader, ShieldSubsystem shield)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        shield.SetExists(exists != 0);
+
+        if (!shield.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximum) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float current) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        shield.SetMaximum(maximum);
+        shield.SetRateCapabilities(minimumRate, maximumRate);
+        shield.UpdateRuntime(current, active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        shield.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableArmorState(PacketReader reader, ArmorSubsystem armor)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        armor.SetExists(exists != 0);
+
+        if (!armor.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float reduction) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float blockedDirectDamageThisTick) ||
+            !reader.Read(out float blockedRadiationDamageThisTick))
+            return false;
+
+        armor.SetReduction(reduction);
+        armor.UpdateRuntime(blockedDirectDamageThisTick, blockedRadiationDamageThisTick, (SubsystemStatus)status);
+        armor.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableRepairState(PacketReader reader, RepairSubsystem repair)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        repair.SetExists(exists != 0);
+
+        if (!repair.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float repairedHullThisTick))
+            return false;
+
+        repair.SetCapabilities(minimumRate, maximumRate);
+        repair.UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            repairedHullThisTick);
+        repair.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableCargoState(PacketReader reader, CargoSubsystem cargo)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        cargo.SetExists(exists != 0);
+
+        if (!cargo.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float maximumMetal) ||
+            !reader.Read(out float maximumCarbon) ||
+            !reader.Read(out float maximumHydrogen) ||
+            !reader.Read(out float maximumSilicon) ||
+            !reader.Read(out float maximumNebula) ||
+            !reader.Read(out float currentMetal) ||
+            !reader.Read(out float currentCarbon) ||
+            !reader.Read(out float currentHydrogen) ||
+            !reader.Read(out float currentSilicon) ||
+            !reader.Read(out float currentNebula) ||
+            !reader.Read(out float nebulaHue) ||
+            !reader.Read(out byte status))
+            return false;
+
+        cargo.SetMaximums(maximumMetal, maximumCarbon, maximumHydrogen, maximumSilicon, maximumNebula);
+        cargo.UpdateRuntime(currentMetal, currentCarbon, currentHydrogen, currentSilicon, currentNebula, nebulaHue, (SubsystemStatus)status);
+        cargo.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableResourceMinerState(PacketReader reader, ResourceMinerSubsystem resourceMiner)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        resourceMiner.SetExists(exists != 0);
+
+        if (!resourceMiner.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) ||
+            !reader.Read(out float minimumRate) ||
+            !reader.Read(out float maximumRate) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float minedMetalThisTick) ||
+            !reader.Read(out float minedCarbonThisTick) ||
+            !reader.Read(out float minedHydrogenThisTick) ||
+            !reader.Read(out float minedSiliconThisTick))
+            return false;
+
+        resourceMiner.SetCapabilities(minimumRate, maximumRate);
+        resourceMiner.UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick, minedMetalThisTick, minedCarbonThisTick, minedHydrogenThisTick, minedSiliconThisTick);
+        resourceMiner.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadControllableStructureOptimizerState(PacketReader reader, StructureOptimizerSubsystem structureOptimizer)
+    {
+        if (!reader.Read(out byte exists))
+            return false;
+
+        structureOptimizer.SetExists(exists != 0);
+
+        if (!structureOptimizer.Exists)
+            return true;
+
+        if (!reader.Read(out byte tier) || !reader.Read(out float reductionPercent))
+            return false;
+
+        structureOptimizer.SetReductionPercent(reductionPercent);
+        structureOptimizer.SetReportedTier(tier);
+        return true;
+    }
+
+    private static bool ReadBatteryRuntime(PacketReader reader, BatterySubsystem battery)
+    {
+        if (!battery.Exists)
+            return true;
+
+        if (!reader.Read(out float current) ||
+            !reader.Read(out float consumedThisTick) ||
+            !reader.Read(out byte status))
+            return false;
+
+        battery.UpdateRuntime(current, consumedThisTick, (SubsystemStatus)status);
+        return true;
+    }
+
+    private static bool ReadEnergyCellRuntime(PacketReader reader, EnergyCellSubsystem energyCell)
+    {
+        if (!energyCell.Exists)
+            return true;
+
+        if (!reader.Read(out float collectedThisTick) || !reader.Read(out byte status))
+            return false;
+
+        energyCell.UpdateRuntime(collectedThisTick, (SubsystemStatus)status);
+        return true;
+    }
+
+    private static bool ReadHullRuntime(PacketReader reader, HullSubsystem hull)
+    {
+        if (!hull.Exists)
+            return true;
+
+        if (!reader.Read(out float current) || !reader.Read(out byte status))
+            return false;
+
+        hull.UpdateRuntime(current, (SubsystemStatus)status);
+        return true;
+    }
+
+    private static bool ReadShieldRuntime(PacketReader reader, ShieldSubsystem shield)
+    {
+        if (!shield.Exists)
+            return true;
+
+        if (!reader.Read(out float current) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick))
+            return false;
+
+        shield.UpdateRuntime(current, active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick);
+        return true;
+    }
+
+    private static bool ReadArmorRuntime(PacketReader reader, ArmorSubsystem armor)
+    {
+        if (!armor.Exists)
+            return true;
+
+        if (!reader.Read(out float blockedDirectDamageThisTick) ||
+            !reader.Read(out float blockedRadiationDamageThisTick) ||
+            !reader.Read(out byte status))
+            return false;
+
+        armor.UpdateRuntime(blockedDirectDamageThisTick, blockedRadiationDamageThisTick, (SubsystemStatus)status);
+        return true;
+    }
+
+    private static bool ReadRepairRuntime(PacketReader reader, RepairSubsystem repair)
+    {
+        if (!repair.Exists)
+            return true;
+
+        if (!reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float repairedHullThisTick))
+            return false;
+
+        repair.UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick,
+            repairedHullThisTick);
+        return true;
+    }
+
+    private static bool ReadCargoRuntime(PacketReader reader, CargoSubsystem cargo)
+    {
+        if (!cargo.Exists)
+            return true;
+
+        if (!reader.Read(out float currentMetal) ||
+            !reader.Read(out float currentCarbon) ||
+            !reader.Read(out float currentHydrogen) ||
+            !reader.Read(out float currentSilicon) ||
+            !reader.Read(out float currentNebula) ||
+            !reader.Read(out float nebulaHue) ||
+            !reader.Read(out byte status))
+            return false;
+
+        cargo.UpdateRuntime(currentMetal, currentCarbon, currentHydrogen, currentSilicon, currentNebula, nebulaHue, (SubsystemStatus)status);
+        return true;
+    }
+
+    private static bool ReadResourceMinerRuntime(PacketReader reader, ResourceMinerSubsystem resourceMiner)
+    {
+        if (!resourceMiner.Exists)
+            return true;
+
+        if (!reader.Read(out float rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out float consumedEnergyThisTick) ||
+            !reader.Read(out float consumedIonsThisTick) ||
+            !reader.Read(out float consumedNeutrinosThisTick) ||
+            !reader.Read(out float minedMetalThisTick) ||
+            !reader.Read(out float minedCarbonThisTick) ||
+            !reader.Read(out float minedHydrogenThisTick) ||
+            !reader.Read(out float minedSiliconThisTick))
+            return false;
+
+        resourceMiner.UpdateRuntime(rate, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick,
+            consumedNeutrinosThisTick, minedMetalThisTick, minedCarbonThisTick, minedHydrogenThisTick, minedSiliconThisTick);
+        return true;
     }
 
     private protected virtual void ResetRuntime()

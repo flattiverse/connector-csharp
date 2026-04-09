@@ -4347,6 +4347,16 @@ partial class Program
             foreach (XElement regionElement in restoreRoot.Elements("Region"))
             {
                 XElement regionCopy = new XElement(regionElement);
+                XAttribute? idAttribute = regionCopy.Attribute("Id");
+                string regionIdText = idAttribute is null ? "?" : idAttribute.Value;
+
+                if (!regionCopy.Elements("Team").Any())
+                {
+                    Console.WriteLine(
+                        $"Skipping restore of region #{regionIdText} in cluster #{entry.Key} because the queried XML contains no Team child and SetRegion rejects such regions.");
+                    continue;
+                }
+
                 string regionXml = new XDocument(regionCopy).ToString(SaveOptions.DisableFormatting);
                 await cluster.SetRegion(regionXml).ConfigureAwait(false);
             }

@@ -75,7 +75,7 @@ public class Cluster : INamedUnit
     
     internal void AddUnit(Unit unit)
     {
-        _units.Add(unit.Name, unit);
+        _units[unit.Name] = unit;
     }
 
     internal bool RemoveUnit(string name, [NotNullWhen(true)] out Unit? unit)

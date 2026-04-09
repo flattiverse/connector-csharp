@@ -296,6 +296,11 @@ public enum EventKind : byte
     PlayerBinaryChat = 0xCC,
 
     /// <summary>
+    /// A login message-of-the-day was received.
+    /// </summary>
+    MotdMessage = 0xCE,
+
+    /// <summary>
     /// A tournament was created.
     /// </summary>
     TournamentCreated = 0xD0,

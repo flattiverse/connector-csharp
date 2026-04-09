@@ -96,7 +96,7 @@ public abstract class Subsystem
     /// Remaining ticks of the currently running upgrade or downgrade affecting this slot.
     /// Returns 0 when no tier change is pending.
     /// </summary>
-    public int RemainingTierChangeTicks
+    public ushort RemainingTierChangeTicks
     {
         get { return _controllable.GetRemainingTierChangeTicks(_slot); }
     }
@@ -200,7 +200,7 @@ public abstract class Subsystem
 
     internal void SetReportedTier(byte tier)
     {
-        _tier = tier;
+        SetTier(tier);
     }
 
     protected static bool Matches(float left, float right)

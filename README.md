@@ -45,7 +45,7 @@ while (galaxy.Active)
 ## Current Capabilities
 
 - connect to a galaxy and keep a local mirror of galaxy settings, teams, clusters, players, controllables and visible units
-- receive strongly typed events for settings changes, compile profile announcement, score changes, team and cluster lifecycle, player lifecycle, visible unit lifecycle, `ControllableInfo` lifecycle, owner-side subsystem runtime, player chat, objective system chat including mission-target hits, and connection termination
+- receive strongly typed events for settings changes, compile profile announcement, login MOTD and system messages, score changes, team and cluster lifecycle, player lifecycle, visible unit lifecycle, `ControllableInfo` lifecycle, owner-side subsystem runtime, player chat, objective system chat including mission-target hits, and connection termination
 - receive owner-only `CollectedPowerUpEvent` packets with `PowerUpName`, `PowerUpKind`, configured `Amount`, and actual `AppliedAmount`
 - inspect `Galaxy.Tournament` and receive `CreatedTournamentEvent`, `UpdatedTournamentEvent`, `RemovedTournamentEvent`, and `TournamentMessageEvent`
 - observe respawning power-ups through the normal visible-unit create/delete lifecycle; the connector does not use a dedicated respawn packet

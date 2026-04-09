@@ -37,15 +37,18 @@ partial class Program
         string scannerBuoyName = $"StaticMapLocalBuoy{Environment.ProcessId}";
         string shipName = $"StaticMapLocalShip{Environment.ProcessId}";
         bool initialRebuildDeniedOnConnect = false;
+        string adminAuth = ResolveNpcUnitsLocalAdminAuth();
+        DatabaseAccountRow adminAccountRow = QueryAccountRow(adminAuth);
+        string playerAuth = ResolveNpcUnitsLocalPlayerAuth(adminAccountRow.AccountId);
 
-        ClearLocalAccountSession(LocalSwitchGateAdminAuth, "STATIC-MAP-LOCAL:ADMIN");
-        ClearLocalAccountSession(LocalSwitchGatePlayerAuth, "STATIC-MAP-LOCAL:PLAYER");
+        ClearLocalAccountSession(adminAuth, "STATIC-MAP-LOCAL:ADMIN");
+        ClearLocalAccountSession(playerAuth, "STATIC-MAP-LOCAL:PLAYER");
 
         try
         {
             Console.WriteLine("STATIC-MAP-LOCAL: starting local galaxy 666...");
             galaxyProcess = StartLocalGalaxyProcess();
-            (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, LocalSwitchGateAdminAuth)
+            (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, adminAuth)
                 .ConfigureAwait(false);
             adminEventPump = StartEventPump("STATIC-MAP-LOCAL:ADMIN", adminGalaxy, adminEvents);
             DrainEvents(adminEvents);
@@ -67,10 +70,10 @@ partial class Program
                     adminEventPump = null;
                 }
 
-                await WaitForSessionGalaxy(LocalSwitchGateAdminAuth, null, 7000).ConfigureAwait(false);
+                await WaitForSessionGalaxy(adminAuth, null, 7000).ConfigureAwait(false);
                 StopProcess(galaxyProcess);
                 galaxyProcess = StartLocalGalaxyProcess();
-                (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, LocalSwitchGateAdminAuth)
+                (adminGalaxy, initialRebuildDeniedOnConnect) = await ConnectLocalAdminAfterInitialRebuild(galaxyProcess, adminAuth)
                     .ConfigureAwait(false);
                 adminEventPump = StartEventPump("STATIC-MAP-LOCAL:ADMIN", adminGalaxy, adminEvents);
                 DrainEvents(adminEvents);
@@ -156,7 +159,7 @@ partial class Program
             await ExpectOuterSegmentCenterRejected(testCluster).ConfigureAwait(false);
 
             Console.WriteLine("STATIC-MAP-LOCAL: connecting local player...");
-            playerGalaxy = await ConnectLocalPlayer(LocalSwitchGatePlayerAuth, TeamName, "STATIC-MAP-LOCAL:PLAYER").ConfigureAwait(false);
+            playerGalaxy = await ConnectLocalPlayer(playerAuth, TeamName, "STATIC-MAP-LOCAL:PLAYER").ConfigureAwait(false);
             playerEventPump = StartEventPump("STATIC-MAP-LOCAL:PLAYER", playerGalaxy, playerEvents);
             DrainEvents(playerEvents);
 
@@ -174,7 +177,7 @@ partial class Program
                     throw new InvalidOperationException("STATIC-MAP-LOCAL: galaxy did not switch to Domination.");
             }
 
-            DatabaseAccountRow pinkAccountRow = QueryAccountRow(LocalSwitchGatePlayerAuth);
+            DatabaseAccountRow pinkAccountRow = QueryAccountRow(playerAuth);
             string secondPlayerAuth = LocalSwitchGatePinkPlayerAuth;
 
             if (secondPlayerAuth.StartsWith("<INSERT", StringComparison.Ordinal))
@@ -299,7 +302,7 @@ partial class Program
             if (playerGalaxy is not null)
                 playerGalaxy.Dispose();
 
-            await WaitForSessionGalaxy(LocalSwitchGatePlayerAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(playerAuth, null, 7000).ConfigureAwait(false);
 
             if (adminGalaxy is not null)
             {
@@ -346,7 +349,7 @@ partial class Program
                 adminGalaxy.Dispose();
             }
 
-            await WaitForSessionGalaxy(LocalSwitchGateAdminAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(adminAuth, null, 7000).ConfigureAwait(false);
 
             if (playerEventPump is not null)
                 await Task.WhenAny(playerEventPump, Task.Delay(1000)).ConfigureAwait(false);

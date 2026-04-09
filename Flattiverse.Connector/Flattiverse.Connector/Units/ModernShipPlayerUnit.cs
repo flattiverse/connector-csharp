@@ -106,11 +106,19 @@ public class ModernShipPlayerUnit : PlayerUnit
             if (!ReadRailgunState(reader, _railguns[index]))
                 throw new InvalidDataException("Couldn't read Unit.");
 
-        if (!reader.Read(out byte jumpDriveExists) ||
-            !reader.Read(out float jumpDriveEnergyCost))
+        if (!reader.Read(out byte jumpDriveExists))
             throw new InvalidDataException("Couldn't read Unit.");
 
-        _jumpDrive.Update(jumpDriveExists != 0, jumpDriveEnergyCost);
+        if (jumpDriveExists == 0)
+        {
+            _jumpDrive.Update(false, 0f);
+            return;
+        }
+
+        if (!reader.Read(out float jumpDriveEnergyCost))
+            throw new InvalidDataException("Couldn't read Unit.");
+
+        _jumpDrive.Update(true, jumpDriveEnergyCost);
     }
 
     private static ModernShipEngineSubsystemInfo[] CloneEngines(ModernShipEngineSubsystemInfo[] source)
@@ -168,8 +176,8 @@ public class ModernShipPlayerUnit : PlayerUnit
         DynamicShotFabricatorSubsystemInfo[] clone = CreateShotFabricatorInfos(source.Length);
 
         for (int index = 0; index < clone.Length; index++)
-            clone[index].Update(source[index].Exists, source[index].MinimumRate, source[index].MaximumRate, source[index].Active,
-                source[index].Rate, source[index].Status, source[index].ConsumedEnergyThisTick, source[index].ConsumedIonsThisTick,
+            clone[index].Update(source[index].Exists, source[index].MaximumRate, source[index].Active, source[index].Rate,
+                source[index].Status, source[index].ConsumedEnergyThisTick, source[index].ConsumedIonsThisTick,
                 source[index].ConsumedNeutrinosThisTick);
 
         return clone;
@@ -204,8 +212,8 @@ public class ModernShipPlayerUnit : PlayerUnit
         DynamicInterceptorFabricatorSubsystemInfo[] clone = CreateInterceptorFabricatorInfos(source.Length);
 
         for (int index = 0; index < clone.Length; index++)
-            clone[index].Update(source[index].Exists, source[index].MinimumRate, source[index].MaximumRate, source[index].Active,
-                source[index].Rate, source[index].Status, source[index].ConsumedEnergyThisTick, source[index].ConsumedIonsThisTick,
+            clone[index].Update(source[index].Exists, source[index].MaximumRate, source[index].Active, source[index].Rate,
+                source[index].Status, source[index].ConsumedEnergyThisTick, source[index].ConsumedIonsThisTick,
                 source[index].ConsumedNeutrinosThisTick);
 
         return clone;
@@ -315,8 +323,16 @@ public class ModernShipPlayerUnit : PlayerUnit
 
     private bool ReadNebulaCollectorState(PacketReader reader)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float minimumRate) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            _nebulaCollector.Update(false, 0f, 0f, 0f, SubsystemStatus.Off, 0f, 0f, 0f, 0f, 0f);
+            return true;
+        }
+
+        if (!reader.Read(out float minimumRate) ||
             !reader.Read(out float maximumRate) ||
             !reader.Read(out float rate) ||
             !reader.Read(out byte status) ||
@@ -327,15 +343,23 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float collectedHueThisTick))
             return false;
 
-        _nebulaCollector.Update(exists != 0, minimumRate, maximumRate, rate, (SubsystemStatus)status, consumedEnergyThisTick,
+        _nebulaCollector.Update(true, minimumRate, maximumRate, rate, (SubsystemStatus)status, consumedEnergyThisTick,
             consumedIonsThisTick, consumedNeutrinosThisTick, collectedThisTick, collectedHueThisTick);
         return true;
     }
 
     private static bool ReadScannerState(PacketReader reader, DynamicScannerSubsystemInfo scanner)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float maximumWidth) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            scanner.Update(false, 0f, 0f, 0f, 0f, 0f, false, 0f, 0f, 0f, 0f, 0f, 0f, SubsystemStatus.Off, 0f, 0f, 0f);
+            return true;
+        }
+
+        if (!reader.Read(out float maximumWidth) ||
             !reader.Read(out float maximumLength) ||
             !reader.Read(out float widthSpeed) ||
             !reader.Read(out float lengthSpeed) ||
@@ -353,7 +377,7 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float consumedNeutrinosThisTick))
             return false;
 
-        scanner.Update(exists != 0, maximumWidth, maximumLength, widthSpeed, lengthSpeed, angleSpeed, active != 0, currentWidth,
+        scanner.Update(true, maximumWidth, maximumLength, widthSpeed, lengthSpeed, angleSpeed, active != 0, currentWidth,
             currentLength, currentAngle, targetWidth, targetLength, targetAngle, (SubsystemStatus)status, consumedEnergyThisTick,
             consumedIonsThisTick, consumedNeutrinosThisTick);
         return true;
@@ -361,8 +385,16 @@ public class ModernShipPlayerUnit : PlayerUnit
 
     private static bool ReadEngineState(PacketReader reader, ModernShipEngineSubsystemInfo engine)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float maximumForwardThrust) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            engine.Update(false, 0f, 0f, 0f, 0f, SubsystemStatus.Off, 0f, 0f, 0f);
+            return true;
+        }
+
+        if (!reader.Read(out float maximumForwardThrust) ||
             !reader.Read(out float maximumReverseThrust) ||
             !reader.Read(out float maximumThrustChangePerTick) ||
             !reader.Read(out float currentThrust) ||
@@ -373,15 +405,23 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float consumedNeutrinosThisTick))
             return false;
 
-        engine.Update(exists != 0, MathF.Max(maximumForwardThrust, maximumReverseThrust), maximumThrustChangePerTick, currentThrust,
+        engine.Update(true, MathF.Max(maximumForwardThrust, maximumReverseThrust), maximumThrustChangePerTick, currentThrust,
             targetThrust, (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
         return true;
     }
 
     private static bool ReadLauncherState(PacketReader reader, DynamicShotLauncherSubsystemInfo launcher)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float minimumRelativeMovement) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            launcher.Update(false, 0f, 0f, 0, 0, 0f, 0f, 0f, 0f, new Vector(), 0, 0f, 0f, SubsystemStatus.Off, 0f, 0f, 0f);
+            return true;
+        }
+
+        if (!reader.Read(out float minimumRelativeMovement) ||
             !reader.Read(out float maximumRelativeMovement) ||
             !reader.Read(out ushort minimumTicks) ||
             !reader.Read(out ushort maximumTicks) ||
@@ -399,7 +439,7 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float consumedNeutrinosThisTick))
             return false;
 
-        launcher.Update(exists != 0, minimumRelativeMovement, maximumRelativeMovement, minimumTicks, maximumTicks, minimumLoad,
+        launcher.Update(true, minimumRelativeMovement, maximumRelativeMovement, minimumTicks, maximumTicks, minimumLoad,
             maximumLoad, minimumDamage, maximumDamage, relativeMovement, ticks, load, damage, (SubsystemStatus)status,
             consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
         return true;
@@ -407,21 +447,36 @@ public class ModernShipPlayerUnit : PlayerUnit
 
     private static bool ReadMagazineState(PacketReader reader, DynamicShotMagazineSubsystemInfo magazine)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float maximumShots) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            magazine.Update(false, 0f, 0f, SubsystemStatus.Off);
+            return true;
+        }
+
+        if (!reader.Read(out float maximumShots) ||
             !reader.Read(out float currentShots) ||
             !reader.Read(out byte status))
             return false;
 
-        magazine.Update(exists != 0, maximumShots, currentShots, (SubsystemStatus)status);
+        magazine.Update(true, maximumShots, currentShots, (SubsystemStatus)status);
         return true;
     }
 
     private static bool ReadFabricatorState(PacketReader reader, DynamicShotFabricatorSubsystemInfo fabricator)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float minimumRate) ||
-            !reader.Read(out float maximumRate) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            fabricator.Update(false, 0f, false, 0f, SubsystemStatus.Off, 0f, 0f, 0f);
+            return true;
+        }
+
+        if (!reader.Read(out float maximumRate) ||
             !reader.Read(out byte active) ||
             !reader.Read(out float rate) ||
             !reader.Read(out byte status) ||
@@ -430,15 +485,24 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float consumedNeutrinosThisTick))
             return false;
 
-        fabricator.Update(exists != 0, minimumRate, maximumRate, active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick,
+        fabricator.Update(true, maximumRate, active != 0, rate, (SubsystemStatus)status, consumedEnergyThisTick,
             consumedIonsThisTick, consumedNeutrinosThisTick);
         return true;
     }
 
     private static bool ReadRailgunState(PacketReader reader, ModernRailgunSubsystemInfo railgun)
     {
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out float energyCost) ||
+        if (!reader.Read(out byte exists))
+            return false;
+
+        if (exists == 0)
+        {
+            railgun.Update(false, 0f, 0f, Flattiverse.Connector.GalaxyHierarchy.RailgunDirection.None,
+                SubsystemStatus.Off, 0f, 0f, 0f);
+            return true;
+        }
+
+        if (!reader.Read(out float energyCost) ||
             !reader.Read(out float metalCost) ||
             !reader.Read(out byte direction) ||
             !reader.Read(out byte status) ||
@@ -447,7 +511,7 @@ public class ModernShipPlayerUnit : PlayerUnit
             !reader.Read(out float consumedNeutrinosThisTick))
             return false;
 
-        railgun.Update(exists != 0, energyCost, metalCost, (Flattiverse.Connector.GalaxyHierarchy.RailgunDirection)direction,
+        railgun.Update(true, energyCost, metalCost, (Flattiverse.Connector.GalaxyHierarchy.RailgunDirection)direction,
             (SubsystemStatus)status, consumedEnergyThisTick, consumedIonsThisTick, consumedNeutrinosThisTick);
         return true;
     }

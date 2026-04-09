@@ -80,9 +80,12 @@ public class ModernShipControllable : Controllable
             if (!ReadRailgunState(reader, out railgunStates[index]))
                 throw new InvalidDataException("Couldn't read ModernShipControllable create state.");
 
+        byte jumpDriveTier = 0;
+        float jumpDriveEnergyCost = 0f;
+
         if (!reader.Read(out byte jumpDriveExists) ||
-            !reader.Read(out byte jumpDriveTier) ||
-            !reader.Read(out float jumpDriveEnergyCost) ||
+            (jumpDriveExists != 0 && !reader.Read(out jumpDriveTier)) ||
+            (jumpDriveExists != 0 && !reader.Read(out jumpDriveEnergyCost)) ||
             !reader.Read(out _equippedCrystals[0]) ||
             !reader.Read(out _equippedCrystals[1]) ||
             !reader.Read(out _equippedCrystals[2]))
@@ -111,8 +114,12 @@ public class ModernShipControllable : Controllable
             nebulaCollectorState.CollectedHueThisTick);
         _nebulaCollector.SetReportedTier(nebulaCollectorState.Tier);
         _jumpDrive.SetExists(jumpDriveExists != 0);
-        _jumpDrive.SetEnergyCost(jumpDriveEnergyCost);
-        _jumpDrive.SetReportedTier(jumpDriveTier);
+
+        if (jumpDriveExists != 0)
+        {
+            _jumpDrive.SetEnergyCost(jumpDriveEnergyCost);
+            _jumpDrive.SetReportedTier(jumpDriveTier);
+        }
     }
 
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
@@ -254,15 +261,21 @@ public class ModernShipControllable : Controllable
 
     private protected override void ReadRuntime(PacketReader reader)
     {
-        if (!ReadNebulaCollectorRuntime(reader, out NebulaCollectorState nebulaCollectorState))
+        NebulaCollectorState nebulaCollectorState = default;
+
+        if (_nebulaCollector.Exists && !ReadNebulaCollectorRuntime(reader, out nebulaCollectorState))
             throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
-        _nebulaCollector.UpdateRuntime(nebulaCollectorState.Rate, nebulaCollectorState.Status, nebulaCollectorState.ConsumedEnergyThisTick,
-            nebulaCollectorState.ConsumedIonsThisTick, nebulaCollectorState.ConsumedNeutrinosThisTick, nebulaCollectorState.CollectedThisTick,
-            nebulaCollectorState.CollectedHueThisTick);
+        if (_nebulaCollector.Exists)
+            _nebulaCollector.UpdateRuntime(nebulaCollectorState.Rate, nebulaCollectorState.Status, nebulaCollectorState.ConsumedEnergyThisTick,
+                nebulaCollectorState.ConsumedIonsThisTick, nebulaCollectorState.ConsumedNeutrinosThisTick, nebulaCollectorState.CollectedThisTick,
+                nebulaCollectorState.CollectedHueThisTick);
 
         for (int index = 0; index < _scanners.Length; index++)
         {
+            if (!_scanners[index].Exists)
+                continue;
+
             if (!ReadScannerRuntime(reader, out ScannerRuntime scannerRuntime))
                 throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
@@ -274,6 +287,9 @@ public class ModernShipControllable : Controllable
 
         for (int index = 0; index < _engines.Length; index++)
         {
+            if (!_engines[index].Exists)
+                continue;
+
             if (!ReadEngineRuntime(reader, out EngineRuntime engineRuntime))
                 throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
@@ -283,38 +299,71 @@ public class ModernShipControllable : Controllable
 
         for (int index = 0; index < _shotLaunchers.Length; index++)
         {
-            if (!ReadLauncherRuntime(reader, out LauncherRuntime launcherRuntime) ||
-                !ReadMagazineRuntime(reader, out MagazineRuntime magazineRuntime) ||
-                !ReadFabricatorRuntime(reader, out FabricatorRuntime fabricatorRuntime))
-                throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+            if (_shotLaunchers[index].Exists)
+            {
+                if (!ReadLauncherRuntime(reader, out LauncherRuntime launcherRuntime))
+                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
-            _shotLaunchers[index].UpdateRuntime(launcherRuntime.RelativeMovement, launcherRuntime.Ticks, launcherRuntime.Load,
-                launcherRuntime.Damage, launcherRuntime.Status, launcherRuntime.ConsumedEnergyThisTick,
-                launcherRuntime.ConsumedIonsThisTick, launcherRuntime.ConsumedNeutrinosThisTick);
-            _shotMagazines[index].UpdateRuntime(magazineRuntime.CurrentShots, magazineRuntime.Status);
-            _shotFabricators[index].UpdateRuntime(fabricatorRuntime.Active, fabricatorRuntime.Rate, fabricatorRuntime.Status,
-                fabricatorRuntime.ConsumedEnergyThisTick, fabricatorRuntime.ConsumedIonsThisTick,
-                fabricatorRuntime.ConsumedNeutrinosThisTick);
+                _shotLaunchers[index].UpdateRuntime(launcherRuntime.RelativeMovement, launcherRuntime.Ticks, launcherRuntime.Load,
+                    launcherRuntime.Damage, launcherRuntime.Status, launcherRuntime.ConsumedEnergyThisTick,
+                    launcherRuntime.ConsumedIonsThisTick, launcherRuntime.ConsumedNeutrinosThisTick);
+            }
+
+            if (_shotMagazines[index].Exists)
+            {
+                if (!ReadMagazineRuntime(reader, out MagazineRuntime magazineRuntime))
+                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+
+                _shotMagazines[index].UpdateRuntime(magazineRuntime.CurrentShots, magazineRuntime.Status);
+            }
+
+            if (_shotFabricators[index].Exists)
+            {
+                if (!ReadFabricatorRuntime(reader, out FabricatorRuntime fabricatorRuntime))
+                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+
+                _shotFabricators[index].UpdateRuntime(fabricatorRuntime.Active, fabricatorRuntime.Rate, fabricatorRuntime.Status,
+                    fabricatorRuntime.ConsumedEnergyThisTick, fabricatorRuntime.ConsumedIonsThisTick,
+                    fabricatorRuntime.ConsumedNeutrinosThisTick);
+            }
         }
 
         for (int index = 0; index < _interceptorLaunchers.Length; index++)
         {
-            if (!ReadLauncherRuntime(reader, out LauncherRuntime launcherRuntime) ||
-                !ReadMagazineRuntime(reader, out MagazineRuntime magazineRuntime) ||
-                !ReadFabricatorRuntime(reader, out FabricatorRuntime fabricatorRuntime))
-                throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+            if (_interceptorLaunchers[index].Exists)
+            {
+                if (!ReadLauncherRuntime(reader, out LauncherRuntime launcherRuntime))
+                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
-            _interceptorLaunchers[index].UpdateRuntime(launcherRuntime.RelativeMovement, launcherRuntime.Ticks, launcherRuntime.Load,
-                launcherRuntime.Damage, launcherRuntime.Status, launcherRuntime.ConsumedEnergyThisTick,
-                launcherRuntime.ConsumedIonsThisTick, launcherRuntime.ConsumedNeutrinosThisTick);
-            _interceptorMagazines[index].UpdateRuntime(magazineRuntime.CurrentShots, magazineRuntime.Status);
-            _interceptorFabricators[index].UpdateRuntime(fabricatorRuntime.Active, fabricatorRuntime.Rate, fabricatorRuntime.Status,
-                fabricatorRuntime.ConsumedEnergyThisTick, fabricatorRuntime.ConsumedIonsThisTick,
-                fabricatorRuntime.ConsumedNeutrinosThisTick);
+                _interceptorLaunchers[index].UpdateRuntime(launcherRuntime.RelativeMovement, launcherRuntime.Ticks, launcherRuntime.Load,
+                    launcherRuntime.Damage, launcherRuntime.Status, launcherRuntime.ConsumedEnergyThisTick,
+                    launcherRuntime.ConsumedIonsThisTick, launcherRuntime.ConsumedNeutrinosThisTick);
+            }
+
+            if (_interceptorMagazines[index].Exists)
+            {
+                if (!ReadMagazineRuntime(reader, out MagazineRuntime magazineRuntime))
+                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+
+                _interceptorMagazines[index].UpdateRuntime(magazineRuntime.CurrentShots, magazineRuntime.Status);
+            }
+
+            if (_interceptorFabricators[index].Exists)
+            {
+                if (!ReadFabricatorRuntime(reader, out FabricatorRuntime fabricatorRuntime))
+                    throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+
+                _interceptorFabricators[index].UpdateRuntime(fabricatorRuntime.Active, fabricatorRuntime.Rate, fabricatorRuntime.Status,
+                    fabricatorRuntime.ConsumedEnergyThisTick, fabricatorRuntime.ConsumedIonsThisTick,
+                    fabricatorRuntime.ConsumedNeutrinosThisTick);
+            }
         }
 
         for (int index = 0; index < _railguns.Length; index++)
         {
+            if (!_railguns[index].Exists)
+                continue;
+
             if (!ReadRailgunRuntime(reader, out RailgunRuntime railgunRuntime))
                 throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
@@ -322,14 +371,17 @@ public class ModernShipControllable : Controllable
                 railgunRuntime.ConsumedIonsThisTick, railgunRuntime.ConsumedNeutrinosThisTick);
         }
 
-        if (!reader.Read(out byte jumpDriveStatus) ||
-            !reader.Read(out float jumpDriveConsumedEnergyThisTick) ||
-            !reader.Read(out float jumpDriveConsumedIonsThisTick) ||
-            !reader.Read(out float jumpDriveConsumedNeutrinosThisTick))
-            throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
+        if (_jumpDrive.Exists)
+        {
+            if (!reader.Read(out byte jumpDriveStatus) ||
+                !reader.Read(out float jumpDriveConsumedEnergyThisTick) ||
+                !reader.Read(out float jumpDriveConsumedIonsThisTick) ||
+                !reader.Read(out float jumpDriveConsumedNeutrinosThisTick))
+                throw new InvalidDataException("Couldn't read ModernShipControllable runtime.");
 
-        _jumpDrive.UpdateRuntime((SubsystemStatus)jumpDriveStatus, jumpDriveConsumedEnergyThisTick, jumpDriveConsumedIonsThisTick,
-            jumpDriveConsumedNeutrinosThisTick);
+            _jumpDrive.UpdateRuntime((SubsystemStatus)jumpDriveStatus, jumpDriveConsumedEnergyThisTick, jumpDriveConsumedIonsThisTick,
+                jumpDriveConsumedNeutrinosThisTick);
+        }
     }
 
     private protected override void EmitRuntimeEvents()
@@ -492,30 +544,27 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float minimumRate) ||
-            !reader.Read(out float maximumRate) ||
-            !reader.Read(out float rate) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick) ||
-            !reader.Read(out float collectedThisTick) ||
-            !reader.Read(out float collectedHueThisTick))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.MinimumRate = minimumRate;
-        state.MaximumRate = maximumRate;
-        state.Rate = rate;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.MinimumRate) ||
+            !reader.Read(out state.MaximumRate) ||
+            !reader.Read(out state.Rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out state.ConsumedEnergyThisTick) ||
+            !reader.Read(out state.ConsumedIonsThisTick) ||
+            !reader.Read(out state.ConsumedNeutrinosThisTick) ||
+            !reader.Read(out state.CollectedThisTick) ||
+            !reader.Read(out state.CollectedHueThisTick))
+            return false;
+
         state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
-        state.CollectedThisTick = collectedThisTick;
-        state.CollectedHueThisTick = collectedHueThisTick;
         return true;
     }
 
@@ -547,44 +596,35 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float maximumWidth) ||
-            !reader.Read(out float maximumLength) ||
-            !reader.Read(out float widthSpeed) ||
-            !reader.Read(out float lengthSpeed) ||
-            !reader.Read(out float angleSpeed) ||
-            !reader.Read(out byte active) ||
-            !reader.Read(out float currentWidth) ||
-            !reader.Read(out float currentLength) ||
-            !reader.Read(out float currentAngle) ||
-            !reader.Read(out float targetWidth) ||
-            !reader.Read(out float targetLength) ||
-            !reader.Read(out float targetAngle) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.MaximumWidth = maximumWidth;
-        state.MaximumLength = maximumLength;
-        state.WidthSpeed = widthSpeed;
-        state.LengthSpeed = lengthSpeed;
-        state.AngleSpeed = angleSpeed;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.MaximumWidth) ||
+            !reader.Read(out state.MaximumLength) ||
+            !reader.Read(out state.WidthSpeed) ||
+            !reader.Read(out state.LengthSpeed) ||
+            !reader.Read(out state.AngleSpeed) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out state.CurrentWidth) ||
+            !reader.Read(out state.CurrentLength) ||
+            !reader.Read(out state.CurrentAngle) ||
+            !reader.Read(out state.TargetWidth) ||
+            !reader.Read(out state.TargetLength) ||
+            !reader.Read(out state.TargetAngle) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out state.ConsumedEnergyThisTick) ||
+            !reader.Read(out state.ConsumedIonsThisTick) ||
+            !reader.Read(out state.ConsumedNeutrinosThisTick))
+            return false;
+
         state.Active = active != 0;
-        state.CurrentWidth = currentWidth;
-        state.CurrentLength = currentLength;
-        state.CurrentAngle = currentAngle;
-        state.TargetWidth = targetWidth;
-        state.TargetLength = targetLength;
-        state.TargetAngle = targetAngle;
         state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
         return true;
     }
 
@@ -623,30 +663,27 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float maximumForwardThrust) ||
-            !reader.Read(out float maximumReverseThrust) ||
-            !reader.Read(out float maximumThrustChangePerTick) ||
-            !reader.Read(out float currentThrust) ||
-            !reader.Read(out float targetThrust) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.MaximumForwardThrust = maximumForwardThrust;
-        state.MaximumReverseThrust = maximumReverseThrust;
-        state.MaximumThrustChangePerTick = maximumThrustChangePerTick;
-        state.CurrentThrust = currentThrust;
-        state.TargetThrust = targetThrust;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.MaximumForwardThrust) ||
+            !reader.Read(out state.MaximumReverseThrust) ||
+            !reader.Read(out state.MaximumThrustChangePerTick) ||
+            !reader.Read(out state.CurrentThrust) ||
+            !reader.Read(out state.TargetThrust) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out state.ConsumedEnergyThisTick) ||
+            !reader.Read(out state.ConsumedIonsThisTick) ||
+            !reader.Read(out state.ConsumedNeutrinosThisTick))
+            return false;
+
         state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
         return true;
     }
 
@@ -675,44 +712,34 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float minimumRelativeMovement) ||
-            !reader.Read(out float maximumRelativeMovement) ||
-            !reader.Read(out ushort minimumTicks) ||
-            !reader.Read(out ushort maximumTicks) ||
-            !reader.Read(out float minimumLoad) ||
-            !reader.Read(out float maximumLoad) ||
-            !reader.Read(out float minimumDamage) ||
-            !reader.Read(out float maximumDamage) ||
-            !Vector.FromReader(reader, out Vector relativeMovement) ||
-            !reader.Read(out ushort ticks) ||
-            !reader.Read(out float load) ||
-            !reader.Read(out float damage) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.MinimumRelativeMovement = minimumRelativeMovement;
-        state.MaximumRelativeMovement = maximumRelativeMovement;
-        state.MinimumTicks = minimumTicks;
-        state.MaximumTicks = maximumTicks;
-        state.MinimumLoad = minimumLoad;
-        state.MaximumLoad = maximumLoad;
-        state.MinimumDamage = minimumDamage;
-        state.MaximumDamage = maximumDamage;
-        state.RelativeMovement = relativeMovement;
-        state.Ticks = ticks;
-        state.Load = load;
-        state.Damage = damage;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.MinimumRelativeMovement) ||
+            !reader.Read(out state.MaximumRelativeMovement) ||
+            !reader.Read(out state.MinimumTicks) ||
+            !reader.Read(out state.MaximumTicks) ||
+            !reader.Read(out state.MinimumLoad) ||
+            !reader.Read(out state.MaximumLoad) ||
+            !reader.Read(out state.MinimumDamage) ||
+            !reader.Read(out state.MaximumDamage) ||
+            !Vector.FromReader(reader, out state.RelativeMovement) ||
+            !reader.Read(out state.Ticks) ||
+            !reader.Read(out state.Load) ||
+            !reader.Read(out state.Damage) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out state.ConsumedEnergyThisTick) ||
+            !reader.Read(out state.ConsumedIonsThisTick) ||
+            !reader.Read(out state.ConsumedNeutrinosThisTick))
+            return false;
+
         state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
         return true;
     }
 
@@ -745,17 +772,20 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float maximumShots) ||
-            !reader.Read(out float currentShots) ||
-            !reader.Read(out byte status))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.MaximumShots = maximumShots;
-        state.CurrentShots = currentShots;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.MaximumShots) ||
+            !reader.Read(out state.CurrentShots) ||
+            !reader.Read(out byte status))
+            return false;
+
         state.Status = (SubsystemStatus)status;
         return true;
     }
@@ -777,28 +807,26 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float minimumRate) ||
-            !reader.Read(out float maximumRate) ||
-            !reader.Read(out byte active) ||
-            !reader.Read(out float rate) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.MinimumRate = minimumRate;
-        state.MaximumRate = maximumRate;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.MaximumRate) ||
+            !reader.Read(out byte active) ||
+            !reader.Read(out state.Rate) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out state.ConsumedEnergyThisTick) ||
+            !reader.Read(out state.ConsumedIonsThisTick) ||
+            !reader.Read(out state.ConsumedNeutrinosThisTick))
+            return false;
+
         state.Active = active != 0;
-        state.Rate = rate;
         state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
         return true;
     }
 
@@ -827,30 +855,28 @@ public class ModernShipControllable : Controllable
     {
         state = default;
 
-        if (!reader.Read(out byte exists) ||
-            !reader.Read(out byte tier) ||
-            !reader.Read(out float projectileSpeed) ||
-            !reader.Read(out ushort projectileLifetime) ||
-            !reader.Read(out float energyCost) ||
-            !reader.Read(out float metalCost) ||
-            !reader.Read(out byte direction) ||
-            !reader.Read(out byte status) ||
-            !reader.Read(out float consumedEnergyThisTick) ||
-            !reader.Read(out float consumedIonsThisTick) ||
-            !reader.Read(out float consumedNeutrinosThisTick))
+        if (!reader.Read(out byte exists))
             return false;
 
         state.Exists = exists != 0;
-        state.Tier = tier;
-        state.ProjectileSpeed = projectileSpeed;
-        state.ProjectileLifetime = projectileLifetime;
-        state.EnergyCost = energyCost;
-        state.MetalCost = metalCost;
+
+        if (!state.Exists)
+            return true;
+
+        if (!reader.Read(out state.Tier) ||
+            !reader.Read(out state.ProjectileSpeed) ||
+            !reader.Read(out state.ProjectileLifetime) ||
+            !reader.Read(out state.EnergyCost) ||
+            !reader.Read(out state.MetalCost) ||
+            !reader.Read(out byte direction) ||
+            !reader.Read(out byte status) ||
+            !reader.Read(out state.ConsumedEnergyThisTick) ||
+            !reader.Read(out state.ConsumedIonsThisTick) ||
+            !reader.Read(out state.ConsumedNeutrinosThisTick))
+            return false;
+
         state.Direction = (RailgunDirection)direction;
         state.Status = (SubsystemStatus)status;
-        state.ConsumedEnergyThisTick = consumedEnergyThisTick;
-        state.ConsumedIonsThisTick = consumedIonsThisTick;
-        state.ConsumedNeutrinosThisTick = consumedNeutrinosThisTick;
         return true;
     }
 
@@ -1074,7 +1100,6 @@ public class ModernShipControllable : Controllable
     {
         public bool Exists;
         public byte Tier;
-        public float MinimumRate;
         public float MaximumRate;
         public bool Active;
         public float Rate;

@@ -8,7 +8,7 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class Flag : Target
 {
-    private int _graceTicks;
+    private ushort _graceTicks;
     private bool _active;
 
     internal Flag(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
@@ -29,7 +29,7 @@ public class Flag : Target
     /// <summary>
     /// Grace or cooldown time in ticks configured for this flag.
     /// </summary>
-    public int GraceTicks => _graceTicks;
+    public ushort GraceTicks => _graceTicks;
 
     /// <summary>
     /// True while the flag is currently active and can be interacted with normally.
