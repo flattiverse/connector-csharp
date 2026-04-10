@@ -72,6 +72,13 @@ public class DynamicShotMagazineSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(DynamicShotMagazineSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximumShots = other._maximumShots;
+        _currentShots = other._currentShots;
+    }
+
     internal void UpdateRuntime(float currentShots, SubsystemStatus status)
     {
         _currentShots = currentShots;

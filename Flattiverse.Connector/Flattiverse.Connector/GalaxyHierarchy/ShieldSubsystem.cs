@@ -127,6 +127,20 @@ public class ShieldSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(ShieldSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximum = other._maximum;
+        _minimumRate = other._minimumRate;
+        _maximumRate = other._maximumRate;
+        _current = other._current;
+        _active = other._active;
+        _rate = other._rate;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     /// <summary>
     /// Whether shield loading is active.
     /// </summary>

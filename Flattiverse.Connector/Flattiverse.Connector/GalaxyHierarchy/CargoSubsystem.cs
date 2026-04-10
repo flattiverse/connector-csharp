@@ -150,6 +150,22 @@ public class CargoSubsystem : Subsystem
             _currentNebula = _maximumNebula;
     }
 
+    internal void CopyFrom(CargoSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximumMetal = other._maximumMetal;
+        _maximumCarbon = other._maximumCarbon;
+        _maximumHydrogen = other._maximumHydrogen;
+        _maximumSilicon = other._maximumSilicon;
+        _maximumNebula = other._maximumNebula;
+        _currentMetal = other._currentMetal;
+        _currentCarbon = other._currentCarbon;
+        _currentHydrogen = other._currentHydrogen;
+        _currentSilicon = other._currentSilicon;
+        _currentNebula = other._currentNebula;
+        _nebulaHue = other._nebulaHue;
+    }
+
     /// <summary>
     /// Maximum nebula capacity.
     /// </summary>

@@ -40,9 +40,6 @@ public class DestroyedControllableInfoEvent : ControllableInfoEvent
             case PlayerUnitDestroyedReason.LostInDeepSpace:
                 return
                     $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} was lost in deep space.";
-            case PlayerUnitDestroyedReason.Rebuilding:
-                return
-                    $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} went offline for a subsystem rebuild.";
             default:
                 return
                     $"{Stamp:HH:mm:ss.fff} Player {Player.Name} of Team {Player.Team.Name} controllable {ControllableInfo.Name} of type {ControllableInfo.Kind} got destroyed.";

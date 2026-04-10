@@ -50,6 +50,12 @@ public class StructureOptimizerSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(StructureOptimizerSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _reductionPercent = other._reductionPercent;
+    }
+
     protected override void RefreshTier()
     {
         if (!Exists)

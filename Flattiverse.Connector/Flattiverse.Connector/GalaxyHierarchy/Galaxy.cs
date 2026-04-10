@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "29";
+    private const string Version = "30";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -158,7 +158,7 @@ public partial class Galaxy : IDisposable
     /// Thrown, if an admin login is denied by the galaxy admin ACL.
     /// </exception>
     /// <exception cref="AccountAlreadyLoggedInGameException">
-    /// Thrown, if the same account already has another active session on this or another galaxy.
+    /// Thrown, if the same account already has another active regular player session on this or another galaxy.
     /// </exception>
     /// <exception cref="PersistenceUnavailableGameException">
     /// Thrown, if the login requires persistent account/session storage and that storage is currently unavailable.
@@ -1152,7 +1152,22 @@ public partial class Galaxy : IDisposable
     private void ControllableNew(UnitKind kind, byte id, Cluster cluster, string name, PacketReader reader)
     {
         if (_controllables[id] is Controllable oldControllable)
-            oldControllable.Deactivate();
+        {
+            if (Controllable.New(kind, cluster, id, name, reader, out Controllable? refreshedControllable))
+            {
+                if (refreshedControllable is not null && refreshedControllable.GetType() == oldControllable.GetType())
+                {
+                    oldControllable.ApplyCreateRefresh(refreshedControllable);
+                    return;
+                }
+
+                oldControllable.Deactivate();
+                _controllables[id] = refreshedControllable;
+                return;
+            }
+
+            throw new InvalidDataException("Server did send invalid data.");
+        }
 
         if (Controllable.New(kind, cluster, id, name, reader, out Controllable? info))
         {

@@ -76,6 +76,13 @@ public class HullSubsystem : Subsystem
             _current = _maximum;
     }
 
+    internal void CopyFrom(HullSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximum = other._maximum;
+        _current = other._current;
+    }
+
     internal void ResetRuntime()
     {
         _current = 0f;

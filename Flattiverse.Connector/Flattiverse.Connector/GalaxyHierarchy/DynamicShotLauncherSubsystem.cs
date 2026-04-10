@@ -178,6 +178,26 @@ public class DynamicShotLauncherSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(DynamicShotLauncherSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _minimumRelativeMovement = other._minimumRelativeMovement;
+        _maximumRelativeMovement = other._maximumRelativeMovement;
+        _minimumTicks = other._minimumTicks;
+        _maximumTicks = other._maximumTicks;
+        _minimumLoad = other._minimumLoad;
+        _maximumLoad = other._maximumLoad;
+        _minimumDamage = other._minimumDamage;
+        _maximumDamage = other._maximumDamage;
+        _relativeMovement = other._relativeMovement;
+        _ticks = other._ticks;
+        _load = other._load;
+        _damage = other._damage;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     /// <summary>
     /// The last server-side shot movement request processed for the current tick.
     /// </summary>

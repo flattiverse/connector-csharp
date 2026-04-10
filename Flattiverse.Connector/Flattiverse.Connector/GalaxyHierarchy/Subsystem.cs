@@ -203,6 +203,15 @@ public abstract class Subsystem
         SetTier(tier);
     }
 
+    private protected void CopyBaseFrom(Subsystem other)
+    {
+        _exists = other._exists;
+        _tier = other._tier;
+        _status = other._status;
+        _hasLastEmittedStatus = other._hasLastEmittedStatus;
+        _lastEmittedStatus = other._lastEmittedStatus;
+    }
+
     protected static bool Matches(float left, float right)
     {
         return MathF.Abs(left - right) <= 0.0001f;

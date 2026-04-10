@@ -208,6 +208,42 @@ public class ModernShipControllable : Controllable
         return result;
     }
 
+    internal override void ApplyCreateRefresh(Controllable refreshed)
+    {
+        base.ApplyCreateRefresh(refreshed);
+
+        ModernShipControllable modernRefreshed = (ModernShipControllable)refreshed;
+        _nebulaCollector.CopyFrom(modernRefreshed._nebulaCollector);
+        _jumpDrive.CopyFrom(modernRefreshed._jumpDrive);
+
+        for (int index = 0; index < _engines.Length; index++)
+            _engines[index].CopyFrom(modernRefreshed._engines[index]);
+
+        for (int index = 0; index < _scanners.Length; index++)
+            _scanners[index].CopyFrom(modernRefreshed._scanners[index]);
+
+        for (int index = 0; index < _shotLaunchers.Length; index++)
+        {
+            _shotLaunchers[index].CopyFrom(modernRefreshed._shotLaunchers[index]);
+            _shotMagazines[index].CopyFrom(modernRefreshed._shotMagazines[index]);
+            _shotFabricators[index].CopyFrom(modernRefreshed._shotFabricators[index]);
+        }
+
+        for (int index = 0; index < _interceptorLaunchers.Length; index++)
+        {
+            _interceptorLaunchers[index].CopyFrom(modernRefreshed._interceptorLaunchers[index]);
+            _interceptorMagazines[index].CopyFrom(modernRefreshed._interceptorMagazines[index]);
+            _interceptorFabricators[index].CopyFrom(modernRefreshed._interceptorFabricators[index]);
+        }
+
+        for (int index = 0; index < _railguns.Length; index++)
+            _railguns[index].CopyFrom(modernRefreshed._railguns[index]);
+
+        _equippedCrystals[0] = modernRefreshed._equippedCrystals[0];
+        _equippedCrystals[1] = modernRefreshed._equippedCrystals[1];
+        _equippedCrystals[2] = modernRefreshed._equippedCrystals[2];
+    }
+
     private protected override void ResetRuntime()
     {
         base.ResetRuntime();

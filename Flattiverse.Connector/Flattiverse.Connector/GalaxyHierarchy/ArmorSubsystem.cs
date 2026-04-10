@@ -91,6 +91,14 @@ public class ArmorSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(ArmorSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _reduction = other._reduction;
+        _blockedDirectDamageThisTick = other._blockedDirectDamageThisTick;
+        _blockedRadiationDamageThisTick = other._blockedRadiationDamageThisTick;
+    }
+
     internal void ResetRuntime()
     {
         _blockedDirectDamageThisTick = 0f;

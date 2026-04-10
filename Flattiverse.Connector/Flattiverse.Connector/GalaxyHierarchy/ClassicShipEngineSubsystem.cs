@@ -105,6 +105,17 @@ public class ClassicShipEngineSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(ClassicShipEngineSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximum = other._maximum;
+        _current = other._current;
+        _target = other._target;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     /// <summary>
     /// The current server-applied movement impulse.
     /// </summary>

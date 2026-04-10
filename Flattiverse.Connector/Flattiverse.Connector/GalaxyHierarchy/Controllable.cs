@@ -545,6 +545,42 @@ public class Controllable : INamedUnit
         EmitRuntimeEvents();
     }
 
+    internal virtual void ApplyCreateRefresh(Controllable refreshed)
+    {
+        _cluster = refreshed._cluster;
+        _active = refreshed._active;
+        _alive = refreshed._alive;
+        _tierChangePending = refreshed._tierChangePending;
+        _tierChangeSlot = refreshed._tierChangeSlot;
+        _tierChangeTargetTier = refreshed._tierChangeTargetTier;
+        _remainingTierChangeTicks = refreshed._remainingTierChangeTicks;
+        _position = refreshed._position;
+        _movement = refreshed._movement;
+        _angle = refreshed._angle;
+        _angularVelocity = refreshed._angularVelocity;
+        _environmentHeatThisTick = refreshed._environmentHeatThisTick;
+        _environmentHeatEnergyCostThisTick = refreshed._environmentHeatEnergyCostThisTick;
+        _environmentHeatEnergyOverflowThisTick = refreshed._environmentHeatEnergyOverflowThisTick;
+        _environmentRadiationThisTick = refreshed._environmentRadiationThisTick;
+        _environmentRadiationDamageBeforeArmorThisTick = refreshed._environmentRadiationDamageBeforeArmorThisTick;
+        _environmentArmorBlockedDamageThisTick = refreshed._environmentArmorBlockedDamageThisTick;
+        _environmentHullDamageThisTick = refreshed._environmentHullDamageThisTick;
+
+        _energyBattery.CopyFrom(refreshed._energyBattery);
+        _ionBattery.CopyFrom(refreshed._ionBattery);
+        _neutrinoBattery.CopyFrom(refreshed._neutrinoBattery);
+        _energyCell.CopyFrom(refreshed._energyCell);
+        _ionCell.CopyFrom(refreshed._ionCell);
+        _neutrinoCell.CopyFrom(refreshed._neutrinoCell);
+        _hull.CopyFrom(refreshed._hull);
+        _shield.CopyFrom(refreshed._shield);
+        _armor.CopyFrom(refreshed._armor);
+        _repair.CopyFrom(refreshed._repair);
+        _cargo.CopyFrom(refreshed._cargo);
+        _resourceMiner.CopyFrom(refreshed._resourceMiner);
+        _structureOptimizer.CopyFrom(refreshed._structureOptimizer);
+    }
+
     private protected virtual void ResetRuntime()
     {
         _energyBattery.ResetRuntime();

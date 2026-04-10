@@ -1034,10 +1034,7 @@ partial class Program
 
     private static async Task<T> UpgradeAndVerify<T>(Galaxy adminGalaxy, T ship, Subsystem subsystem, string label) where T : Controllable
     {
-        Galaxy galaxy = ship.Cluster.Galaxy;
-        byte shipId = ship.Id;
         byte currentTier = subsystem.Tier;
-        T? refreshedShip = null;
 
         await PrepareUpgradeResources(adminGalaxy, ship, label).ConfigureAwait(false);
         ResourceSnapshot resourceSnapshotBefore = CaptureResourceSnapshot(ship);
@@ -1054,38 +1051,19 @@ partial class Program
 
         if (!await WaitForCondition(delegate
             {
-                if (!galaxy.Controllables.TryGet(shipId, out Controllable? current) || current is not T typedShip)
-                    return false;
-
-                if (ReferenceEquals(typedShip, ship) || !typedShip.Active || !typedShip.Alive)
-                    return false;
-
-                refreshedShip = typedShip;
-                return true;
+                Subsystem refreshedSubsystem = GetSubsystem(ship, subsystem.Slot);
+                return ship.Active &&
+                    ship.Alive &&
+                    refreshedSubsystem.Tier == currentTier + 1 &&
+                    refreshedSubsystem.TargetTier == refreshedSubsystem.Tier &&
+                    refreshedSubsystem.RemainingTierChangeTicks == 0;
             }, BalanceUpgradeTimeoutMs).ConfigureAwait(false))
             throw new InvalidOperationException($"BALANCE-LOCAL: upgrade timeout for {label}.");
 
-        if (refreshedShip is null)
-            throw new InvalidOperationException($"BALANCE-LOCAL: missing refreshed controllable after upgrade {label}.");
-
-        VerifyResourceConsumption(label, expectedUpgradeCost, resourceSnapshotBefore, CaptureResourceSnapshot(refreshedShip));
-
-        Subsystem refreshedSubsystem = GetSubsystem(refreshedShip, subsystem.Slot);
-
-        if (refreshedSubsystem.Tier != currentTier + 1)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: {label} refreshed tier mismatch. Expected={currentTier + 1}, Actual={refreshedSubsystem.Tier}.");
-
-        if (refreshedSubsystem.TargetTier != refreshedSubsystem.Tier)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: {label} still reports pending target tier {refreshedSubsystem.TargetTier} after rebuild.");
-
-        if (refreshedSubsystem.RemainingTierChangeTicks != 0)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: {label} still reports {refreshedSubsystem.RemainingTierChangeTicks} rebuild ticks after rebuild.");
-
+        Subsystem refreshedSubsystem = GetSubsystem(ship, subsystem.Slot);
+        VerifyResourceConsumption(label, expectedUpgradeCost, resourceSnapshotBefore, CaptureResourceSnapshot(ship));
         VerifyTierMetadata(refreshedSubsystem, label + " after");
-        return refreshedShip;
+        return ship;
     }
 
     private static int CalculateRefillTimeoutMs(float currentShots, float targetShots, float maximumRate)
@@ -1101,10 +1079,7 @@ partial class Program
 
     private static async Task<T> DowngradeAndVerify<T>(Galaxy adminGalaxy, T ship, Subsystem subsystem, string label) where T : Controllable
     {
-        Galaxy galaxy = ship.Cluster.Galaxy;
-        byte shipId = ship.Id;
         byte currentTier = subsystem.Tier;
-        T? refreshedShip = null;
 
         await PrepareUpgradeResources(adminGalaxy, ship, label).ConfigureAwait(false);
         ResourceSnapshot resourceSnapshotBefore = CaptureResourceSnapshot(ship);
@@ -1121,38 +1096,19 @@ partial class Program
 
         if (!await WaitForCondition(delegate
             {
-                if (!galaxy.Controllables.TryGet(shipId, out Controllable? current) || current is not T typedShip)
-                    return false;
-
-                if (ReferenceEquals(typedShip, ship) || !typedShip.Active || !typedShip.Alive)
-                    return false;
-
-                refreshedShip = typedShip;
-                return true;
+                Subsystem refreshedSubsystem = GetSubsystem(ship, subsystem.Slot);
+                return ship.Active &&
+                    ship.Alive &&
+                    refreshedSubsystem.Tier == currentTier - 1 &&
+                    refreshedSubsystem.TargetTier == refreshedSubsystem.Tier &&
+                    refreshedSubsystem.RemainingTierChangeTicks == 0;
             }, BalanceUpgradeTimeoutMs).ConfigureAwait(false))
             throw new InvalidOperationException($"BALANCE-LOCAL: downgrade timeout for {label}.");
 
-        if (refreshedShip is null)
-            throw new InvalidOperationException($"BALANCE-LOCAL: missing refreshed controllable after downgrade {label}.");
-
-        VerifyResourceConsumption(label, expectedDowngradeCost, resourceSnapshotBefore, CaptureResourceSnapshot(refreshedShip));
-
-        Subsystem refreshedSubsystem = GetSubsystem(refreshedShip, subsystem.Slot);
-
-        if (refreshedSubsystem.Tier != currentTier - 1)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: {label} refreshed tier mismatch. Expected={currentTier - 1}, Actual={refreshedSubsystem.Tier}.");
-
-        if (refreshedSubsystem.TargetTier != refreshedSubsystem.Tier)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: {label} still reports pending target tier {refreshedSubsystem.TargetTier} after downgrade.");
-
-        if (refreshedSubsystem.RemainingTierChangeTicks != 0)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: {label} still reports {refreshedSubsystem.RemainingTierChangeTicks} rebuild ticks after downgrade.");
-
+        Subsystem refreshedSubsystem = GetSubsystem(ship, subsystem.Slot);
+        VerifyResourceConsumption(label, expectedDowngradeCost, resourceSnapshotBefore, CaptureResourceSnapshot(ship));
         VerifyTierMetadata(refreshedSubsystem, label + " after");
-        return refreshedShip;
+        return ship;
     }
 
     private static async Task<T> DebugSetTier<T>(Galaxy adminGalaxy, T ship, Subsystem subsystem, byte tier, string label) where T : Controllable
@@ -1160,36 +1116,19 @@ partial class Program
         if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out Cluster? adminCluster) || adminCluster is null)
             throw new InvalidOperationException($"BALANCE-LOCAL: admin cluster {ship.Cluster.Id} not found for {label}.");
 
-        Galaxy galaxy = ship.Cluster.Galaxy;
-        byte shipId = ship.Id;
-        T? refreshedShip = null;
         Console.WriteLine($"BALANCE-LOCAL: debug-set {label} -> T{tier}");
         await adminCluster.DebugSetPlayerUnitSubsystemTier(ship.Name, subsystem.Slot, tier).ConfigureAwait(false);
 
         if (!await WaitForCondition(delegate
             {
-                if (!galaxy.Controllables.TryGet(shipId, out Controllable? current) || current is not T typedShip)
-                    return false;
-
-                if (ReferenceEquals(typedShip, ship) || !typedShip.Active || !typedShip.Alive)
-                    return false;
-
-                refreshedShip = typedShip;
-                return true;
+                Subsystem refreshedSubsystem = GetSubsystem(ship, subsystem.Slot);
+                return ship.Active && ship.Alive && refreshedSubsystem.Tier == tier;
             }, BalanceUpgradeTimeoutMs).ConfigureAwait(false))
             throw new InvalidOperationException($"BALANCE-LOCAL: debug tier set timeout for {label}.");
 
-        if (refreshedShip is null)
-            throw new InvalidOperationException($"BALANCE-LOCAL: missing refreshed controllable after debug tier set {label}.");
-
-        Subsystem refreshedSubsystem = GetSubsystem(refreshedShip, subsystem.Slot);
-
-        if (refreshedSubsystem.Tier != tier)
-            throw new InvalidOperationException(
-                $"BALANCE-LOCAL: debug tier set mismatch for {label}. Expected={tier}, Actual={refreshedSubsystem.Tier}.");
-
+        Subsystem refreshedSubsystem = GetSubsystem(ship, subsystem.Slot);
         VerifyTierMetadata(refreshedSubsystem, label + " after");
-        return refreshedShip;
+        return ship;
     }
 
     private static async Task<Vector> DebugSetPosition(Galaxy adminGalaxy, Controllable ship, Vector position, string label)

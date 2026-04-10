@@ -40,10 +40,10 @@ Current protocol version:
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=29&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=29&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=29&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=29&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=30&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=30&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=30&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=30&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -60,7 +60,7 @@ Important details:
 * Build disclosure nibble values: `0=None`, `1=SearchOnly`, `2=FreeLlm`, `3=PaidLlm`, `4=IntegratedLlm`, `5=AgenticTool`.
 * If a galaxy has `RequiresSelfDisclosure=true`, regular player logins must provide both disclosure strings. Admin and spectator logins are currently exempt.
 * If a galaxy has `RequiredAchievement="KEY"`, regular player logins must already own that case-insensitive achievement key. Admin and spectator logins are currently exempt.
-* A player account may have only one active galaxy session at a time. The same lock covers both `apiPlayer` and `apiAdmin` of that account, so an admin login also blocks a normal login and vice versa while the session is still active.
+* A player account may have only one active regular player galaxy session at a time. Admin logins do not claim or refresh `sessionGalaxy` / `sessionTeam`, do not update `datePlayedStart` / `datePlayedEnd`, and therefore do not block normal player logins or other admin logins of the same account.
 * The galaxy sends a new `0x00` ping request roughly once per second after the previous one was answered.
 * The galaxy disconnects a client when a ping reply stays outstanding for more than `5s`.
 * A plain HTTP request without WebSocket upgrade currently returns HTTP `426 Upgrade Required`.
@@ -221,6 +221,7 @@ Current server-side on-wire codes:
 * `0x3C` `StaticMapRebuildInProgressGameException`
 * `0x3D` `StaticMapRebuildLockedGameException`
 * `0x3E` `BinaryChatAckRequiredGameException`
+* `0x3F` `ControllableIsRebuildingGameException`
 
 Current connector-local-only codes:
 
@@ -321,7 +322,7 @@ Current `InvalidArgumentKind` values:
 
 Note:
 
-* The "must be alive" / "must be dead" validation path is represented on the wire as dedicated exceptions `0x20` and `0x21`, not as additional `InvalidArgumentKind` values.
+* The "must be alive" / "must be dead" / "must not be rebuilding" validation path is represented on the wire as dedicated exceptions `0x20`, `0x21`, and `0x3F`, not as additional `InvalidArgumentKind` values.
 
 ## Server To Client Packets
 
@@ -351,9 +352,9 @@ The following packet commands are currently sent from the galaxy to the client:
 * `0x32`: update visible unit runtime state
 * `0x3E`: admin altered a previously known unit
 * `0x3F`: deactivate visible unit
-* `0x80`: create controllable
+* `0x80`: create or refresh controllable
 * `0x81`: controllable deceased
-* `0x82`: controllable runtime update and alive
+* `0x82`: controllable runtime update
 * `0x8E`: owner-only power-up collected event
 * `0x8F`: controllable finally closed
 * `0xC0`: `GalaxyTickEvent`
@@ -748,6 +749,7 @@ This packet is the owner's authoritative identity channel for a controllable. A 
 
 After the base fields, the packet continues with the owner-visible static subsystem capability block and the initial owner runtime snapshot for that controllable kind.
 This data is intentionally richer than the visible-unit stream because it initializes the local `Controllable` mirror immediately.
+The server may also resend `0x80` for an already known controllable id after a subsystem tier change; when the controllable kind stays the same, connectors should refresh the existing owner object in place instead of treating it as a death/recreate cycle.
 
 Owner-side subsystem block rules:
 
@@ -769,7 +771,7 @@ byte controllableId
 
 This packet is owner-only. It is the runtime state channel for the player's own controllables.
 It remains available even while scanners are off and is the correct source for the owner's own position, movement, and subsystem runtime.
-Death is signaled separately via `0x81`; `0x82` is only sent for living controllables.
+Death is signaled separately via `0x81`; `0x82` is only sent for living controllables. A subsystem rebuild no longer emits `0x81`; during the rebuild the controllable stays alive and the affected subsystem reports `SubsystemStatus.Upgrading`.
 
 Runtime block rules:
 

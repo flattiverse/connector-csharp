@@ -94,6 +94,18 @@ public class RepairSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(RepairSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _minimumRate = other._minimumRate;
+        _maximumRate = other._maximumRate;
+        _rate = other._rate;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+        _repairedHullThisTick = other._repairedHullThisTick;
+    }
+
     /// <summary>
     /// The repair rate currently mirrored from the server.
     /// The server may clear this value back to <c>0</c>, for example after movement.

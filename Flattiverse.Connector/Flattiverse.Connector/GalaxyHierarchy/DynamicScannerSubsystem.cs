@@ -176,6 +176,26 @@ public class DynamicScannerSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(DynamicScannerSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximumWidth = other._maximumWidth;
+        _maximumLength = other._maximumLength;
+        _widthSpeed = other._widthSpeed;
+        _lengthSpeed = other._lengthSpeed;
+        _angleSpeed = other._angleSpeed;
+        _currentWidth = other._currentWidth;
+        _currentLength = other._currentLength;
+        _currentAngle = other._currentAngle;
+        _targetWidth = other._targetWidth;
+        _targetLength = other._targetLength;
+        _targetAngle = other._targetAngle;
+        _active = other._active;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     /// <summary>
     /// The currently configured scan width in degree.
     /// </summary>

@@ -106,6 +106,21 @@ public class ResourceMinerSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(ResourceMinerSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _minimumRate = other._minimumRate;
+        _maximumRate = other._maximumRate;
+        _rate = other._rate;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+        _minedMetalThisTick = other._minedMetalThisTick;
+        _minedCarbonThisTick = other._minedCarbonThisTick;
+        _minedHydrogenThisTick = other._minedHydrogenThisTick;
+        _minedSiliconThisTick = other._minedSiliconThisTick;
+    }
+
     /// <summary>
     /// Mining rate currently mirrored from the server.
     /// The server may clear this value back to <c>0</c>, for example after movement or a paid zero-yield tick.

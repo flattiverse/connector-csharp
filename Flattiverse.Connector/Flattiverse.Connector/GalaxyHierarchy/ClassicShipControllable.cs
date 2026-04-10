@@ -188,6 +188,28 @@ public class ClassicShipControllable : Controllable
             StructuralLoadFor(_jumpDrive, slot, projectedStructuralLoad);
     }
 
+    internal override void ApplyCreateRefresh(Controllable refreshed)
+    {
+        base.ApplyCreateRefresh(refreshed);
+
+        ClassicShipControllable classicRefreshed = (ClassicShipControllable)refreshed;
+        _nebulaCollector.CopyFrom(classicRefreshed._nebulaCollector);
+        _engine.CopyFrom(classicRefreshed._engine);
+        _shotLauncher.CopyFrom(classicRefreshed._shotLauncher);
+        _shotMagazine.CopyFrom(classicRefreshed._shotMagazine);
+        _shotFabricator.CopyFrom(classicRefreshed._shotFabricator);
+        _interceptorLauncher.CopyFrom(classicRefreshed._interceptorLauncher);
+        _interceptorMagazine.CopyFrom(classicRefreshed._interceptorMagazine);
+        _interceptorFabricator.CopyFrom(classicRefreshed._interceptorFabricator);
+        _railgun.CopyFrom(classicRefreshed._railgun);
+        _mainScanner.CopyFrom(classicRefreshed._mainScanner);
+        _secondaryScanner.CopyFrom(classicRefreshed._secondaryScanner);
+        _jumpDrive.CopyFrom(classicRefreshed._jumpDrive);
+        _equippedCrystals[0] = classicRefreshed._equippedCrystals[0];
+        _equippedCrystals[1] = classicRefreshed._equippedCrystals[1];
+        _equippedCrystals[2] = classicRefreshed._equippedCrystals[2];
+    }
+
     private protected override void ResetRuntime()
     {
         base.ResetRuntime();

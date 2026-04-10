@@ -151,6 +151,15 @@ public class JumpDriveSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(JumpDriveSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _energyCost = other._energyCost;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     protected override void RefreshTier()
     {
         if (!Exists)

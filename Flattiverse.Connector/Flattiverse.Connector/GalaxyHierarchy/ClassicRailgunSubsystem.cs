@@ -111,6 +111,19 @@ public class ClassicRailgunSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(ClassicRailgunSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _projectileSpeed = other._projectileSpeed;
+        _projectileLifetime = other._projectileLifetime;
+        _energyCost = other._energyCost;
+        _metalCost = other._metalCost;
+        _direction = other._direction;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     /// <summary>
     /// The direction processed during the current server tick.
     /// </summary>

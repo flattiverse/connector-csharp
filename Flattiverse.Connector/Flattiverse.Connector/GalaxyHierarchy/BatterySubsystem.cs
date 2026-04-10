@@ -101,6 +101,14 @@ public class BatterySubsystem : Subsystem
             _current = _maximum;
     }
 
+    internal void CopyFrom(BatterySubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximum = other._maximum;
+        _current = other._current;
+        _consumedThisTick = other._consumedThisTick;
+    }
+
     internal void ResetRuntime()
     {
         _current = 0f;

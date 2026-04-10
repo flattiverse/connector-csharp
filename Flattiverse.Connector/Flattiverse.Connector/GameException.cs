@@ -195,6 +195,9 @@ public class GameException : Exception
                 case 0x3E:
                     exception = new BinaryChatAckRequiredGameException();
                     return true;
+                case 0x3F:
+                    exception = new ControllableIsRebuildingGameException();
+                    return true;
             }
 
         exception = null;

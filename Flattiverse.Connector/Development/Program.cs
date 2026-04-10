@@ -253,6 +253,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--account-session-check-local")
+        {
+            await RunAccountSessionCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--galaxy-acl-check-local")
         {
             await RunGalaxyAclCheckLocal(args).ConfigureAwait(false);
@@ -2134,10 +2140,24 @@ partial class Program
 
     private static async Task RunAccountSessionCheck()
     {
-        DatabaseAccountRow originalAccount = QueryAccountRow(PlayerAuth);
-        DatabaseAccountRow originalAdminAccount = QueryAccountRow(AdminAuth);
+        await RunAccountSessionCheck(Uri, TeamName, PlayerAuth, PlayerAdminAuth, AdminAuth, DatabaseGalaxyId, true).ConfigureAwait(false);
+    }
+
+    private static async Task RunAccountSessionCheckLocal()
+    {
+        await RunAccountSessionCheck(LocalSwitchGateUri, TeamName, LocalSwitchGatePlayerAuth, LocalSwitchGateAdminAuth, LocalSwitchGateAdminAuth,
+            LocalSwitchGateGalaxyId, false).ConfigureAwait(false);
+    }
+
+    private static async Task RunAccountSessionCheck(string uri, string teamName, string playerAuth, string playerAdminAuth, string adminAuth,
+        ushort databaseGalaxyId, bool includeShipAndDeathCheck)
+    {
+        DatabaseAccountRow originalAccount = QueryAccountRow(playerAuth);
+        DatabaseAccountRow originalAdminAccount = QueryAccountRow(adminAuth);
         Galaxy? adminGalaxy = null;
         Galaxy? playerAdminGalaxy = null;
+        Galaxy? secondPlayerAdminGalaxy = null;
+        Galaxy? playerAdminWhilePlayerGalaxy = null;
         Galaxy? playerGalaxy = null;
         Task? eventPump = null;
         ConcurrentQueue<FlattiverseEvent> playerEvents = new ConcurrentQueue<FlattiverseEvent>();
@@ -2160,42 +2180,32 @@ partial class Program
 
         try
         {
-            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting same-account admin...");
-            playerAdminGalaxy = await Galaxy.Connect(Uri, PlayerAdminAuth, null).ConfigureAwait(false);
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting same-account admin #1...");
+            playerAdminGalaxy = await Galaxy.Connect(uri, playerAdminAuth, null).ConfigureAwait(false);
 
-            DatabaseAccountRow adminConnectedAccount = QueryAccountRow(PlayerAuth);
-            bool adminSessionClaimed = adminConnectedAccount.SessionGalaxy == DatabaseGalaxyId &&
-                                       adminConnectedAccount.SessionTeam == SpectatorsTeamId &&
-                                       adminConnectedAccount.SessionPlayerKills == 0 &&
-                                       adminConnectedAccount.SessionPlayerDeaths == 0 &&
-                                       adminConnectedAccount.SessionNpcKills == 0 &&
-                                       adminConnectedAccount.SessionNpcDeaths == 0 &&
-                                       adminConnectedAccount.SessionNeutralDeaths == 0;
+            DatabaseAccountRow firstAdminConnectedAccount = QueryAccountRow(playerAuth);
+            bool firstAdminLeftSessionUntouched = MatchesPersistedSessionState(firstAdminConnectedAccount, originalAccount);
 
-            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin session claimed in DB = {adminSessionClaimed}");
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin #1 left DB session untouched = {firstAdminLeftSessionUntouched}");
 
-            try
-            {
-                Galaxy duplicatePlayerAfterAdmin = await Galaxy.Connect(Uri, PlayerAuth, TeamName).ConfigureAwait(false);
-                duplicatePlayerAfterAdmin.Dispose();
-                Console.WriteLine("ACCOUNT-SESSION-CHECK: player denied while same account uses admin key = False");
-            }
-            catch (AccountAlreadyLoggedInGameException exception)
-            {
-                Console.WriteLine($"ACCOUNT-SESSION-CHECK: player denied while same account uses admin key = True ({exception.Message})");
-            }
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting same-account admin #2...");
+            secondPlayerAdminGalaxy = await Galaxy.Connect(uri, playerAdminAuth, null).ConfigureAwait(false);
 
-            playerAdminGalaxy.Dispose();
-            playerAdminGalaxy = null;
+            DatabaseAccountRow secondAdminConnectedAccount = QueryAccountRow(playerAuth);
+            bool secondAdminLeftSessionUntouched = MatchesPersistedSessionState(secondAdminConnectedAccount, originalAccount);
 
-            bool adminSessionCleared = await WaitForSessionGalaxy(PlayerAdminAuth, null, 7000).ConfigureAwait(false);
-            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin session cleared after disconnect = {adminSessionCleared}");
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin #2 left DB session untouched = {secondAdminLeftSessionUntouched}");
 
             Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting helper admin...");
-            adminGalaxy = await Galaxy.Connect(Uri, AdminAuth, null).ConfigureAwait(false);
+            adminGalaxy = await Galaxy.Connect(uri, adminAuth, null).ConfigureAwait(false);
 
-            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting player...");
-            playerGalaxy = await Galaxy.Connect(Uri, PlayerAuth, TeamName).ConfigureAwait(false);
+            DatabaseAccountRow helperAdminConnectedAccount = QueryAccountRow(adminAuth);
+            bool helperAdminLeftSessionUntouched = MatchesPersistedSessionState(helperAdminConnectedAccount, originalAdminAccount);
+
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: helper admin left DB session untouched = {helperAdminLeftSessionUntouched}");
+
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting player while same-account admins are connected...");
+            playerGalaxy = await Galaxy.Connect(uri, playerAuth, teamName).ConfigureAwait(false);
             eventPump = StartEventPump("ACCOUNT-SESSION-CHECK", playerGalaxy, playerEvents);
 
             await Task.Delay(500).ConfigureAwait(false);
@@ -2210,9 +2220,10 @@ partial class Program
                                    playerGalaxy.Player.NeutralDeaths == originalAccount.StatsNeutralDeaths;
 
             Console.WriteLine($"ACCOUNT-SESSION-CHECK: initial player fields correct = {initialFieldsOk}");
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: player login while same-account admins are connected succeeded = {playerGalaxy.Player.Active}");
 
-            DatabaseAccountRow connectedAccount = QueryAccountRow(PlayerAuth);
-            bool sessionClaimed = connectedAccount.SessionGalaxy == DatabaseGalaxyId &&
+            DatabaseAccountRow connectedAccount = QueryAccountRow(playerAuth);
+            bool sessionClaimed = connectedAccount.SessionGalaxy == databaseGalaxyId &&
                                   connectedAccount.SessionTeam == playerGalaxy.Player.Team.Id &&
                                   connectedAccount.SessionPlayerKills == 0 &&
                                   connectedAccount.SessionPlayerDeaths == 0 &&
@@ -2222,26 +2233,25 @@ partial class Program
 
             Console.WriteLine($"ACCOUNT-SESSION-CHECK: session claimed in DB = {sessionClaimed}");
 
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: connecting same-account admin while player session is active...");
+            playerAdminWhilePlayerGalaxy = await Galaxy.Connect(uri, playerAdminAuth, null).ConfigureAwait(false);
+
+            DatabaseAccountRow accountAfterAdminWhilePlaying = QueryAccountRow(playerAuth);
+            bool playerSessionSurvivedAdminLogin = accountAfterAdminWhilePlaying.SessionGalaxy == databaseGalaxyId &&
+                                                   accountAfterAdminWhilePlaying.SessionTeam == playerGalaxy.Player.Team.Id;
+
+            Console.WriteLine("ACCOUNT-SESSION-CHECK: admin login while same account already plays succeeded = True");
+            Console.WriteLine($"ACCOUNT-SESSION-CHECK: player session survived admin login = {playerSessionSurvivedAdminLogin}");
+
             try
             {
-                Galaxy duplicatePlayer = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+                Galaxy duplicatePlayer = await Galaxy.Connect(uri, playerAuth, null).ConfigureAwait(false);
                 duplicatePlayer.Dispose();
                 Console.WriteLine("ACCOUNT-SESSION-CHECK: duplicate login denied = False");
             }
             catch (AccountAlreadyLoggedInGameException exception)
             {
                 Console.WriteLine($"ACCOUNT-SESSION-CHECK: duplicate login denied = True ({exception.Message})");
-            }
-
-            try
-            {
-                Galaxy duplicateAdmin = await Galaxy.Connect(Uri, PlayerAdminAuth, null).ConfigureAwait(false);
-                duplicateAdmin.Dispose();
-                Console.WriteLine("ACCOUNT-SESSION-CHECK: admin denied while same account already plays = False");
-            }
-            catch (AccountAlreadyLoggedInGameException exception)
-            {
-                Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin denied while same account already plays = True ({exception.Message})");
             }
 
             bool targetAdmin = !originalAccount.Admin;
@@ -2257,44 +2267,47 @@ partial class Program
             bool accountRefreshObserved = await WaitForPlayerAccountState(playerGalaxy.Player, targetAdmin, targetRank, 7000).ConfigureAwait(false);
             Console.WriteLine($"ACCOUNT-SESSION-CHECK: admin/rank refresh observed = {accountRefreshObserved}");
 
-            ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
-            await ship.Continue().ConfigureAwait(false);
-
-            bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
-            Console.WriteLine($"ACCOUNT-SESSION-CHECK: ship alive after continue = {shipAlive}");
-
-            bool initialHullOk = shipAlive &&
-                                 ship.Hull.Exists &&
-                                 ship.Hull.Maximum == 50f &&
-                                 ship.Hull.Current == 50f;
-
-            Console.WriteLine($"ACCOUNT-SESSION-CHECK: initial hull correct = {initialHullOk}");
-
-            if (shipAlive)
+            if (includeShipAndDeathCheck)
             {
-                if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
-                    throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
+                ship = await playerGalaxy.CreateClassicShip(shipName).ConfigureAwait(false);
+                await ship.Continue().ConfigureAwait(false);
 
-                string unitXml =
-                    $"<Planet Name=\"{neutralUnitName}\" X=\"{ship.Position.X:0.###}\" Y=\"{ship.Position.Y:0.###}\" Radius=\"50\" Gravity=\"0\" Type=\"OceanWorld\" Metal=\"0\" Carbon=\"0\" Hydrogen=\"0\" Silicon=\"0\" />";
+                bool shipAlive = await WaitForAliveState(ship, true, 3000).ConfigureAwait(false);
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: ship alive after continue = {shipAlive}");
 
-                await adminCluster.SetUnit(unitXml).ConfigureAwait(false);
+                bool initialHullOk = shipAlive &&
+                                     ship.Hull.Exists &&
+                                     ship.Hull.Maximum == 50f &&
+                                     ship.Hull.Current == 50f;
 
-                bool shipDead = await WaitForAliveState(ship, false, 5000).ConfigureAwait(false);
-                Console.WriteLine($"ACCOUNT-SESSION-CHECK: neutral death observed = {shipDead}");
+                Console.WriteLine($"ACCOUNT-SESSION-CHECK: initial hull correct = {initialHullOk}");
 
-                await Task.Delay(3500).ConfigureAwait(false);
-                DrainEvents(playerEvents);
+                if (shipAlive)
+                {
+                    if (!adminGalaxy.Clusters.TryGet(ship.Cluster.Id, out adminCluster))
+                        throw new InvalidOperationException($"Admin cluster {ship.Cluster.Id} not found.");
 
-                DatabaseAccountRow afterNeutralDeath = QueryAccountRow(PlayerAuth);
-                bool neutralDeathUpdated = playerGalaxy.Player.NeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
-                                           afterNeutralDeath.StatsNeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
-                                           afterNeutralDeath.SessionNeutralDeaths == 1;
+                    string unitXml =
+                        $"<Planet Name=\"{neutralUnitName}\" X=\"{ship.Position.X:0.###}\" Y=\"{ship.Position.Y:0.###}\" Radius=\"50\" Gravity=\"0\" Type=\"OceanWorld\" Metal=\"0\" Carbon=\"0\" Hydrogen=\"0\" Silicon=\"0\" />";
 
-                Console.WriteLine($"ACCOUNT-SESSION-CHECK: neutral death stats updated = {neutralDeathUpdated}");
+                    await adminCluster.SetUnit(unitXml).ConfigureAwait(false);
 
-                await adminCluster.RemoveUnit(neutralUnitName).ConfigureAwait(false);
-                adminCluster = null;
+                    bool shipDead = await WaitForAliveState(ship, false, 5000).ConfigureAwait(false);
+                    Console.WriteLine($"ACCOUNT-SESSION-CHECK: neutral death observed = {shipDead}");
+
+                    await Task.Delay(3500).ConfigureAwait(false);
+                    DrainEvents(playerEvents);
+
+                    DatabaseAccountRow afterNeutralDeath = QueryAccountRow(playerAuth);
+                    bool neutralDeathUpdated = playerGalaxy.Player.NeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
+                                               afterNeutralDeath.StatsNeutralDeaths == originalAccount.StatsNeutralDeaths + 1 &&
+                                               afterNeutralDeath.SessionNeutralDeaths == 1;
+
+                    Console.WriteLine($"ACCOUNT-SESSION-CHECK: neutral death stats updated = {neutralDeathUpdated}");
+
+                    await adminCluster.RemoveUnit(neutralUnitName).ConfigureAwait(false);
+                    adminCluster = null;
+                }
             }
 
             playerGalaxy.Dispose();
@@ -2303,20 +2316,26 @@ partial class Program
             if (eventPump is not null)
                 await Task.WhenAny(eventPump, Task.Delay(1000)).ConfigureAwait(false);
 
-            bool sessionCleared = await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            bool sessionCleared = await WaitForSessionGalaxy(playerAuth, null, 7000).ConfigureAwait(false);
             Console.WriteLine($"ACCOUNT-SESSION-CHECK: session cleared after disconnect = {sessionCleared}");
 
-            Galaxy reconnectGalaxy = await Galaxy.Connect(Uri, PlayerAuth, null).ConfigureAwait(false);
+            Galaxy reconnectGalaxy = await Galaxy.Connect(uri, playerAuth, null).ConfigureAwait(false);
             Console.WriteLine($"ACCOUNT-SESSION-CHECK: reconnect after cleanup succeeded = {reconnectGalaxy.Player.Active}");
             reconnectGalaxy.Dispose();
 
-            bool secondSessionCleared = await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            bool secondSessionCleared = await WaitForSessionGalaxy(playerAuth, null, 7000).ConfigureAwait(false);
             Console.WriteLine($"ACCOUNT-SESSION-CHECK: session cleared after reconnect dispose = {secondSessionCleared}");
         }
         finally
         {
             if (playerAdminGalaxy is not null)
                 playerAdminGalaxy.Dispose();
+
+            if (secondPlayerAdminGalaxy is not null)
+                secondPlayerAdminGalaxy.Dispose();
+
+            if (playerAdminWhilePlayerGalaxy is not null)
+                playerAdminWhilePlayerGalaxy.Dispose();
 
             if (playerGalaxy is not null)
                 playerGalaxy.Dispose();
@@ -2336,10 +2355,8 @@ partial class Program
             if (adminGalaxy is not null)
                 adminGalaxy.Dispose();
 
-            await WaitForSessionGalaxy(PlayerAdminAuth, null, 7000).ConfigureAwait(false);
-            await WaitForSessionGalaxy(PlayerAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(playerAuth, null, 7000).ConfigureAwait(false);
             RestoreAccountRow(originalAccount);
-            await WaitForSessionGalaxy(AdminAuth, null, 7000).ConfigureAwait(false);
             RestoreAccountRow(originalAdminAccount);
             Console.WriteLine("ACCOUNT-SESSION-CHECK: account row restored");
         }
@@ -2786,7 +2803,7 @@ partial class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=14&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=30&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 
@@ -3285,6 +3302,21 @@ partial class Program
         }
 
         return false;
+    }
+
+    private static bool MatchesPersistedSessionState(DatabaseAccountRow row, DatabaseAccountRow baseline)
+    {
+        return row.DatePlayedStart == baseline.DatePlayedStart &&
+               row.DatePlayedEnd == baseline.DatePlayedEnd &&
+               row.SessionGalaxy == baseline.SessionGalaxy &&
+               row.SessionTeam == baseline.SessionTeam &&
+               row.SessionPlayerKills == baseline.SessionPlayerKills &&
+               row.SessionPlayerDeaths == baseline.SessionPlayerDeaths &&
+               row.SessionFriendlyKills == baseline.SessionFriendlyKills &&
+               row.SessionFriendlyDeaths == baseline.SessionFriendlyDeaths &&
+               row.SessionNpcKills == baseline.SessionNpcKills &&
+               row.SessionNpcDeaths == baseline.SessionNpcDeaths &&
+               row.SessionNeutralDeaths == baseline.SessionNeutralDeaths;
     }
 
     private static void ClearLocalAccountSession(string auth, string label)

@@ -78,6 +78,13 @@ public class EnergyCellSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(EnergyCellSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _efficiency = other._efficiency;
+        _collectedThisTick = other._collectedThisTick;
+    }
+
     internal void ResetRuntime()
     {
         _collectedThisTick = 0f;

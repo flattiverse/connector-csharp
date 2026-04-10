@@ -255,6 +255,17 @@ public class DynamicShotFabricatorSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(DynamicShotFabricatorSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximumRate = other._maximumRate;
+        _active = other._active;
+        _rate = other._rate;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     internal void ResetRuntime()
     {
         _active = false;

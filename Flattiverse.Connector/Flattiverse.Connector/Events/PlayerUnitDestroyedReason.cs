@@ -48,10 +48,5 @@ public enum PlayerUnitDestroyedReason
     /// <summary>
     /// Destroyed by friendly-fire weapon damage.
     /// </summary>
-    ShotByFriendlyPlayerUnit = 0x39,
-
-    /// <summary>
-    /// Temporarily taken offline because one subsystem is being rebuilt.
-    /// </summary>
-    Rebuilding = 0x40
+    ShotByFriendlyPlayerUnit = 0x39
 }

@@ -202,6 +202,18 @@ public class ModernShipEngineSubsystem : Subsystem
         RefreshTier();
     }
 
+    internal void CopyFrom(ModernShipEngineSubsystem other)
+    {
+        CopyBaseFrom(other);
+        _maximumThrust = other._maximumThrust;
+        _maximumThrustChangePerTick = other._maximumThrustChangePerTick;
+        _currentThrust = other._currentThrust;
+        _targetThrust = other._targetThrust;
+        _consumedEnergyThisTick = other._consumedEnergyThisTick;
+        _consumedIonsThisTick = other._consumedIonsThisTick;
+        _consumedNeutrinosThisTick = other._consumedNeutrinosThisTick;
+    }
+
     private static float FullCostFromMaximumThrust(float maximumThrust)
     {
         if (maximumThrust <= 0.0161f)
