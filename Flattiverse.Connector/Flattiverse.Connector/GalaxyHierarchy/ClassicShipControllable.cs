@@ -158,9 +158,6 @@ public class ClassicShipControllable : Controllable
     }
     
     /// <inheritdoc/>
-    public override float Gravity => 0.0012f;
-    
-    /// <inheritdoc/>
     public override float Size => 14f;
 
     /// <summary>
@@ -186,6 +183,26 @@ public class ClassicShipControllable : Controllable
             StructuralLoadFor(_mainScanner, slot, projectedStructuralLoad) +
             StructuralLoadFor(_secondaryScanner, slot, projectedStructuralLoad) +
             StructuralLoadFor(_jumpDrive, slot, projectedStructuralLoad);
+    }
+
+    private protected override float CurrentRawStructuralLoad
+    {
+        get
+        {
+            return GetCommonCurrentStructuralLoad() +
+                _nebulaCollector.CurrentStructuralLoad +
+                _engine.CurrentStructuralLoad +
+                _shotLauncher.CurrentStructuralLoad +
+                _shotMagazine.CurrentStructuralLoad +
+                _shotFabricator.CurrentStructuralLoad +
+                _interceptorLauncher.CurrentStructuralLoad +
+                _interceptorMagazine.CurrentStructuralLoad +
+                _interceptorFabricator.CurrentStructuralLoad +
+                _railgun.CurrentStructuralLoad +
+                _mainScanner.CurrentStructuralLoad +
+                _secondaryScanner.CurrentStructuralLoad +
+                _jumpDrive.CurrentStructuralLoad;
+        }
     }
 
     internal override void ApplyCreateRefresh(Controllable refreshed)

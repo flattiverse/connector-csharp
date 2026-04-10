@@ -2803,7 +2803,7 @@ partial class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=30&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=31&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 

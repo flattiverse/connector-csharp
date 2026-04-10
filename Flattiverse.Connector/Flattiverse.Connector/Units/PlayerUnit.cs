@@ -173,6 +173,26 @@ public class PlayerUnit : MobileUnit
         get { return _resourceMiner; }
     }
 
+    private protected bool TryGetOwnControllable(out Controllable? controllable)
+    {
+        if (Player != Cluster.Galaxy.Player)
+        {
+            controllable = null;
+            return false;
+        }
+
+        Controllable? ownControllable = Cluster.Galaxy.Controllables[ControllableInfo.Id];
+
+        if (ownControllable is null || ownControllable.Kind != ControllableInfo.Kind)
+        {
+            controllable = null;
+            return false;
+        }
+
+        controllable = ownControllable;
+        return true;
+    }
+
     internal override void UpdateMovement(PacketReader reader)
     {
         base.UpdateMovement(reader);

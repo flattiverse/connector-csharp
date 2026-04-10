@@ -103,7 +103,6 @@ public class ModernShipControllable : Controllable
     }
 
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
-    public override float Gravity => 0.0012f;
     public override float Size => ModernShipGeometry.Radius;
     public NebulaCollectorSubsystem NebulaCollector => _nebulaCollector;
     public JumpDriveSubsystem JumpDrive => _jumpDrive;
@@ -206,6 +205,41 @@ public class ModernShipControllable : Controllable
             result += StructuralLoadFor(_railguns[index], slot, projectedStructuralLoad);
 
         return result;
+    }
+
+    private protected override float CurrentRawStructuralLoad
+    {
+        get
+        {
+            float result = GetCommonCurrentStructuralLoad() +
+                _nebulaCollector.CurrentStructuralLoad +
+                _jumpDrive.CurrentStructuralLoad;
+
+            for (int index = 0; index < _engines.Length; index++)
+                result += _engines[index].CurrentStructuralLoad;
+
+            for (int index = 0; index < _scanners.Length; index++)
+                result += _scanners[index].CurrentStructuralLoad;
+
+            for (int index = 0; index < _shotLaunchers.Length; index++)
+            {
+                result += _shotLaunchers[index].CurrentStructuralLoad;
+                result += _shotMagazines[index].CurrentStructuralLoad;
+                result += _shotFabricators[index].CurrentStructuralLoad;
+            }
+
+            for (int index = 0; index < _interceptorLaunchers.Length; index++)
+            {
+                result += _interceptorLaunchers[index].CurrentStructuralLoad;
+                result += _interceptorMagazines[index].CurrentStructuralLoad;
+                result += _interceptorFabricators[index].CurrentStructuralLoad;
+            }
+
+            for (int index = 0; index < _railguns.Length; index++)
+                result += _railguns[index].CurrentStructuralLoad;
+
+            return result;
+        }
     }
 
     internal override void ApplyCreateRefresh(Controllable refreshed)

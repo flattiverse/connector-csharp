@@ -337,6 +337,16 @@ public class Controllable : INamedUnit
         return rawStructuralLoad * reductionFactor;
     }
 
+    private protected float CurrentEffectiveStructuralLoad
+    {
+        get { return CurrentRawStructuralLoad * (1f - _structureOptimizer.ReductionPercent); }
+    }
+
+    private protected virtual float CurrentRawStructuralLoad
+    {
+        get { return GetCommonCurrentStructuralLoad(); }
+    }
+
     private protected float GetCommonProjectedStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
     {
         return StructuralLoadFor(_energyBattery, slot, projectedStructuralLoad) +
@@ -352,6 +362,23 @@ public class Controllable : INamedUnit
             StructuralLoadFor(_cargo, slot, projectedStructuralLoad) +
             StructuralLoadFor(_resourceMiner, slot, projectedStructuralLoad) +
             StructuralLoadFor(_structureOptimizer, slot, projectedStructuralLoad);
+    }
+
+    private protected float GetCommonCurrentStructuralLoad()
+    {
+        return _energyBattery.CurrentStructuralLoad +
+            _ionBattery.CurrentStructuralLoad +
+            _neutrinoBattery.CurrentStructuralLoad +
+            _energyCell.CurrentStructuralLoad +
+            _ionCell.CurrentStructuralLoad +
+            _neutrinoCell.CurrentStructuralLoad +
+            _hull.CurrentStructuralLoad +
+            _shield.CurrentStructuralLoad +
+            _armor.CurrentStructuralLoad +
+            _repair.CurrentStructuralLoad +
+            _cargo.CurrentStructuralLoad +
+            _resourceMiner.CurrentStructuralLoad +
+            _structureOptimizer.CurrentStructuralLoad;
     }
 
     private protected static float StructuralLoadFor(Subsystem subsystem, SubsystemSlot slot, float projectedStructuralLoad)
@@ -480,7 +507,7 @@ public class Controllable : INamedUnit
     /// <summary>
     /// Gravity emitted by the live runtime of this controllable.
     /// </summary>
-    public virtual float Gravity => 0.0012f;
+    public virtual float Gravity => ShipBalancing.CalculateGravity(CurrentEffectiveStructuralLoad);
     
     /// <summary>
     /// Collision radius of the live runtime of this controllable.

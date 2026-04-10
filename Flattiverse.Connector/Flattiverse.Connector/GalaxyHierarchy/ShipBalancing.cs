@@ -4,6 +4,9 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 
 static class ShipBalancing
 {
+    private const float GravityBase = 0.0023762376f;
+    private const float GravityStructuralLoadFactor = 0.037128713f;
+
     public static float CalculateRadius(float effectiveLoad)
     {
         return 1f + 47f * effectiveLoad / 100f;
@@ -11,7 +14,7 @@ static class ShipBalancing
 
     public static float CalculateGravity(float effectiveLoad)
     {
-        return 0.01f + 0.11f * effectiveLoad / 100f;
+        return GravityBase + GravityStructuralLoadFactor * effectiveLoad / 100f;
     }
 
     public static float CalculateClassicSpeedLimit(float effectiveLoad)

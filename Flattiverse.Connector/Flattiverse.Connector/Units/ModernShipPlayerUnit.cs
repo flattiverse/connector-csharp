@@ -8,6 +8,8 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class ModernShipPlayerUnit : PlayerUnit
 {
+    private const float StartingEffectiveStructuralLoad = 17.4f;
+
     private readonly NebulaCollectorSubsystemInfo _nebulaCollector;
     private readonly ModernShipEngineSubsystemInfo[] _engines;
     private readonly DynamicScannerSubsystemInfo[] _scanners;
@@ -50,7 +52,16 @@ public class ModernShipPlayerUnit : PlayerUnit
         _jumpDrive = new JumpDriveSubsystemInfo(unit._jumpDrive);
     }
 
-    public override float Gravity => 0.0012f;
+    public override float Gravity
+    {
+        get
+        {
+            if (TryGetOwnControllable(out Controllable? controllable) && controllable is ModernShipControllable modernControllable)
+                return modernControllable.Gravity;
+
+            return ShipBalancing.CalculateGravity(StartingEffectiveStructuralLoad);
+        }
+    }
     public override float Radius => ModernShipGeometry.Radius;
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
     public NebulaCollectorSubsystemInfo NebulaCollector => _nebulaCollector;
