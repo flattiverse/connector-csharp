@@ -78,6 +78,14 @@ public class Unit
     public virtual float Gravity => 0f;
 
     /// <summary>
+    /// Maximum speed of the unit, if the runtime exposes such a limit.
+    /// </summary>
+    public virtual float SpeedLimit
+    {
+        get { return 0f; }
+    }
+
+    /// <summary>
     /// The mobility of the unit.
     /// </summary>
     public virtual Mobility Mobility => Mobility.Still;

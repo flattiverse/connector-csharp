@@ -11,6 +11,7 @@ namespace Flattiverse.Connector.Units;
 public class ClassicShipPlayerUnit : PlayerUnit
 {
     private const float StartingEffectiveStructuralLoad = 22f;
+    private const float StartingRadius = 14f;
 
     private readonly NebulaCollectorSubsystemInfo _nebulaCollector;
     private readonly ClassicShipEngineSubsystemInfo _engine;
@@ -65,12 +66,32 @@ public class ClassicShipPlayerUnit : PlayerUnit
             if (TryGetOwnControllable(out Controllable? controllable) && controllable is ClassicShipControllable classicControllable)
                 return classicControllable.Gravity;
 
-            return ShipBalancing.CalculateGravity(StartingEffectiveStructuralLoad);
+            float effectiveStructureLoad = FullStateKnown ? EffectiveStructureLoad : StartingEffectiveStructuralLoad;
+            return ShipBalancing.CalculateGravity(effectiveStructureLoad);
         }
     }
 
     /// <inheritdoc/>
-    public override float Radius => 14f;
+    public override float Radius
+    {
+        get
+        {
+            if (!FullStateKnown)
+                return StartingRadius;
+
+            return ShipBalancing.CalculateRadius(EffectiveStructureLoad);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override float SpeedLimit
+    {
+        get
+        {
+            float effectiveStructureLoad = FullStateKnown ? EffectiveStructureLoad : StartingEffectiveStructuralLoad;
+            return ShipBalancing.CalculateClassicSpeedLimit(effectiveStructureLoad);
+        }
+    }
 
     /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.ClassicShipPlayerUnit;

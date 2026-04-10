@@ -32,6 +32,7 @@ public class PlayerUnit : MobileUnit
     private readonly RepairSubsystemInfo _repair;
     private readonly CargoSubsystemInfo _cargo;
     private readonly ResourceMinerSubsystemInfo _resourceMiner;
+    private float _effectiveStructureLoad;
     
     internal PlayerUnit(Cluster cluster, string name, PacketReader reader) : base(cluster, name)
     {
@@ -54,6 +55,7 @@ public class PlayerUnit : MobileUnit
         _repair = new RepairSubsystemInfo();
         _cargo = new CargoSubsystemInfo();
         _resourceMiner = new ResourceMinerSubsystemInfo();
+        _effectiveStructureLoad = 0f;
     }
 
     internal PlayerUnit(PlayerUnit unit) : base(unit)
@@ -72,6 +74,7 @@ public class PlayerUnit : MobileUnit
         _repair = new RepairSubsystemInfo(unit._repair);
         _cargo = new CargoSubsystemInfo(unit._cargo);
         _resourceMiner = new ResourceMinerSubsystemInfo(unit._resourceMiner);
+        _effectiveStructureLoad = unit._effectiveStructureLoad;
     }
     
     /// <inheritdoc/>
@@ -173,6 +176,14 @@ public class PlayerUnit : MobileUnit
         get { return _resourceMiner; }
     }
 
+    /// <summary>
+    /// Exact effective structural load of the visible unit as reported by the server.
+    /// </summary>
+    public float EffectiveStructureLoad
+    {
+        get { return _effectiveStructureLoad; }
+    }
+
     private protected bool TryGetOwnControllable(out Controllable? controllable)
     {
         if (Player != Cluster.Galaxy.Player)
@@ -212,7 +223,8 @@ public class PlayerUnit : MobileUnit
             !_armor.Update(reader) ||
             !_repair.Update(reader) ||
             !_cargo.Update(reader) ||
-            !_resourceMiner.Update(reader))
+            !_resourceMiner.Update(reader) ||
+            !reader.Read(out _effectiveStructureLoad))
             throw new InvalidDataException("Couldn't read Unit.");
     }
 
@@ -227,6 +239,6 @@ public class PlayerUnit : MobileUnit
                $"ArmorReduction={_armor.Reduction:0.###}, ArmorBlocked=({_armor.BlockedDirectDamageThisTick:0.###},{_armor.BlockedRadiationDamageThisTick:0.###}), " +
                $"RepairRate={_repair.Rate:0.###}, RepairStatus={_repair.Status}, RepairConsumed=({_repair.ConsumedEnergyThisTick:0.###},{_repair.ConsumedIonsThisTick:0.###},{_repair.ConsumedNeutrinosThisTick:0.###}), RepairHull={_repair.RepairedHullThisTick:0.###}, " +
                $"Cargo=({_cargo.CurrentMetal:0.###}/{_cargo.MaximumMetal:0.###},{_cargo.CurrentCarbon:0.###}/{_cargo.MaximumCarbon:0.###},{_cargo.CurrentHydrogen:0.###}/{_cargo.MaximumHydrogen:0.###},{_cargo.CurrentSilicon:0.###}/{_cargo.MaximumSilicon:0.###},Nebula={_cargo.CurrentNebula:0.###}/{_cargo.MaximumNebula:0.###},Hue={_cargo.NebulaHue:0.###})({_cargo.Status}), " +
-               $"ResourceMinerRate={_resourceMiner.Rate:0.###}, ResourceMinerStatus={_resourceMiner.Status}, ResourceMinerConsumed=({_resourceMiner.ConsumedEnergyThisTick:0.###},{_resourceMiner.ConsumedIonsThisTick:0.###},{_resourceMiner.ConsumedNeutrinosThisTick:0.###}), ResourceMinerMined=({_resourceMiner.MinedMetalThisTick:0.###},{_resourceMiner.MinedCarbonThisTick:0.###},{_resourceMiner.MinedHydrogenThisTick:0.###},{_resourceMiner.MinedSiliconThisTick:0.###})";
+               $"ResourceMinerRate={_resourceMiner.Rate:0.###}, ResourceMinerStatus={_resourceMiner.Status}, ResourceMinerConsumed=({_resourceMiner.ConsumedEnergyThisTick:0.###},{_resourceMiner.ConsumedIonsThisTick:0.###},{_resourceMiner.ConsumedNeutrinosThisTick:0.###}), ResourceMinerMined=({_resourceMiner.MinedMetalThisTick:0.###},{_resourceMiner.MinedCarbonThisTick:0.###},{_resourceMiner.MinedHydrogenThisTick:0.###},{_resourceMiner.MinedSiliconThisTick:0.###}), EffectiveStructureLoad={_effectiveStructureLoad:0.###}";
     }
 }

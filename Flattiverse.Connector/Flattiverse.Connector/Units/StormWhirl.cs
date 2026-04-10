@@ -45,6 +45,12 @@ public abstract class StormWhirl : MobileUnit
     /// <inheritdoc/>
     public override bool IsSolid => false;
 
+    internal override void UpdateMovement(PacketReader reader)
+    {
+        if (!Vector.FromReader(reader, out _position) || !Vector.FromReader(reader, out _movement))
+            throw new InvalidDataException("Couldn't read Unit.");
+    }
+
     private protected void ReadRemainingTicks(PacketReader reader)
     {
         if (!reader.Read(out _remainingTicks))

@@ -1473,6 +1473,7 @@ Current `0x32` payloads:
   float resourceMinerMinedCarbonThisTick
   float resourceMinerMinedHydrogenThisTick
   float resourceMinerMinedSiliconThisTick
+  float effectiveStructureLoad
   byte  mainScannerExists
   float mainScannerMaximumWidth
   float mainScannerMaximumLength

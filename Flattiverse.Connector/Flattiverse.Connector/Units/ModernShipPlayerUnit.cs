@@ -9,6 +9,7 @@ namespace Flattiverse.Connector.Units;
 public class ModernShipPlayerUnit : PlayerUnit
 {
     private const float StartingEffectiveStructuralLoad = 17.4f;
+    private const float StartingRadius = 14f;
 
     private readonly NebulaCollectorSubsystemInfo _nebulaCollector;
     private readonly ModernShipEngineSubsystemInfo[] _engines;
@@ -52,6 +53,7 @@ public class ModernShipPlayerUnit : PlayerUnit
         _jumpDrive = new JumpDriveSubsystemInfo(unit._jumpDrive);
     }
 
+    /// <inheritdoc/>
     public override float Gravity
     {
         get
@@ -59,10 +61,34 @@ public class ModernShipPlayerUnit : PlayerUnit
             if (TryGetOwnControllable(out Controllable? controllable) && controllable is ModernShipControllable modernControllable)
                 return modernControllable.Gravity;
 
-            return ShipBalancing.CalculateGravity(StartingEffectiveStructuralLoad);
+            float effectiveStructureLoad = FullStateKnown ? EffectiveStructureLoad : StartingEffectiveStructuralLoad;
+            return ShipBalancing.CalculateGravity(effectiveStructureLoad);
         }
     }
-    public override float Radius => ModernShipGeometry.Radius;
+
+    /// <inheritdoc/>
+    public override float Radius
+    {
+        get
+        {
+            if (!FullStateKnown)
+                return StartingRadius;
+
+            return ShipBalancing.CalculateRadius(EffectiveStructureLoad);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override float SpeedLimit
+    {
+        get
+        {
+            float effectiveStructureLoad = FullStateKnown ? EffectiveStructureLoad : StartingEffectiveStructuralLoad;
+            return ShipBalancing.CalculateModernSpeedLimit(effectiveStructureLoad);
+        }
+    }
+
+    /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
     public NebulaCollectorSubsystemInfo NebulaCollector => _nebulaCollector;
     public IReadOnlyList<ModernShipEngineSubsystemInfo> Engines => _engines;
