@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-35
+36
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=35&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=35&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=35&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=35&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=36&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=36&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=36&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=36&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -1342,6 +1342,7 @@ Current `0x32` payloads:
   int  domination
   int  scoreCountdown
   ```
+  Newly created or tournament-reset domination points start with `domination = 0` and `scoreCountdown = 600`. They do not score until one team reaches full control.
 * `EnergyChargePowerUp (0x70)` / `IonChargePowerUp (0x71)` / `NeutrinoChargePowerUp (0x72)` / `MetalCargoPowerUp (0x73)` / `CarbonCargoPowerUp (0x74)` / `HydrogenCargoPowerUp (0x75)` / `SiliconCargoPowerUp (0x76)` / `ShieldChargePowerUp (0x77)` / `HullRepairPowerUp (0x78)` / `ShotChargePowerUp (0x79)`:
   ```text
   float amount
@@ -1381,6 +1382,7 @@ Current `0x32` payloads:
   float lootHydrogen
   float lootSilicon
   ```
+  `loot*` is visible in detail scans and defines the direct cargo reward for the ship that lands the final hostile projectile or explosion hit. Overflow is discarded; collisions and friendly fire do not award loot.
 * `Shot (0xE0)`:
   ```text
   float load

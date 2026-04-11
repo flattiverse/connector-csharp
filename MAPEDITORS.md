@@ -703,7 +703,7 @@ Example:
 
 Additional required attributes:
 
-- `Team`: configured initial team affiliation of the domination point.
+- `Team`: configured affiliation and reset owner of the domination point. New or tournament-reset points still start uncaptured.
 - `DominationRadius`: radius around the point that counts for domination gameplay.
 
 Constraints:
@@ -713,6 +713,7 @@ Constraints:
 - `DominationRadius > 0`
 - only `Orbit` child elements are allowed; plain text content is currently ignored
 - `Domination` and `ScoreCountdown` are runtime-only state and are therefore not editable XML attributes
+- newly created or tournament-reset domination points start with `Domination = 0` and `ScoreCountdown = 600`; scoring starts only after a team fully captures the point
 - `QueryUnitXml(...)` returns the configured team, not a transient runtime owner that may have changed during gameplay
 
 Example:
@@ -851,7 +852,7 @@ Constraints and behavior:
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
 - `RailSpeed > 0`
 - `RailReloadTicks >= 0`
-- `InterceptorSpeed > 0`
+- `InterceptorSpeed >= 0`
 - `InterceptorReloadTicks >= 0`
 - `Team="12"` means the AI base treats every non-spectator valid target as hostile
 - effective combat ranges are derived automatically from the shared `30`-tick prediction horizon
@@ -945,7 +946,7 @@ Constraints and behavior:
 
 - `Team` must exist and may be spectators
 - all hull / repair / respawn values follow the same constraints as `SpaceJellyFish`
-- `InterceptorSpeed > 0`
+- `InterceptorSpeed >= 0`
 - `InterceptorReloadTicks >= 0`
 - all loot values must be `>= 0`
 - at least one `Waypoint` child is required
@@ -953,6 +954,8 @@ Constraints and behavior:
 - `Team="12"` means the AI freighter treats every non-spectator valid target as hostile
 - the freighter loops its route; if you want a stable back-and-forth route, include the spawn point itself as the first waypoint
 - `AiFreighter` carries the configured loot values in its detail scan
+- `InterceptorSpeed="0"` disables interceptor launches completely
+- when the freighter is destroyed, the ship that lands the final hostile projectile or explosion hit receives the configured loot directly in cargo; overflow is lost, and collisions or friendly fire do not award loot
 - `AiFreighter` survives collisions with most units and destroys the other side without self-damage; only `AiFreighter` <-> `AiBase` collisions destroy both
 - `InterceptorSpeed` is the launcher-relative speed. Spawned `Interceptor` runtime units are capped at `Interceptor.SpeedLimit = 10`.
 

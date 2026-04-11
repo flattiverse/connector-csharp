@@ -37,12 +37,14 @@ public class DominationPoint : Target
     public float DominationRadius => _dominationRadius;
 
     /// <summary>
-    /// Current domination progress.
+    /// Current domination progress for the currently shown team.
+    /// Freshly created or tournament-reset points start at zero and must be fully captured before scoring begins.
     /// </summary>
     public int Domination => _domination;
 
     /// <summary>
     /// Current score countdown while fully controlled.
+    /// Freshly created or tournament-reset points stay at the maximum countdown until a team fully captures the point.
     /// </summary>
     public int ScoreCountdown => _scoreCountdown;
 

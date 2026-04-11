@@ -247,6 +247,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--domination-point-check-local")
+        {
+            await RunDominationPointCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--login-team-selection-check")
         {
             await RunLoginTeamSelectionCheck().ConfigureAwait(false);
@@ -3084,7 +3090,7 @@ partial class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=35&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=36&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 
