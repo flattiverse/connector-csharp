@@ -182,26 +182,6 @@ public class ClassicShipControllable : Controllable
             StructuralLoadFor(_jumpDrive, slot, projectedStructuralLoad);
     }
 
-    private protected override float CurrentRawStructuralLoad
-    {
-        get
-        {
-            return GetCommonCurrentStructuralLoad() +
-                _nebulaCollector.CurrentStructuralLoad +
-                _engine.CurrentStructuralLoad +
-                _shotLauncher.CurrentStructuralLoad +
-                _shotMagazine.CurrentStructuralLoad +
-                _shotFabricator.CurrentStructuralLoad +
-                _interceptorLauncher.CurrentStructuralLoad +
-                _interceptorMagazine.CurrentStructuralLoad +
-                _interceptorFabricator.CurrentStructuralLoad +
-                _railgun.CurrentStructuralLoad +
-                _mainScanner.CurrentStructuralLoad +
-                _secondaryScanner.CurrentStructuralLoad +
-                _jumpDrive.CurrentStructuralLoad;
-        }
-    }
-
     internal override void ApplyCreateRefresh(Controllable refreshed)
     {
         base.ApplyCreateRefresh(refreshed);

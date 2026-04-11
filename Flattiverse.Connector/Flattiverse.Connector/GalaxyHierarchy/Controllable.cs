@@ -30,6 +30,7 @@ public class Controllable : INamedUnit
     private SubsystemSlot _tierChangeSlot;
     private byte _tierChangeTargetTier;
     private ushort _remainingTierChangeTicks;
+    private float _effectiveStructureLoad;
 
     private Vector _position;
     private Vector _movement;
@@ -69,6 +70,7 @@ public class Controllable : INamedUnit
         _tierChangeSlot = 0;
         _tierChangeTargetTier = 0;
         _remainingTierChangeTicks = 0;
+        _effectiveStructureLoad = 0f;
         _hull = null!;
         _shield = null!;
         _armor = null!;
@@ -100,7 +102,8 @@ public class Controllable : INamedUnit
             !reader.Read(out byte tierChangePending) ||
             !reader.Read(out byte tierChangeSlot) ||
             !reader.Read(out _tierChangeTargetTier) ||
-            !reader.Read(out _remainingTierChangeTicks))
+            !reader.Read(out _remainingTierChangeTicks) ||
+            !reader.Read(out _effectiveStructureLoad))
             throw new InvalidDataException("Couldn't read controllable lifecycle state.");
 
         _alive = alive != 0;
@@ -331,11 +334,11 @@ public class Controllable : INamedUnit
     }
 
     /// <summary>
-    /// Effective structural load of the current owner-side configuration after structure-optimizer reduction.
+    /// Effective structural load of the current owner-side configuration as reported by the server.
     /// </summary>
     public float EffectiveStructureLoad
     {
-        get { return CurrentEffectiveStructureLoad; }
+        get { return _effectiveStructureLoad; }
     }
 
     /// <summary>
@@ -349,16 +352,6 @@ public class Controllable : INamedUnit
         float rawStructuralLoad = GetProjectedRawStructuralLoad(slot, projectedStructuralLoad);
         float reductionFactor = 1f - _structureOptimizer.ReductionPercent;
         return rawStructuralLoad * reductionFactor;
-    }
-
-    private protected float CurrentEffectiveStructureLoad
-    {
-        get { return CurrentRawStructuralLoad * (1f - _structureOptimizer.ReductionPercent); }
-    }
-
-    private protected virtual float CurrentRawStructuralLoad
-    {
-        get { return GetCommonCurrentStructuralLoad(); }
     }
 
     private protected float GetCommonProjectedStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
@@ -376,23 +369,6 @@ public class Controllable : INamedUnit
             StructuralLoadFor(_cargo, slot, projectedStructuralLoad) +
             StructuralLoadFor(_resourceMiner, slot, projectedStructuralLoad) +
             StructuralLoadFor(_structureOptimizer, slot, projectedStructuralLoad);
-    }
-
-    private protected float GetCommonCurrentStructuralLoad()
-    {
-        return _energyBattery.CurrentStructuralLoad +
-            _ionBattery.CurrentStructuralLoad +
-            _neutrinoBattery.CurrentStructuralLoad +
-            _energyCell.CurrentStructuralLoad +
-            _ionCell.CurrentStructuralLoad +
-            _neutrinoCell.CurrentStructuralLoad +
-            _hull.CurrentStructuralLoad +
-            _shield.CurrentStructuralLoad +
-            _armor.CurrentStructuralLoad +
-            _repair.CurrentStructuralLoad +
-            _cargo.CurrentStructuralLoad +
-            _resourceMiner.CurrentStructuralLoad +
-            _structureOptimizer.CurrentStructuralLoad;
     }
 
     private protected static float StructuralLoadFor(Subsystem subsystem, SubsystemSlot slot, float projectedStructuralLoad)
@@ -617,6 +593,7 @@ public class Controllable : INamedUnit
         _tierChangeSlot = refreshed._tierChangeSlot;
         _tierChangeTargetTier = refreshed._tierChangeTargetTier;
         _remainingTierChangeTicks = refreshed._remainingTierChangeTicks;
+        _effectiveStructureLoad = refreshed._effectiveStructureLoad;
         _position = refreshed._position;
         _movement = refreshed._movement;
         _angle = refreshed._angle;

@@ -217,6 +217,12 @@ partial class Program
             return;
         }
 
+        if (args.Length > 0 && args[0] == "--explosion-visibility-check-local")
+        {
+            await RunExplosionVisibilityCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--npc-units-check-local")
         {
             await RunNpcUnitsCheckLocal().ConfigureAwait(false);
@@ -310,6 +316,12 @@ partial class Program
         if (args.Length > 0 && args[0] == "--binary-chat-check-local")
         {
             await RunBinaryChatCheckLocal().ConfigureAwait(false);
+            return;
+        }
+
+        if (args.Length > 0 && args[0] == "--effective-structure-load-check-local")
+        {
+            await RunEffectiveStructureLoadCheckLocal().ConfigureAwait(false);
             return;
         }
 
@@ -1965,6 +1977,275 @@ partial class Program
         }
     }
 
+    private static async Task RunExplosionVisibilityCheckLocal()
+    {
+        const float PinkSpawnX = -40f;
+        const float GreenSpawnX = 40f;
+        const float SpawnY = 0f;
+        const float RegionHalfSize = 1f;
+        const float ScannerWidth = 40f;
+        const float ScannerLength = 120f;
+        const int SetupDelayMs = 500;
+        const int EventTimeoutMs = 15000;
+
+        Galaxy? adminGalaxy = null;
+        Galaxy? pinkGalaxy = null;
+        Galaxy? greenGalaxy = null;
+        Task? pinkEventPump = null;
+        Task? greenEventPump = null;
+        ConcurrentQueue<FlattiverseEvent> pinkEvents = new ConcurrentQueue<FlattiverseEvent>();
+        ConcurrentQueue<FlattiverseEvent> greenEvents = new ConcurrentQueue<FlattiverseEvent>();
+        string? restoreConfigurationXml = null;
+        Dictionary<byte, string>? restoreRegionsByCluster = null;
+        ClassicShipControllable? pinkShip = null;
+        ClassicShipControllable? greenShip = null;
+        List<FlattiverseEvent> phaseEvents = new List<FlattiverseEvent>();
+        bool result = false;
+        byte testClusterId = 0;
+        string clusterName = $"ExplosionVisibilityLocal{Environment.ProcessId}";
+        string suffix = $"{Environment.ProcessId}-{DateTime.UtcNow.Ticks % 1000000:000000}";
+        string pinkShipName = $"ExpPink{suffix}";
+        string greenShipName = $"ExpGreen{suffix}";
+
+        try
+        {
+            Console.WriteLine("EXPLOSION-VISIBILITY-LOCAL: connecting admin...");
+            adminGalaxy = await Galaxy.Connect(LocalSwitchGateUri, LocalSwitchGateAdminAuth, null).ConfigureAwait(false);
+
+            restoreConfigurationXml = BuildConfigurationXml(adminGalaxy, (ClusterSpec[]?)null);
+            restoreRegionsByCluster = await CaptureRegionsByCluster(adminGalaxy).ConfigureAwait(false);
+
+            if (!TryGetUnusedClusterId(adminGalaxy, 255, out testClusterId))
+                throw new InvalidOperationException("No free cluster id available for the explosion visibility test.");
+
+            await adminGalaxy.Configure(BuildStaticMapTestConfigurationXml(adminGalaxy, testClusterId, clusterName)).ConfigureAwait(false);
+
+            if (!await WaitForCondition(delegate
+                {
+                    return adminGalaxy.Clusters.TryGet(testClusterId, out Cluster? _);
+                }, 5000).ConfigureAwait(false))
+                throw new InvalidOperationException("Dedicated test cluster did not appear after configure.");
+
+            await RemoveAllRegions(adminGalaxy).ConfigureAwait(false);
+
+            Cluster activeCluster = adminGalaxy.Clusters[testClusterId];
+
+            if (!TryGetTeamByName(adminGalaxy, TeamName, out Team? pinkTeam) || pinkTeam is null)
+                throw new InvalidOperationException($"Team {TeamName} not found.");
+
+            if (!TryGetTeamByName(adminGalaxy, LocalSwitchGateGreenTeamName, out Team? greenTeam) || greenTeam is null)
+                throw new InvalidOperationException($"Team {LocalSwitchGateGreenTeamName} not found.");
+
+            byte pinkRegionId = await FindUnusedRegionId(activeCluster).ConfigureAwait(false);
+            string pinkRegionXml =
+                $"<Region Id=\"{pinkRegionId}\" Name=\"ExplosionPink-{suffix}\" Left=\"{(PinkSpawnX - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Top=\"{(SpawnY - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Right=\"{(PinkSpawnX + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Bottom=\"{(SpawnY + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\"><Team Id=\"{pinkTeam.Id}\" /></Region>";
+            await activeCluster.SetRegion(pinkRegionXml).ConfigureAwait(false);
+
+            byte greenRegionId = await FindUnusedRegionId(activeCluster).ConfigureAwait(false);
+            string greenRegionXml =
+                $"<Region Id=\"{greenRegionId}\" Name=\"ExplosionGreen-{suffix}\" Left=\"{(GreenSpawnX - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Top=\"{(SpawnY - RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Right=\"{(GreenSpawnX + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\" Bottom=\"{(SpawnY + RegionHalfSize).ToString("R", CultureInfo.InvariantCulture)}\"><Team Id=\"{greenTeam.Id}\" /></Region>";
+
+            await activeCluster.SetRegion(greenRegionXml).ConfigureAwait(false);
+            Console.WriteLine("EXPLOSION-VISIBILITY-LOCAL: prepared local spawn regions");
+
+            pinkGalaxy = await ConnectLocalPlayer(LocalSwitchGatePinkPlayerAuth, TeamName, "EXPLOSION-VISIBILITY-LOCAL:PINK").ConfigureAwait(false);
+            greenGalaxy = await ConnectLocalPlayer(LocalSwitchGatePlayerAuth, LocalSwitchGateGreenTeamName, "EXPLOSION-VISIBILITY-LOCAL:GREEN").ConfigureAwait(false);
+            pinkEventPump = StartEventPump("EXPLOSION-VISIBILITY-LOCAL:PINK", pinkGalaxy, pinkEvents);
+            greenEventPump = StartEventPump("EXPLOSION-VISIBILITY-LOCAL:GREEN", greenGalaxy, greenEvents);
+
+            await Task.Delay(SetupDelayMs).ConfigureAwait(false);
+            DrainEvents(pinkEvents);
+            DrainEvents(greenEvents);
+
+            pinkShip = await pinkGalaxy.CreateClassicShip(pinkShipName).ConfigureAwait(false);
+            greenShip = await greenGalaxy.CreateClassicShip(greenShipName).ConfigureAwait(false);
+            await pinkShip.Continue().ConfigureAwait(false);
+            await greenShip.Continue().ConfigureAwait(false);
+
+            bool pinkAlive = await WaitForAliveState(pinkShip, true, 3000).ConfigureAwait(false);
+            bool greenAlive = await WaitForAliveState(greenShip, true, 3000).ConfigureAwait(false);
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: pink alive after continue = {pinkAlive}");
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: green alive after continue = {greenAlive}");
+
+            if (!pinkAlive || !greenAlive)
+                return;
+
+            bool shipsReachedCluster = await WaitForCondition(delegate
+                {
+                    return pinkShip.Cluster.Id == testClusterId && greenShip.Cluster.Id == testClusterId;
+                }, 5000).ConfigureAwait(false);
+
+            if (!shipsReachedCluster)
+                throw new InvalidOperationException("Ships did not spawn in the dedicated test cluster.");
+
+            await pinkShip.Engine.Off().ConfigureAwait(false);
+            await greenShip.Engine.Off().ConfigureAwait(false);
+            await pinkShip.MainScanner.Set(ScannerWidth, ScannerLength, 0f).ConfigureAwait(false);
+            await pinkShip.MainScanner.On().ConfigureAwait(false);
+
+            bool scannerReady = await WaitForCondition(delegate
+                {
+                    return pinkShip.Alive &&
+                           pinkShip.MainScanner.Active &&
+                           MathF.Abs(pinkShip.MainScanner.CurrentWidth - ScannerWidth) < 0.1f &&
+                           MathF.Abs(pinkShip.MainScanner.CurrentLength - ScannerLength) < 0.1f &&
+                           CalculateWrappedAngleDistance(pinkShip.MainScanner.CurrentAngle, 0f) < 0.1f;
+                }, EventTimeoutMs).ConfigureAwait(false);
+
+            if (!scannerReady)
+                throw new InvalidOperationException("Pink scanner did not reach the requested state.");
+
+            await Task.Delay(SetupDelayMs).ConfigureAwait(false);
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: pink alive before shot = {pinkShip.Alive}, scanner current=({pinkShip.MainScanner.CurrentWidth:0.###},{pinkShip.MainScanner.CurrentLength:0.###},{pinkShip.MainScanner.CurrentAngle:0.###}), status={pinkShip.MainScanner.Status}");
+            DrainEvents(pinkEvents);
+            DrainEvents(greenEvents);
+
+            bool greenLauncherReady = await WaitForCondition(delegate
+                {
+                    return greenShip.ShotLauncher.Exists &&
+                           greenShip.ShotLauncher.MaximumRelativeMovement >= greenShip.ShotLauncher.MinimumRelativeMovement &&
+                           greenShip.ShotLauncher.MaximumRelativeMovement >= 0.1f &&
+                           greenShip.ShotLauncher.MaximumTicks >= greenShip.ShotLauncher.MinimumTicks &&
+                           greenShip.ShotLauncher.MaximumLoad >= greenShip.ShotLauncher.MinimumLoad &&
+                           greenShip.ShotLauncher.MaximumDamage >= greenShip.ShotLauncher.MinimumDamage;
+                }, EventTimeoutMs).ConfigureAwait(false);
+
+            if (!greenLauncherReady)
+                throw new InvalidOperationException(
+                    $"Green shot launcher not ready. Exists={greenShip.ShotLauncher.Exists}, speed={greenShip.ShotLauncher.MinimumRelativeMovement:0.###}..{greenShip.ShotLauncher.MaximumRelativeMovement:0.###}, ticks={greenShip.ShotLauncher.MinimumTicks}..{greenShip.ShotLauncher.MaximumTicks}, load={greenShip.ShotLauncher.MinimumLoad:0.###}..{greenShip.ShotLauncher.MaximumLoad:0.###}, damage={greenShip.ShotLauncher.MinimumDamage:0.###}..{greenShip.ShotLauncher.MaximumDamage:0.###}.");
+
+            float shotSpeed = MathF.Max(greenShip.ShotLauncher.MinimumRelativeMovement, 0.2f);
+
+            if (shotSpeed > greenShip.ShotLauncher.MaximumRelativeMovement)
+                shotSpeed = greenShip.ShotLauncher.MinimumRelativeMovement;
+
+            ushort shotTicks = greenShip.ShotLauncher.MaximumTicks > 120 ? (ushort)120 : greenShip.ShotLauncher.MaximumTicks;
+            float shotLoad = greenShip.ShotLauncher.MinimumLoad;
+            float shotDamage = greenShip.ShotLauncher.MinimumDamage;
+
+            Console.WriteLine(
+                $"EXPLOSION-VISIBILITY-LOCAL: green launcher speed={greenShip.ShotLauncher.MinimumRelativeMovement:0.###}..{greenShip.ShotLauncher.MaximumRelativeMovement:0.###}, ticks={greenShip.ShotLauncher.MinimumTicks}..{greenShip.ShotLauncher.MaximumTicks}, load={greenShip.ShotLauncher.MinimumLoad:0.###}..{greenShip.ShotLauncher.MaximumLoad:0.###}, damage={greenShip.ShotLauncher.MinimumDamage:0.###}..{greenShip.ShotLauncher.MaximumDamage:0.###}");
+
+            Vector shotRelativeMovement = new Vector(-shotSpeed, 0f);
+
+            if (!greenShip.ShotLauncher.CalculateCost(shotRelativeMovement, shotTicks, shotLoad, shotDamage, out float shotEnergy,
+                    out float shotIons, out float shotNeutrinos))
+                throw new InvalidOperationException("Shot request is invalid.");
+
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: shot cost energy={shotEnergy:0.###} ions={shotIons:0.###} neutrinos={shotNeutrinos:0.###}");
+
+            await greenShip.ShotLauncher.Shoot(shotRelativeMovement, shotTicks, shotLoad, shotDamage).ConfigureAwait(false);
+
+            AppearedUnitEvent? shotNewEvent = await WaitForQueuedEvent(pinkEvents, EventTimeoutMs, phaseEvents,
+                delegate (AppearedUnitEvent @event)
+                {
+                    return @event.Unit is Shot shot &&
+                           shot.ControllableInfo is not null &&
+                           shot.ControllableInfo.Name == greenShipName;
+                }).ConfigureAwait(false);
+
+            Shot? shotUnit = shotNewEvent?.Unit as Shot;
+            bool shotObserved = shotUnit is not null;
+            bool explosionObserved = false;
+            bool explosionRemoved = false;
+
+            if (shotUnit is not null)
+            {
+                AppearedUnitEvent? explosionNewEvent = await WaitForQueuedEvent(pinkEvents, EventTimeoutMs, phaseEvents,
+                    delegate (AppearedUnitEvent @event)
+                    {
+                        return @event.Unit is Explosion explosion &&
+                               explosion.Name == shotUnit.Name &&
+                               explosion.ControllableInfo is not null &&
+                               explosion.ControllableInfo.Name == greenShipName;
+                    }).ConfigureAwait(false);
+
+                Explosion? explosionUnit = explosionNewEvent?.Unit as Explosion;
+                explosionObserved = explosionUnit is not null &&
+                                    explosionUnit.FullStateKnown &&
+                                    explosionUnit.DamagePhase &&
+                                    !explosionUnit.ShockWavePhase;
+
+                if (explosionUnit is not null)
+                {
+                    RemovedUnitEvent? explosionRemovedEvent = await WaitForQueuedEvent(pinkEvents, 2000, phaseEvents,
+                        delegate (RemovedUnitEvent @event)
+                        {
+                            return @event.Unit.Kind == UnitKind.Explosion &&
+                                   @event.Unit.Name == explosionUnit.Name;
+                        }).ConfigureAwait(false);
+
+                    explosionRemoved = explosionRemovedEvent is not null;
+                }
+            }
+
+            result = shotObserved && explosionObserved && explosionRemoved;
+
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: shot observed = {shotObserved}");
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: explosion observed = {explosionObserved}");
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: explosion removed = {explosionRemoved}");
+
+            if (!result)
+            {
+                Console.WriteLine("EXPLOSION-VISIBILITY-LOCAL: event trace:");
+
+                for (int index = 0; index < phaseEvents.Count; index++)
+                    Console.WriteLine($"  TRACE[{index}] {DescribeSpectatorEvent(phaseEvents[index])}");
+            }
+
+            Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: RESULT = {(result ? "OK" : "FAILED")}");
+        }
+        finally
+        {
+            if (pinkShip is not null)
+                pinkShip.RequestClose();
+
+            if (greenShip is not null)
+                greenShip.RequestClose();
+
+            if (pinkGalaxy is not null)
+                pinkGalaxy.Dispose();
+
+            if (greenGalaxy is not null)
+                greenGalaxy.Dispose();
+
+            if (pinkEventPump is not null)
+                await Task.WhenAny(pinkEventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (greenEventPump is not null)
+                await Task.WhenAny(greenEventPump, Task.Delay(1000)).ConfigureAwait(false);
+
+            if (adminGalaxy is not null)
+            {
+                if (restoreConfigurationXml is not null)
+                    try
+                    {
+                        await adminGalaxy.Configure(restoreConfigurationXml).ConfigureAwait(false);
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: configuration restore failed ({exception.GetType().Name}: {exception.Message})");
+                    }
+
+                if (restoreRegionsByCluster is not null)
+                    try
+                    {
+                        await RestoreRegionsByCluster(adminGalaxy, restoreRegionsByCluster).ConfigureAwait(false);
+                        Console.WriteLine("EXPLOSION-VISIBILITY-LOCAL: regions restored");
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine($"EXPLOSION-VISIBILITY-LOCAL: region restore failed ({exception.GetType().Name}: {exception.Message})");
+                    }
+
+                adminGalaxy.Dispose();
+            }
+
+            await WaitForSessionGalaxy(LocalSwitchGatePlayerAuth, null, 7000).ConfigureAwait(false);
+            await WaitForSessionGalaxy(LocalSwitchGatePinkPlayerAuth, null, 7000).ConfigureAwait(false);
+        }
+    }
+
     private static async Task RunLoginTeamSelectionCheck()
     {
         Galaxy? adminGalaxy = null;
@@ -2803,7 +3084,7 @@ partial class Program
             }
 
             byte malformedCode = await ConnectAndReadInitialExceptionCode(
-                $"{Uri}?version=34&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
+                $"{Uri}?version=35&auth={PlayerAuth}&runtimeDisclosure=123&buildDisclosure=000000000000").ConfigureAwait(false);
 
             Console.WriteLine($"SELF-DISCLOSURE-CHECK: malformed disclosure rejected with 0x0D = {malformedCode == 0x0D}");
 

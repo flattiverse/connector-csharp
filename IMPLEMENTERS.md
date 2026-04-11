@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-34
+35
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=34&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=34&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=34&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=34&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=35&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=35&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=35&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=35&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -749,6 +749,7 @@ This packet is the owner's authoritative identity channel for a controllable. A 
 After the base fields, the packet continues with the owner-visible static subsystem capability block and the initial owner runtime snapshot for that controllable kind.
 This data is intentionally richer than the visible-unit stream because it initializes the local `Controllable` mirror immediately.
 The server may also resend `0x80` for an already known controllable id after a subsystem tier change; when the controllable kind stays the same, connectors should refresh the existing owner object in place instead of treating it as a death/recreate cycle.
+After the owner lifecycle state, `0x80` now also sends `float effectiveStructureLoad` before the subsystem blocks. Owner-side `Controllable.EffectiveStructureLoad` is therefore authoritative wire state, while upgrade previews still derive projected values locally.
 
 Owner-side subsystem block rules:
 
@@ -999,7 +1000,7 @@ float  railgunConsumedNeutrinosThisTick
 
 Notes:
 
-* Battery maxima, cell efficiencies, hull maxima, shield maxima, armor reduction, cargo capacities, and similar static owner-side capabilities are sent during `0x80 Controllable Create`.
+* Battery maxima, cell efficiencies, hull maxima, shield maxima, armor reduction, cargo capacities, effective structure load, and similar static owner-side capabilities are sent during `0x80 Controllable Create`.
 * `*CellCollectedThisTick` is the post-efficiency amount that was actually loaded through that cell during the current server tick.
 * `hullCurrent` is the current hull integrity after that tick's damage resolution. The current reference classic ship uses `hullMaximum = 50`.
 * `shieldCurrent` is the current shield integrity after that tick's damage resolution. The current reference classic ship uses `shieldMaximum = 20`.

@@ -212,41 +212,6 @@ public class ModernShipControllable : Controllable
         return result;
     }
 
-    private protected override float CurrentRawStructuralLoad
-    {
-        get
-        {
-            float result = GetCommonCurrentStructuralLoad() +
-                _nebulaCollector.CurrentStructuralLoad +
-                _jumpDrive.CurrentStructuralLoad;
-
-            for (int index = 0; index < _engines.Length; index++)
-                result += _engines[index].CurrentStructuralLoad;
-
-            for (int index = 0; index < _scanners.Length; index++)
-                result += _scanners[index].CurrentStructuralLoad;
-
-            for (int index = 0; index < _shotLaunchers.Length; index++)
-            {
-                result += _shotLaunchers[index].CurrentStructuralLoad;
-                result += _shotMagazines[index].CurrentStructuralLoad;
-                result += _shotFabricators[index].CurrentStructuralLoad;
-            }
-
-            for (int index = 0; index < _interceptorLaunchers.Length; index++)
-            {
-                result += _interceptorLaunchers[index].CurrentStructuralLoad;
-                result += _interceptorMagazines[index].CurrentStructuralLoad;
-                result += _interceptorFabricators[index].CurrentStructuralLoad;
-            }
-
-            for (int index = 0; index < _railguns.Length; index++)
-                result += _railguns[index].CurrentStructuralLoad;
-
-            return result;
-        }
-    }
-
     internal override void ApplyCreateRefresh(Controllable refreshed)
     {
         base.ApplyCreateRefresh(refreshed);

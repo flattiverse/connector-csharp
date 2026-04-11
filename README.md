@@ -189,7 +189,7 @@ Admin-facing commands:
 - `Galaxy.QueryAccounts(...)` returns all `user` / `reoptin` connector `Account` snapshots for tournament tooling in one logical result and accepts an optional `ProgressState` for chunked transfer progress.
 - `Cluster.QueryEditableUnits(...)` returns `(Name, Kind)` summaries for all editable units of the cluster, including currently invisible ones such as inactive power-ups.
 - Battery maxima, cell efficiencies, hull and shield maxima, cargo capacities, and similar owner-side static subsystem capabilities are initialized from `0x80 Controllable Create`.
-- `Controllable.EffectiveStructureLoad` is derived locally from the installed owner-side subsystems and the current structure-optimizer reduction. Upgrade previews should use `Controllable.CalculateProjectedEffectiveStructureLoad(...)` together with the static helper formulas on `SubsystemTierInfo`.
+- `Controllable.EffectiveStructureLoad` mirrors the owner-authoritative value sent on `0x80 Controllable Create` refreshes. Upgrade previews should still use `Controllable.CalculateProjectedEffectiveStructureLoad(...)` together with the static helper formulas on `SubsystemTierInfo`.
 - Scanner subsystems are server-authoritative runtime objects. `Set(...)`, `On()`, and `Off()` send player commands; `Current*`, `Target*`, and `Active` are mirrored back via `0x82`.
 - `Controllable.Angle` / `AngularVelocity` and visible `PlayerUnit.Angle` / `AngularVelocity` are authoritative wire values. They are no longer derived from movement.
 - Visible projectile `Unit.SpeedLimit` is derived locally: `Shot = 10`, `Interceptor = 10`, `Rail = 15`. Those caps are runtime rules, not additional wire payload.
