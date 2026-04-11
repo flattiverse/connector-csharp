@@ -19,7 +19,7 @@ namespace Flattiverse.Connector.GalaxyHierarchy;
 /// </summary>
 public partial class Galaxy : IDisposable
 {
-    private const string Version = "32";
+    private const string Version = "34";
     private const byte SpectatorsTeamId = 12;
     private const int TeamCapacity = 13;
     private const int ClusterCapacity = 24;
@@ -44,7 +44,6 @@ public partial class Galaxy : IDisposable
     private byte _playerMaxClassicShips;
     private byte _playerMaxModernShips;
 
-    private bool _maintenance;
     private bool _requiresSelfDisclosure;
     private string? _requiredAchievement;
     private bool _active;
@@ -401,14 +400,6 @@ public partial class Galaxy : IDisposable
     /// True while the underlying session and connection are still active.
     /// </summary>
     public bool Active => _active;
-
-    /// <summary>
-    /// True if a galaxy admin has enabled maintenance mode. When maintenance mode is enabled, new players or spectators
-    /// cannot connect, and existing players cannot register new ships or continue existing ships. Some things in the
-    /// galaxy (such as the game mode) can only be changed when maintenance mode is enabled, in order to maintain a
-    /// consistent player state.
-    /// </summary>
-    public bool Maintenance => _maintenance;
 
     /// <summary>
     /// True if this galaxy requires self-disclosure for regular player logins.
@@ -809,8 +800,8 @@ public partial class Galaxy : IDisposable
     private void UpdateGalaxy(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxModernShips,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxModernShips,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, byte maintenance,
-        byte requiresSelfDisclosure, string requiredAchievement)
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, byte requiresSelfDisclosure,
+        string requiredAchievement)
     {
         GalaxySettingsSnapshot? oldSettings;
 
@@ -818,7 +809,7 @@ public partial class Galaxy : IDisposable
             oldSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
                 _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxModernShips,
                 _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxModernShips,
-                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
+                _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips,
                 _requiresSelfDisclosure, _requiredAchievement);
         else
             oldSettings = null;
@@ -837,7 +828,6 @@ public partial class Galaxy : IDisposable
         _playerMaxTotalShips = playerMaxTotalShips;
         _playerMaxClassicShips = playerMaxClassicShips;
         _playerMaxModernShips = playerMaxModernShips;
-        _maintenance = maintenance != 0;
         _requiresSelfDisclosure = requiresSelfDisclosure != 0;
         _requiredAchievement = string.IsNullOrEmpty(requiredAchievement) ? null : requiredAchievement;
 
@@ -846,7 +836,7 @@ public partial class Galaxy : IDisposable
         GalaxySettingsSnapshot newSettings = new GalaxySettingsSnapshot(_gameMode, _name, _description, _maxPlayers, _maxSpectators,
             _galaxyMaxTotalShips, _galaxyMaxClassicShips, _galaxyMaxModernShips,
             _teamMaxTotalShips, _teamMaxClassicShips, _teamMaxModernShips,
-            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips, _maintenance,
+            _playerMaxTotalShips, _playerMaxClassicShips, _playerMaxModernShips,
             _requiresSelfDisclosure, _requiredAchievement);
 
         PushEvent(new UpdatedGalaxySettingsEvent(oldSettings, newSettings));

@@ -8,6 +8,8 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class Rail : Projectile
 {
+    private const float FixedSpeedLimit = 15f;
+
     internal Rail(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
     }
@@ -21,6 +23,9 @@ public class Rail : Projectile
     {
         return new Rail(this);
     }
+
+    /// <inheritdoc/>
+    public override float SpeedLimit => FixedSpeedLimit;
 
     /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.Rail;

@@ -34,16 +34,16 @@ The WebSocket upgrade request uses query parameters:
 Current protocol version:
 
 ```text
-31
+34
 ```
 
 Examples:
 
 ```text
-wss://www.flattiverse.com/galaxies/0/api?version=31&auth=<64-hex-api-key>&team=Blue
-wss://www.flattiverse.com/galaxies/0/api?version=31&auth=<64-hex-api-key>
-wss://www.flattiverse.com/galaxies/0/api?version=31&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
-wss://www.flattiverse.com/galaxies/0/api?version=31&auth=0000000000000000000000000000000000000000000000000000000000000000
+wss://www.flattiverse.com/galaxies/0/api?version=34&auth=<64-hex-api-key>&team=Blue
+wss://www.flattiverse.com/galaxies/0/api?version=34&auth=<64-hex-api-key>
+wss://www.flattiverse.com/galaxies/0/api?version=34&auth=<64-hex-api-key>&runtimeDisclosure=1234554321&buildDisclosure=543210123450
+wss://www.flattiverse.com/galaxies/0/api?version=34&auth=0000000000000000000000000000000000000000000000000000000000000000
 ```
 
 Important details:
@@ -396,12 +396,11 @@ ushort teamMaxModernShips
 byte   playerMaxTotalShips
 byte   playerMaxClassicShips
 byte   playerMaxModernShips
-byte   maintenanceFlag
 byte   requiresSelfDisclosureFlag
 string requiredAchievement
 ```
 
-`maintenanceFlag` and `requiresSelfDisclosureFlag` are `0x00` or `0x01`.
+`requiresSelfDisclosureFlag` is `0x00` or `0x01`.
 `requiredAchievement == ""` means there is no requirement configured.
 
 ### `0x02` Team Snapshot
@@ -1133,6 +1132,7 @@ Notes:
 * `Switch.mode` currently uses `0x00 Toggle`, `0x01 Open`, `0x02 Close`
 * `Gate.hasRestoreTicksFlag == 0` means that no automatic restore is configured
 * For projectile and explosion kinds, `ownerPlayerId = 0xFF` and `ownerControllableId = 0xFF` mean "no player owner". NPC-owned projectiles currently use the same ownerless marker on the wire.
+* `Shot`, `Interceptor`, and `Rail` do not serialize a dedicated speed-limit field. The reference runtime currently uses fixed projectile limits `10`, `10`, and `15`, and the reference connector derives the same `Unit.SpeedLimit` values locally.
 * `Explosion`, `InterceptorExplosion`, and `Flag` are effectively full immediately, but still participate in the same `0x30` + optional `0x32` visibility protocol
 
 ### `0x31` Visible Unit Movement State Update

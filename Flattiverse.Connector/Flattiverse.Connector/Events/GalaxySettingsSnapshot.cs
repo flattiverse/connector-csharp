@@ -78,11 +78,6 @@ public class GalaxySettingsSnapshot
     public readonly byte PlayerMaxModernShips;
 
     /// <summary>
-    /// Maintenance mode flag.
-    /// </summary>
-    public readonly bool Maintenance;
-
-    /// <summary>
     /// Whether regular player logins must provide runtime and build self-disclosure.
     /// </summary>
     public readonly bool RequiresSelfDisclosure;
@@ -95,8 +90,8 @@ public class GalaxySettingsSnapshot
     internal GalaxySettingsSnapshot(GameMode gameMode, string name, string description, byte maxPlayers, ushort maxSpectators,
         ushort galaxyMaxTotalShips, ushort galaxyMaxClassicShips, ushort galaxyMaxModernShips,
         ushort teamMaxTotalShips, ushort teamMaxClassicShips, ushort teamMaxModernShips,
-        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, bool maintenance,
-        bool requiresSelfDisclosure, string? requiredAchievement)
+        byte playerMaxTotalShips, byte playerMaxClassicShips, byte playerMaxModernShips, bool requiresSelfDisclosure,
+        string? requiredAchievement)
     {
         GameMode = gameMode;
         Name = name;
@@ -116,7 +111,6 @@ public class GalaxySettingsSnapshot
         PlayerMaxTotalShips = playerMaxTotalShips;
         PlayerMaxClassicShips = playerMaxClassicShips;
         PlayerMaxModernShips = playerMaxModernShips;
-        Maintenance = maintenance;
         RequiresSelfDisclosure = requiresSelfDisclosure;
         RequiredAchievement = requiredAchievement;
     }

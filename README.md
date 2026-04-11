@@ -59,6 +59,7 @@ while (galaxy.Active)
 - inspect and control `ModernShipControllable.EngineN` .. `EngineNW`
 - inspect owner-side integrity runtime via `Controllable.Hull` and `Controllable.Shield`
 - inspect owner-side nebula cargo via `Controllable.Cargo.MaximumNebula`, `CurrentNebula` and `NebulaHue`
+- inspect owner-side derived flight values via `Controllable.EffectiveStructureLoad`, `Size`, `Gravity`, `SpeedLimit` and `EngineEfficiency`
 - inspect and control `ClassicShipControllable.NebulaCollector`
 - inspect and control `ModernShipControllable.ScannerN` .. `ScannerNW`
 - inspect and use `ModernShipControllable.ShotLauncherN` .. `ShotLauncherNW`, the matching magazines and shot fabricators
@@ -188,8 +189,10 @@ Admin-facing commands:
 - `Galaxy.QueryAccounts(...)` returns all `user` / `reoptin` connector `Account` snapshots for tournament tooling in one logical result and accepts an optional `ProgressState` for chunked transfer progress.
 - `Cluster.QueryEditableUnits(...)` returns `(Name, Kind)` summaries for all editable units of the cluster, including currently invisible ones such as inactive power-ups.
 - Battery maxima, cell efficiencies, hull and shield maxima, cargo capacities, and similar owner-side static subsystem capabilities are initialized from `0x80 Controllable Create`.
+- `Controllable.EffectiveStructureLoad` is derived locally from the installed owner-side subsystems and the current structure-optimizer reduction. Upgrade previews should use `Controllable.CalculateProjectedEffectiveStructureLoad(...)` together with the static helper formulas on `SubsystemTierInfo`.
 - Scanner subsystems are server-authoritative runtime objects. `Set(...)`, `On()`, and `Off()` send player commands; `Current*`, `Target*`, and `Active` are mirrored back via `0x82`.
 - `Controllable.Angle` / `AngularVelocity` and visible `PlayerUnit.Angle` / `AngularVelocity` are authoritative wire values. They are no longer derived from movement.
+- Visible projectile `Unit.SpeedLimit` is derived locally: `Shot = 10`, `Interceptor = 10`, `Rail = 15`. Those caps are runtime rules, not additional wire payload.
 - Worm holes are visible units. Their destination is intentionally absent in reduced visibility and only appears once the unit reaches full visibility. Triggering a jump is an explicit owner command through `JumpDrive.Jump()`, not an automatic collision effect.
 - `CurrentField` is a non-solid visible map unit. `Mode=Directional` exposes a fixed world-space `Flow`, while `Mode=Relative` exposes `RadialForce` and `TangentialForce`.
 - `Storm` is an editable non-solid map unit that spawns mobile storm whirls. `StormCommencingWhirl` is visible early and only exposes its remaining announcement ticks in full visibility, while `StormActiveWhirl` is masking and additionally exposes `Damage`.

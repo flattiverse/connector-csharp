@@ -90,8 +90,8 @@ public class ModernShipEngineSubsystem : Subsystem
                     continue;
                 }
 
-                float effectiveStructuralLoad = Controllable.CalculateProjectedEffectiveStructuralLoad(Slot, baseInfo.StructuralLoad);
-                float adjustedMaximum = property.MaximumValue * SubsystemTierInfo.CalculateEngineEfficiency(effectiveStructuralLoad);
+                float effectiveStructureLoad = Controllable.CalculateProjectedEffectiveStructureLoad(Slot, baseInfo.StructuralLoad);
+                float adjustedMaximum = property.MaximumValue * SubsystemTierInfo.CalculateEngineEfficiency(effectiveStructureLoad);
                 SubsystemPropertyInfo[] properties = ReplaceMaximumThrust(baseInfo.Properties, adjustedMaximum);
                 result[index] = new SubsystemTierInfo(baseInfo.SubsystemKind, baseInfo.Tier, baseInfo.StructuralLoad,
                     baseInfo.ResourceUsages.ToArray(), baseInfo.UpgradeCost, baseInfo.DowngradeCost, properties, baseInfo.Description);

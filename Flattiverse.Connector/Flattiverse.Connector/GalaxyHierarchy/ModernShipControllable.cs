@@ -103,7 +103,6 @@ public class ModernShipControllable : Controllable
     }
 
     public override UnitKind Kind => UnitKind.ModernShipPlayerUnit;
-    public override float Size => ModernShipGeometry.Radius;
     public NebulaCollectorSubsystem NebulaCollector => _nebulaCollector;
     public JumpDriveSubsystem JumpDrive => _jumpDrive;
     public IReadOnlyList<string> EquippedCrystals => _equippedCrystals;
@@ -174,6 +173,12 @@ public class ModernShipControllable : Controllable
     public ModernRailgunSubsystem RailgunSW => _railguns[5];
     public ModernRailgunSubsystem RailgunW => _railguns[6];
     public ModernRailgunSubsystem RailgunNW => _railguns[7];
+
+    /// <inheritdoc/>
+    public override float SpeedLimit
+    {
+        get { return SubsystemTierInfo.CalculateModernSpeedLimit(EffectiveStructureLoad); }
+    }
 
     internal override float GetProjectedRawStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
     {

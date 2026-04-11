@@ -330,14 +330,28 @@ public class Controllable : INamedUnit
         return _tierChangePending && _tierChangeSlot == slot ? _remainingTierChangeTicks : (ushort)0;
     }
 
-    internal float CalculateProjectedEffectiveStructuralLoad(SubsystemSlot slot, float projectedStructuralLoad)
+    /// <summary>
+    /// Effective structural load of the current owner-side configuration after structure-optimizer reduction.
+    /// </summary>
+    public float EffectiveStructureLoad
+    {
+        get { return CurrentEffectiveStructureLoad; }
+    }
+
+    /// <summary>
+    /// Calculates the projected effective structural load after replacing one subsystem slot with a projected raw load.
+    /// Use <see cref="SubsystemTierInfo.CalculateRadius(float)" />, <see cref="SubsystemTierInfo.CalculateGravity(float)" />,
+    /// <see cref="SubsystemTierInfo.CalculateClassicSpeedLimit(float)" />, <see cref="SubsystemTierInfo.CalculateModernSpeedLimit(float)" />,
+    /// and <see cref="SubsystemTierInfo.CalculateEngineEfficiency(float)" /> to derive preview values from the result.
+    /// </summary>
+    public float CalculateProjectedEffectiveStructureLoad(SubsystemSlot slot, float projectedStructuralLoad)
     {
         float rawStructuralLoad = GetProjectedRawStructuralLoad(slot, projectedStructuralLoad);
         float reductionFactor = 1f - _structureOptimizer.ReductionPercent;
         return rawStructuralLoad * reductionFactor;
     }
 
-    private protected float CurrentEffectiveStructuralLoad
+    private protected float CurrentEffectiveStructureLoad
     {
         get { return CurrentRawStructuralLoad * (1f - _structureOptimizer.ReductionPercent); }
     }
@@ -507,12 +521,34 @@ public class Controllable : INamedUnit
     /// <summary>
     /// Gravity emitted by the live runtime of this controllable.
     /// </summary>
-    public virtual float Gravity => ShipBalancing.CalculateGravity(CurrentEffectiveStructuralLoad);
+    public virtual float Gravity
+    {
+        get { return SubsystemTierInfo.CalculateGravity(EffectiveStructureLoad); }
+    }
     
     /// <summary>
     /// Collision radius of the live runtime of this controllable.
     /// </summary>
-    public virtual float Size => 14f;
+    public virtual float Size
+    {
+        get { return SubsystemTierInfo.CalculateRadius(EffectiveStructureLoad); }
+    }
+
+    /// <summary>
+    /// Maximum movement speed of the live runtime of this controllable.
+    /// </summary>
+    public virtual float SpeedLimit
+    {
+        get { return SubsystemTierInfo.CalculateClassicSpeedLimit(EffectiveStructureLoad); }
+    }
+
+    /// <summary>
+    /// Engine-efficiency multiplier derived from the current effective structural load.
+    /// </summary>
+    public float EngineEfficiency
+    {
+        get { return SubsystemTierInfo.CalculateEngineEfficiency(EffectiveStructureLoad); }
+    }
     
     internal void Deceased()
     {

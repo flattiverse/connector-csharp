@@ -86,7 +86,6 @@ Example:
   PlayerMaxTotalShips="1"
   PlayerMaxClassicShips="1"
   PlayerMaxModernShips="1"
-  Maintenance="false"
   RequiresSelfDisclosure="false"
   RequiredAchievement="MISSION1_DONE">
   <Team Id="0" Name="Pink" ColorR="255" ColorG="0" ColorB="200" Playable="true" />
@@ -112,7 +111,6 @@ Allowed `Galaxy` attributes:
 - `PlayerMaxTotalShips`: per-player cap for all owned controllables combined.
 - `PlayerMaxClassicShips`: per-player cap for classic-ship controllable runtimes (`ClassicShipPlayerUnit` on the wire).
 - `PlayerMaxModernShips`: per-player cap for new-ship controllable runtimes (`ModernShipPlayerUnit` on the wire).
-- `Maintenance`: if `true`, the galaxy is marked as being under maintenance.
 - `RequiresSelfDisclosure`: if `true`, regular player logins must provide both self-disclosure strings during connect.
 - `RequiredAchievement`: optional achievement key required for regular player logins. Comparison is case-insensitive, the server trims whitespace, and the normalized key must be at most `16` characters long.
 
@@ -858,6 +856,7 @@ Constraints and behavior:
 - `Team="12"` means the AI base treats every non-spectator valid target as hostile
 - effective combat ranges are derived automatically from the shared `30`-tick prediction horizon
 - `AiBase` survives collisions with most units and destroys the other side without self-damage; only `AiBase` <-> `AiFreighter` collisions destroy both
+- `RailSpeed` and `InterceptorSpeed` are launcher parameters. The spawned runtime projectiles are still capped independently: `Rail.SpeedLimit = 15`, `Interceptor.SpeedLimit = 10`.
 
 Recommended starting values:
 
@@ -898,6 +897,7 @@ Constraints and behavior:
 - `Team="12"` means the AI turret treats every non-spectator valid target as hostile
 - effective target range is derived automatically from the shared `30`-tick prediction horizon
 - `AiTurret` only fires `Shot`; it does not use `Rail` or `Interceptor`
+- `ShotSpeed` is the launcher-relative shot speed. Spawned `Shot` runtime units are capped at `Shot.SpeedLimit = 10`.
 
 Recommended starting values:
 
@@ -954,6 +954,7 @@ Constraints and behavior:
 - the freighter loops its route; if you want a stable back-and-forth route, include the spawn point itself as the first waypoint
 - `AiFreighter` carries the configured loot values in its detail scan
 - `AiFreighter` survives collisions with most units and destroys the other side without self-damage; only `AiFreighter` <-> `AiBase` collisions destroy both
+- `InterceptorSpeed` is the launcher-relative speed. Spawned `Interceptor` runtime units are capped at `Interceptor.SpeedLimit = 10`.
 
 Recommended starting values:
 
@@ -999,6 +1000,7 @@ Constraints and behavior:
 - `ShotDamage > 0`
 - `Team="12"` means the AI ship treats every non-spectator valid target as hostile
 - `AiShip` uses its configured `X` / `Y` as patrol center; there is no separate XML action-center attribute
+- `ShotSpeed` is the launcher-relative shot speed. Spawned `Shot` runtime units are capped at `Shot.SpeedLimit = 10`.
 - initial spawn and respawn choose a passable random point inside `ActionRadius`
 - effective target range is derived automatically from the shared `30`-tick prediction horizon
 

@@ -6,7 +6,7 @@
 public enum PlayerUnitDestroyedReason
 {
     /// <summary>
-    /// Destroyed by global server rules, for example disconnect cleanup or maintenance transitions.
+    /// Destroyed by global server rules, for example disconnect cleanup.
     /// </summary>
     ByRules = 0x00,
 

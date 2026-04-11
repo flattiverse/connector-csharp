@@ -13,6 +13,9 @@ partial class Program
 {
     private const int NpcUnitsLocalTimeoutMs = 15000;
     private const int NpcUnitsLocalScoreTimeoutMs = 20000;
+    private const float NpcUnitsLocalShotSpeedLimit = 10f;
+    private const float NpcUnitsLocalInterceptorSpeedLimit = 10f;
+    private const float NpcUnitsLocalRailSpeedLimit = 15f;
 
     private static async Task RunNpcUnitsCheckLocal()
     {
@@ -391,6 +394,12 @@ partial class Program
                     $"NPC-LOCAL: turret never produced a visible shot. shipAlive={ship.Alive}, shipCluster={ship.Cluster.Id}, shipPosition={ship.Position}, visible=[{string.Join(", ", visibleUnits)}]");
             }
 
+            Shot turretShot = (Shot)turretShotEvent.Unit;
+
+            if (MathF.Abs(turretShot.SpeedLimit - NpcUnitsLocalShotSpeedLimit) > 0.001f)
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: turret shot speed limit mismatch. Expected={NpcUnitsLocalShotSpeedLimit:0.###}, Actual={turretShot.SpeedLimit:0.###}.");
+
             await RemoveUnitIfPresent(adminCluster, turretPhaseName).ConfigureAwait(false);
 
             if (spectatorGalaxy is not null)
@@ -414,6 +423,12 @@ partial class Program
 
             if (aiShipShotEvent is null)
                 throw new InvalidOperationException("NPC-LOCAL: ai ship never produced a visible shot.");
+
+            Shot aiShipShot = (Shot)aiShipShotEvent.Unit;
+
+            if (MathF.Abs(aiShipShot.SpeedLimit - NpcUnitsLocalShotSpeedLimit) > 0.001f)
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: ai ship shot speed limit mismatch. Expected={NpcUnitsLocalShotSpeedLimit:0.###}, Actual={aiShipShot.SpeedLimit:0.###}.");
 
             await RemoveUnitIfPresent(adminCluster, aiShipPhaseName).ConfigureAwait(false);
 
@@ -546,6 +561,12 @@ partial class Program
             if (baseRailEvent is null)
                 throw new InvalidOperationException("NPC-LOCAL: ai base never produced a visible rail shot.");
 
+            Rail baseRail = (Rail)baseRailEvent.Unit;
+
+            if (MathF.Abs(baseRail.SpeedLimit - NpcUnitsLocalRailSpeedLimit) > 0.001f)
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: ai base rail speed limit mismatch. Expected={NpcUnitsLocalRailSpeedLimit:0.###}, Actual={baseRail.SpeedLimit:0.###}.");
+
             await RemoveUnitIfPresent(adminCluster, baseVictimName).ConfigureAwait(false);
             await EnsureNpcUnitsLocalShipAlive(ship, testClusterId).ConfigureAwait(false);
             DrainEvents(spectatorEvents);
@@ -578,6 +599,12 @@ partial class Program
 
                 throw new InvalidOperationException("NPC-LOCAL: ai base never produced a visible interceptor.");
             }
+
+            Interceptor baseInterceptor = (Interceptor)baseInterceptorEvent.Unit;
+
+            if (MathF.Abs(baseInterceptor.SpeedLimit - NpcUnitsLocalInterceptorSpeedLimit) > 0.001f)
+                throw new InvalidOperationException(
+                    $"NPC-LOCAL: ai base interceptor speed limit mismatch. Expected={NpcUnitsLocalInterceptorSpeedLimit:0.###}, Actual={baseInterceptor.SpeedLimit:0.###}.");
 
             await RemoveUnitIfPresent(adminCluster, basePhaseName).ConfigureAwait(false);
 

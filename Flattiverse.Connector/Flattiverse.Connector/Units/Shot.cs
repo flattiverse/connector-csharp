@@ -8,6 +8,8 @@ namespace Flattiverse.Connector.Units;
 /// </summary>
 public class Shot : Projectile
 {
+    private const float FixedSpeedLimit = 10f;
+
     internal Shot(Cluster cluster, string name, PacketReader reader) : base(cluster, name, reader)
     {
     }
@@ -21,6 +23,9 @@ public class Shot : Projectile
     {
         return new Shot(this);
     }
+
+    /// <inheritdoc/>
+    public override float SpeedLimit => FixedSpeedLimit;
 
     /// <inheritdoc/>
     public override UnitKind Kind => UnitKind.Shot;

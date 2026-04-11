@@ -157,9 +157,6 @@ public class ClassicShipControllable : Controllable
         get { return _jumpDrive; }
     }
     
-    /// <inheritdoc/>
-    public override float Size => 14f;
-
     /// <summary>
     /// The three equipped crystal names. Empty slots are reported as empty strings.
     /// </summary>
